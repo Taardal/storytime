@@ -1,18 +1,21 @@
 #pragma once
 
-#include <sstream>
 #include "Log.h"
 #include "Application.h"
+#include <sstream>
 
 namespace Darkle {
 
-    struct Config {
-        LogLevel logLevel;
-        std::string name;
-    };
-
     class Engine {
+    public:
+        struct Config {
+            LogLevel logLevel;
+            Window::Config windowConfig;
+        };
+
     private:
+        GraphicsContext* graphicsContext;
+        Window* window;
         Application* application;
 
     public:
