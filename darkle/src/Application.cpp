@@ -5,6 +5,7 @@
 namespace Darkle {
 
     Application::Application(Window* window) : window(window), running(false) {
+        LOG_TRACE(TAG, "Creating");
         window->setOnEventListener([this](bool shouldClose) {
             onEvent(shouldClose);
         });
@@ -12,6 +13,7 @@ namespace Darkle {
     }
 
     Application::~Application() {
+        LOG_TRACE(TAG, "Destroying");
         LOG_TRACE(TAG, "Destroyed");
     }
 

@@ -12,8 +12,10 @@ int main() {
 Darkle::Engine::Config getConfig() {
     const Darkle::Window::Config& windowConfig = {
         "Sandbox",
-                1024,
-                768
+        1024,
+        768,
+        4,
+        1
     };
     const Darkle::Engine::Config& config = {
             Darkle::LogLevel::Trace,
