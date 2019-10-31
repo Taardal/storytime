@@ -4,14 +4,16 @@
 
 namespace Darkle {
 
-    GraphicsContext::GraphicsContext() {
-        LOG_TRACE(TAG, "Creating");
+    GraphicsContext::GraphicsContext(const Config& config) : config(config) {
         LOG_TRACE(TAG, "Created");
     }
 
     GraphicsContext::~GraphicsContext() {
-        LOG_TRACE(TAG, "Destroying");
         LOG_TRACE(TAG, "Destroyed");
+    }
+
+    const GraphicsContext::Config& GraphicsContext::getConfig() const {
+        return config;
     }
 
     void GraphicsContext::init(GLFWwindow* glfwWindow) const {

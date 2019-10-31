@@ -6,9 +6,20 @@ namespace Darkle {
 
     class GraphicsContext {
     public:
-        GraphicsContext();
+        struct Config {
+            int openGLVersionMajor;
+            int openGLVersionMinor;
+        };
+
+    private:
+        const Config& config;
+
+    public:
+        explicit GraphicsContext(const Config& config);
 
         ~GraphicsContext();
+
+        [[nodiscard]] const Config& getConfig() const;
 
         void init(GLFWwindow* glfwWindow) const;
 

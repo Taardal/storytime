@@ -5,7 +5,7 @@ namespace Darkle {
     Engine::Engine(const Config& config) {
         Log::setLevel(config.logLevel);
         LOG_TRACE(TAG, "Creating");
-        graphicsContext = new GraphicsContext();
+        graphicsContext = new GraphicsContext(config.graphicsConfig);
         window = new Window(config.windowConfig, graphicsContext);
         application = new Application(window);
         LOG_TRACE(TAG, "Created");
