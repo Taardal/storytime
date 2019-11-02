@@ -1,13 +1,12 @@
 #include "Window.h"
 #include "Log.h"
-#include <glad/glad.h>
 
 namespace Darkle {
 
     Window::Window(const Config& config, GraphicsContext* graphicsContext) : glfwCallbackData({}) {
         LOG_TRACE(TAG, "Creating");
         initGlfw();
-        setGlfwWindowHints(config);
+        setGlfwWindowHints(graphicsContext);
         glfwWindow = createGlfwWindow(config);
         graphicsContext->init(glfwWindow);
         glfwSetWindowUserPointer(glfwWindow, &glfwCallbackData);
@@ -39,24 +38,21 @@ namespace Darkle {
         }
     }
 
-    void Window::setGlfwWindowHints(const Config& config) const {
-        LOG_DEBUG(TAG, "Setting GLFW context version [{0}.{1}]", config.contextMajorVersion, config.contextMinorVersion);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.contextMajorVersion);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.contextMinorVersion);
+    void Window::setGlfwWindowHints(GraphicsContext* graphicsContext) const {
+        int versionMajor = graphicsContext->getConfig().openGLVersionMajor;
+        int versionMinor = graphicsContext->getConfig().openGLVersionMinor;
+        LOG_DEBUG(TAG, "Setting GLFW context version [{0}.{1}]", versionMajor, versionMinor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef APPLE
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+#endif
     }
 
     GLFWwindow* Window::createGlfwWindow(const Config& config) const {
         LOG_DEBUG(TAG, "Creating GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
-        GLFWwindow* glfwWindow = glfwCreateWindow(
-                config.width,
-                config.height,
-                config.title,
-                nullptr,
-                nullptr
-        );
+        GLFWwindow* glfwWindow = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
         if (glfwWindow != nullptr) {
             LOG_INFO(TAG, "Created GLFW window");
         } else {

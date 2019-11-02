@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Log.h"
 #include "GraphicsContext.h"
 #include <GLFW/glfw3.h>
 #include <functional>
@@ -12,8 +13,6 @@ namespace Darkle {
             const char* title;
             int width;
             int height;
-            int contextMajorVersion;
-            int contextMinorVersion;
         };
 
     private:
@@ -37,7 +36,7 @@ namespace Darkle {
     private:
         void initGlfw() const;
 
-        void setGlfwWindowHints(const Config& config) const;
+        void setGlfwWindowHints(GraphicsContext* graphicsContext) const;
 
         [[nodiscard]] GLFWwindow* createGlfwWindow(const Config& config) const;
 

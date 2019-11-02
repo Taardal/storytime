@@ -1,25 +1,31 @@
 #include "darkle/Darkle.h"
 
-Darkle::Engine::Config getConfig();
+Darkle::Window::Config getWindowConfig() {
+    Darkle::Window::Config config = {};
+    config.title = "Sandbox";
+    config.width = 1024;
+    config.height = config.width / 16 * 12;
+    return config;
+}
+
+Darkle::GraphicsContext::Config getGraphicsConfig() {
+    Darkle::GraphicsContext::Config config = {};
+    config.openGLVersionMajor = 4;
+    config.openGLVersionMinor = 1;
+    return config;
+}
+
+Darkle::Engine::Config getConfig() {
+    Darkle::Engine::Config config = {};
+    config.logLevel = Darkle::LogLevel::Trace;
+    config.windowConfig = getWindowConfig();
+    config.graphicsConfig = getGraphicsConfig();
+    return config;
+}
 
 int main() {
     auto engine = new Darkle::Engine(getConfig());
     engine->run();
     delete engine;
     return 0;
-}
-
-Darkle::Engine::Config getConfig() {
-    const Darkle::Window::Config& windowConfig = {
-        "Sandbox",
-        1024,
-        768,
-        4,
-        1
-    };
-    const Darkle::Engine::Config& config = {
-            Darkle::LogLevel::Trace,
-            windowConfig
-    };
-    return config;
 }

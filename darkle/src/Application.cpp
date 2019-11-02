@@ -13,7 +13,6 @@ namespace Darkle {
     }
 
     Application::~Application() {
-        LOG_TRACE(TAG, "Destroying");
         LOG_TRACE(TAG, "Destroyed");
     }
 
