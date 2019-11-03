@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Window.h"
+#include "window/Window.h"
+#include "window/events/Event.h"
 
 namespace Darkle {
 
@@ -17,7 +18,7 @@ namespace Darkle {
         void run();
 
     private:
-        void onEvent(bool running);
+        void onEvent(const Event& event);
 
     };
 

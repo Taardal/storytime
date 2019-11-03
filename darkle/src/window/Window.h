@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Log.h"
-#include "GraphicsContext.h"
+#include "graphics/GraphicsContext.h"
+#include "events/Event.h"
 #include <GLFW/glfw3.h>
 #include <functional>
 
@@ -17,7 +17,7 @@ namespace Darkle {
 
     private:
         struct GlfwCallbackData {
-            std::function<void(bool)> onEvent;
+            std::function<void(const Event&)> onEvent;
         };
 
     private:
@@ -29,7 +29,7 @@ namespace Darkle {
 
         ~Window();
 
-        void setOnEventListener(const std::function<void(bool)>& onEvent);
+        void setOnEventListener(const std::function<void(const Event&)>& onEvent);
 
         void onUpdate() const;
 

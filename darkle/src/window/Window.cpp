@@ -1,5 +1,6 @@
-#include "Window.h"
 #include "Log.h"
+#include "Window.h"
+#include "window/events/KeyEvent.h"
 
 namespace Darkle {
 
@@ -20,7 +21,7 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroyed");
     }
 
-    void Window::setOnEventListener(const std::function<void(bool)>& onEvent) {
+    void Window::setOnEventListener(const std::function<void(const Event&)>& onEvent) {
         glfwCallbackData.onEvent = onEvent;
     }
 
@@ -62,10 +63,33 @@ namespace Darkle {
     }
 
     void Window::setGlfwKeyCallbacks() const {
-        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scanCode, int action, int mode) {
-            bool shouldClose = key == GLFW_KEY_ESCAPE && action == GLFW_PRESS;
-            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(window);
-            callbackData->onEvent(shouldClose);
+        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scancode, int action, int mods) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            switch (action) {
+                case GLFW_PRESS: {
+                    KeyPressedEvent event(key);
+                    callbackData->onEvent(event);
+                    break;
+                }
+                case GLFW_RELEASE: {
+                    KeyReleasedEvent event(key);
+                    callbackData->onEvent(event);
+                    break;
+                }
+                case GLFW_REPEAT: {
+                    KeyRepeatedEvent event(key);
+                    callbackData->onEvent(event);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        });
+        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keycode) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            KeyTypedEvent event(keycode);
+            callbackData->onEvent(event);
         });
     }
 
