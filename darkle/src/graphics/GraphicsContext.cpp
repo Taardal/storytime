@@ -1,5 +1,5 @@
-#include "GraphicsContext.h"
 #include "Log.h"
+#include "GraphicsContext.h"
 #include <glad/glad.h>
 
 namespace Darkle {
