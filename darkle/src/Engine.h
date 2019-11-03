@@ -16,6 +16,7 @@ namespace Darkle {
     private:
         GraphicsContext* graphicsContext;
         Window* window;
+        Renderer* renderer;
         Application* application;
 
     public:

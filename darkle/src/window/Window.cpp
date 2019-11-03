@@ -1,6 +1,7 @@
 #include "Log.h"
 #include "Window.h"
 #include "window/events/KeyEvent.h"
+#include <glad/glad.h>
 
 namespace Darkle {
 
@@ -46,8 +47,8 @@ namespace Darkle {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef APPLE
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef APPLE
 #endif
     }
 
@@ -81,9 +82,7 @@ namespace Darkle {
                     callbackData->onEvent(event);
                     break;
                 }
-                default: {
-                    break;
-                }
+                default: {}
             }
         });
         glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keycode) {
