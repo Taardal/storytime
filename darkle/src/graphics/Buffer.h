@@ -7,26 +7,29 @@ namespace Darkle {
 
     class VertexBuffer {
     public:
-        struct Layout {
+        struct AttributeLayout {
             std::vector<VertexAttribute> attributes;
             unsigned int stride;
 
-            Layout(const std::initializer_list<VertexAttribute>& attributes);
+            AttributeLayout(const std::initializer_list<VertexAttribute>& attributes);
         };
 
     private:
         unsigned int id;
-        Layout layout;
+        AttributeLayout attributeLayout;
 
     public:
-        VertexBuffer(float* vertices, unsigned int size, Layout layout);
+        VertexBuffer(float* vertices, unsigned int size);
+
         ~VertexBuffer();
+
+        [[nodiscard]] const AttributeLayout& getAttributeLayout() const;
+
+        void setAttributeLayout(const AttributeLayout& layout);
 
         void bind() const;
 
         void unbind() const;
-
-        [[nodiscard]] const Layout& getLayout() const;
 
     };
 

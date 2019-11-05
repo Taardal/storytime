@@ -5,22 +5,24 @@
 
 namespace Darkle {
 
-    Renderer::Renderer() : vertexArray(nullptr), vertexBuffer(nullptr), indexBuffer(nullptr) {
+    Renderer::Renderer() {
         LOG_TRACE(TAG, "Creating");
         float vertices[] = {
                 -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
                 0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
-                0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
+                0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
         };
-        vertexBuffer = new VertexBuffer(vertices, sizeof(vertices), {
-                { GLSLType::Vec3, "in_position" },
-                { GLSLType::Vec4, "in_color" }
+        vertexBuffer = CreateRef<VertexBuffer>(vertices, sizeof(vertices));
+        vertexBuffer->setAttributeLayout({
+            { GLSLType::Vec3, "in_position" },
+            { GLSLType::Vec4, "in_color" }
         });
 
-        unsigned int indices[] = { 0, 1, 2 };
-        indexBuffer = new IndexBuffer(indices, 3);
+        unsigned int numberOfIndices = 3;
+        unsigned int indices[] = {0, 1, 2};
+        indexBuffer = CreateRef<IndexBuffer>(indices, numberOfIndices);
 
-        vertexArray = new VertexArray();
+        vertexArray = CreateRef<VertexArray>();
         vertexArray->addVertexBuffer(vertexBuffer);
         vertexArray->setIndexBuffer(indexBuffer);
 
@@ -54,7 +56,7 @@ namespace Darkle {
 				out_color = in_vertex.color;
 			}
 		)";
-        shader = new Shader(vertexSource, fragmentSource);
+        shader = CreateRef<Shader>(vertexSource, fragmentSource);
         shader->Bind();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -66,8 +68,8 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroying");
         shader->Unbind();
         vertexArray->unbind();
-        delete shader;
-        delete vertexArray;
+        //delete shader;
+        //delete vertexArray;
         LOG_TRACE(TAG, "Destroyed");
     }
 

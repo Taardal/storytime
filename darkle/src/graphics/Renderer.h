@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core.h"
 #include "VertexArray.h"
 #include "Shader.h"
 
@@ -7,10 +8,10 @@ namespace Darkle {
 
     class Renderer {
     private:
-        VertexArray* vertexArray;
-        VertexBuffer* vertexBuffer;
-        IndexBuffer* indexBuffer;
-        Shader* shader;
+        Ref<VertexArray> vertexArray;
+        Ref<VertexBuffer> vertexBuffer;
+        Ref<IndexBuffer> indexBuffer;
+        Ref<Shader> shader;
     public:
         Renderer();
 

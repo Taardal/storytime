@@ -11,25 +11,25 @@ namespace Darkle {
 
     VertexArray::~VertexArray() {
         LOG_TRACE(TAG, "Destroying");
-        for (VertexBuffer* vertexBuffer : vertexBuffers) {
+        for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers) {
             vertexBuffer->unbind();
-            delete vertexBuffer;
+            //delete vertexBuffer;
         }
         indexBuffer->unbind();
-        delete indexBuffer;
+        //delete indexBuffer;
         glDeleteVertexArrays(1, &id);
         LOG_TRACE(TAG, "Destroyed");
     }
 
-    std::vector<VertexBuffer*> VertexArray::getVertexBuffers() const {
+    std::vector<Ref<VertexBuffer>> VertexArray::getVertexBuffers() const {
         return vertexBuffers;
     }
 
-    void VertexArray::addVertexBuffer(VertexBuffer* vertexBuffer) {
+    void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) {
         glBindVertexArray(id);
         vertexBuffer->bind();
         unsigned int index = 0;
-        const auto& layout = vertexBuffer->getLayout();
+        const auto& layout = vertexBuffer->getAttributeLayout();
         for (const VertexAttribute& attribute : layout.attributes) {
             glEnableVertexAttribArray(index);
             glVertexAttribPointer(
@@ -40,20 +40,16 @@ namespace Darkle {
                     layout.stride,
                     (const void*) attribute.offset
             );
-            /*
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-            */
             index++;
         }
         vertexBuffers.push_back(vertexBuffer);
     }
 
-    IndexBuffer* VertexArray::getIndexBuffer() const {
+    Ref<IndexBuffer> VertexArray::getIndexBuffer() const {
         return indexBuffer;
     }
 
-    void VertexArray::setIndexBuffer(IndexBuffer* indexBuffer) {
+    void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer) {
         glBindVertexArray(id);
         indexBuffer->bind();
         this->indexBuffer = indexBuffer;

@@ -4,14 +4,14 @@
 
 namespace Darkle {
 
-    VertexBuffer::Layout::Layout(const std::initializer_list<VertexAttribute>& attributes) : attributes(attributes), stride(0) {
+    VertexBuffer::AttributeLayout::AttributeLayout(const std::initializer_list<VertexAttribute>& attributes) : attributes(attributes), stride(0) {
         for (VertexAttribute& attribute : this->attributes) {
             attribute.offset = stride;
             stride += attribute.size;
         }
     }
 
-    VertexBuffer::VertexBuffer(float* vertices, unsigned int size, Layout  layout) : id(0), layout(std::move(layout)) {
+    VertexBuffer::VertexBuffer(float* vertices, unsigned int size) : id(0), attributeLayout{} {
         LOG_TRACE(TAG, "Creating");
         glGenBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
@@ -25,16 +25,20 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroyed");
     }
 
+    const VertexBuffer::AttributeLayout& VertexBuffer::getAttributeLayout() const {
+        return attributeLayout;
+    }
+
+    void VertexBuffer::setAttributeLayout(const AttributeLayout& attributeLayout) {
+        this->attributeLayout = attributeLayout;
+    }
+
     void VertexBuffer::bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
     void VertexBuffer::unbind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    const VertexBuffer::Layout& VertexBuffer::getLayout() const {
-        return layout;
     }
 
     IndexBuffer::IndexBuffer(unsigned int* indices, unsigned int count) : id(0), count(count) {

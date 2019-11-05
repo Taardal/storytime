@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "Core.h"
 #include <glad/glad.h>
 
 namespace Darkle {
@@ -8,21 +9,21 @@ namespace Darkle {
     class VertexArray {
     private:
         unsigned int id;
-        std::vector<VertexBuffer*> vertexBuffers;
-        IndexBuffer* indexBuffer;
+        std::vector<Ref<VertexBuffer>> vertexBuffers;
+        Ref<IndexBuffer> indexBuffer;
 
     public:
         VertexArray();
 
         ~VertexArray();
 
-        [[nodiscard]] std::vector<VertexBuffer*> getVertexBuffers() const;
+        [[nodiscard]] std::vector<Ref<VertexBuffer>> getVertexBuffers() const;
 
-        void addVertexBuffer(VertexBuffer* vertexBuffer);
+        void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
 
-        [[nodiscard]] IndexBuffer* getIndexBuffer() const;
+        [[nodiscard]] Ref<IndexBuffer> getIndexBuffer() const;
 
-        void setIndexBuffer(IndexBuffer* indexBuffer);
+        void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
         void bind() const;
 
