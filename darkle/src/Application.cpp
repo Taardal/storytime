@@ -2,11 +2,10 @@
 #include "Application.h"
 #include "window/events/KeyEvent.h"
 #include "window/input/KeyCodes.h"
-#include <glad/glad.h>
 
 namespace Darkle {
 
-    Application::Application(Window* window) : window(window), running(false) {
+    Application::Application(Window* window, Renderer* renderer) : window(window), renderer(renderer), running(false) {
         LOG_TRACE(TAG, "Creating");
         window->setOnEventListener([this](const Event& event) {
             onEvent(event);
@@ -18,12 +17,17 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroyed");
     }
 
+    void Application::pushLayer(Layer* layer) {
+        layerStack.pushLayer(layer);
+    }
+
     void Application::run() {
         LOG_INFO(TAG, "Running...");
         running = true;
         while (running) {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            for (Layer* layer : layerStack) {
+                layer->onUpdate(renderer);
+            }
             window->onUpdate();
         }
     }
@@ -35,6 +39,12 @@ namespace Darkle {
             if (keyEvent->getKeyCode() == KeyCode::KEY_ESCAPE) {
                 LOG_INFO(TAG, "Stopping...");
                 running = false;
+            }
+        }
+        if (event.getType() == EventType::MouseButtonPressed) {
+            for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
+                Layer* layer = *--iterator;
+                layer->onEvent(event);
             }
         }
     }

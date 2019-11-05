@@ -16,6 +16,7 @@ namespace Darkle {
     private:
         GraphicsContext* graphicsContext;
         Window* window;
+        Renderer* renderer;
         Application* application;
 
     public:
@@ -24,6 +25,8 @@ namespace Darkle {
         ~Engine();
 
         void run();
+
+        void pushLayer(Layer* layer);
     };
 
 }

@@ -7,21 +7,26 @@ namespace Darkle {
         LOG_TRACE(TAG, "Creating");
         graphicsContext = new GraphicsContext(config.graphicsConfig);
         window = new Window(config.windowConfig, graphicsContext);
-        application = new Application(window);
+        renderer = new Renderer();
+        application = new Application(window, renderer);
         LOG_TRACE(TAG, "Created");
     }
 
     Engine::~Engine() {
         LOG_TRACE(TAG, "Destroying");
-        delete graphicsContext;
+        delete renderer;
         delete window;
+        delete graphicsContext;
         delete application;
         LOG_TRACE(TAG, "Destroyed");
+    }
+
+    void Engine::pushLayer(Layer* layer) {
+        application->pushLayer(layer);
     }
 
     void Engine::run() {
         application->run();
     }
-
 
 }
