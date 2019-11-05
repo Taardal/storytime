@@ -3,7 +3,7 @@ project(darkle)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(darkle src/Log.cpp src/Log.h src/Engine.cpp src/Engine.h src/Application.cpp src/Application.h src/window/Window.cpp src/window/Window.h src/graphics/GraphicsContext.cpp src/graphics/GraphicsContext.h src/window/events/Event.cpp src/window/events/Event.h src/window/events/KeyEvent.cpp src/window/events/KeyEvent.h src/window/input/KeyCodes.h src/graphics/Renderer.cpp src/graphics/Renderer.h src/graphics/VertexArray.cpp src/graphics/VertexArray.h src/graphics/Buffer.cpp src/graphics/Buffer.h src/graphics/VertexAttribute.cpp src/graphics/VertexAttribute.h src/graphics/Shader.cpp src/graphics/Shader.h src/Core.h)
+add_library(darkle src/Log.cpp src/Log.h src/Engine.cpp src/Engine.h src/Application.cpp src/Application.h src/window/Window.cpp src/window/Window.h src/graphics/GraphicsContext.cpp src/graphics/GraphicsContext.h src/window/events/Event.cpp src/window/events/Event.h src/window/events/KeyEvent.cpp src/window/events/KeyEvent.h src/window/input/KeyCodes.h src/graphics/Renderer.cpp src/graphics/Renderer.h src/graphics/VertexArray.cpp src/graphics/VertexArray.h src/graphics/Buffer.cpp src/graphics/Buffer.h src/graphics/VertexAttribute.cpp src/graphics/VertexAttribute.h src/graphics/Shader.cpp src/graphics/Shader.h src/Core.h src/window/layers/LayerStack.cpp src/window/layers/LayerStack.h src/window/layers/Layer.cpp src/window/layers/Layer.h)
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)

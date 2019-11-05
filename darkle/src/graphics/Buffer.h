@@ -12,6 +12,10 @@ namespace Darkle {
             unsigned int stride;
 
             AttributeLayout(const std::initializer_list<VertexAttribute>& attributes);
+
+            [[nodiscard]] std::vector<VertexAttribute>::const_iterator begin() const;
+
+            [[nodiscard]] std::vector<VertexAttribute>::const_iterator end() const;
         };
 
     private:

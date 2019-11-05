@@ -1,5 +1,5 @@
-#include "VertexArray.h"
 #include "Log.h"
+#include "VertexArray.h"
 
 namespace Darkle {
 
@@ -13,10 +13,8 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroying");
         for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers) {
             vertexBuffer->unbind();
-            //delete vertexBuffer;
         }
         indexBuffer->unbind();
-        //delete indexBuffer;
         glDeleteVertexArrays(1, &id);
         LOG_TRACE(TAG, "Destroyed");
     }
@@ -29,15 +27,15 @@ namespace Darkle {
         glBindVertexArray(id);
         vertexBuffer->bind();
         unsigned int index = 0;
-        const auto& layout = vertexBuffer->getAttributeLayout();
-        for (const VertexAttribute& attribute : layout.attributes) {
+        const auto& attributeLayout = vertexBuffer->getAttributeLayout();
+        for (const VertexAttribute& attribute : attributeLayout) {
             glEnableVertexAttribArray(index);
             glVertexAttribPointer(
                     index,
                     attribute.length,
                     getOpenGLType(attribute.glslType),
                     attribute.normalized ? GL_TRUE : GL_FALSE,
-                    layout.stride,
+                    attributeLayout.stride,
                     (const void*) attribute.offset
             );
             index++;
@@ -57,10 +55,12 @@ namespace Darkle {
 
     void VertexArray::bind() const {
         glBindVertexArray(id);
+        LOG_DEBUG(TAG, "Bound vertex array [{0}]", id);
     }
 
     void VertexArray::unbind() const {
         glBindVertexArray(0);
+        LOG_DEBUG(TAG, "Unbound vertex array [{0}]", id);
     }
 
     GLenum VertexArray::getOpenGLType(GLSLType glslType) const {

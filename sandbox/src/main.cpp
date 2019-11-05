@@ -1,4 +1,5 @@
 #include "darkle/Darkle.h"
+#include "SandboxLayer.h"
 
 Darkle::Window::Config getWindowConfig() {
     Darkle::Window::Config config = {};
@@ -25,6 +26,7 @@ Darkle::Engine::Config getConfig() {
 
 int main() {
     auto engine = new Darkle::Engine(getConfig());
+    engine->pushLayer(new Sandbox::SandboxLayer("SandboxLayer"));
     engine->run();
     delete engine;
     return 0;

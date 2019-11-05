@@ -8,10 +8,10 @@ namespace Darkle {
 
     class Renderer {
     private:
-        Ref<VertexArray> vertexArray;
-        Ref<VertexBuffer> vertexBuffer;
-        Ref<IndexBuffer> indexBuffer;
-        Ref<Shader> shader;
+        //Ref<VertexArray> vertexArray;
+        //Ref<VertexBuffer> vertexBuffer;
+        //Ref<IndexBuffer> indexBuffer;
+        //Ref<Shader> shader;
     public:
         Renderer();
 

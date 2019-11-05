@@ -21,9 +21,12 @@ namespace Darkle {
         LOG_TRACE(TAG, "Destroyed");
     }
 
+    void Engine::pushLayer(Layer* layer) {
+        application->pushLayer(layer);
+    }
+
     void Engine::run() {
         application->run();
     }
-
 
 }

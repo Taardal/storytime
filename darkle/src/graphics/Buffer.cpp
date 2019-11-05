@@ -11,6 +11,14 @@ namespace Darkle {
         }
     }
 
+    std::vector<VertexAttribute>::const_iterator VertexBuffer::AttributeLayout::begin() const {
+        return attributes.begin();
+    }
+
+    std::vector<VertexAttribute>::const_iterator VertexBuffer::AttributeLayout::end() const {
+        return attributes.end();
+    }
+
     VertexBuffer::VertexBuffer(float* vertices, unsigned int size) : id(0), attributeLayout{} {
         LOG_TRACE(TAG, "Creating");
         glGenBuffers(1, &id);
@@ -35,10 +43,12 @@ namespace Darkle {
 
     void VertexBuffer::bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, id);
+        LOG_DEBUG(TAG, "Bound vertex buffer [{0}]", id);
     }
 
     void VertexBuffer::unbind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        LOG_DEBUG(TAG, "Unbound vertex buffer [{0}]", id);
     }
 
     IndexBuffer::IndexBuffer(unsigned int* indices, unsigned int count) : id(0), count(count) {
@@ -61,10 +71,12 @@ namespace Darkle {
 
     void IndexBuffer::bind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        LOG_DEBUG(TAG, "Bound index buffer [{0}]", id);
     }
 
     void IndexBuffer::unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        LOG_DEBUG(TAG, "Unbound index buffer [{0}]", id);
     }
 
 }

@@ -25,6 +25,8 @@ namespace Darkle {
         ~Engine();
 
         void run();
+
+        void pushLayer(Layer* layer);
     };
 
 }
