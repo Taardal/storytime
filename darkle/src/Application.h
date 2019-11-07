@@ -25,6 +25,8 @@ namespace Darkle {
 
     private:
         void onEvent(const Event& event);
+
+        void stop();
     };
 
 }

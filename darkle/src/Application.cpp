@@ -32,19 +32,32 @@ namespace Darkle {
         }
     }
 
+    void Application::stop() {
+        LOG_INFO(TAG, "Stopping...");
+        running = false;
+    }
+
     void Application::onEvent(const Event& event) {
-        LOG_DEBUG(TAG, "Received event [{0}]", event.toString());
-        if (event.getType() == EventType::KeyPressed) {
-            auto* keyEvent = (KeyEvent*) &event;
-            if (keyEvent->getKeyCode() == KeyCode::KEY_ESCAPE) {
-                LOG_INFO(TAG, "Stopping...");
-                running = false;
-            }
+        if (event.getType() != EventType::MouseMoved) {
+            LOG_DEBUG(TAG, "Received event [{0}]", event.toString());
         }
-        if (event.getType() == EventType::MouseButtonPressed) {
-            for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
-                Layer* layer = *--iterator;
-                layer->onEvent(event);
+        switch (event.getType()) {
+            case EventType::WindowClose: {
+                stop();
+                break;
+            }
+            case EventType::KeyPressed: {
+                auto* keyEvent = (KeyEvent*) &event;
+                if (keyEvent->getKeyCode() == KeyCode::KEY_ESCAPE) {
+                    stop();
+                    break;
+                }
+            }
+            default: {
+                for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
+                    Layer* layer = *--iterator;
+                    layer->onEvent(event);
+                }
             }
         }
     }

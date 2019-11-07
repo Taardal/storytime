@@ -1,7 +1,8 @@
 #include "Log.h"
 #include "Window.h"
+#include "window/events/WindowEvent.h"
 #include "window/events/KeyEvent.h"
-#include <glad/glad.h>
+#include "window/events/MouseEvent.h"
 
 namespace Darkle {
 
@@ -11,13 +12,13 @@ namespace Darkle {
         setGlfwWindowHints(graphicsContext);
         glfwWindow = createGlfwWindow(config);
         graphicsContext->init(glfwWindow);
-        glfwSetWindowUserPointer(glfwWindow, &glfwCallbackData);
-        setGlfwKeyCallbacks();
+        setGlfwCallbacks();
         LOG_TRACE(TAG, "Created");
     }
 
     Window::~Window() {
         LOG_TRACE(TAG, "Destroying");
+        destroyGlfwWindow();
         terminateGlfw();
         LOG_TRACE(TAG, "Destroyed");
     }
@@ -47,8 +48,8 @@ namespace Darkle {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #ifdef APPLE
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
     }
 
@@ -63,7 +64,32 @@ namespace Darkle {
         return glfwWindow;
     }
 
+    void Window::setGlfwCallbacks() {
+        LOG_DEBUG(TAG, "Setting GLFW window callback data");
+        glfwSetWindowUserPointer(glfwWindow, &glfwCallbackData);
+        setGlfwKeyCallbacks();
+        setGlfwWindowCallbacks();
+        setGlfwMouseCallbacks();
+    }
+
+    void Window::setGlfwWindowCallbacks() const {
+        LOG_DEBUG(TAG, "Setting GLFW window callbacks");
+        glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* glfwWindow) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            WindowCloseEvent event;
+            callbackData->onEvent(event);
+        });
+        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int width, int height) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            callbackData->width = width;
+            callbackData->height = height;
+            WindowResizeEvent event(width, height);
+            callbackData->onEvent(event);
+        });
+    }
+
     void Window::setGlfwKeyCallbacks() const {
+        LOG_DEBUG(TAG, "Setting GLFW key callbacks");
         glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scancode, int action, int mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             switch (action) {
@@ -90,6 +116,37 @@ namespace Darkle {
             KeyTypedEvent event(keycode);
             callbackData->onEvent(event);
         });
+    }
+
+    void Window::setGlfwMouseCallbacks() const {
+        LOG_DEBUG(TAG, "Setting GLFW mouse callbacks");
+        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* glfwWindow, int button, int action, int mods) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            switch (action) {
+                case GLFW_PRESS: {
+                    MouseButtonPressedEvent event(button);
+                    callbackData->onEvent(event);
+                    break;
+                }
+                case GLFW_RELEASE: {
+                    MouseButtonReleasedEvent event(button);
+                    callbackData->onEvent(event);
+                    break;
+                }
+                default: {}
+            }
+        });
+        glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double xpos, double ypos) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+            MouseMovedEvent event((float) xpos, (float) ypos);
+            callbackData->onEvent(event);
+        });
+    }
+
+    void Window::destroyGlfwWindow() const {
+        LOG_DEBUG(TAG, "Destroying GLFW window");
+        glfwDestroyWindow(glfwWindow);
+        LOG_INFO(TAG, "Destroyed GLFW window");
     }
 
     void Window::terminateGlfw() const {

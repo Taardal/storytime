@@ -18,6 +18,8 @@ namespace Darkle {
     private:
         struct GlfwCallbackData {
             std::function<void(const Event&)> onEvent;
+            int width;
+            int height;
         };
 
     private:
@@ -40,7 +42,15 @@ namespace Darkle {
 
         [[nodiscard]] GLFWwindow* createGlfwWindow(const Config& config) const;
 
+        void setGlfwCallbacks();
+
+        void setGlfwWindowCallbacks() const;
+
         void setGlfwKeyCallbacks() const;
+
+        void setGlfwMouseCallbacks() const;
+
+        void destroyGlfwWindow() const;
 
         void terminateGlfw() const;
     };
