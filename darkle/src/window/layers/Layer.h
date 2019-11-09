@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/Renderer.h"
+#include "system/Timestep.h"
 #include "window/events/Event.h"
 
 namespace Darkle {
@@ -22,7 +23,7 @@ namespace Darkle {
 
         virtual void onDetach() = 0;
 
-        virtual void onUpdate(Renderer* renderer) = 0;
+        virtual void onUpdate(Renderer* renderer, Timestep timestep) = 0;
 
         virtual void onEvent(const Event& event) = 0;
     };

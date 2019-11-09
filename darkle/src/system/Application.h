@@ -13,6 +13,7 @@ namespace Darkle {
         Renderer* renderer;
         LayerStack layerStack;
         bool running;
+        double lastFrameTime;
 
     public:
         Application(Window* window, Renderer* renderer);
@@ -25,8 +26,8 @@ namespace Darkle {
 
     private:
         void onEvent(const Event& event);
+
+        void stop();
     };
 
 }
-
-

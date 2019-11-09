@@ -1,5 +1,6 @@
 #pragma once
 
+#include <system/Timestep.h>
 #include "darkle/Darkle.h"
 
 namespace Sandbox {
@@ -21,7 +22,7 @@ namespace Sandbox {
 
         void onDetach() override;
 
-        void onUpdate(Darkle::Renderer* renderer) override;
+        void onUpdate(Darkle::Renderer* renderer, Darkle::Timestep timestep) override;
 
         void onEvent(const Darkle::Event& event) override;
     };

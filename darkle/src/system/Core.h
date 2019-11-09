@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#define BIND_EVENT_FUNCTION(eventFunction) std::bind(&eventFunction, this, std::placeholders::_1)
+
 namespace Darkle {
 
     template<typename T>

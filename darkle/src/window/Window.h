@@ -31,16 +31,28 @@ namespace Darkle {
 
         void setOnEventListener(const std::function<void(const Event&)>& onEvent);
 
+        [[nodiscard]] double getTime() const;
+
         void onUpdate() const;
 
     private:
         void initGlfw() const;
 
+        static void onGlfwError(int error, const char* description);
+
         void setGlfwWindowHints(GraphicsContext* graphicsContext) const;
 
         [[nodiscard]] GLFWwindow* createGlfwWindow(const Config& config) const;
 
+        void setGlfwCallbacks();
+
+        void setGlfwWindowCallbacks() const;
+
         void setGlfwKeyCallbacks() const;
+
+        void setGlfwMouseCallbacks() const;
+
+        void destroyGlfwWindow() const;
 
         void terminateGlfw() const;
     };
