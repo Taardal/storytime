@@ -1,11 +1,14 @@
 #include "Log.h"
 #include "Application.h"
+#include "Timestep.h"
 #include "window/events/KeyEvent.h"
 #include "window/input/KeyCodes.h"
 
 namespace Darkle {
 
-    Application::Application(Window* window, Renderer* renderer) : window(window), renderer(renderer), running(false) {
+    Application::Application(Window* window, Renderer* renderer)
+            : window(window), renderer(renderer), running(false), lastFrameTime(0)
+    {
         LOG_TRACE(TAG, "Creating");
         window->setOnEventListener([this](const Event& event) {
             onEvent(event);
@@ -25,8 +28,10 @@ namespace Darkle {
         LOG_INFO(TAG, "Running...");
         running = true;
         while (running) {
+            renderer->beginScene();
+            Timestep timestep = window->getTime() - lastFrameTime;
             for (Layer* layer : layerStack) {
-                layer->onUpdate(renderer);
+                layer->onUpdate(renderer, timestep);
             }
             window->onUpdate();
         }
@@ -54,8 +59,8 @@ namespace Darkle {
                 }
             }
             default: {
-                for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
-                    Layer* layer = *--iterator;
+                for (auto iterator = layerStack.end() - 1; iterator != layerStack.begin(); iterator--) {
+                    Layer* layer = *iterator;
                     layer->onEvent(event);
                 }
             }

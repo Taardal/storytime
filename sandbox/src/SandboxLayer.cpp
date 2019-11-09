@@ -55,8 +55,6 @@ namespace Sandbox {
 		)";
         shader = Darkle::CreateRef<Darkle::Shader>(vertexSource, fragmentSource);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
         LOG_TRACE(TAG, "Created");
     }
 
@@ -78,9 +76,8 @@ namespace Sandbox {
         shader->unbind();
     }
 
-    void SandboxLayer::onUpdate(Darkle::Renderer* renderer) {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_INT, nullptr);
+    void SandboxLayer::onUpdate(Darkle::Renderer* renderer, Darkle::Timestep timestep) {
+        renderer->drawElements(indexBuffer);
     }
 
     void SandboxLayer::onEvent(const Darkle::Event& event) {

@@ -20,7 +20,7 @@ namespace Darkle {
 
     class Event {
     protected:
-        std::string name;
+        std::string_view name;
         EventType type;
         bool handled;
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Log.h"
-#include "Application.h"
+#include "system/Log.h"
+#include "system/Application.h"
 
 namespace Darkle {
 

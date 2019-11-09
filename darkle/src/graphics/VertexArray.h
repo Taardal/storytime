@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Buffer.h"
-#include "Core.h"
+#include "system/Core.h"
 #include <glad/glad.h>
 
 namespace Darkle {

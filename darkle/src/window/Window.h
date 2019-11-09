@@ -18,8 +18,6 @@ namespace Darkle {
     private:
         struct GlfwCallbackData {
             std::function<void(const Event&)> onEvent;
-            int width;
-            int height;
         };
 
     private:
@@ -33,10 +31,14 @@ namespace Darkle {
 
         void setOnEventListener(const std::function<void(const Event&)>& onEvent);
 
+        [[nodiscard]] double getTime() const;
+
         void onUpdate() const;
 
     private:
         void initGlfw() const;
+
+        static void onGlfwError(int error, const char* description);
 
         void setGlfwWindowHints(GraphicsContext* graphicsContext) const;
 

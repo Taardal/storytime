@@ -1,5 +1,5 @@
 #include "Shader.h"
-#include "Log.h"
+#include "system/Log.h"
 #include <glad/glad.h>
 
 namespace Darkle {

@@ -38,9 +38,9 @@ namespace Darkle {
         int button;
 
     protected:
-        MouseButtonEvent(const std::string& name, EventType type, int button);
+        MouseButtonEvent(std::string_view name, EventType type, int button);
 
-        [[nodiscard]]std::string toString() const override;
+        [[nodiscard]] std::string toString() const override;
 
     public:
         [[nodiscard]] int getButton() const;
@@ -48,11 +48,11 @@ namespace Darkle {
 
     class MouseButtonPressedEvent : public MouseButtonEvent {
     public:
-        MouseButtonPressedEvent(int button);
+        explicit MouseButtonPressedEvent(int button);
     };
 
     class MouseButtonReleasedEvent : public MouseButtonEvent {
     public:
-        MouseButtonReleasedEvent(int button);
+        explicit MouseButtonReleasedEvent(int button);
     };
 }

@@ -1,4 +1,4 @@
-#include "Log.h"
+#include "system/Log.h"
 #include "Window.h"
 #include "window/events/WindowEvent.h"
 #include "window/events/KeyEvent.h"
@@ -6,7 +6,7 @@
 
 namespace Darkle {
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext) : glfwCallbackData({}) {
+    Window::Window(const Config& config, GraphicsContext* graphicsContext) : glfwCallbackData({}), glfwWindow(nullptr) {
         LOG_TRACE(TAG, "Creating");
         initGlfw();
         setGlfwWindowHints(graphicsContext);
@@ -27,6 +27,10 @@ namespace Darkle {
         glfwCallbackData.onEvent = onEvent;
     }
 
+    double Window::getTime() const {
+        return glfwGetTime();
+    }
+
     void Window::onUpdate() const {
         glfwPollEvents();
         glfwSwapBuffers(glfwWindow);
@@ -35,10 +39,15 @@ namespace Darkle {
     void Window::initGlfw() const {
         LOG_DEBUG(TAG, "Initializing GLFW");
         if (glfwInit()) {
+            glfwSetErrorCallback(onGlfwError);
             LOG_INFO(TAG, "Initialized GLFW");
         } else {
             LOG_CRITICAL(TAG, "Could not initialize GLFW");
         }
+    }
+
+    void Window::onGlfwError(int error, const char* description) {
+        LOG_ERROR(TAG_TYPE(Window), "GLFW error [{0}: {1}]", error, description);
     }
 
     void Window::setGlfwWindowHints(GraphicsContext* graphicsContext) const {
@@ -81,8 +90,6 @@ namespace Darkle {
         });
         glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int width, int height) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            callbackData->width = width;
-            callbackData->height = height;
             WindowResizeEvent event(width, height);
             callbackData->onEvent(event);
         });
@@ -90,7 +97,7 @@ namespace Darkle {
 
     void Window::setGlfwKeyCallbacks() const {
         LOG_DEBUG(TAG, "Setting GLFW key callbacks");
-        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scancode, int action, int mods) {
+        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scanCode, int action, int mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             switch (action) {
                 case GLFW_PRESS: {
@@ -108,12 +115,13 @@ namespace Darkle {
                     callbackData->onEvent(event);
                     break;
                 }
-                default: {}
+                default: {
+                }
             }
         });
-        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keycode) {
+        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keyCode) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            KeyTypedEvent event(keycode);
+            KeyTypedEvent event(keyCode);
             callbackData->onEvent(event);
         });
     }
@@ -133,12 +141,13 @@ namespace Darkle {
                     callbackData->onEvent(event);
                     break;
                 }
-                default: {}
+                default: {
+                }
             }
         });
-        glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double xpos, double ypos) {
+        glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double x, double y) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            MouseMovedEvent event((float) xpos, (float) ypos);
+            MouseMovedEvent event((float) x, (float) y);
             callbackData->onEvent(event);
         });
     }

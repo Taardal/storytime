@@ -38,7 +38,7 @@ namespace Darkle {
         return ss.str();
     }
 
-    MouseButtonEvent::MouseButtonEvent(const std::string& name, EventType type, int button)
+    MouseButtonEvent::MouseButtonEvent(std::string_view name, EventType type, int button)
             : Event(name, type), button(button) {
     }
 
