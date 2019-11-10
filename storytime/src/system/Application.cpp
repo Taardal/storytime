@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "Timestep.h"
 #include "window/events/KeyEvent.h"
-#include "window/input/KeyCodes.h"
+#include "window/KeyCodes.h"
 
 namespace storytime {
 

@@ -6,11 +6,15 @@
 
 namespace storytime {
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext) : glfwCallbackData({}), glfwWindow(nullptr) {
+    float Window::Config::getAspectRatio() const {
+        return (float) width / (float) height;
+    }
+
+    Window::Window(const Config& config, GraphicsContext* graphicsContext) : config(config) {
         ST_TRACE(ST_TAG, "Creating");
         initGlfw();
         setGlfwWindowHints(graphicsContext);
-        glfwWindow = createGlfwWindow(config);
+        glfwWindow = createGlfwWindow();
         graphicsContext->init(glfwWindow);
         setGlfwCallbacks();
         ST_TRACE(ST_TAG, "Created");
@@ -21,6 +25,10 @@ namespace storytime {
         destroyGlfwWindow();
         terminateGlfw();
         ST_TRACE(ST_TAG, "Destroyed");
+    }
+
+    const Window::Config& Window::getConfig() const {
+        return config;
     }
 
     void Window::setOnEventListener(const std::function<void(const Event&)>& onEvent) {
@@ -62,7 +70,7 @@ namespace storytime {
 #endif
     }
 
-    GLFWwindow* Window::createGlfwWindow(const Config& config) const {
+    GLFWwindow* Window::createGlfwWindow() const {
         ST_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
         GLFWwindow* glfwWindow = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
         if (glfwWindow != nullptr) {

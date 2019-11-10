@@ -73,7 +73,8 @@ namespace sandbox {
         shader->unbind();
     }
 
-    void TriangleLayer::onUpdate(storytime::Renderer* renderer, storytime::Timestep timestep) {
+    void TriangleLayer::onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer) {
+        cameraController->onUpdate(timestep);
         renderer->drawElements(vertexArray);
     }
 

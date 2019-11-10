@@ -19,7 +19,7 @@ namespace sandbox {
 
         void onDetach() override;
 
-        void onUpdate(storytime::Renderer* renderer, storytime::Timestep timestep) override;
+        void onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer) override;
 
         void onEvent(const storytime::Event& event) override;
     };
