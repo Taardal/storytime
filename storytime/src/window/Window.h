@@ -36,7 +36,7 @@ namespace storytime {
 
         void setOnEventListener(const std::function<void(const Event&)>& onEvent);
 
-        [[nodiscard]] double getTime() const;
+        [[nodiscard]] float getTime() const;
 
         void onUpdate() const;
 

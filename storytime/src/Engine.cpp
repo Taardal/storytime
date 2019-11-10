@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-extern storytime::Application* CreateApplication(storytime::Window* window, storytime::Renderer* renderer);
+extern storytime::Application* CreateApplication(storytime::Window* window, storytime::Renderer* renderer, storytime::Input* input);
 
 namespace storytime {
 
@@ -10,13 +10,15 @@ namespace storytime {
         graphicsContext = new GraphicsContext(config.graphicsConfig);
         window = new Window(config.windowConfig, graphicsContext);
         renderer = new Renderer();
-        application = CreateApplication(window, renderer);
+        input = new Input();
+        application = CreateApplication(window, renderer, input);
         ST_TRACE(ST_TAG, "Created");
     }
 
     Engine::~Engine() {
         ST_TRACE(ST_TAG, "Destroying");
         delete application;
+        delete input;
         delete renderer;
         delete window;
         delete graphicsContext;

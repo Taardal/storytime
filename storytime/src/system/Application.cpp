@@ -6,8 +6,8 @@
 
 namespace storytime {
 
-    Application::Application(Window* window, Renderer* renderer)
-            : window(window), renderer(renderer), running(false), lastFrameTime(0) {
+    Application::Application(Window* window, Renderer* renderer, Input* input)
+            : window(window), renderer(renderer), input(input), running(false), lastFrameTime(0) {
         ST_TRACE(ST_TAG, "Creating");
         window->setOnEventListener([this](const Event& event) {
             onEvent(event);
@@ -30,7 +30,7 @@ namespace storytime {
             renderer->beginScene();
             Timestep timestep = window->getTime() - lastFrameTime;
             for (Layer* layer : layerStack) {
-                layer->onUpdate(renderer, timestep);
+                layer->onUpdate(timestep, renderer, input);
             }
             window->onUpdate();
         }

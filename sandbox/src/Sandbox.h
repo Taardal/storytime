@@ -6,7 +6,7 @@ namespace sandbox {
 
     class Sandbox : public storytime::Application {
     public:
-        Sandbox(storytime::Window* window, storytime::Renderer* renderer);
+        Sandbox(storytime::Window* window, storytime::Renderer* renderer, storytime::Input* input);
     };
 
 }

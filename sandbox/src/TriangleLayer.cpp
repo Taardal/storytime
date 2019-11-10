@@ -2,7 +2,8 @@
 
 namespace sandbox {
 
-    TriangleLayer::TriangleLayer() : Layer("TriangleLayer") {
+    TriangleLayer::TriangleLayer(storytime::OrthographicCameraController cameraController)
+            : Layer("TriangleLayer"), cameraController(cameraController) {
         ST_TRACE(ST_TAG, "Creating");
 
         float vertices[] = {
@@ -73,8 +74,8 @@ namespace sandbox {
         shader->unbind();
     }
 
-    void TriangleLayer::onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer) {
-        cameraController->onUpdate(timestep);
+    void TriangleLayer::onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer, storytime::Input* input) {
+        cameraController.onUpdate(timestep, input);
         renderer->drawElements(vertexArray);
     }
 

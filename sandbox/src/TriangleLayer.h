@@ -8,9 +8,10 @@ namespace sandbox {
     private:
         storytime::Ref<storytime::VertexArray> vertexArray;
         storytime::Ref<storytime::Shader> shader;
+        storytime::OrthographicCameraController cameraController;
 
     public:
-        TriangleLayer();
+        explicit TriangleLayer(storytime::OrthographicCameraController cameraController);
 
         ~TriangleLayer() override;
 
@@ -19,7 +20,7 @@ namespace sandbox {
 
         void onDetach() override;
 
-        void onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer) override;
+        void onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer, storytime::Input* input) override;
 
         void onEvent(const storytime::Event& event) override;
     };

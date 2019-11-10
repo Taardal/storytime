@@ -2,6 +2,7 @@
 
 #include "window/Window.h"
 #include "window/LayerStack.h"
+#include "window/Input.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
 
@@ -12,11 +13,12 @@ namespace storytime {
         LayerStack layerStack;
         Window* window;
         Renderer* renderer;
+        Input* input;
         bool running;
-        double lastFrameTime;
+        float lastFrameTime;
 
     public:
-        Application(Window* window, Renderer* renderer);
+        Application(Window* window, Renderer* renderer, Input* input);
 
         ~Application();
 

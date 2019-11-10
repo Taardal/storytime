@@ -35,8 +35,8 @@ namespace storytime {
         glfwCallbackData.onEvent = onEvent;
     }
 
-    double Window::getTime() const {
-        return glfwGetTime();
+    float Window::getTime() const {
+        return (float) glfwGetTime();
     }
 
     void Window::onUpdate() const {

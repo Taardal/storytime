@@ -17,6 +17,7 @@ namespace storytime {
         GraphicsContext* graphicsContext;
         Window* window;
         Renderer* renderer;
+        Input* input;
         Application* application;
 
     public:
