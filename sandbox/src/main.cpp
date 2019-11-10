@@ -1,33 +1,30 @@
-#include "darkle/Darkle.h"
-#include "SandboxLayer.h"
+#include "storytime/Storytime.h"
 
-Darkle::Window::Config getWindowConfig() {
-    Darkle::Window::Config config = {};
+storytime::Window::Config getWindowConfig() {
+    storytime::Window::Config config = {};
     config.title = "Sandbox";
     config.width = 1024;
     config.height = config.width / 16 * 12;
     return config;
 }
 
-Darkle::GraphicsContext::Config getGraphicsConfig() {
-    Darkle::GraphicsContext::Config config = {};
+storytime::GraphicsContext::Config getGraphicsConfig() {
+    storytime::GraphicsContext::Config config = {};
     config.openGLVersionMajor = 4;
     config.openGLVersionMinor = 1;
     return config;
 }
 
-Darkle::Engine::Config getConfig() {
-    Darkle::Engine::Config config = {};
-    config.logLevel = Darkle::LogLevel::Trace;
+storytime::Engine::Config getConfig() {
+    storytime::Engine::Config config = {};
+    config.logLevel = storytime::LogLevel::Trace;
     config.windowConfig = getWindowConfig();
     config.graphicsConfig = getGraphicsConfig();
     return config;
 }
 
 int main() {
-    auto engine = new Darkle::Engine(getConfig());
-    engine->pushLayer(new Sandbox::SandboxLayer("SandboxLayer"));
+    auto engine = new storytime::Engine(getConfig());
     engine->run();
     delete engine;
-    return 0;
 }
