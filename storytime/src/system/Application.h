@@ -1,7 +1,9 @@
 #pragma once
 
 #include "window/Window.h"
-#include "window/layers/LayerStack.h"
+#include "window/LayerStack.h"
+#include "window/Input.h"
+#include "window/OrthographicCameraController.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
 
@@ -12,11 +14,13 @@ namespace storytime {
         LayerStack layerStack;
         Window* window;
         Renderer* renderer;
-        bool running;
-        double lastFrameTime;
+        Input* input;
+        OrthographicCameraController* cameraController;
+        bool running = false;
+        float lastFrameTime = 0.0f;
 
     public:
-        Application(Window* window, Renderer* renderer);
+        Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController);
 
         ~Application();
 

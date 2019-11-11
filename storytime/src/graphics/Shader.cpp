@@ -1,6 +1,7 @@
 #include "Shader.h"
 #include "system/Log.h"
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace storytime {
 
@@ -22,16 +23,26 @@ namespace storytime {
 
     void Shader::bind() const {
         glUseProgram(id);
-        ST_DEBUG(ST_TAG, "Bound id [{0}]", id);
     }
 
     void Shader::unbind() const {
         glUseProgram(0);
-        ST_DEBUG(ST_TAG, "Unbound id [{0}]", id);
     }
 
     void Shader::setUniform1i(const std::string& key, int value) {
         glUniform1i(getUniformLocation(key), value);
+    }
+
+    void Shader::setMat4(const char* key, glm::mat4 value) const {
+        GLint location = glGetUniformLocation(id, key);
+        GLint count = 1;
+        GLboolean transpose = GL_FALSE;
+        glUniformMatrix4fv(location, count, transpose, glm::value_ptr(value));
+    }
+
+    void Shader::setFloat4(const char* key, glm::vec4 value) const {
+        GLint location = glGetUniformLocation(id, key);
+        glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
     unsigned int Shader::createShader(unsigned int shaderType, const std::string& shaderSource) {
@@ -120,4 +131,5 @@ namespace storytime {
             return location;
         }
     }
+
 }

@@ -4,9 +4,9 @@
 
 namespace sandbox {
 
-    class Sandbox : public storytime::Application {
+    class Sandbox : public st::Application {
     public:
-        Sandbox(storytime::Window* window, storytime::Renderer* renderer);
+        Sandbox(st::Window* window, st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController);
     };
 
 }

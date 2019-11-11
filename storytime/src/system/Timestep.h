@@ -5,16 +5,16 @@ namespace storytime {
 
     class Timestep {
     private:
-        double time;
+        float time;
 
     public:
-        Timestep(double time = 0.0);
+        Timestep(float time = 0.0f);
 
-        [[nodiscard]] double getSeconds() const;
+        [[nodiscard]] float getSeconds() const;
 
-        [[nodiscard]] double getMilliseconds() const;
+        [[nodiscard]] float getMilliseconds() const;
 
-        operator double() const;
+        operator float() const;
     };
 
 }

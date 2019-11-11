@@ -10,6 +10,14 @@ namespace storytime {
             : Event("WindowResizeEvent", EventType::WindowResize), width(width), height(height) {
     }
 
+    int WindowResizeEvent::getWidth() const {
+        return width;
+    }
+
+    int WindowResizeEvent::getHeight() const {
+        return height;
+    }
+
     std::string WindowResizeEvent::toString() const {
         std::stringstream ss;
         ss << name << "{width=" << width << ", height=" << height << "}";

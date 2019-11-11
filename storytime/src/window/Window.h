@@ -13,6 +13,8 @@ namespace storytime {
             const char* title;
             int width;
             int height;
+
+            [[nodiscard]] float getAspectRatio() const;
         };
 
     private:
@@ -21,6 +23,7 @@ namespace storytime {
         };
 
     private:
+        const Config& config;
         GlfwCallbackData glfwCallbackData;
         GLFWwindow* glfwWindow;
 
@@ -29,9 +32,11 @@ namespace storytime {
 
         ~Window();
 
+        [[nodiscard]] const Config& getConfig() const;
+
         void setOnEventListener(const std::function<void(const Event&)>& onEvent);
 
-        [[nodiscard]] double getTime() const;
+        [[nodiscard]] float getTime() const;
 
         void onUpdate() const;
 
@@ -42,7 +47,7 @@ namespace storytime {
 
         void setGlfwWindowHints(GraphicsContext* graphicsContext) const;
 
-        [[nodiscard]] GLFWwindow* createGlfwWindow(const Config& config) const;
+        [[nodiscard]] GLFWwindow* createGlfwWindow() const;
 
         void setGlfwCallbacks();
 

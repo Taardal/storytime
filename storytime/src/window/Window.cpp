@@ -6,11 +6,16 @@
 
 namespace storytime {
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext) : glfwCallbackData({}), glfwWindow(nullptr) {
+    float Window::Config::getAspectRatio() const {
+        return (float) width / (float) height;
+    }
+
+    Window::Window(const Config& config, GraphicsContext* graphicsContext)
+            : config(config) {
         ST_TRACE(ST_TAG, "Creating");
         initGlfw();
         setGlfwWindowHints(graphicsContext);
-        glfwWindow = createGlfwWindow(config);
+        glfwWindow = createGlfwWindow();
         graphicsContext->init(glfwWindow);
         setGlfwCallbacks();
         ST_TRACE(ST_TAG, "Created");
@@ -23,12 +28,16 @@ namespace storytime {
         ST_TRACE(ST_TAG, "Destroyed");
     }
 
+    const Window::Config& Window::getConfig() const {
+        return config;
+    }
+
     void Window::setOnEventListener(const std::function<void(const Event&)>& onEvent) {
         glfwCallbackData.onEvent = onEvent;
     }
 
-    double Window::getTime() const {
-        return glfwGetTime();
+    float Window::getTime() const {
+        return (float) glfwGetTime();
     }
 
     void Window::onUpdate() const {
@@ -62,7 +71,7 @@ namespace storytime {
 #endif
     }
 
-    GLFWwindow* Window::createGlfwWindow(const Config& config) const {
+    GLFWwindow* Window::createGlfwWindow() const {
         ST_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
         GLFWwindow* glfwWindow = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
         if (glfwWindow != nullptr) {
@@ -148,6 +157,11 @@ namespace storytime {
         glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double x, double y) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             MouseMovedEvent event((float) x, (float) y);
+            callbackData->onEvent(event);
+        });
+        glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(window);
+            MouseScrolledEvent event((float) xOffset, (float) yOffset);
             callbackData->onEvent(event);
         });
     }

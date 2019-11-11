@@ -2,18 +2,18 @@
 
 namespace storytime {
 
-    Timestep::Timestep(double time): time(time) {
+    Timestep::Timestep(float time): time(time) {
     }
 
-    double Timestep::getSeconds() const {
+    float Timestep::getSeconds() const {
         return time;
     }
 
-    double Timestep::getMilliseconds() const {
-        return time / 1000.0;
+    float Timestep::getMilliseconds() const {
+        return time / 1000.0f;
     }
 
-    Timestep::operator double() const {
+    Timestep::operator float() const {
         return time;
     }
 

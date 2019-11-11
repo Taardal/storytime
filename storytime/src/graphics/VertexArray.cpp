@@ -55,12 +55,10 @@ namespace storytime {
 
     void VertexArray::bind() const {
         glBindVertexArray(id);
-        ST_DEBUG(ST_TAG, "Bound id [{0}]", id);
     }
 
     void VertexArray::unbind() const {
         glBindVertexArray(0);
-        ST_DEBUG(ST_TAG, "Unbound id [{0}]", id);
     }
 
     GLenum VertexArray::getOpenGLType(GLSLType glslType) const {
