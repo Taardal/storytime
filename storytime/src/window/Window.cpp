@@ -10,7 +10,8 @@ namespace storytime {
         return (float) width / (float) height;
     }
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext) : config(config) {
+    Window::Window(const Config& config, GraphicsContext* graphicsContext)
+            : config(config) {
         ST_TRACE(ST_TAG, "Creating");
         initGlfw();
         setGlfwWindowHints(graphicsContext);
@@ -156,6 +157,11 @@ namespace storytime {
         glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double x, double y) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             MouseMovedEvent event((float) x, (float) y);
+            callbackData->onEvent(event);
+        });
+        glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
+            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(window);
+            MouseScrolledEvent event((float) xOffset, (float) yOffset);
             callbackData->onEvent(event);
         });
     }

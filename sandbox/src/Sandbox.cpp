@@ -4,14 +4,21 @@
 
 namespace sandbox {
 
-    Sandbox::Sandbox(storytime::Window* window, storytime::Renderer* renderer, storytime::Input* input) : Application(window, renderer, input) {
-        float aspectRatio = window->getConfig().getAspectRatio();
-        storytime::OrthographicCamera camera;
-        storytime::OrthographicCameraController cameraController(camera, aspectRatio);
+    Sandbox::Sandbox(
+            st::Window* window,
+            st::Renderer* renderer,
+            st::Input* input,
+            st::OrthographicCameraController* cameraController
+    ) : Application(window, renderer, input, cameraController) {
         pushLayer(new TriangleLayer(cameraController));
     }
 }
 
-storytime::Application* CreateApplication(storytime::Window* window, storytime::Renderer* renderer, storytime::Input* input) {
-    return new sandbox::Sandbox(window, renderer, input);
+st::Application* CreateApplication(
+        st::Window* window,
+        st::Renderer* renderer,
+        st::Input* input,
+        st::OrthographicCameraController* cameraController
+) {
+    return new sandbox::Sandbox(window, renderer, input, cameraController);
 }

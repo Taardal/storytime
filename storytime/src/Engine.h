@@ -2,6 +2,11 @@
 
 #include "system/Log.h"
 #include "system/Application.h"
+#include "graphics/GraphicsContext.h"
+#include "graphics/OrthographicCamera.h"
+#include "window/Window.h"
+#include "window/Input.h"
+#include "window/OrthographicCameraController.h"
 
 namespace storytime {
 
@@ -18,6 +23,8 @@ namespace storytime {
         Window* window;
         Renderer* renderer;
         Input* input;
+        OrthographicCamera* camera;
+        OrthographicCameraController* cameraController;
         Application* application;
 
     public:

@@ -3,6 +3,7 @@
 #include "window/Window.h"
 #include "window/LayerStack.h"
 #include "window/Input.h"
+#include "window/OrthographicCameraController.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
 
@@ -14,11 +15,12 @@ namespace storytime {
         Window* window;
         Renderer* renderer;
         Input* input;
-        bool running;
-        float lastFrameTime;
+        OrthographicCameraController* cameraController;
+        bool running = false;
+        float lastFrameTime = 0.0f;
 
     public:
-        Application(Window* window, Renderer* renderer, Input* input);
+        Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController);
 
         ~Application();
 

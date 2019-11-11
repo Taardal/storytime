@@ -3,7 +3,7 @@
 storytime::Window::Config getWindowConfig() {
     storytime::Window::Config config = {};
     config.title = "Sandbox";
-    config.width = 1024;
+    config.width = 1280;
     config.height = config.width / 16 * 12;
     return config;
 }

@@ -4,14 +4,12 @@
 
 namespace sandbox {
 
-    class TriangleLayer : public storytime::Layer {
+    class TriangleLayer : public st::Layer {
     private:
-        storytime::Ref<storytime::VertexArray> vertexArray;
-        storytime::Ref<storytime::Shader> shader;
-        storytime::OrthographicCameraController cameraController;
+        st::OrthographicCameraController* cameraController;
 
     public:
-        explicit TriangleLayer(storytime::OrthographicCameraController cameraController);
+        explicit TriangleLayer(st::OrthographicCameraController* cameraController);
 
         ~TriangleLayer() override;
 
@@ -20,9 +18,9 @@ namespace sandbox {
 
         void onDetach() override;
 
-        void onUpdate(storytime::Timestep timestep, storytime::Renderer* renderer, storytime::Input* input) override;
+        void onUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) override;
 
-        void onEvent(const storytime::Event& event) override;
+        void onEvent(const st::Event& event) override;
     };
 
 }

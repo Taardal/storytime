@@ -1,6 +1,11 @@
 #include "Engine.h"
 
-extern storytime::Application* CreateApplication(storytime::Window* window, storytime::Renderer* renderer, storytime::Input* input);
+extern storytime::Application* CreateApplication(
+        storytime::Window* window,
+        storytime::Renderer* renderer,
+        storytime::Input* input,
+        storytime::OrthographicCameraController* cameraController
+);
 
 namespace storytime {
 
@@ -11,13 +16,17 @@ namespace storytime {
         window = new Window(config.windowConfig, graphicsContext);
         renderer = new Renderer();
         input = new Input();
-        application = CreateApplication(window, renderer, input);
+        camera = new OrthographicCamera();
+        cameraController = new OrthographicCameraController(camera, config.windowConfig.getAspectRatio());
+        application = CreateApplication(window, renderer, input, cameraController);
         ST_TRACE(ST_TAG, "Created");
     }
 
     Engine::~Engine() {
         ST_TRACE(ST_TAG, "Destroying");
         delete application;
+        delete cameraController;
+        delete camera;
         delete input;
         delete renderer;
         delete window;

@@ -1,4 +1,5 @@
 #include "OrthographicCamera.h"
+#include "system/Log.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace storytime {
@@ -8,17 +9,22 @@ namespace storytime {
 
     OrthographicCamera::OrthographicCamera()
             : viewMatrix(1.0f), projectionMatrix(1.0f), viewProjectionMatrix(1.0f), position(0.0f, 0.0f, 0.0f), rotation(0.0f) {
+        ST_TRACE(ST_TAG, "Destroying");
     }
 
-    const glm::mat4& OrthographicCamera::getViewMatrix() const {
+    OrthographicCamera::~OrthographicCamera() {
+        ST_TRACE(ST_TAG, "Destroyed");
+    }
+
+    const glm::mat4& OrthographicCamera::getView() const {
         return viewMatrix;
     }
 
-    const glm::mat4& OrthographicCamera::getProjectionMatrix() const {
+    const glm::mat4& OrthographicCamera::getProjection() const {
         return projectionMatrix;
     }
 
-    const glm::mat4& OrthographicCamera::getViewProjectionMatrix() const {
+    const glm::mat4& OrthographicCamera::getViewProjection() const {
         return viewProjectionMatrix;
     }
 
@@ -46,7 +52,7 @@ namespace storytime {
     }
 
     void OrthographicCamera::updateViewMatrix() {
-        viewMatrix = glm::inverse(getTranslationMatrix() * getRotationMatrix());
+        viewMatrix = getTranslationMatrix() * getRotationMatrix();
         viewProjectionMatrix = projectionMatrix * viewMatrix;
     }
 
@@ -56,7 +62,7 @@ namespace storytime {
 
     glm::mat4 OrthographicCamera::getRotationMatrix() const {
         float angle = glm::radians(rotation);
-        const glm::vec3& zAxis = glm::vec3(0, 0, 1);
+        glm::vec3 zAxis = glm::vec3(0, 0, 1);
         return glm::rotate(glm::mat4(1.0f), angle, zAxis);
     }
 

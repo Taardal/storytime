@@ -15,11 +15,13 @@ namespace storytime {
     public:
         OrthographicCamera();
 
-        [[nodiscard]] const glm::mat4& getViewMatrix() const;
+        virtual ~OrthographicCamera();
 
-        [[nodiscard]] const glm::mat4& getProjectionMatrix() const;
+        [[nodiscard]] const glm::mat4& getView() const;
 
-        [[nodiscard]] const glm::mat4& getViewProjectionMatrix() const;
+        [[nodiscard]] const glm::mat4& getProjection() const;
+
+        [[nodiscard]] const glm::mat4& getViewProjection() const;
 
         [[nodiscard]] const glm::vec3& getPosition() const;
 

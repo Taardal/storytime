@@ -43,12 +43,10 @@ namespace storytime {
 
     void VertexBuffer::bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, id);
-        ST_DEBUG(ST_TAG, "Bound id [{0}]", id);
     }
 
     void VertexBuffer::unbind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        ST_DEBUG(ST_TAG, "Unbound id [{0}]", id);
     }
 
     IndexBuffer::IndexBuffer(unsigned int* indices, unsigned int count) : id(0), count(count) {
@@ -71,12 +69,10 @@ namespace storytime {
 
     void IndexBuffer::bind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-        ST_DEBUG(ST_TAG, "Bound id [{0}]", id);
     }
 
     void IndexBuffer::unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        ST_DEBUG(ST_TAG, "Unbound id [{0}]", id);
     }
 
 }

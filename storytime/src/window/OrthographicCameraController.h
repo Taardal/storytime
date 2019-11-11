@@ -10,7 +10,7 @@ namespace storytime {
 
     class OrthographicCameraController {
     private:
-        OrthographicCamera camera;
+        OrthographicCamera* camera;
         float aspectRatio;
         float zoomLevel;
         bool rotation;
@@ -20,7 +20,11 @@ namespace storytime {
         float cameraRotationSpeed;
 
     public:
-        OrthographicCameraController(OrthographicCamera& camera, float aspectRatio);
+        OrthographicCameraController(OrthographicCamera* camera, float aspectRatio);
+
+        ~OrthographicCameraController();
+
+        [[nodiscard]] OrthographicCamera* getCamera() const;
 
         void onUpdate(Timestep timestep, Input* input);
 

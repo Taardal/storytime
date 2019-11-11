@@ -2,12 +2,11 @@
 #include "Application.h"
 #include "Timestep.h"
 #include "window/events/KeyEvent.h"
-#include "window/KeyCodes.h"
 
 namespace storytime {
 
-    Application::Application(Window* window, Renderer* renderer, Input* input)
-            : window(window), renderer(renderer), input(input), running(false), lastFrameTime(0) {
+    Application::Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController)
+            : window(window), renderer(renderer), input(input), cameraController(cameraController) {
         ST_TRACE(ST_TAG, "Creating");
         window->setOnEventListener([this](const Event& event) {
             onEvent(event);
@@ -27,11 +26,17 @@ namespace storytime {
         ST_INFO(ST_TAG, "Running...");
         running = true;
         while (running) {
-            renderer->beginScene();
-            Timestep timestep = window->getTime() - lastFrameTime;
+
+            float time = window->getTime();
+            Timestep timestep = time - lastFrameTime;
+            lastFrameTime = time;
+
+            cameraController->onUpdate(timestep, input);
+            renderer->beginScene(cameraController->getCamera());
             for (Layer* layer : layerStack) {
                 layer->onUpdate(timestep, renderer, input);
             }
+
             window->onUpdate();
         }
     }
@@ -42,9 +47,7 @@ namespace storytime {
     }
 
     void Application::onEvent(const Event& event) {
-        if (event.getType() != EventType::MouseMoved) {
-            ST_DEBUG(ST_TAG, "Received event [{0}]", event.toString());
-        }
+        ST_TRACE(ST_TAG, "Received event [{0}]", event.toString());
         switch (event.getType()) {
             case EventType::WindowClose: {
                 stop();
@@ -58,6 +61,7 @@ namespace storytime {
                 }
             }
             default: {
+                cameraController->onEvent(event);
                 for (auto iterator = layerStack.end() - 1; iterator != layerStack.begin(); iterator--) {
                     Layer* layer = *iterator;
                     layer->onEvent(event);

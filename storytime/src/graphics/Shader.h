@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
 namespace storytime {
@@ -19,6 +20,10 @@ namespace storytime {
         void unbind() const;
 
         void setUniform1i(const std::string& key, int value);
+
+        void setMat4(const char* key, glm::mat4 value) const;
+
+        void setFloat4(const char* key, glm::vec4 value) const;
 
     private:
         unsigned int createShader(unsigned int shaderType, const std::string& shaderSource);

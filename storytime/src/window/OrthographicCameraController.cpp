@@ -1,5 +1,4 @@
 #include "OrthographicCameraController.h"
-#include "window/KeyCodes.h"
 #include "window/events/WindowEvent.h"
 #include "window/events/MouseEvent.h"
 #include "system/Log.h"
@@ -7,10 +6,20 @@
 
 namespace storytime {
 
-    OrthographicCameraController::OrthographicCameraController(OrthographicCamera& camera, float aspectRatio)
-            : camera(camera), aspectRatio(aspectRatio), zoomLevel(1.0f), rotation(false),
+    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
+            : camera(camera), aspectRatio(aspectRatio), zoomLevel(1.0f), rotation(true),
             cameraPosition(0.0f, 0.0f, 0.0f), cameraRotation(0.0f), cameraTranslationSpeed(5.0f), cameraRotationSpeed(180.0f) {
+        ST_TRACE(ST_TAG, "Creating");
         setCameraProjection();
+        ST_TRACE(ST_TAG, "Created");
+    }
+
+    OrthographicCameraController::~OrthographicCameraController() {
+        ST_TRACE(ST_TAG, "Destroyed");
+    }
+
+    OrthographicCamera* OrthographicCameraController::getCamera() const {
+        return camera;
     }
 
     void OrthographicCameraController::onUpdate(Timestep timestep, Input* input) {
@@ -35,10 +44,9 @@ namespace storytime {
             if (input->isKeyPressed(KeyCode::KEY_E)) {
                 cameraRotation -= cameraRotationSpeed * timestep;
             }
-            camera.setRotation(cameraRotation);
+            camera->setRotation(cameraRotation);
         }
-        ST_DEBUG(ST_TAG, "POSITION [{0}, {1}, {2}]", cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        camera.setPosition(cameraPosition);
+        camera->setPosition(cameraPosition);
         cameraTranslationSpeed = zoomLevel;
     }
 
@@ -61,7 +69,7 @@ namespace storytime {
         float bottom = -zoomLevel;
         float left = -aspectRatio * zoomLevel;
         float right = aspectRatio * zoomLevel;
-        camera.setProjection(top, bottom, left, right);
+        camera->setProjection(top, bottom, left, right);
     }
 
 }
