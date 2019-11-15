@@ -20,11 +20,11 @@ namespace storytime {
         return layers;
     }
 
-    std::vector<Layer*>::iterator LayerStack::begin() {
+    std::vector<Layer*>::const_iterator LayerStack::begin() const {
         return layers.begin();
     }
 
-    std::vector<Layer*>::iterator LayerStack::end() {
+    std::vector<Layer*>::const_iterator LayerStack::end() const {
         return layers.end();
     }
 

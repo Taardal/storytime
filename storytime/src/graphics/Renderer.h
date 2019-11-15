@@ -18,6 +18,8 @@ namespace storytime {
 
         ~Renderer();
 
+        void setViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
+
         void beginScene(OrthographicCamera* camera) const;
 
         void drawElements() const;

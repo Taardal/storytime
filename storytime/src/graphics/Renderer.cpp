@@ -62,6 +62,10 @@ namespace storytime {
         ST_TRACE(ST_TAG, "Destroyed");
     }
 
+    void Renderer::setViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const {
+        glViewport(x, y, width, height);
+    }
+
     void Renderer::beginScene(OrthographicCamera* camera) const {
         glClear(GL_COLOR_BUFFER_BIT);
         shader->setMat4("viewProjection", camera->getViewProjection());
