@@ -6,9 +6,7 @@
 
 namespace storytime {
 
-    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
-            : camera(camera), aspectRatio(aspectRatio), zoomLevel(1.0f), rotation(true),
-            cameraPosition(0.0f, 0.0f, 0.0f), cameraRotation(0.0f), cameraTranslationSpeed(5.0f), cameraRotationSpeed(180.0f) {
+    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio) : camera(camera), aspectRatio(aspectRatio) {
         ST_TRACE(ST_TAG, "Creating");
         setCameraProjection();
         ST_TRACE(ST_TAG, "Created");

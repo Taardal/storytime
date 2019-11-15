@@ -11,13 +11,14 @@ namespace storytime {
 
     class Application {
     private:
-        LayerStack layerStack;
         Window* window;
         Renderer* renderer;
         Input* input;
         OrthographicCameraController* cameraController;
-        bool running = false;
+        LayerStack layerStack;
         float lastFrameTime = 0.0f;
+        bool running = false;
+        bool minimized = false;
 
     public:
         Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController);
@@ -32,6 +33,8 @@ namespace storytime {
         void onEvent(const Event& event);
 
         void stop();
+
+        void onLayerEvent(const Event& event) const;
     };
 
 }

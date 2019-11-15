@@ -1,3 +1,4 @@
+#include <window/events/WindowEvent.h>
 #include "Log.h"
 #include "Application.h"
 #include "Timestep.h"
@@ -26,17 +27,15 @@ namespace storytime {
         ST_INFO(ST_TAG, "Running...");
         running = true;
         while (running) {
-
             float time = window->getTime();
             Timestep timestep = time - lastFrameTime;
             lastFrameTime = time;
-
-            cameraController->onUpdate(timestep, input);
-            renderer->beginScene(cameraController->getCamera());
-            for (Layer* layer : layerStack) {
-                layer->onUpdate(timestep, renderer, input);
+            if (!minimized) {
+                renderer->beginScene(cameraController->getCamera());
+                for (Layer* layer : layerStack) {
+                    layer->onUpdate(timestep, renderer, input);
+                }
             }
-
             window->onUpdate();
         }
     }
@@ -47,7 +46,9 @@ namespace storytime {
     }
 
     void Application::onEvent(const Event& event) {
-        ST_TRACE(ST_TAG, "Received event [{0}]", event.toString());
+        if (event.getType() != EventType::MouseMoved) {
+            ST_TRACE(ST_TAG, "Received event [{0}]", event.toString());
+        }
         switch (event.getType()) {
             case EventType::WindowClose: {
                 stop();
@@ -60,13 +61,20 @@ namespace storytime {
                     break;
                 }
             }
-            default: {
-                cameraController->onEvent(event);
-                for (auto iterator = layerStack.end() - 1; iterator != layerStack.begin(); iterator--) {
-                    Layer* layer = *iterator;
-                    layer->onEvent(event);
-                }
+            case EventType::WindowResize: {
+                auto* resizeEvent = (WindowResizeEvent*) &event;
+                minimized = resizeEvent->getWidth() == 0 || resizeEvent->getHeight() == 0;
+                renderer->setViewport(resizeEvent->getWidth(), resizeEvent->getHeight());
+                break;
             }
+            default: onLayerEvent(event);
+        }
+    }
+
+    void Application::onLayerEvent(const Event& event) const {
+        for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
+            Layer* layer = *--iterator;
+            layer->onEvent(event);
         }
     }
 
