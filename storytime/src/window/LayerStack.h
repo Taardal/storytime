@@ -17,9 +17,9 @@ namespace storytime {
 
         [[nodiscard]] std::vector<Layer*> getLayers() const;
 
-        std::vector<Layer*>::iterator begin();
+        [[nodiscard]] std::vector<Layer*>::const_iterator begin() const;
 
-        std::vector<Layer*>::iterator end();
+        [[nodiscard]] std::vector<Layer*>::const_iterator end() const;
 
         void pushLayer(Layer* layer);
 
