@@ -24,30 +24,7 @@ namespace storytime {
         vertexArray->setIndexBuffer(indexBuffer);
         vertexArray->bind();
 
-        std::string vertexSource = R"(
-			#version 330 core
-
-			layout(location = 0) in vec3 position;
-
-            uniform mat4 viewProjection;
-            uniform mat4 transform;
-
-			void main() {
-				gl_Position = viewProjection * transform * vec4(position, 1.0);
-			}
-		)";
-        std::string fragmentSource = R"(
-			#version 330 core
-
-            layout(location = 0) out vec4 colorOutput;
-
-			uniform vec4 color;
-
-			void main() {
-				colorOutput = color;
-			}
-		)";
-        shader = CreateRef<Shader>(vertexSource, fragmentSource);
+        shader = CreateRef<Shader>("assets/shaders/flat_color.glsl");
         shader->bind();
 
         glClearColor(0.1f, 0.1f, 0.1f, 1);
