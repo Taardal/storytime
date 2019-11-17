@@ -2,16 +2,19 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
+#include <glad/glad.h>
 
 namespace storytime {
 
     class Shader {
     private:
-        unsigned int id;
+        uint32_t id = 0;
         std::unordered_map<std::string, int> uniformLocations;
 
     public:
-        Shader(const std::string& vertexSource, const std::string& fragmentSource);
+        explicit Shader(const char* filepath);
+
+        Shader(const char* vertexSource, const char* fragmentSource);
 
         ~Shader();
 
@@ -19,28 +22,30 @@ namespace storytime {
 
         void unbind() const;
 
-        void setUniform1i(const std::string& key, int value);
-
         void setMat4(const char* key, glm::mat4 value) const;
 
         void setFloat4(const char* key, glm::vec4 value) const;
 
     private:
-        unsigned int createShader(unsigned int shaderType, const std::string& shaderSource);
+        [[nodiscard]] GLuint create(const char* vertexSource, const char* fragmentSource) const;
 
-        void setShaderSource(unsigned int shaderId, const std::string& shaderSource);
+        [[nodiscard]] GLuint createShader(const char* source, GLenum type) const;
 
-        bool compileShader(unsigned int shaderId);
+        void setShaderSource(const GLchar* source, GLuint shaderId) const;
 
-        std::string getShaderLog(unsigned int shaderId);
+        [[nodiscard]] bool compileShader(GLuint shaderId) const;
 
-        unsigned int createProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId);
+        [[nodiscard]] std::string getShaderLog(GLuint shaderId) const;
 
-        bool linkProgram(unsigned int id);
+        [[nodiscard]] GLuint createProgram(GLuint vertexShaderId, GLuint fragmentShaderId) const;
 
-        std::string getProgramLog(unsigned int programId);
+        [[nodiscard]] bool linkProgram(GLuint id) const;
 
-        int getUniformLocation(const std::string& key);
+        [[nodiscard]] std::string getProgramLog(GLuint programId) const;
+
+        [[nodiscard]] std::unordered_map<GLenum, std::string> getShaderSources(const std::string& fileText) const;
+
+        [[nodiscard]] GLenum getType(const std::string& typeString) const;
     };
 
 }
