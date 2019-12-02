@@ -1,61 +1,20 @@
 #include "World.h"
+#include <nlohmann/json.hpp>
 
 namespace storytiled {
 
-    const char* World::getTiledVersion() const {
-        return tiledVersion;
+    World World::fromJson(const std::string& json) {
+        auto jsonObject = nlohmann::json::parse(json);
+        World world;
+        world.tiledVersion = jsonObject["tiledversion"].get<std::string>();
+        world.type = jsonObject["type"].get<std::string>();
+        world.width = jsonObject["width"].get<int>();
+        world.height = jsonObject["height"].get<int>();
+        world.tileWidth = jsonObject["tilewidth"].get<int>();
+        world.tileHeight = jsonObject["tileheight"].get<int>();
+        world.infinite = jsonObject["infinite"].get<bool>();
+        return world;
     }
 
-    void World::setTiledVersion(const char* tiledVersion) {
-        World::tiledVersion = tiledVersion;
-    }
-
-    const char* World::getType() const {
-        return type;
-    }
-
-    void World::setType(const char* type) {
-        World::type = type;
-    }
-
-    int World::getWidth() const {
-        return width;
-    }
-
-    void World::setWidth(int width) {
-        World::width = width;
-    }
-
-    int World::getHeight() const {
-        return height;
-    }
-
-    void World::setHeight(int height) {
-        World::height = height;
-    }
-
-    int World::getTileWidth() const {
-        return tileWidth;
-    }
-
-    void World::setTileWidth(int tileWidth) {
-        World::tileWidth = tileWidth;
-    }
-
-    int World::getTileHeight() const {
-        return tileHeight;
-    }
-
-    void World::setTileHeight(int tileHeight) {
-        World::tileHeight = tileHeight;
-    }
-
-    bool World::isInfinite() const {
-        return infinite;
-    }
-
-    void World::setInfinite(bool infinite) {
-        World::infinite = infinite;
-    }
 }
 
