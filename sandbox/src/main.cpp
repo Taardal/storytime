@@ -1,5 +1,6 @@
 #include "storytime/Storytime.h"
 #include "storytiled/Storytiled.h"
+#include <iostream>
 
 storytime::Window::Config getWindowConfig() {
     storytime::Window::Config config = {};
@@ -31,5 +32,8 @@ int main() {
     delete engine;
     */
 
-
+    const std::string& worldJson = st::FileReader("assets/worlds/world_pixelcave.json").read();
+    std::cout << worldJson << std::endl;
+    sti::World world = sti::World::fromJson(worldJson);
+    std::cout << world.tiledVersion << std::endl;
 }
