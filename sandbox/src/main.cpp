@@ -1,4 +1,5 @@
 #include "storytime/Storytime.h"
+#include "storytiled/Storytiled.h"
 
 storytime::Window::Config getWindowConfig() {
     storytime::Window::Config config = {};
@@ -24,7 +25,11 @@ storytime::Engine::Config getConfig() {
 }
 
 int main() {
+    /*
     auto engine = new storytime::Engine(getConfig());
     engine->run();
     delete engine;
+    */
+
+
 }

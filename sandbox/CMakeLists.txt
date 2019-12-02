@@ -19,3 +19,7 @@ add_custom_command(
         ${STORYTIME_DIR}/assets
         ${PROJECT_BINARY_DIR}/assets
 )
+
+set(STORYTILED_DIR ${CMAKE_SOURCE_DIR}/storytiled)
+target_link_libraries(${PROJECT_NAME} storytiled)
+target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTILED_DIR}/include)
