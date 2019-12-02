@@ -3,9 +3,9 @@
 #include "window/Window.h"
 #include "window/LayerStack.h"
 #include "window/Input.h"
-#include "window/OrthographicCameraController.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
+#include "graphics/OrthographicCameraController.h"
 
 namespace storytime {
 

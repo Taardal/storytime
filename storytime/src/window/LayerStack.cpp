@@ -29,7 +29,6 @@ namespace storytime {
     }
 
     void LayerStack::pushLayer(Layer* layer) {
-        ST_DEBUG(ST_TAG, "Pushing layer [{0}]", layer->toString());
         layers.emplace(layers.begin() + insertIndex, layer);
         insertIndex++;
         layer->onAttach();
@@ -37,7 +36,6 @@ namespace storytime {
     }
 
     void LayerStack::popLayer(Layer* layer) {
-        ST_DEBUG(ST_TAG, "Popping layer [{0}]", layer->toString());
         auto iterator = std::find(layers.begin(), layers.begin() + insertIndex, layer);
         if (iterator != layers.end()) {
             layer->onDetach();

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Buffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 #include "system/Core.h"
 #include <glad/glad.h>
 

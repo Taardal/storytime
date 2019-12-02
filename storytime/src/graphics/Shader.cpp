@@ -1,17 +1,29 @@
-#include "Shader.h"
 #include "system/Log.h"
-#include <glad/glad.h>
+#include "Shader.h"
+#include "system/Core.h"
+#include "system/FileReader.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace storytime {
 
-    Shader::Shader(const std::string& vertexSource, const std::string& fragmentSource) {
+    constexpr const char* TYPE_TOKEN = "#type";
+    constexpr const char* VERTEX_TYPE = "vertex";
+    constexpr const char* FRAGMENT_TYPE = "fragment";
+
+    Shader::Shader(const char* vertexSource, const char* fragmentSource) {
         ST_TRACE(ST_TAG, "Creating");
-        unsigned int vertexShaderId = createShader(GL_VERTEX_SHADER, vertexSource);
-        unsigned int fragmentShaderId = createShader(GL_FRAGMENT_SHADER, fragmentSource);
-        if (vertexShaderId != 0 && fragmentShaderId != 0) {
-            id = createProgram(vertexShaderId, fragmentShaderId);
-        }
+        id = create(vertexSource, fragmentSource);
+        ST_TRACE(ST_TAG, "Created");
+    }
+
+    Shader::Shader(const char* filepath) {
+        ST_TRACE(ST_TAG, "Creating");
+        ST_DEBUG(ST_TAG, "Creating shader from single file");
+        std::string fileText = FileReader(filepath).read();
+        std::unordered_map<GLenum, std::string> shaderSources = getShaderSources(fileText);
+        const char* vertexSource = shaderSources[GL_VERTEX_SHADER].c_str();
+        const char* fragmentSource = shaderSources[GL_FRAGMENT_SHADER].c_str();
+        id = create(vertexSource, fragmentSource);
         ST_TRACE(ST_TAG, "Created");
     }
 
@@ -29,10 +41,6 @@ namespace storytime {
         glUseProgram(0);
     }
 
-    void Shader::setUniform1i(const std::string& key, int value) {
-        glUniform1i(getUniformLocation(key), value);
-    }
-
     void Shader::setMat4(const char* key, glm::mat4 value) const {
         GLint location = glGetUniformLocation(id, key);
         GLint count = 1;
@@ -45,90 +53,131 @@ namespace storytime {
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
-    unsigned int Shader::createShader(unsigned int shaderType, const std::string& shaderSource) {
-        unsigned int shaderId = glCreateShader(shaderType);
-        setShaderSource(shaderId, shaderSource);
+    GLuint Shader::create(const char* vertexSource, const char* fragmentSource) const {
+        ST_DEBUG(ST_TAG, "Creating [{0}] shader", ST_TO_STRING(GL_VERTEX_SHADER));
+        GLuint vertexShaderId = createShader(vertexSource, GL_VERTEX_SHADER);
+        ST_DEBUG(ST_TAG, "Creating [{0}] shader", ST_TO_STRING(GL_FRAGMENT_SHADER));
+        GLuint fragmentShaderId = createShader(fragmentSource, GL_FRAGMENT_SHADER);
+        ST_DEBUG(ST_TAG, "Creating shader program");
+        return createProgram(vertexShaderId, fragmentShaderId);
+    }
+
+    GLuint Shader::createShader(const char* source, GLenum type) const {
+        GLuint shaderId = glCreateShader(type);
+        ST_TRACE(ST_TAG, "Created shader with id [{0}]", shaderId);
+        setShaderSource(source, shaderId);
         bool compiled = compileShader(shaderId);
         if (compiled) {
+            ST_DEBUG(ST_TAG, "Shader created successfully");
             return shaderId;
         } else {
+            ST_TRACE(ST_TAG, "Deleting shader with id [{0}]", shaderId);
             glDeleteShader(shaderId);
             return 0;
         }
     }
 
-    void Shader::setShaderSource(unsigned int shaderId, const std::string& shaderSource) {
-        char* source = (char*) shaderSource.c_str();
-        unsigned int count = 1;
-        int* length = nullptr;
+    void Shader::setShaderSource(const GLchar* source, GLuint shaderId) const {
+        ST_TRACE(ST_TAG, "Setting shader source \n{0}", source);
+        GLsizei count = 1;
+        GLint* length = nullptr;
         glShaderSource(shaderId, count, &source, length);
     }
 
-    bool Shader::compileShader(unsigned int shaderId) {
+    bool Shader::compileShader(GLuint shaderId) const {
+        ST_TRACE(ST_TAG, "Compiling shader with id [{0}]", shaderId);
         glCompileShader(shaderId);
-        int status = 0;
+        GLint status = 0;
         glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status);
         bool compiled = status != 0;
         if (!compiled) {
-            ST_ERROR(ST_TAG, "Could not compile shader [{0}]", getShaderLog(shaderId));
+            ST_ERROR(ST_TAG, "Could not compile shader with id [{0}]: [{1}]", shaderId, getShaderLog(shaderId));
         }
         return compiled;
     }
 
-    std::string Shader::getShaderLog(unsigned int shaderId) {
-        int logLength = 0;
-        glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLength);
-        std::vector<char> log(logLength);
-        glGetShaderInfoLog(shaderId, logLength, &logLength, &log[0]);
+    std::string Shader::getShaderLog(GLuint shaderId) const {
+        GLint length = 0;
+        glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length);
+        std::vector<char> log(length);
+        glGetShaderInfoLog(shaderId, length, &length, &log[0]);
         return log.data();
     }
 
-    unsigned int Shader::createProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId) {
-        unsigned int programId = glCreateProgram();
+    GLuint Shader::createProgram(GLuint vertexShaderId, GLuint fragmentShaderId) const {
+        ST_TRACE(ST_TAG, "Creating program using vertex shader with id [{0}] and fragment shader with id [{1}]", vertexShaderId, fragmentShaderId);
+        GLuint programId = glCreateProgram();
+        ST_TRACE(ST_TAG, "Attaching vertex shader with id [{0}]", vertexShaderId);
         glAttachShader(programId, vertexShaderId);
+        ST_TRACE(ST_TAG, "Attaching fragment shader with id [{0}]", fragmentShaderId);
         glAttachShader(programId, fragmentShaderId);
         bool linked = linkProgram(programId);
         if (linked) {
+            ST_TRACE(ST_TAG, "Detaching vertex shader with id [{0}]", vertexShaderId);
             glDetachShader(programId, vertexShaderId);
+            ST_TRACE(ST_TAG, "Detaching fragment shader with id [{0}]", fragmentShaderId);
             glDetachShader(programId, fragmentShaderId);
+            ST_DEBUG(ST_TAG, "Shader program created successfully", programId);
             return programId;
         } else {
+            ST_TRACE(ST_TAG, "Deleting shader program with id [{0}]", programId);
             glDeleteProgram(programId);
+            ST_TRACE(ST_TAG, "Deleting vertex shader with id [{0}]", vertexShaderId);
             glDeleteShader(vertexShaderId);
+            ST_TRACE(ST_TAG, "Deleting fragment shader with id [{0}]", fragmentShaderId);
             glDeleteShader(fragmentShaderId);
             return 0;
         }
     }
 
-    bool Shader::linkProgram(unsigned int programId) {
+    bool Shader::linkProgram(GLuint programId) const {
+        ST_TRACE(ST_TAG, "Linking shader program with id [{0}]", programId);
         glLinkProgram(programId);
-        int status = 0;
-        glGetProgramiv(programId, GL_LINK_STATUS, (int*) &status);
+        GLint status = 0;
+        glGetProgramiv(programId, GL_LINK_STATUS, &status);
         bool linked = status != 0;
         if (!linked) {
-            ST_ERROR(ST_TAG, "Could not link shader program [{0}]", getProgramLog(programId));
+            ST_ERROR(ST_TAG, "Could not link shader program with id [{0}]: [{1}]", programId, getProgramLog(programId));
         }
         return linked;
     }
 
-    std::string Shader::getProgramLog(unsigned int programId) {
-        int logLength = 0;
+    std::string Shader::getProgramLog(GLuint programId) const {
+        GLint logLength = 0;
         glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &logLength);
         std::vector<char> log(logLength);
         glGetProgramInfoLog(programId, logLength, &logLength, &log[0]);
         return log.data();
     }
 
-    int Shader::getUniformLocation(const std::string& key) {
-        if (uniformLocations.find(key) != uniformLocations.end()) {
-            return uniformLocations[key];
-        } else {
-            int location = glGetUniformLocation(id, key.c_str());
-            if (location == -1) {
-                ST_WARN(ST_TAG, "Uniform [{0}] does not exist", key);
+    std::unordered_map<GLenum, std::string> Shader::getShaderSources(const std::string& fileText) const {
+        ST_TRACE(ST_TAG, "Getting shader sources from file \n{0}\n", fileText);
+        std::unordered_map<GLenum, std::string> shaderSources;
+        size_t typeTokenStart = fileText.find(TYPE_TOKEN);
+        while (typeTokenStart != std::string::npos) {
+            size_t typeStart = typeTokenStart + strlen(TYPE_TOKEN) + 1;
+            size_t typeEnd = fileText.find_first_of("\r\n", typeTokenStart);
+            std::string typeString = fileText.substr(typeStart, typeEnd - typeStart);
+            ST_TRACE(ST_TAG, "Found shader type string [{0}]", typeString);
+            size_t shaderSourceStart = fileText.find_first_not_of("\r\n", typeEnd);
+            typeTokenStart = fileText.find(TYPE_TOKEN, shaderSourceStart);
+            if (typeTokenStart == std::string::npos) {
+                shaderSources[getType(typeString)] = fileText.substr(shaderSourceStart);
+            } else {
+                shaderSources[getType(typeString)] = fileText.substr(shaderSourceStart, typeTokenStart - shaderSourceStart);
             }
-            uniformLocations[key] = location;
-            return location;
+        }
+        return shaderSources;
+    }
+
+    GLenum Shader::getType(const std::string& typeString) const {
+        if (typeString == VERTEX_TYPE) {
+            return GL_VERTEX_SHADER;
+        } else if (typeString == FRAGMENT_TYPE) {
+            return GL_FRAGMENT_SHADER;
+        } else {
+            ST_WARN(ST_TAG, "Could not find shader type enum by type string [{}]", typeString);
+            return 0;
         }
     }
 

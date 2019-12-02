@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#define ST_TO_STRING(value) #value
 #define ST_BIND_EVENT_FUNCTION(eventFunction) std::bind(&eventFunction, this, std::placeholders::_1)
 
 namespace storytime {

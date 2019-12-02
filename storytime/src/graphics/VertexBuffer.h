@@ -37,23 +37,6 @@ namespace storytime {
 
     };
 
-    class IndexBuffer {
-    private:
-        unsigned int id;
-        unsigned int count;
-
-    public:
-        IndexBuffer(unsigned int* indices, unsigned int count);
-
-        ~IndexBuffer();
-
-        [[nodiscard]] unsigned int getCount() const;
-
-        void bind() const;
-
-        void unbind() const;
-    };
-
 }
 
 
