@@ -13,9 +13,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
 set(STORYTIME_DIR ${CMAKE_SOURCE_DIR}/storytime)
 target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTIME_DIR}/include)
 target_link_libraries(${PROJECT_NAME} storytime)
+file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${STORYTIME_DIR}/assets
         ${PROJECT_BINARY_DIR}/assets
 )
+
+set(STORYTILED_DIR ${CMAKE_SOURCE_DIR}/storytiled)
+target_link_libraries(${PROJECT_NAME} storytiled)
+target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTILED_DIR}/include)
