@@ -1,12 +1,18 @@
 #pragma once
 
+#include "Tileset.h"
 #include <string>
+#include <vector>
 
 namespace storytiled {
 
     struct World {
-        std::string tiledVersion;
+        std::vector<Tileset> tilesets;
         std::string type;
+        int version;
+        int id;
+        int nextLayerId;
+        int nextObjectId;
         int width;
         int height;
         int tileWidth;
