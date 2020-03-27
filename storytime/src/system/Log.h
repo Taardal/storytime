@@ -4,12 +4,12 @@
 
 #define ST_TAG typeid(*this).name()
 #define ST_TAG_TYPE(type) typeid(type).name()
-#define ST_TRACE(tag, message, ...) ::storytime::Log::trace(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
-#define ST_DEBUG(tag, message, ...) ::storytime::Log::debug(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
-#define ST_INFO(tag, message, ...) ::storytime::Log::info(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
-#define ST_WARN(tag, message, ...) ::storytime::Log::warn(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
-#define ST_ERROR(tag, message, ...) ::storytime::Log::error(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
-#define ST_CRITICAL(tag, message, ...) ::storytime::Log::critical(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), __VA_ARGS__)
+#define ST_TRACE(tag, message, ...) ::storytime::Log::trace(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
+#define ST_DEBUG(tag, message, ...) ::storytime::Log::debug(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
+#define ST_INFO(tag, message, ...) ::storytime::Log::info(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
+#define ST_WARN(tag, message, ...) ::storytime::Log::warn(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
+#define ST_ERROR(tag, message, ...) ::storytime::Log::error(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
+#define ST_CRITICAL(tag, message, ...) ::storytime::Log::critical(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
 
 namespace storytime {
 
