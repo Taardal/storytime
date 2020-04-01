@@ -7,8 +7,8 @@ namespace storytime {
     class GraphicsContext {
     public:
         struct Config {
-            int openGLVersionMajor;
-            int openGLVersionMinor;
+            int versionMajor;
+            int versionMinor;
         };
 
     private:
