@@ -9,7 +9,6 @@ namespace storytime {
     class Shader {
     private:
         uint32_t id = 0;
-        std::unordered_map<std::string, int> uniformLocations;
 
     public:
         explicit Shader(const char* filepath);
