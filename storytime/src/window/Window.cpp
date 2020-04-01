@@ -1,3 +1,4 @@
+#include "system/Core.h"
 #include "system/Log.h"
 #include "Window.h"
 #include "window/events/WindowEvent.h"
@@ -60,14 +61,14 @@ namespace storytime {
     }
 
     void Window::setGlfwWindowHints(GraphicsContext* graphicsContext) const {
-        int versionMajor = graphicsContext->getConfig().openGLVersionMajor;
-        int versionMinor = graphicsContext->getConfig().openGLVersionMinor;
+        int versionMajor = graphicsContext->getConfig().versionMajor;
+        int versionMinor = graphicsContext->getConfig().versionMinor;
         ST_DEBUG(ST_TAG, "Setting GLFW context version [{0}.{1}]", versionMajor, versionMinor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef APPLE
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef ST_PLATFORM_MACOS
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 #endif
     }
 
