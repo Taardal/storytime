@@ -1,0 +1,23 @@
+name: C/C++ CMake
+on: [push]
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - {
+            name: "Windows",
+            os: windows-latest
+          }
+          - {
+            name: "macOS",
+            os: macos-latest
+          }
+    steps:
+      - uses: actions/checkout@v1
+      - name: generate
+        run: mkdir build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: build
+        run: cmake --build build

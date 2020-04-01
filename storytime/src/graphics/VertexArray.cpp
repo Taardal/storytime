@@ -36,7 +36,7 @@ namespace storytime {
                     getOpenGLType(attribute.glslType),
                     attribute.normalized ? GL_TRUE : GL_FALSE,
                     attributeLayout.stride,
-                    (const void*) attribute.offset
+                    (const void*) (uintptr_t) attribute.offset
             );
             index++;
         }

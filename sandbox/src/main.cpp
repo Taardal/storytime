@@ -11,8 +11,8 @@ storytime::Window::Config getWindowConfig() {
 
 storytime::GraphicsContext::Config getGraphicsConfig() {
     storytime::GraphicsContext::Config config = {};
-    config.openGLVersionMajor = 4;
-    config.openGLVersionMinor = 1;
+    config.versionMajor = 4;
+    config.versionMinor = 1;
     return config;
 }
 

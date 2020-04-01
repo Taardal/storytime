@@ -58,8 +58,8 @@ namespace storytime {
                 auto* keyEvent = (KeyEvent*) &event;
                 if (keyEvent->getKeyCode() == KeyCode::KEY_ESCAPE) {
                     stop();
-                    break;
                 }
+                break;
             }
             case EventType::WindowResize: {
                 auto* resizeEvent = (WindowResizeEvent*) &event;
