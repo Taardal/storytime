@@ -3,12 +3,14 @@ project(sandbox)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(sandbox src/main.cpp src/TriangleLayer.cpp src/TriangleLayer.h src/Sandbox.cpp src/Sandbox.h)
+add_executable(${PROJECT_NAME} src/main.cpp src/TriangleLayer.cpp src/TriangleLayer.h src/Sandbox.cpp src/Sandbox.h)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
+install(TARGETS ${PROJECT_NAME} DESTINATION ${BIN_DIR})
 
 set(STORYTIME_DIR ${CMAKE_SOURCE_DIR}/storytime)
 target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTIME_DIR}/include)
