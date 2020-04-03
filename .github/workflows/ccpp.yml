@@ -5,6 +5,7 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {
@@ -17,7 +18,25 @@ jobs:
           }
     steps:
       - uses: actions/checkout@v1
+      - name: setup
+        shell: bash
+        run: |
+          buildType="Release"
+          echo ::set-env name=BUILD_TYPE::"${buildType}"
+          echo ::set-env name=BUILD_FOLDER::"cmake-build-$(echo ${buildType} | awk '{print tolower($0)}')"
       - name: generate
-        run: mkdir build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        shell: bash
+        run: |
+          mkdir "${BUILD_FOLDER}"
+          cd "${BUILD_FOLDER}"
+          cmake ..  -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
       - name: build
-        run: cmake --build build
+        shell: bash
+        run: |
+          cmake --build "${BUILD_FOLDER}" --config "${BUILD_TYPE}"
+      - name: test
+        shell: bash
+        run: |
+          cd storytime.test/bin
+          chmod +x storytime.test
+          ./storytime.test

@@ -3,24 +3,22 @@ project(sandbox)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(sandbox src/main.cpp src/TriangleLayer.cpp src/TriangleLayer.h src/Sandbox.cpp src/Sandbox.h)
+add_executable(${PROJECT_NAME} src/main.cpp src/TriangleLayer.cpp src/TriangleLayer.h src/Sandbox.cpp src/Sandbox.h)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
 
 set(STORYTIME_DIR ${CMAKE_SOURCE_DIR}/storytime)
 target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTIME_DIR}/include)
 target_link_libraries(${PROJECT_NAME} storytime)
-file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${STORYTIME_DIR}/assets
-        ${PROJECT_BINARY_DIR}/assets
-)
 
 set(STORYTILED_DIR ${CMAKE_SOURCE_DIR}/storytiled)
 target_link_libraries(${PROJECT_NAME} storytiled)
 target_include_directories(${PROJECT_NAME} PRIVATE ${STORYTILED_DIR}/include)
+
+file(REMOVE_RECURSE ${PROJECT_BINARY_DIR}/assets)
+file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${STORYTIME_DIR}/assets DESTINATION ${PROJECT_BINARY_DIR})
