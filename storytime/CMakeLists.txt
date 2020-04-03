@@ -10,7 +10,6 @@ set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR})
-install(TARGETS ${PROJECT_NAME} DESTINATION ${BIN_DIR})
 
 set(SPDLOG_DIR ${LIB_DIR}/spdlog-1.4.2)
 target_include_directories(${PROJECT_NAME} PUBLIC ${SPDLOG_DIR}/include)
@@ -33,3 +32,10 @@ target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
 set(GLM_DIR ${LIB_DIR}/glm-0.9.9.6)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_DIR})
+
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:${PROJECT_NAME}>
+        ${BIN_DIR}/${PROJECT_NAME}
+)

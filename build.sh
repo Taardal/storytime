@@ -57,13 +57,6 @@ echo "
 cmake --build "${buildFolder}" --config "${buildType}"
 
 echo "
-##############################
-#   Installing binaries...   #
-##############################
-"
-cmake --install "${buildFolder}"
-
-echo "
 ############
 #   DONE   #
 ############

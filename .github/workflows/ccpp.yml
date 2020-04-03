@@ -34,10 +34,6 @@ jobs:
         shell: bash
         run: |
           cmake --build "${BUILD_FOLDER}" --config "${BUILD_TYPE}"
-      - name: install
-        shell: bash
-        run: |
-          cmake --install "${BUILD_FOLDER}"
       - name: test
         shell: bash
         run: |
