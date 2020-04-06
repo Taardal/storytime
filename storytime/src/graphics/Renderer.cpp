@@ -1,16 +1,17 @@
 #include "system/Log.h"
 #include "Renderer.h"
 
-namespace storytime {
-
-    Renderer::Renderer() {
+namespace storytime
+{
+    Renderer::Renderer(storytime::ResourceLoader* resourceLoader)
+    {
         ST_TRACE(ST_TAG, "Creating");
 
         float vertices[] = {
                 -0.5f, -0.5f, 0.0f,
-                 0.5f, -0.5f, 0.0f,
-                 0.5f,  0.5f, 0.0f,
-                -0.5f,  0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
+                0.5f, 0.5f, 0.0f,
+                -0.5f, 0.5f, 0.0f,
         };
         auto vertexBuffer = CreateRef<VertexBuffer>(vertices, sizeof(vertices));
         vertexBuffer->setAttributeLayout({{ GLSLType::Vec3, "in_position" }});
@@ -24,7 +25,7 @@ namespace storytime {
         vertexArray->setIndexBuffer(indexBuffer);
         vertexArray->bind();
 
-        shader = CreateRef<Shader>("assets/shaders/flat_color.glsl");
+        shader = resourceLoader->LoadShader("flat_color.vertex.glsl", "flat_color.fragment.glsl");
         shader->bind();
 
         glClearColor(0.1f, 0.1f, 0.1f, 1);
@@ -32,30 +33,37 @@ namespace storytime {
         ST_TRACE(ST_TAG, "Created");
     }
 
-    Renderer::~Renderer() {
+    Renderer::~Renderer()
+    {
         ST_TRACE(ST_TAG, "Destroying");
         vertexArray->unbind();
         shader->unbind();
         ST_TRACE(ST_TAG, "Destroyed");
     }
 
-    void Renderer::setViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const {
+    void Renderer::setViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const
+    {
         glViewport(x, y, width, height);
     }
 
-    void Renderer::beginScene(OrthographicCamera* camera) const {
+    void Renderer::beginScene(OrthographicCamera* camera) const
+    {
         glClear(GL_COLOR_BUFFER_BIT);
         shader->setMat4("viewProjection", camera->getViewProjection());
     }
 
-    void Renderer::drawElements() const {
+    void Renderer::drawElements() const
+    {
         void* offset = nullptr;
         glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, offset);
     }
 
-    void Renderer::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
+    void Renderer::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+    {
         shader->setFloat4("color", color);
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+        const auto& translation = glm::translate(glm::mat4(1.0f), position);
+        const auto& scale = glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+        glm::mat4 transform = translation * scale;
         shader->setMat4("transform", transform);
         drawElements();
     }

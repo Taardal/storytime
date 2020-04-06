@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "system/Core.h"
 #include <glm/glm.hpp>
+#include <system/ResourceLoader.h>
 
 namespace storytime {
 
@@ -14,7 +15,7 @@ namespace storytime {
         Ref<Shader> shader;
 
     public:
-        Renderer();
+        Renderer(storytime::ResourceLoader* pLoader);
 
         ~Renderer();
 
