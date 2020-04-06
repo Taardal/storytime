@@ -16,7 +16,7 @@ namespace storytime
 
     Ref<Shader> ResourceLoader::LoadShader(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
     {
-        std::string path = "assets/shaders/";
+        static const std::string& path = "assets/shaders/";
         const std::string& vertexShaderSource = fileSystem->ReadFile((path + vertexShaderFilename).c_str());
         const std::string& fragmentShaderSource = fileSystem->ReadFile((path + fragmentShaderFilename).c_str());
         return CreateRef<Shader>(vertexShaderSource.c_str(), fragmentShaderSource.c_str());

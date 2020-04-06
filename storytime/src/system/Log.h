@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Tag.h"
 #include <spdlog/spdlog.h>
 
-#define ST_TAG typeid(*this).name()
-#define ST_TAG_TYPE(type) typeid(type).name()
+#define ST_TAG ::storytime::Tag(*this)
+#define ST_TAG_TYPE(T) ::storytime::Tag<T>()
 #define ST_TRACE(tag, message, ...) ::storytime::Log::trace(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
 #define ST_DEBUG(tag, message, ...) ::storytime::Log::debug(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)
 #define ST_INFO(tag, message, ...) ::storytime::Log::info(::storytime::Log::getPrettyMessage(tag, message, __func__, __LINE__), ##__VA_ARGS__)

@@ -3,7 +3,7 @@
 
 namespace storytime
 {
-    Renderer::Renderer(storytime::ResourceLoader* resourceLoader)
+    Renderer::Renderer(ResourceLoader* resourceLoader)
     {
         ST_TRACE(ST_TAG, "Creating");
 
