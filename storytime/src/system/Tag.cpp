@@ -1,6 +1,7 @@
 #include "Tag.h"
+#include "Core.h"
 
-#ifdef __GNUG__
+#if defined(ST_COMPILER_CLANG) || defined(ST_COMPILER_GCC)
 
 #include <cxxabi.h>
 
@@ -12,12 +13,9 @@ const char* storytime::Demangle(const char* typeName)
     int status = INITIAL_STATUS;
     char* outputBuffer = nullptr;
     size_t* length = nullptr;
-
     char* demangled = abi::__cxa_demangle(typeName, outputBuffer, length, &status);
-    const char* string = status == SUCCESS_STATUS ? demangled : typeName;
-    std::free(demangled);
 
-    return string;
+    return status == SUCCESS_STATUS ? demangled : typeName;
 }
 
 #else
