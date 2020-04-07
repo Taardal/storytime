@@ -15,7 +15,7 @@ namespace storytime {
         Ref<Shader> shader;
 
     public:
-        Renderer(storytime::ResourceLoader* pLoader);
+        explicit Renderer(ResourceLoader* pLoader);
 
         ~Renderer();
 

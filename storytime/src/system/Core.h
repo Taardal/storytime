@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#define ST_TO_STRING(value) #value
+
 #ifdef _WIN32
 	#ifdef _WIN64
 		#define ST_PLATFORM_WINDOWS
@@ -27,7 +29,15 @@
 	#error "Unknown platform"
 #endif
 
-#define ST_TO_STRING(value) #value
+#if defined(_MSC_VER)
+    #define ST_COMPILER_MSVC
+#elif defined(__clang__)
+    #define ST_COMPILER_CLANG
+#elif defined(__GNUC__) || defined(__GNUG__)
+    #define ST_COMPILER_GCC
+#else
+    #error "Unknown compiler"
+#endif
 
 namespace storytime {
 
