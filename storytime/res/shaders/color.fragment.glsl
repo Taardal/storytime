@@ -4,10 +4,10 @@ struct Vertex {
     vec4 color;
 };
 
-layout(location = 0) out vec4 colorOutput;
+layout(location = 0) out vec4 color;
 
 in Vertex vertex;
 
 void main() {
-    colorOutput = vertex.color;
+    color = vertex.color;
 }

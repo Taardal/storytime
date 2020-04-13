@@ -20,9 +20,13 @@ namespace storytime
 
         void unbind() const;
 
+        void setInt1(const char* key, uint32_t value) const;
+
         void setMat4(const char* key, glm::mat4 value) const;
 
         void setFloat4(const char* key, glm::vec4 value) const;
+
+        void setIntArray(const char* key, const int32_t* values, uint32_t count) const;
 
     private:
         [[nodiscard]] GLuint createShader(const char* source, GLenum type) const;
