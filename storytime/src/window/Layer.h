@@ -20,13 +20,13 @@ namespace storytime {
 
         [[nodiscard]] std::string toString() const;
 
-        virtual void onAttach() = 0;
+        virtual void OnAttach() = 0;
 
-        virtual void onDetach() = 0;
+        virtual void OnDetach() = 0;
 
-        virtual void onUpdate(Timestep timestep, Renderer* renderer, Input* input) = 0;
+        virtual void OnUpdate(Timestep timestep, Renderer* renderer, Input* input) = 0;
 
-        virtual void onEvent(const Event& event) = 0;
+        virtual void OnEvent(const Event& event) = 0;
     };
 
 }

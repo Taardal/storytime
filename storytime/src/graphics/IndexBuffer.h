@@ -1,8 +1,9 @@
 #pragma once
 
-namespace storytime {
-
-    class IndexBuffer {
+namespace storytime
+{
+    class IndexBuffer
+    {
     private:
         uint32_t id;
         uint32_t count;
@@ -12,11 +13,8 @@ namespace storytime {
 
         ~IndexBuffer();
 
-        [[nodiscard]] uint32_t getCount() const;
+        void Bind() const;
 
-        void bind() const;
-
-        void unbind() const;
+        void Unbind() const;
     };
-
 }

@@ -31,10 +31,11 @@ namespace storytime {
             Timestep timestep = time - lastFrameTime;
             lastFrameTime = time;
             if (!minimized) {
-                renderer->beginScene(cameraController->getCamera());
+                renderer->BeginScene(cameraController->getCamera());
                 for (Layer* layer : layerStack) {
-                    layer->onUpdate(timestep, renderer, input);
+                    layer->OnUpdate(timestep, renderer, input);
                 }
+                renderer->EndScene();
             }
             window->onUpdate();
         }
@@ -64,7 +65,7 @@ namespace storytime {
             case EventType::WindowResize: {
                 auto* resizeEvent = (WindowResizeEvent*) &event;
                 minimized = resizeEvent->getWidth() == 0 || resizeEvent->getHeight() == 0;
-                renderer->setViewport(resizeEvent->getWidth(), resizeEvent->getHeight());
+                renderer->SetViewport(resizeEvent->getWidth(), resizeEvent->getHeight());
                 break;
             }
             default: onLayerEvent(event);
@@ -74,7 +75,7 @@ namespace storytime {
     void Application::onLayerEvent(const Event& event) const {
         for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
             Layer* layer = *--iterator;
-            layer->onEvent(event);
+            layer->OnEvent(event);
         }
     }
 

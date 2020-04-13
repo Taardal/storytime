@@ -2,9 +2,10 @@
 
 #include "storytime/Storytime.h"
 
-namespace sandbox {
-
-    class TriangleLayer : public st::Layer {
+namespace sandbox
+{
+    class TriangleLayer : public st::Layer
+    {
     private:
         st::OrthographicCameraController* cameraController;
 
@@ -14,13 +15,13 @@ namespace sandbox {
         ~TriangleLayer() override;
 
     private:
-        void onAttach() override;
+        void OnAttach() override;
 
-        void onDetach() override;
+        void OnDetach() override;
 
-        void onUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) override;
+        void OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) override;
 
-        void onEvent(const st::Event& event) override;
+        void OnEvent(const st::Event& event) override;
     };
 
 }

@@ -18,11 +18,7 @@ namespace storytime {
 
         ~VertexArray();
 
-        [[nodiscard]] std::vector<Ref<VertexBuffer>> getVertexBuffers() const;
-
         void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
-
-        [[nodiscard]] Ref<IndexBuffer> getIndexBuffer() const;
 
         void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 

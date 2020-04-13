@@ -1,34 +1,36 @@
 #include "system/Log.h"
 #include "VertexArray.h"
 
-namespace storytime {
-
-    VertexArray::VertexArray() : id(0), vertexBuffers{}, indexBuffer(nullptr) {
+namespace storytime
+{
+    VertexArray::VertexArray()
+            : id(0), vertexBuffers{}, indexBuffer(nullptr)
+    {
         ST_TRACE(ST_TAG, "Creating");
         glGenVertexArrays(1, &id);
         ST_TRACE(ST_TAG, "Created");
     }
 
-    VertexArray::~VertexArray() {
+    VertexArray::~VertexArray()
+    {
         ST_TRACE(ST_TAG, "Destroying");
-        for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers) {
+        for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers)
+        {
             vertexBuffer->unbind();
         }
-        indexBuffer->unbind();
+        indexBuffer->Unbind();
         glDeleteVertexArrays(1, &id);
         ST_TRACE(ST_TAG, "Destroyed");
     }
 
-    std::vector<Ref<VertexBuffer>> VertexArray::getVertexBuffers() const {
-        return vertexBuffers;
-    }
-
-    void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) {
+    void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+    {
         glBindVertexArray(id);
         vertexBuffer->bind();
         unsigned int index = 0;
         const auto& attributeLayout = vertexBuffer->getAttributeLayout();
-        for (const VertexAttribute& attribute : attributeLayout) {
+        for (const VertexAttribute& attribute : attributeLayout)
+        {
             glEnableVertexAttribArray(index);
             glVertexAttribPointer(
                     index,
@@ -43,26 +45,27 @@ namespace storytime {
         vertexBuffers.push_back(vertexBuffer);
     }
 
-    Ref<IndexBuffer> VertexArray::getIndexBuffer() const {
-        return indexBuffer;
-    }
-
-    void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer) {
+    void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+    {
         glBindVertexArray(id);
-        indexBuffer->bind();
+        indexBuffer->Bind();
         this->indexBuffer = indexBuffer;
     }
 
-    void VertexArray::bind() const {
+    void VertexArray::bind() const
+    {
         glBindVertexArray(id);
     }
 
-    void VertexArray::unbind() const {
+    void VertexArray::unbind() const
+    {
         glBindVertexArray(0);
     }
 
-    GLenum VertexArray::getOpenGLType(GLSLType glslType) const {
-        switch (glslType) {
+    GLenum VertexArray::getOpenGLType(GLSLType glslType) const
+    {
+        switch (glslType)
+        {
             case GLSLType::Bool:
                 return GL_BOOL;
             case GLSLType::Int:
