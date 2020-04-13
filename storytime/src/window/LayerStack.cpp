@@ -10,7 +10,7 @@ namespace storytime {
     LayerStack::~LayerStack() {
         ST_TRACE(ST_TAG, "Destroying");
         for (Layer* layer : layers) {
-            layer->onDetach();
+            layer->OnDetach();
             delete layer;
         }
         ST_TRACE(ST_TAG, "Destroyed");
@@ -31,14 +31,14 @@ namespace storytime {
     void LayerStack::pushLayer(Layer* layer) {
         layers.emplace(layers.begin() + insertIndex, layer);
         insertIndex++;
-        layer->onAttach();
+        layer->OnAttach();
         ST_INFO(ST_TAG, "Pushed layer [{0}]", layer->getName());
     }
 
     void LayerStack::popLayer(Layer* layer) {
         auto iterator = std::find(layers.begin(), layers.begin() + insertIndex, layer);
         if (iterator != layers.end()) {
-            layer->onDetach();
+            layer->OnDetach();
             delete layer;
             layers.erase(iterator);
             insertIndex--;

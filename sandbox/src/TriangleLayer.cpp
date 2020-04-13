@@ -1,32 +1,50 @@
 #include "system/Log.h"
 #include "TriangleLayer.h"
 
-namespace sandbox {
-
+namespace sandbox
+{
     TriangleLayer::TriangleLayer(st::OrthographicCameraController* cameraController)
-            : Layer("TriangleLayer"), cameraController(cameraController) {
+            : Layer("TriangleLayer"), cameraController(cameraController)
+    {
         ST_TRACE(ST_TAG, "Created");
     }
 
-    TriangleLayer::~TriangleLayer() {
+    TriangleLayer::~TriangleLayer()
+    {
         ST_TRACE(ST_TAG, "Destroyed");
     }
 
-    void TriangleLayer::onAttach() {
+    void TriangleLayer::OnAttach()
+    {
     }
 
-    void TriangleLayer::onDetach() {
+    void TriangleLayer::OnDetach()
+    {
     }
 
-    void TriangleLayer::onUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) {
+    void TriangleLayer::OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input)
+    {
         cameraController->onUpdate(timestep, input);
-        glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-        glm::vec2 size = { 0.8f, 0.8f };
-        glm::vec4 color = { 0.8f, 0.2f, 0.3f, 1.0f };
-        renderer->drawQuad(position, size, color);
+
+        static float rotation = 0.0f;
+        rotation += timestep * 50.0f;
+
+        for (uint32_t x = 0; x < 5; x++)
+        {
+            for (uint32_t y = 0; y < 5; y++)
+            {
+                st::Quad quad{};
+                quad.Position = { x, y, 0.0f };
+                quad.Size = { 1.0f, 1.0f };
+                quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
+                quad.RotationInDegrees = rotation;
+                renderer->DrawQuad(quad);
+            }
+        }
     }
 
-    void TriangleLayer::onEvent(const st::Event& event) {
+    void TriangleLayer::OnEvent(const st::Event& event)
+    {
         cameraController->onEvent(event);
     }
 

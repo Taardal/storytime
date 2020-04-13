@@ -3,13 +3,15 @@
 #include "VertexAttribute.h"
 #include <vector>
 
-namespace storytime {
-
-    class VertexBuffer {
+namespace storytime
+{
+    class VertexBuffer
+    {
     public:
-        struct AttributeLayout {
+        struct AttributeLayout
+        {
             std::vector<VertexAttribute> attributes;
-            unsigned int stride;
+            uint32_t stride;
 
             AttributeLayout(const std::initializer_list<VertexAttribute>& attributes);
 
@@ -19,17 +21,19 @@ namespace storytime {
         };
 
     private:
-        unsigned int id;
+        uint32_t id;
         AttributeLayout attributeLayout;
 
     public:
-        VertexBuffer(float* vertices, unsigned int size);
+        explicit VertexBuffer(uint32_t size);
 
         ~VertexBuffer();
 
         [[nodiscard]] const AttributeLayout& getAttributeLayout() const;
 
         void setAttributeLayout(const AttributeLayout& layout);
+
+        void SetVertices(const void* vertices, uint32_t size) const;
 
         void bind() const;
 
