@@ -1,5 +1,4 @@
 #include "storytime/Storytime.h"
-#include <iostream>
 
 storytime::Window::Config getWindowConfig()
 {
