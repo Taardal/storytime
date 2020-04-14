@@ -27,6 +27,11 @@ namespace storytime {
         glUseProgram(0);
     }
 
+    void Shader::setInt1(const char* key, uint32_t value) const {
+        int32_t location = glGetUniformLocation(id, key);
+        glUniform1i(location, value);
+    }
+
     void Shader::setMat4(const char* key, glm::mat4 value) const {
         int32_t location = glGetUniformLocation(id, key);
         int32_t count = 1;
@@ -37,6 +42,12 @@ namespace storytime {
     void Shader::setFloat4(const char* key, glm::vec4 value) const {
         int32_t location = glGetUniformLocation(id, key);
         glUniform4f(location, value.x, value.y, value.z, value.w);
+    }
+
+    void Shader::setIntArray(const char* key, const int32_t* values, uint32_t count) const
+    {
+        int32_t location = glGetUniformLocation(id, key);
+        glUniform1iv(location, count, values);
     }
 
     uint32_t Shader::createShader(const char* source, uint32_t type) const {

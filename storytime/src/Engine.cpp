@@ -4,7 +4,8 @@ extern storytime::Application* CreateApplication(
         storytime::Window* window,
         storytime::Renderer* renderer,
         storytime::Input* input,
-        storytime::OrthographicCameraController* cameraController
+        storytime::OrthographicCameraController* cameraController,
+        storytime::ResourceLoader* resourceLoader
 );
 
 namespace storytime
@@ -21,7 +22,7 @@ namespace storytime
         input = new Input();
         camera = new OrthographicCamera();
         cameraController = new OrthographicCameraController(camera, config.windowConfig.getAspectRatio());
-        application = CreateApplication(window, renderer, input, cameraController);
+        application = CreateApplication(window, renderer, input, cameraController, resourceLoader);
         ST_TRACE(ST_TAG, "Created");
     }
 

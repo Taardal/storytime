@@ -1,17 +1,14 @@
 #include "Sandbox.h"
-#include "TriangleLayer.h"
+#include "SandboxLayer.h"
 #include "storytime/Storytime.h"
 
-namespace sandbox
+Sandbox::Sandbox(st::Window* window, st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController, storytime::ResourceLoader* resourceLoader)
+        : Application(window, renderer, input, cameraController)
 {
-    Sandbox::Sandbox(st::Window* window, st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController)
-            : Application(window, renderer, input, cameraController)
-    {
-        pushLayer(new TriangleLayer(cameraController));
-    }
+    pushLayer(new SandboxLayer(cameraController, resourceLoader));
 }
 
-st::Application* CreateApplication(st::Window* window, st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController)
+st::Application* CreateApplication(st::Window* window, st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
 {
-    return new sandbox::Sandbox(window, renderer, input, cameraController);
+    return new Sandbox(window, renderer, input, cameraController, resourceLoader);
 }

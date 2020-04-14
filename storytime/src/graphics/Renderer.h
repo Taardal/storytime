@@ -3,18 +3,21 @@
 #include "OrthographicCamera.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "system/Core.h"
 #include <glm/glm.hpp>
 #include <system/ResourceLoader.h>
+#include <vector>
 
 namespace storytime
 {
     struct Quad
     {
-        glm::vec3 Position;
-        glm::vec2 Size;
-        glm::vec4 Color;
-        float RotationInDegrees;
+        Ref<Texture> Texture = nullptr;
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        glm::vec2 Size = { 0.0f, 0.0f };
+        glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float RotationInDegrees = 0.0f;
     };
 
     class Renderer
@@ -22,8 +25,10 @@ namespace storytime
     private:
         struct Vertex
         {
-            glm::vec3 Position;
-            glm::vec4 Color;
+            glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+            glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+            glm::vec2 TextureCoordinate = { 0.0f, 0.0f };
+            float TextureIndex = 0.0f;
         };
 
         static const uint32_t VERTICES_PER_QUAD;
@@ -31,17 +36,23 @@ namespace storytime
         static const uint32_t QUADS_PER_BATCH;
         static const uint32_t VERTICES_PER_BATCH;
         static const uint32_t INDICES_PER_BATCH;
+        static const uint32_t MAX_TEXTURE_SLOTS;
 
-        Ref<VertexArray> vertexArray;
-        Ref<VertexBuffer> vertexBuffer;
-        Ref<Shader> shader;
-        Vertex* vertices;
-        uint32_t* indices;
-        uint32_t vertexCount;
-        uint32_t indexCount;
+        Ref<VertexArray> vertexArray = nullptr;
+        Ref<VertexBuffer> vertexBuffer = nullptr;
+        Ref<Shader> shader = nullptr;
+        Ref<Texture>* textures = nullptr;
+        Ref<Texture> whiteTexture = nullptr;
+        Vertex* vertices = nullptr;
+        uint32_t* indices = nullptr;
+        glm::vec4* vertexPositionOriginOffset = nullptr;
+        uint32_t vertexCount = 0;
+        uint32_t indexCount = 0;
+        uint32_t textureCount = 0;
+        uint32_t whiteTextureIndex = 0;
 
     public:
-        explicit Renderer(ResourceLoader* pLoader);
+        explicit Renderer(ResourceLoader* resourceLoader);
 
         ~Renderer();
 
@@ -49,7 +60,7 @@ namespace storytime
 
         void BeginScene(OrthographicCamera* camera);
 
-        void DrawQuad(const Quad& quad);
+        void DrawQuad(Quad& quad);
 
         void EndScene() const;
 

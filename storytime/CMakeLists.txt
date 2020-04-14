@@ -3,16 +3,23 @@ project(storytime)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(${PROJECT_NAME} src/system/Log.cpp src/system/Log.h src/Engine.cpp src/Engine.h src/system/Application.cpp src/system/Application.h src/window/Window.cpp src/window/Window.h src/graphics/GraphicsContext.cpp src/graphics/GraphicsContext.h src/window/events/Event.cpp src/window/events/Event.h src/window/events/WindowEvent.cpp src/window/events/WindowEvent.h src/window/events/KeyEvent.cpp src/window/events/KeyEvent.h src/window/events/MouseEvent.cpp src/window/events/MouseEvent.h src/graphics/Renderer.cpp src/graphics/Renderer.h src/graphics/VertexArray.cpp src/graphics/VertexArray.h src/graphics/VertexBuffer.cpp src/graphics/VertexBuffer.h src/graphics/VertexAttribute.cpp src/graphics/VertexAttribute.h src/graphics/Shader.cpp src/graphics/Shader.h src/system/Core.h src/window/LayerStack.cpp src/window/LayerStack.h src/window/Layer.cpp src/window/Layer.h src/system/Timestep.cpp src/system/Timestep.h src/graphics/OrthographicCameraController.cpp src/graphics/OrthographicCameraController.h src/graphics/OrthographicCamera.cpp src/graphics/OrthographicCamera.h src/window/Input.cpp src/window/Input.h src/graphics/IndexBuffer.cpp src/graphics/IndexBuffer.h src/system/ResourceLoader.cpp src/system/ResourceLoader.h src/system/FileSystem.cpp src/system/FileSystem.h src/system/Tag.h src/system/Tag.cpp)
+add_library(${PROJECT_NAME} src/system/Log.cpp src/system/Log.h src/Engine.cpp src/Engine.h src/system/Application.cpp src/system/Application.h src/window/Window.cpp src/window/Window.h src/graphics/GraphicsContext.cpp src/graphics/GraphicsContext.h src/window/events/Event.cpp src/window/events/Event.h src/window/events/WindowEvent.cpp src/window/events/WindowEvent.h src/window/events/KeyEvent.cpp src/window/events/KeyEvent.h src/window/events/MouseEvent.cpp src/window/events/MouseEvent.h src/graphics/Renderer.cpp src/graphics/Renderer.h src/graphics/VertexArray.cpp src/graphics/VertexArray.h src/graphics/VertexBuffer.cpp src/graphics/VertexBuffer.h src/graphics/VertexAttribute.cpp src/graphics/VertexAttribute.h src/graphics/Shader.cpp src/graphics/Shader.h src/system/Core.h src/window/LayerStack.cpp src/window/LayerStack.h src/window/Layer.cpp src/window/Layer.h src/system/Timestep.cpp src/system/Timestep.h src/graphics/OrthographicCameraController.cpp src/graphics/OrthographicCameraController.h src/graphics/OrthographicCamera.cpp src/graphics/OrthographicCamera.h src/window/Input.cpp src/window/Input.h src/graphics/IndexBuffer.cpp src/graphics/IndexBuffer.h src/system/ResourceLoader.cpp src/system/ResourceLoader.h src/system/FileSystem.cpp src/system/FileSystem.h src/system/Tag.h src/system/Tag.cpp src/graphics/Texture.cpp src/graphics/Texture.h lib/stb_image-2.22/include/stb_image.h lib/stb_image-2.22/src/stb_image.cpp)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:${PROJECT_NAME}>
+        ${BIN_DIR}/${PROJECT_NAME}
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR})
 
-set(SPDLOG_DIR ${LIB_DIR}/spdlog-1.4.2)
-target_include_directories(${PROJECT_NAME} PUBLIC ${SPDLOG_DIR}/include)
+set(SPD_LOG_DIR ${LIB_DIR}/spdlog-1.4.2)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SPD_LOG_DIR}/include)
 
 set(GLAD_DIR ${LIB_DIR}/glad-0.1.33)
 add_library(glad ${GLAD_DIR}/src/glad.c)
@@ -33,9 +40,8 @@ target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 set(GLM_DIR ${LIB_DIR}/glm-0.9.9.6)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_DIR})
 
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        ${BIN_DIR}/${PROJECT_NAME}
-)
+set(STB_IMAGE_DIR ${LIB_DIR}/stb_image-2.22)
+add_library(stb_image ${STB_IMAGE_DIR}/src/stb_image.cpp)
+target_include_directories(stb_image PRIVATE ${STB_IMAGE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} stb_image ${CMAKE_DL_LIBS})
