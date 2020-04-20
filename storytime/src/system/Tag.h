@@ -6,6 +6,7 @@
 namespace storytime
 {
     const char* DemangleTypeName(const char* typeName);
+
     std::string FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber);
 
     template<class T>

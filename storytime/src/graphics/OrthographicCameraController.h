@@ -6,9 +6,10 @@
 #include "window/events/Event.h"
 #include "graphics/OrthographicCamera.h"
 
-namespace storytime {
-
-    class OrthographicCameraController {
+namespace storytime
+{
+    class OrthographicCameraController
+    {
     private:
         OrthographicCamera* camera;
         float aspectRatio;
@@ -24,14 +25,14 @@ namespace storytime {
 
         ~OrthographicCameraController();
 
-        [[nodiscard]] OrthographicCamera* getCamera() const;
+        [[nodiscard]] OrthographicCamera* GetCamera() const;
 
-        void onUpdate(Timestep timestep, Input* input);
+        void OnUpdate(Timestep timestep, Input* input);
 
-        void onEvent(const Event& event);
+        void OnEvent(const Event& event);
 
     private:
-        void setCameraProjection();
+        void SetCameraProjection();
     };
 
 }

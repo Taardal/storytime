@@ -1,31 +1,43 @@
 #include "KeyEvent.h"
 #include <sstream>
 
-namespace storytime {
-
-    KeyEvent::KeyEvent(std::string_view name, EventType type, unsigned int keyCode) : Event(name, type), keyCode(keyCode) {
+namespace storytime
+{
+    KeyEvent::KeyEvent(std::string_view name, EventType type, uint32_t keyCode)
+            : Event(name, type), keyCode(keyCode)
+    {
     }
 
-    unsigned int KeyEvent::getKeyCode() const {
+    uint32_t KeyEvent::GetKeyCode() const
+    {
         return keyCode;
     }
 
-    std::string KeyEvent::toString() const {
+    std::string KeyEvent::ToString() const
+    {
         std::stringstream ss;
         ss << name << "{keyCode=" << keyCode << "}";
         return ss.str();
     }
 
-    KeyPressedEvent::KeyPressedEvent(unsigned int keyCode) : KeyEvent("KeyPressedEvent", EventType::KeyPressed, keyCode) {
+    KeyPressedEvent::KeyPressedEvent(uint32_t keyCode)
+            : KeyEvent("KeyPressedEvent", EventType::KeyPressed, keyCode)
+    {
     }
 
-    KeyReleasedEvent::KeyReleasedEvent(unsigned int keyCode) : KeyEvent("KeyReleasedEvent", EventType::KeyReleased, keyCode) {
+    KeyReleasedEvent::KeyReleasedEvent(uint32_t keyCode)
+            : KeyEvent("KeyReleasedEvent", EventType::KeyReleased, keyCode)
+    {
     }
 
-    KeyRepeatedEvent::KeyRepeatedEvent(unsigned int keyCode) : KeyEvent("KeyRepeatedEvent", EventType::KeyRepeated, keyCode) {
+    KeyRepeatedEvent::KeyRepeatedEvent(uint32_t keyCode)
+            : KeyEvent("KeyRepeatedEvent", EventType::KeyRepeated, keyCode)
+    {
     }
 
-    KeyTypedEvent::KeyTypedEvent(unsigned int keyCode) : KeyEvent("KeyTypedEvent", EventType::KeyTyped, keyCode) {
+    KeyTypedEvent::KeyTypedEvent(uint32_t keyCode)
+            : KeyEvent("KeyTypedEvent", EventType::KeyTyped, keyCode)
+    {
     }
 
 }

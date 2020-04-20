@@ -4,70 +4,87 @@
 #include "system/Log.h"
 #include <cmath>
 
-namespace storytime {
-
-    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio) : camera(camera), aspectRatio(aspectRatio) {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-        setCameraProjection();
+namespace storytime
+{
+    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
+            : camera(camera), aspectRatio(aspectRatio)
+    {
+        SetCameraProjection();
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
-    OrthographicCameraController::~OrthographicCameraController() {
+    OrthographicCameraController::~OrthographicCameraController()
+    {
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    OrthographicCamera* OrthographicCameraController::getCamera() const {
+    OrthographicCamera* OrthographicCameraController::GetCamera() const
+    {
         return camera;
     }
 
-    void OrthographicCameraController::onUpdate(Timestep timestep, Input* input) {
-        if (input->isKeyPressed(KeyCode::KEY_A)) {
+    void OrthographicCameraController::OnUpdate(Timestep timestep, Input* input)
+    {
+        if (input->IsKeyPressed(KeyCode::KEY_A))
+        {
             cameraPosition.x -= cos(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
             cameraPosition.y -= sin(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
-        } else if (input->isKeyPressed(KeyCode::KEY_D)) {
+        }
+        else if (input->IsKeyPressed(KeyCode::KEY_D))
+        {
             cameraPosition.x += cos(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
             cameraPosition.y += sin(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
         }
-        if (input->isKeyPressed(KeyCode::KEY_W)) {
+        if (input->IsKeyPressed(KeyCode::KEY_W))
+        {
             cameraPosition.x += -sin(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
             cameraPosition.y += cos(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
-        } else if (input->isKeyPressed(KeyCode::KEY_S)) {
+        }
+        else if (input->IsKeyPressed(KeyCode::KEY_S))
+        {
             cameraPosition.x -= -sin(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
             cameraPosition.y -= cos(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
         }
-        if (rotation) {
-            if (input->isKeyPressed(KeyCode::KEY_Q)) {
+        if (rotation)
+        {
+            if (input->IsKeyPressed(KeyCode::KEY_Q))
+            {
                 cameraRotation += cameraRotationSpeed * timestep;
             }
-            if (input->isKeyPressed(KeyCode::KEY_E)) {
+            if (input->IsKeyPressed(KeyCode::KEY_E))
+            {
                 cameraRotation -= cameraRotationSpeed * timestep;
             }
-            camera->setRotation(cameraRotation);
+            camera->SetRotation(cameraRotation);
         }
-        camera->setPosition(cameraPosition);
+        camera->SetPosition(cameraPosition);
         cameraTranslationSpeed = zoomLevel;
     }
 
-    void OrthographicCameraController::onEvent(const Event& event) {
-        if (event.getType() == EventType::MouseScrolled) {
+    void OrthographicCameraController::OnEvent(const Event& event)
+    {
+        if (event.GetType() == EventType::MouseScrolled)
+        {
             const auto* mouseScrolledEvent = (MouseScrolledEvent*) &event;
-            zoomLevel -= mouseScrolledEvent->getYOffset() * 0.25f;
+            zoomLevel -= mouseScrolledEvent->GetYOffset() * 0.25f;
             zoomLevel = std::fmax(zoomLevel, 0.25f);
-            setCameraProjection();
+            SetCameraProjection();
         }
-        if (event.getType() == EventType::WindowResize) {
+        if (event.GetType() == EventType::WindowResize)
+        {
             const auto* windowResizeEvent = (WindowResizeEvent*) &event;
-            aspectRatio = (float) windowResizeEvent->getWidth() / (float) windowResizeEvent->getHeight();
-            setCameraProjection();
+            aspectRatio = (float) windowResizeEvent->GetWidth() / (float) windowResizeEvent->GetHeight();
+            SetCameraProjection();
         }
     }
 
-    void OrthographicCameraController::setCameraProjection() {
+    void OrthographicCameraController::SetCameraProjection()
+    {
         float top = zoomLevel;
         float bottom = -zoomLevel;
         float left = -aspectRatio * zoomLevel;
         float right = aspectRatio * zoomLevel;
-        camera->setProjection(top, bottom, left, right);
+        camera->SetProjection(top, bottom, left, right);
     }
 
 }

@@ -3,27 +3,28 @@
 #include "Layer.h"
 #include <vector>
 
-namespace storytime {
-
-    class LayerStack {
+namespace storytime
+{
+    class LayerStack
+    {
     private:
         std::vector<Layer*> layers;
-        unsigned int insertIndex;
+        uint32_t insertIndex;
 
     public:
         LayerStack();
 
         ~LayerStack();
 
-        [[nodiscard]] std::vector<Layer*> getLayers() const;
+        [[nodiscard]] std::vector<Layer*> GetLayers() const;
 
         [[nodiscard]] std::vector<Layer*>::const_iterator begin() const;
 
         [[nodiscard]] std::vector<Layer*>::const_iterator end() const;
 
-        void pushLayer(Layer* layer);
+        void PushLayer(Layer* layer);
 
-        void popLayer(Layer* layer);
+        void PopLayer(Layer* layer);
     };
 
 }

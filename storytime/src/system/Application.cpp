@@ -4,76 +4,95 @@
 #include "Timestep.h"
 #include "window/events/KeyEvent.h"
 
-namespace storytime {
-
+namespace storytime
+{
     Application::Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController)
-            : window(window), renderer(renderer), input(input), cameraController(cameraController) {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-        window->setOnEventListener([this](const Event& event) {
-            onEvent(event);
+            : window(window), renderer(renderer), input(input), cameraController(cameraController)
+    {
+        window->SetOnEventListener([this](const Event& event) {
+            OnEvent(event);
         });
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
-    Application::~Application() {
+    Application::~Application()
+    {
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    void Application::pushLayer(Layer* layer) {
-        layerStack.pushLayer(layer);
+    void Application::PushLayer(Layer* layer)
+    {
+        layerStack.PushLayer(layer);
     }
 
-    void Application::run() {
+    void Application::Run()
+    {
         ST_LOG_INFO(ST_TAG, "Running...");
         running = true;
-        while (running) {
-            float time = window->getTime();
+        while (running)
+        {
+            float time = window->GetTime();
             Timestep timestep = time - lastFrameTime;
             lastFrameTime = time;
-            if (!minimized) {
-                renderer->BeginScene(cameraController->getCamera());
-                for (Layer* layer : layerStack) {
+            if (!minimized)
+            {
+                renderer->BeginScene(cameraController->GetCamera());
+                for (Layer* layer : layerStack)
+                {
                     layer->OnUpdate(timestep, renderer, input);
                 }
                 renderer->EndScene();
             }
-            window->onUpdate();
+            window->OnUpdate();
         }
     }
 
-    void Application::stop() {
+    void Application::Stop()
+    {
         ST_LOG_INFO(ST_TAG, "Stopping...");
         running = false;
     }
 
-    void Application::onEvent(const Event& event) {
-        if (event.getType() != EventType::MouseMoved) {
-            ST_LOG_TRACE(ST_TAG, "Received event [{0}]", event.toString());
+    void Application::OnEvent(const Event& event)
+    {
+        if (event.GetType() != EventType::MouseMoved)
+        {
+            ST_LOG_TRACE(ST_TAG, "Received event [{0}]", event.ToString());
         }
-        switch (event.getType()) {
-            case EventType::WindowClose: {
-                stop();
+        switch (event.GetType())
+        {
+            case EventType::WindowClose:
+            {
+                Stop();
                 break;
             }
-            case EventType::KeyPressed: {
+            case EventType::KeyPressed:
+            {
                 auto* keyEvent = (KeyEvent*) &event;
-                if (keyEvent->getKeyCode() == KeyCode::KEY_ESCAPE) {
-                    stop();
+                if (keyEvent->GetKeyCode() == KeyCode::KEY_ESCAPE)
+                {
+                    Stop();
                 }
                 break;
             }
-            case EventType::WindowResize: {
+            case EventType::WindowResize:
+            {
                 auto* resizeEvent = (WindowResizeEvent*) &event;
-                minimized = resizeEvent->getWidth() == 0 || resizeEvent->getHeight() == 0;
-                renderer->SetViewport(resizeEvent->getWidth(), resizeEvent->getHeight());
+                minimized = resizeEvent->GetWidth() == 0 || resizeEvent->GetHeight() == 0;
+                renderer->SetViewport(resizeEvent->GetWidth(), resizeEvent->GetHeight());
                 break;
             }
-            default: onLayerEvent(event);
+            default:
+            {
+                OnLayerEvent(event);
+            }
         }
     }
 
-    void Application::onLayerEvent(const Event& event) const {
-        for (auto iterator = layerStack.end(); iterator != layerStack.begin();) {
+    void Application::OnLayerEvent(const Event& event) const
+    {
+        for (auto iterator = layerStack.end(); iterator != layerStack.begin();)
+        {
             Layer* layer = *--iterator;
             layer->OnEvent(event);
         }

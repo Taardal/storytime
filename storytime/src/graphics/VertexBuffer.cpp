@@ -9,8 +9,8 @@ namespace storytime
     {
         for (VertexAttribute& attribute : this->attributes)
         {
-            attribute.offset = stride;
-            stride += attribute.size;
+            attribute.Offset = stride;
+            stride += attribute.Size;
         }
     }
 
@@ -41,12 +41,12 @@ namespace storytime
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    const VertexBuffer::AttributeLayout& VertexBuffer::getAttributeLayout() const
+    const VertexBuffer::AttributeLayout& VertexBuffer::GetAttributeLayout() const
     {
         return attributeLayout;
     }
 
-    void VertexBuffer::setAttributeLayout(const AttributeLayout& attributeLayout)
+    void VertexBuffer::SetAttributeLayout(const AttributeLayout& attributeLayout)
     {
         this->attributeLayout = attributeLayout;
     }
@@ -58,12 +58,12 @@ namespace storytime
         glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
     }
 
-    void VertexBuffer::bind() const
+    void VertexBuffer::Bind() const
     {
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
-    void VertexBuffer::unbind() const
+    void VertexBuffer::Unbind() const
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }

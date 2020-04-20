@@ -18,13 +18,15 @@ const char* storytime::DemangleTypeName(const char* typeName)
 
 #else
 
-const char* storytime::DemangleTypeName(const char* typeName) {
+const char* storytime::DemangleTypeName(const char* typeName)
+{
     return typeName;
 }
 
 #endif
 
-std::string storytime::FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber) {
+std::string storytime::FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber)
+{
     std::stringstream ss;
     ss << typeName << ":" << functionName << ":" << lineNumber;
     return ss.str();

@@ -26,7 +26,7 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input)
 {
-    cameraController->onUpdate(timestep, input);
+    cameraController->OnUpdate(timestep, input);
 
     static float rotation = 0.0f;
     rotation += timestep * 50.0f;
@@ -48,5 +48,5 @@ void SandboxLayer::OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::I
 
 void SandboxLayer::OnEvent(const st::Event& event)
 {
-    cameraController->onEvent(event);
+    cameraController->OnEvent(event);
 }

@@ -5,9 +5,10 @@
 #include "window/Input.h"
 #include "window/events/Event.h"
 
-namespace storytime {
-
-    class Layer {
+namespace storytime
+{
+    class Layer
+    {
     private:
         std::string_view name;
 
@@ -16,9 +17,9 @@ namespace storytime {
 
         virtual ~Layer() = default;
 
-        [[nodiscard]] std::string_view getName() const;
+        [[nodiscard]] std::string_view GetName() const;
 
-        [[nodiscard]] std::string toString() const;
+        [[nodiscard]] std::string ToString() const;
 
         virtual void OnAttach() = 0;
 

@@ -29,15 +29,15 @@ namespace storytime
 
         ~VertexBuffer();
 
-        [[nodiscard]] const AttributeLayout& getAttributeLayout() const;
+        [[nodiscard]] const AttributeLayout& GetAttributeLayout() const;
 
-        void setAttributeLayout(const AttributeLayout& layout);
+        void SetAttributeLayout(const AttributeLayout& attributeLayout);
 
         void SetVertices(const void* vertices, uint32_t size) const;
 
-        void bind() const;
+        void Bind() const;
 
-        void unbind() const;
+        void Unbind() const;
 
     };
 

@@ -14,7 +14,7 @@ namespace storytime
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    std::string FileSystem::ReadFile(const char* path)
+    std::string FileSystem::ReadFile(const char* path) const
     {
         ST_LOG_TRACE(ST_TAG, "Reading file [{0}]", path);
         std::string result;

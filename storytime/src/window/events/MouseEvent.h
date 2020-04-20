@@ -2,8 +2,10 @@
 
 #include "Event.h"
 
-namespace storytime {
-    class MouseMovedEvent : public Event {
+namespace storytime
+{
+    class MouseMovedEvent : public Event
+    {
     private:
         float x;
         float y;
@@ -11,14 +13,15 @@ namespace storytime {
     public:
         MouseMovedEvent(float x, float y);
 
-        [[nodiscard]] std::string toString() const override;
+        [[nodiscard]] std::string ToString() const override;
 
-        [[nodiscard]] float getX() const;
+        [[nodiscard]] float GetX() const;
 
-        [[nodiscard]] float getY() const;
+        [[nodiscard]] float GetY() const;
     };
 
-    class MouseScrolledEvent : public Event {
+    class MouseScrolledEvent : public Event
+    {
     private:
         float xOffset;
         float yOffset;
@@ -26,33 +29,36 @@ namespace storytime {
     public:
         MouseScrolledEvent(float xOffset, float yOffset);
 
-        [[nodiscard]] std::string toString() const override;
+        [[nodiscard]] std::string ToString() const override;
 
-        [[nodiscard]] float getXOffset() const;
+        [[nodiscard]] float GetXOffset() const;
 
-        [[nodiscard]] float getYOffset() const;
+        [[nodiscard]] float GetYOffset() const;
     };
 
-    class MouseButtonEvent : public Event {
+    class MouseButtonEvent : public Event
+    {
     private:
-        int button;
+        int32_t button;
 
     protected:
-        MouseButtonEvent(std::string_view name, EventType type, int button);
+        MouseButtonEvent(std::string_view name, EventType type, int32_t button);
 
-        [[nodiscard]] std::string toString() const override;
+        [[nodiscard]] std::string ToString() const override;
 
     public:
-        [[nodiscard]] int getButton() const;
+        [[nodiscard]] int32_t GetButton() const;
     };
 
-    class MouseButtonPressedEvent : public MouseButtonEvent {
+    class MouseButtonPressedEvent : public MouseButtonEvent
+    {
     public:
-        explicit MouseButtonPressedEvent(int button);
+        explicit MouseButtonPressedEvent(int32_t button);
     };
 
-    class MouseButtonReleasedEvent : public MouseButtonEvent {
+    class MouseButtonReleasedEvent : public MouseButtonEvent
+    {
     public:
-        explicit MouseButtonReleasedEvent(int button);
+        explicit MouseButtonReleasedEvent(int32_t button);
     };
 }

@@ -5,20 +5,23 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 
-namespace storytime {
-
-    class Window {
+namespace storytime
+{
+    class Window
+    {
     public:
-        struct Config {
+        struct Config
+        {
             const char* title;
-            int width;
-            int height;
+            int32_t width;
+            int32_t height;
 
-            [[nodiscard]] float getAspectRatio() const;
+            [[nodiscard]] float GetAspectRatio() const;
         };
 
     private:
-        struct GlfwCallbackData {
+        struct GlfwCallbackData
+        {
             std::function<void(const Event&)> onEvent;
         };
 
@@ -32,34 +35,32 @@ namespace storytime {
 
         ~Window();
 
-        [[nodiscard]] const Config& getConfig() const;
+        void SetOnEventListener(const std::function<void(const Event&)>& onEvent);
 
-        void setOnEventListener(const std::function<void(const Event&)>& onEvent);
+        [[nodiscard]] float GetTime() const;
 
-        [[nodiscard]] float getTime() const;
-
-        void onUpdate() const;
+        void OnUpdate() const;
 
     private:
-        void initGlfw() const;
+        void InitGlfw() const;
 
-        static void onGlfwError(int error, const char* description);
+        static void OnGlfwError(int32_t error, const char* description);
 
-        void setGlfwWindowHints(GraphicsContext* graphicsContext) const;
+        void SetGlfwWindowHints(GraphicsContext* graphicsContext) const;
 
-        [[nodiscard]] GLFWwindow* createGlfwWindow() const;
+        [[nodiscard]] GLFWwindow* CreateGlfwWindow() const;
 
-        void setGlfwCallbacks();
+        void SetGlfwCallbacks();
 
-        void setGlfwWindowCallbacks() const;
+        void SetGlfwWindowCallbacks() const;
 
-        void setGlfwKeyCallbacks() const;
+        void SetGlfwKeyCallbacks() const;
 
-        void setGlfwMouseCallbacks() const;
+        void SetGlfwMouseCallbacks() const;
 
-        void destroyGlfwWindow() const;
+        void DestroyGlfwWindow() const;
 
-        void terminateGlfw() const;
+        void TerminateGlfw() const;
     };
 
 }

@@ -7,9 +7,10 @@
 #include "graphics/Renderer.h"
 #include "graphics/OrthographicCameraController.h"
 
-namespace storytime {
-
-    class Application {
+namespace storytime
+{
+    class Application
+    {
     private:
         Window* window;
         Renderer* renderer;
@@ -25,16 +26,16 @@ namespace storytime {
 
         ~Application();
 
-        void run();
+        void Run();
 
-        void pushLayer(Layer* layer);
+        void PushLayer(Layer* layer);
 
     private:
-        void onEvent(const Event& event);
+        void OnEvent(const Event& event);
 
-        void stop();
+        void Stop();
 
-        void onLayerEvent(const Event& event) const;
+        void OnLayerEvent(const Event& event) const;
     };
 
 }

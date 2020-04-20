@@ -2,8 +2,8 @@
 
 #include "string_view"
 
-namespace storytime {
-
+namespace storytime
+{
     enum class GLSLType
     {
         None = 0,
@@ -20,18 +20,19 @@ namespace storytime {
 
     struct VertexAttribute
     {
-        GLSLType glslType;
-        std::string_view name;
-        unsigned int size;
-        unsigned int length;
-        unsigned int offset;
-        bool normalized;
+        GLSLType GlslType;
+        std::string_view Name;
+        unsigned int Size;
+        unsigned int Length;
+        unsigned int Offset;
+        bool Normalized;
 
         VertexAttribute(GLSLType glslType, std::string_view name);
 
     private:
-        unsigned int getSize();
-        unsigned int getLength();
+        unsigned int GetSize();
+
+        unsigned int GetLength();
     };
 
 }

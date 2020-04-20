@@ -1,19 +1,24 @@
 #include "Timestep.h"
 
-namespace storytime {
-
-    Timestep::Timestep(float time): time(time) {
+namespace storytime
+{
+    Timestep::Timestep(float time)
+            : time(time)
+    {
     }
 
-    float Timestep::getSeconds() const {
+    float Timestep::GetSeconds() const
+    {
         return time;
     }
 
-    float Timestep::getMilliseconds() const {
+    float Timestep::GetMilliseconds() const
+    {
         return time / 1000.0f;
     }
 
-    Timestep::operator float() const {
+    Timestep::operator float() const
+    {
         return time;
     }
 

@@ -16,53 +16,53 @@ namespace storytime
         ST_LOG_TRACE(ST_TAG, "Destroying");
         for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers)
         {
-            vertexBuffer->unbind();
+            vertexBuffer->Unbind();
         }
         indexBuffer->Unbind();
         glDeleteVertexArrays(1, &id);
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+    void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
     {
         glBindVertexArray(id);
-        vertexBuffer->bind();
+        vertexBuffer->Bind();
         unsigned int index = 0;
-        const auto& attributeLayout = vertexBuffer->getAttributeLayout();
+        const auto& attributeLayout = vertexBuffer->GetAttributeLayout();
         for (const VertexAttribute& attribute : attributeLayout)
         {
             glEnableVertexAttribArray(index);
             glVertexAttribPointer(
                     index,
-                    attribute.length,
-                    getOpenGLType(attribute.glslType),
-                    attribute.normalized ? GL_TRUE : GL_FALSE,
+                    attribute.Length,
+                    GetOpenGLType(attribute.GlslType),
+                    attribute.Normalized ? GL_TRUE : GL_FALSE,
                     attributeLayout.stride,
-                    (const void*) (uintptr_t) attribute.offset
+                    (const void*) (uintptr_t) attribute.Offset
             );
             index++;
         }
         vertexBuffers.push_back(vertexBuffer);
     }
 
-    void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+    void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
     {
         glBindVertexArray(id);
         indexBuffer->Bind();
         this->indexBuffer = indexBuffer;
     }
 
-    void VertexArray::bind() const
+    void VertexArray::Bind() const
     {
         glBindVertexArray(id);
     }
 
-    void VertexArray::unbind() const
+    void VertexArray::Unbind() const
     {
         glBindVertexArray(0);
     }
 
-    GLenum VertexArray::getOpenGLType(GLSLType glslType) const
+    uint32_t VertexArray::GetOpenGLType(GLSLType glslType) const
     {
         switch (glslType)
         {
