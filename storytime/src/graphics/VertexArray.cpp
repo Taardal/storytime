@@ -27,7 +27,7 @@ namespace storytime
     {
         glBindVertexArray(id);
         vertexBuffer->Bind();
-        unsigned int index = 0;
+        uint32_t index = 0;
         const auto& attributeLayout = vertexBuffer->GetAttributeLayout();
         for (const VertexAttribute& attribute : attributeLayout)
         {

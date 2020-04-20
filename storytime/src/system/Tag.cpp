@@ -7,9 +7,9 @@
 
 const char* storytime::DemangleTypeName(const char* typeName)
 {
-    static constexpr int INITIAL_STATUS = 1;
-    static constexpr int SUCCESS_STATUS = 0;
-    int status = INITIAL_STATUS;
+    static constexpr int32_t INITIAL_STATUS = 1;
+    static constexpr int32_t SUCCESS_STATUS = 0;
+    int32_t status = INITIAL_STATUS;
     char* outputBuffer = nullptr;
     size_t* length = nullptr;
     char* demangled = abi::__cxa_demangle(typeName, outputBuffer, length, &status);

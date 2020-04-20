@@ -10,7 +10,7 @@ namespace storytime
     class VertexArray
     {
     private:
-        unsigned int id;
+        uint32_t id;
         std::vector<Ref<VertexBuffer>> vertexBuffers;
         Ref<IndexBuffer> indexBuffer;
 

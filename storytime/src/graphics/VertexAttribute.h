@@ -22,17 +22,17 @@ namespace storytime
     {
         GLSLType GlslType;
         std::string_view Name;
-        unsigned int Size;
-        unsigned int Length;
-        unsigned int Offset;
+        uint32_t Size;
+        uint32_t Length;
+        uint32_t Offset;
         bool Normalized;
 
         VertexAttribute(GLSLType glslType, std::string_view name);
 
     private:
-        unsigned int GetSize();
+        uint32_t GetSize();
 
-        unsigned int GetLength();
+        uint32_t GetLength();
     };
 
 }

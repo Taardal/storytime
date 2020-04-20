@@ -19,11 +19,11 @@ namespace storytime
         uint32_t vertexBufferSize = sizeof(Vertex) * VERTICES_PER_BATCH;
         vertexBuffer = CreateRef<VertexBuffer>(vertexBufferSize);
         vertexBuffer->SetAttributeLayout({
-                                                 { GLSLType::Vec3,  "position" },
-                                                 { GLSLType::Vec4,  "color" },
-                                                 { GLSLType::Vec2,  "textureCoordinate" },
-                                                 { GLSLType::Float, "textureIndex" }
-                                         });
+            { GLSLType::Vec3,  "position" },
+            { GLSLType::Vec4,  "color" },
+            { GLSLType::Vec2,  "textureCoordinate" },
+            { GLSLType::Float, "textureIndex" }
+        });
         vertices = new Vertex[VERTICES_PER_BATCH];
 
         indices = new uint32_t[INDICES_PER_BATCH];
@@ -46,7 +46,7 @@ namespace storytime
         vertexArray->Bind();
 
         shader = resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl");
-        shader->bind();
+        shader->Bind();
 
         whiteTextureIndex = 0;
         whiteTexture = CreateRef<Texture>(1, 1);
@@ -61,7 +61,7 @@ namespace storytime
         {
             samplers[i] = i;
         }
-        shader->setIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
+        shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
 
         vertexPositionOriginOffset = new glm::vec4[4];
         vertexPositionOriginOffset[0] = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
@@ -75,7 +75,7 @@ namespace storytime
     Renderer::~Renderer()
     {
         ST_LOG_TRACE(ST_TAG, "Destroying");
-        shader->unbind();
+        shader->Unbind();
         vertexArray->Unbind();
         delete[] vertexPositionOriginOffset;
         delete[] textures;
@@ -92,7 +92,7 @@ namespace storytime
     void Renderer::BeginScene(OrthographicCamera* camera)
     {
         glClear(GL_COLOR_BUFFER_BIT);
-        shader->setMat4("viewProjection", camera->GetViewProjection());
+        shader->SetMat4("viewProjection", camera->GetViewProjection());
         vertexCount = 0;
         indexCount = 0;
         textureCount = whiteTextureIndex + 1;

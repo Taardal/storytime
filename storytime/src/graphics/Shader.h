@@ -16,32 +16,32 @@ namespace storytime
 
         ~Shader();
 
-        void bind() const;
+        void Bind() const;
 
-        void unbind() const;
+        void Unbind() const;
 
-        void setInt1(const char* key, uint32_t value) const;
+        void SetInt1(const char* key, uint32_t value) const;
 
-        void setMat4(const char* key, glm::mat4 value) const;
+        void SetMat4(const char* key, glm::mat4 value) const;
 
-        void setFloat4(const char* key, glm::vec4 value) const;
+        void SetFloat4(const char* key, glm::vec4 value) const;
 
-        void setIntArray(const char* key, const int32_t* values, uint32_t count) const;
+        void SetIntArray(const char* key, const int32_t* values, uint32_t count) const;
 
     private:
-        [[nodiscard]] GLuint createShader(const char* source, GLenum type) const;
+        [[nodiscard]] uint32_t CreateShader(const char* source, uint32_t type) const;
 
-        void setShaderSource(const GLchar* source, GLuint shaderId) const;
+        void SetShaderSource(const char* source, uint32_t shaderId) const;
 
-        [[nodiscard]] bool compileShader(GLuint shaderId) const;
+        [[nodiscard]] bool CompileShader(uint32_t shaderId) const;
 
-        [[nodiscard]] std::string getShaderLog(GLuint shaderId) const;
+        [[nodiscard]] std::string GetShaderLog(uint32_t shaderId) const;
 
-        [[nodiscard]] GLuint createProgram(GLuint vertexShaderId, GLuint fragmentShaderId) const;
+        [[nodiscard]] uint32_t CreateProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId) const;
 
-        [[nodiscard]] bool linkProgram(GLuint id) const;
+        [[nodiscard]] bool LinkProgram(uint32_t id) const;
 
-        [[nodiscard]] std::string getProgramLog(GLuint programId) const;
+        [[nodiscard]] std::string GetProgramLog(uint32_t programId) const;
 
     };
 

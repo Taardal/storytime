@@ -6,7 +6,7 @@ namespace storytime
             : GlslType(glslType), Name(name), Size(GetSize()), Length(GetLength()), Offset(0), Normalized(false)
     {}
 
-    unsigned int VertexAttribute::GetSize()
+    uint32_t VertexAttribute::GetSize()
     {
         switch (GlslType)
         {
@@ -33,7 +33,7 @@ namespace storytime
         }
     }
 
-    unsigned int VertexAttribute::GetLength()
+    uint32_t VertexAttribute::GetLength()
     {
         switch (GlslType)
         {

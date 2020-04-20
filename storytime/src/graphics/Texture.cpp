@@ -3,9 +3,9 @@
 
 namespace storytime
 {
-    constexpr int Texture::TARGET = GL_TEXTURE_2D;
-    constexpr int Texture::LEVEL_OF_DETAIL = 0;
-    constexpr int Texture::BORDER = 0;
+    constexpr int32_t Texture::TARGET = GL_TEXTURE_2D;
+    constexpr int32_t Texture::LEVEL_OF_DETAIL = 0;
+    constexpr int32_t Texture::BORDER = 0;
 
     Texture::Texture(const Image& image)
             : id(0), width(image.Width), height(image.Height)
@@ -40,7 +40,7 @@ namespace storytime
         );
     }
 
-    void Texture::Bind(unsigned int textureUnit) const
+    void Texture::Bind(uint32_t textureUnit) const
     {
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         glBindTexture(TARGET, id);

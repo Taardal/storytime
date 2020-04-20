@@ -62,7 +62,7 @@ namespace storytime
         }
     }
 
-    void Window::OnGlfwError(int error, const char* description)
+    void Window::OnGlfwError(int32_t error, const char* description)
     {
         ST_LOG_ERROR(ST_TAG_TYPE(Window), "GLFW error [{0}: {1}]", error, description);
     }
@@ -112,7 +112,7 @@ namespace storytime
             WindowCloseEvent event;
             callbackData->onEvent(event);
         });
-        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int width, int height) {
+        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t width, int32_t height) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             WindowResizeEvent event(width, height);
             callbackData->onEvent(event);
@@ -122,7 +122,7 @@ namespace storytime
     void Window::SetGlfwKeyCallbacks() const
     {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW key callbacks");
-        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scanCode, int action, int mods) {
+        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             switch (action)
             {
@@ -149,7 +149,7 @@ namespace storytime
                 }
             }
         });
-        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keyCode) {
+        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, uint32_t keyCode) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             KeyTypedEvent event(keyCode);
             callbackData->onEvent(event);
@@ -159,7 +159,7 @@ namespace storytime
     void Window::SetGlfwMouseCallbacks() const
     {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW mouse callbacks");
-        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* glfwWindow, int button, int action, int mods) {
+        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t button, int32_t action, int32_t mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             switch (action)
             {
