@@ -4,8 +4,8 @@
 
 #define ST_TO_STRING(value) #value
 
-#ifdef _WIN32
-	#ifdef _WIN64
+#if defined(_WIN32)
+	#if defined(_WIN64)
 		#define ST_PLATFORM_WINDOWS
 	#else
 		#error "Unsupported platform: Windows x86"
@@ -37,6 +37,39 @@
     #define ST_COMPILER_GCC
 #else
     #error "Unknown compiler"
+#endif
+
+#ifdef NDEBUG
+    #define ST_RELEASE
+#else
+    #define ST_DEBUG
+#endif
+
+#ifdef ST_DEBUG
+    #include "system/Log.h"
+    #if __has_builtin(__debugbreak)
+        #define ST_BREAK() __debugBreak()
+    #elif __has_builtin(__builtin_debugtrap)
+        #define ST_BREAK() __builtin_debugtrap()
+    #else
+        #include <csignal>
+        #if defined(SIGTRAP)
+            #define ST_BREAK() std::raise(SIGTRAP)
+        #else
+            #define ST_BREAK() std::raise(SIGABRT)
+        #endif
+    #endif
+    #define ST_ASSERT(tag, expression) \
+        if (expression) \
+        {} \
+        else \
+        { \
+            ST_LOG_ERROR(tag, "Could not assert [{0}]", ST_TO_STRING(expression)); \
+            ST_BREAK(); \
+        }
+#else
+    #define ST_BREAK()
+    #define ST_ASSERT(tag, expression)
 #endif
 
 namespace storytime {

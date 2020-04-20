@@ -7,12 +7,12 @@ namespace storytime
     ResourceLoader::ResourceLoader(FileSystem* fileSystem)
             : fileSystem(fileSystem)
     {
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     ResourceLoader::~ResourceLoader()
     {
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     Ref<Shader> ResourceLoader::LoadShader(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename) const

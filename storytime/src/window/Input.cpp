@@ -5,11 +5,11 @@
 namespace storytime {
 
     Input::Input() {
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Input::~Input() {
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     bool Input::isKeyPressed(int keyCode) const {

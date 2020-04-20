@@ -27,18 +27,18 @@ namespace storytime
     VertexBuffer::VertexBuffer(uint32_t size)
             : id(0), attributeLayout{}
     {
-        ST_TRACE(ST_TAG, "Creating");
+        ST_LOG_TRACE(ST_TAG, "Creating");
         glGenBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     VertexBuffer::~VertexBuffer()
     {
-        ST_TRACE(ST_TAG, "Destroying");
+        ST_LOG_TRACE(ST_TAG, "Destroying");
         glDeleteBuffers(1, &id);
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     const VertexBuffer::AttributeLayout& VertexBuffer::getAttributeLayout() const

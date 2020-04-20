@@ -8,15 +8,15 @@ namespace storytime {
 
     Application::Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController)
             : window(window), renderer(renderer), input(input), cameraController(cameraController) {
-        ST_TRACE(ST_TAG, "Creating");
+        ST_LOG_TRACE(ST_TAG, "Creating");
         window->setOnEventListener([this](const Event& event) {
             onEvent(event);
         });
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Application::~Application() {
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     void Application::pushLayer(Layer* layer) {
@@ -24,7 +24,7 @@ namespace storytime {
     }
 
     void Application::run() {
-        ST_INFO(ST_TAG, "Running...");
+        ST_LOG_INFO(ST_TAG, "Running...");
         running = true;
         while (running) {
             float time = window->getTime();
@@ -42,13 +42,13 @@ namespace storytime {
     }
 
     void Application::stop() {
-        ST_INFO(ST_TAG, "Stopping...");
+        ST_LOG_INFO(ST_TAG, "Stopping...");
         running = false;
     }
 
     void Application::onEvent(const Event& event) {
         if (event.getType() != EventType::MouseMoved) {
-            ST_TRACE(ST_TAG, "Received event [{0}]", event.toString());
+            ST_LOG_TRACE(ST_TAG, "Received event [{0}]", event.toString());
         }
         switch (event.getType()) {
             case EventType::WindowClose: {

@@ -6,21 +6,21 @@ namespace storytime
     VertexArray::VertexArray()
             : id(0), vertexBuffers{}, indexBuffer(nullptr)
     {
-        ST_TRACE(ST_TAG, "Creating");
+        ST_LOG_TRACE(ST_TAG, "Creating");
         glGenVertexArrays(1, &id);
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     VertexArray::~VertexArray()
     {
-        ST_TRACE(ST_TAG, "Destroying");
+        ST_LOG_TRACE(ST_TAG, "Destroying");
         for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers)
         {
             vertexBuffer->unbind();
         }
         indexBuffer->Unbind();
         glDeleteVertexArrays(1, &id);
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)

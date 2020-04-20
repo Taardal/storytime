@@ -5,17 +5,18 @@
 
 namespace storytime {
 
-    void Log::setLevel(LogLevel level) {
-        spdlog::set_level(getSpdLogLevel(level));
+    void Log::Init(LogLevel level) {
+        spdlog::set_level(GetSpdLogLevel(level));
     }
 
-    std::string Log::getPrettyMessage(std::string_view tag, std::string_view message, std::string_view functionName, int lineNumber) {
+    std::string Log::Format(std::string_view tag, std::string_view message)
+    {
         std::stringstream ss;
-        ss << "[" << tag << ":" << functionName << ":" << lineNumber << "] - " << message;
+        ss << "[" << tag << "] - " << message;
         return ss.str();
     }
 
-    spdlog::level::level_enum Log::getSpdLogLevel(LogLevel level) {
+    spdlog::level::level_enum Log::GetSpdLogLevel(LogLevel level) {
         switch (level) {
             case LogLevel::Critical:
                 return spdlog::level::critical;

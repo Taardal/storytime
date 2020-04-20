@@ -5,6 +5,7 @@
 #include "system/FileSystem.h"
 #include "system/ResourceLoader.h"
 #include "graphics/GraphicsContext.h"
+#include "graphics/GraphicsLog.h"
 #include "graphics/OrthographicCamera.h"
 #include "graphics/OrthographicCameraController.h"
 #include "window/Window.h"
@@ -38,7 +39,7 @@ namespace storytime
 
         ~Engine();
 
-        void run();
+        void Run() const;
     };
 
 }
