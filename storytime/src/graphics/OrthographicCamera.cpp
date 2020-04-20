@@ -9,11 +9,11 @@ namespace storytime {
 
     OrthographicCamera::OrthographicCamera()
             : viewMatrix(1.0f), projectionMatrix(1.0f), viewProjectionMatrix(1.0f), position(0.0f, 0.0f, 0.0f), rotation(0.0f) {
-        ST_TRACE(ST_TAG, "Destroying");
+        ST_LOG_TRACE(ST_TAG, "Destroying");
     }
 
     OrthographicCamera::~OrthographicCamera() {
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     const glm::mat4& OrthographicCamera::getView() const {

@@ -4,16 +4,16 @@
 SandboxLayer::SandboxLayer(st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
         : Layer("TriangleLayer"), cameraController(cameraController), resourceLoader(resourceLoader)
 {
-    ST_TRACE(ST_TAG, "Creating");
+    ST_LOG_TRACE(ST_TAG, "Creating");
     kittenTexture = resourceLoader->LoadTexture("kitten.png");
     puppyTexture = resourceLoader->LoadTexture("puppy.png");
-    ST_TRACE(ST_TAG, "Created");
+    ST_LOG_TRACE(ST_TAG, "Created");
 }
 
 SandboxLayer::~SandboxLayer()
 {
-    ST_TRACE(ST_TAG, "Destroying");
-    ST_TRACE(ST_TAG, "Destroyed");
+    ST_LOG_TRACE(ST_TAG, "Destroying");
+    ST_LOG_TRACE(ST_TAG, "Destroyed");
 }
 
 void SandboxLayer::OnAttach()

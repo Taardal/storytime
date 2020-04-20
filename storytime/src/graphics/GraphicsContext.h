@@ -1,14 +1,17 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-namespace storytime {
-
-    class GraphicsContext {
+namespace storytime
+{
+    class GraphicsContext
+    {
     public:
-        struct Config {
-            int versionMajor;
-            int versionMinor;
+        struct Config
+        {
+            uint32_t versionMajor;
+            uint32_t versionMinor;
         };
 
     private:
@@ -21,12 +24,12 @@ namespace storytime {
 
         [[nodiscard]] const Config& getConfig() const;
 
-        void init(GLFWwindow* glfwWindow) const;
+        void Init(GLFWwindow* glfwWindow) const;
 
     private:
-        void initGlad() const;
+        void InitGlad() const;
 
-        void logContext() const;
+        void LogContext() const;
     };
 
 }

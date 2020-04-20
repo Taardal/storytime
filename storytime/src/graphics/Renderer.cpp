@@ -12,7 +12,7 @@ namespace storytime
 
     Renderer::Renderer(ResourceLoader* resourceLoader)
     {
-        ST_TRACE(ST_TAG, "Creating");
+        ST_LOG_TRACE(ST_TAG, "Creating");
 
         glClearColor(0.1f, 0.1f, 0.1f, 1);
 
@@ -69,19 +69,19 @@ namespace storytime
         vertexPositionOriginOffset[2] = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
         vertexPositionOriginOffset[3] = glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
 
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Renderer::~Renderer()
     {
-        ST_TRACE(ST_TAG, "Destroying");
+        ST_LOG_TRACE(ST_TAG, "Destroying");
         shader->unbind();
         vertexArray->unbind();
         delete[] vertexPositionOriginOffset;
         delete[] textures;
         delete[] indices;
         delete[] vertices;
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const

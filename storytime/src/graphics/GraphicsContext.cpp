@@ -1,41 +1,51 @@
 #include "system/Log.h"
+#include "system/Core.h"
 #include "GraphicsContext.h"
-#include <glad/glad.h>
 
-namespace storytime {
-
-    GraphicsContext::GraphicsContext(const Config& config) : config(config) {
-        ST_TRACE(ST_TAG, "Created");
+namespace storytime
+{
+    GraphicsContext::GraphicsContext(const Config& config)
+            : config(config)
+    {
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
-    GraphicsContext::~GraphicsContext() {
-        ST_TRACE(ST_TAG, "Destroyed");
+    GraphicsContext::~GraphicsContext()
+    {
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    const GraphicsContext::Config& GraphicsContext::getConfig() const {
+    const GraphicsContext::Config& GraphicsContext::getConfig() const
+    {
         return config;
     }
 
-    void GraphicsContext::init(GLFWwindow* glfwWindow) const {
+    void GraphicsContext::Init(GLFWwindow* glfwWindow) const
+    {
         glfwMakeContextCurrent(glfwWindow);
-        initGlad();
-        logContext();
+        InitGlad();
+        LogContext();
     }
 
-    void GraphicsContext::initGlad() const {
-        ST_DEBUG(ST_TAG, "Initializing GLAD");
+    void GraphicsContext::InitGlad() const
+    {
+        ST_LOG_DEBUG(ST_TAG, "Initializing GLAD");
         bool initialized = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress) != 0;
-        if (initialized) {
-            ST_INFO(ST_TAG, "Initialized GLAD");
-        } else {
-            ST_CRITICAL(ST_TAG, "Could not initialize GLAD");
+        if (initialized)
+        {
+            ST_LOG_INFO(ST_TAG, "Initialized GLAD");
+        }
+        else
+        {
+            ST_LOG_CRITICAL(ST_TAG, "Could not initialize GLAD");
         }
     }
 
-    void GraphicsContext::logContext() const {
-        ST_INFO(ST_TAG, "Vendor [{0}]", glGetString(GL_VENDOR));
-        ST_INFO(ST_TAG, "Renderer [{0}]", glGetString(GL_RENDERER));
-        ST_INFO(ST_TAG, "Version [{0}]", glGetString(GL_VERSION));
+    void GraphicsContext::LogContext() const
+    {
+        ST_LOG_INFO(ST_TAG, "Vendor [{0}]", glGetString(GL_VENDOR));
+        ST_LOG_INFO(ST_TAG, "Renderer [{0}]", glGetString(GL_RENDERER));
+        ST_LOG_INFO(ST_TAG, "Version [{0}]", glGetString(GL_VERSION));
     }
 
 }

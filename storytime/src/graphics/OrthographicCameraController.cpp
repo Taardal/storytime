@@ -7,13 +7,13 @@
 namespace storytime {
 
     OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio) : camera(camera), aspectRatio(aspectRatio) {
-        ST_TRACE(ST_TAG, "Creating");
+        ST_LOG_TRACE(ST_TAG, "Creating");
         setCameraProjection();
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     OrthographicCameraController::~OrthographicCameraController() {
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     OrthographicCamera* OrthographicCameraController::getCamera() const {

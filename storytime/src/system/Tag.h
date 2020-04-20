@@ -1,21 +1,24 @@
 #pragma once
 
-#include <string>
+#include <sstream>
 #include <typeinfo>
 
 namespace storytime
 {
-    const char* Demangle(const char* typeName);
+    const char* DemangleTypeName(const char* typeName);
+    std::string FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber);
 
     template<class T>
-    const char* Tag()
+    std::string Tag(const char* functionName, uint32_t lineNumber)
     {
-        return Demangle(typeid(T).name());
+        const char* typeName = DemangleTypeName(typeid(T).name());
+        return FormatTag(typeName, functionName, lineNumber);
     }
 
     template<class T>
-    const char* Tag(const T& t)
+    std::string Tag(const T& t, const char* functionName, uint32_t lineNumber)
     {
-        return Demangle(typeid(t).name());
+        const char* typeName = DemangleTypeName(typeid(t).name());
+        return FormatTag(typeName, functionName, lineNumber);
     }
 }

@@ -4,16 +4,16 @@
 namespace storytime {
 
     LayerStack::LayerStack() : layers{}, insertIndex(0) {
-        ST_TRACE(ST_TAG, "Created");
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     LayerStack::~LayerStack() {
-        ST_TRACE(ST_TAG, "Destroying");
+        ST_LOG_TRACE(ST_TAG, "Destroying");
         for (Layer* layer : layers) {
             layer->OnDetach();
             delete layer;
         }
-        ST_TRACE(ST_TAG, "Destroyed");
+        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     std::vector<Layer*> LayerStack::getLayers() const {
@@ -32,7 +32,7 @@ namespace storytime {
         layers.emplace(layers.begin() + insertIndex, layer);
         insertIndex++;
         layer->OnAttach();
-        ST_INFO(ST_TAG, "Pushed layer [{0}]", layer->getName());
+        ST_LOG_INFO(ST_TAG, "Pushed layer [{0}]", layer->getName());
     }
 
     void LayerStack::popLayer(Layer* layer) {
@@ -43,7 +43,7 @@ namespace storytime {
             layers.erase(iterator);
             insertIndex--;
         }
-        ST_INFO(ST_TAG, "Popped layer [{0}]", layer->getName());
+        ST_LOG_INFO(ST_TAG, "Popped layer [{0}]", layer->getName());
     }
 
 }

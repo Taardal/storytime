@@ -40,30 +40,36 @@
 #endif
 
 #ifdef NDEBUG
-    #define ST_DEBUG_BREAK()
-    #define ST_ASSERT(expression)
+    #define ST_RELEASE
 #else
+    #define ST_DEBUG
+#endif
+
+#ifdef ST_DEBUG
     #include "system/Log.h"
-    #if defined(ST_PLATFORM_WINDOWS)
-        #define ST_DEBUG_BREAK() __debugBreak()
+    #if __has_builtin(__debugbreak)
+        #define ST_BREAK() __debugBreak()
     #elif __has_builtin(__builtin_debugtrap)
-        #define ST_DEBUG_BREAK() __builtin_trap()
+        #define ST_BREAK() __builtin_debugtrap()
     #else
         #include <csignal>
         #if defined(SIGTRAP)
-            #define ST_DEBUG_BREAK() std::raise(SIGTRAP)
+            #define ST_BREAK() std::raise(SIGTRAP)
         #else
-            #define ST_DEBUG_BREAK() std::raise(SIGABRT)
+            #define ST_BREAK() std::raise(SIGABRT)
         #endif
     #endif
-    #define ST_ASSERT(expression) \
+    #define ST_ASSERT(tag, expression) \
         if (expression) \
         {} \
         else \
         { \
-            ST_ERROR("storytime::ASSERT", "Could not assert [{0}]", ST_TO_STRING(expression)); \
-            ST_DEBUG_BREAK(); \
+            ST_LOG_ERROR(tag, "Could not assert [{0}]", ST_TO_STRING(expression)); \
+            ST_BREAK(); \
         }
+#else
+    #define ST_BREAK()
+    #define ST_ASSERT(tag, expression)
 #endif
 
 namespace storytime {

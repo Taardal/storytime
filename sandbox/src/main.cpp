@@ -29,6 +29,6 @@ storytime::Engine::Config getConfig()
 int main()
 {
     auto engine = new storytime::Engine(getConfig());
-    engine->run();
+    engine->Run();
     delete engine;
 }
