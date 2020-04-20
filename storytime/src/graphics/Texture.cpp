@@ -1,11 +1,12 @@
+#include "system/Log.h"
 #include "Texture.h"
 #include <glad/glad.h>
 
 namespace storytime
 {
-    constexpr int Texture::TARGET = GL_TEXTURE_2D;
-    constexpr int Texture::LEVEL_OF_DETAIL = 0;
-    constexpr int Texture::BORDER = 0;
+    constexpr int32_t Texture::TARGET = GL_TEXTURE_2D;
+    constexpr int32_t Texture::LEVEL_OF_DETAIL = 0;
+    constexpr int32_t Texture::BORDER = 0;
 
     Texture::Texture(const Image& image)
             : id(0), width(image.Width), height(image.Height)
@@ -22,12 +23,12 @@ namespace storytime
 
     Texture::~Texture()
     {
-        glDeleteTextures(1, &id);
+        ST_GL_CALL(ST_TAG, glDeleteTextures(1, &id));
     }
 
     void Texture::SetPixels(const void* pixels) const
     {
-        glTexImage2D(
+        ST_GL_CALL(ST_TAG, glTexImage2D(
                 TARGET,
                 LEVEL_OF_DETAIL,
                 GL_RGB,
@@ -37,28 +38,28 @@ namespace storytime
                 GL_RGB,
                 GL_UNSIGNED_BYTE,
                 pixels
-        );
+        ));
     }
 
-    void Texture::Bind(unsigned int textureUnit) const
+    void Texture::Bind(uint32_t textureUnit) const
     {
-        glActiveTexture(GL_TEXTURE0 + textureUnit);
-        glBindTexture(TARGET, id);
+        ST_GL_CALL(ST_TAG, glActiveTexture(GL_TEXTURE0 + textureUnit));
+        ST_GL_CALL(ST_TAG, glBindTexture(TARGET, id));
     }
 
     void Texture::Unbind() const
     {
-        glBindTexture(TARGET, 0);
+        ST_GL_CALL(ST_TAG, glBindTexture(TARGET, 0));
     }
 
     void Texture::Init()
     {
-        glGenTextures(1, &id);
-        glBindTexture(TARGET, id);
-        glTexParameteri(TARGET, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(TARGET, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(TARGET, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(TARGET, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        ST_GL_CALL(ST_TAG, glGenTextures(1, &id));
+        ST_GL_CALL(ST_TAG, glBindTexture(TARGET, id));
+        ST_GL_CALL(ST_TAG, glTexParameteri(TARGET, GL_TEXTURE_WRAP_S, GL_REPEAT));
+        ST_GL_CALL(ST_TAG, glTexParameteri(TARGET, GL_TEXTURE_WRAP_T, GL_REPEAT));
+        ST_GL_CALL(ST_TAG, glTexParameteri(TARGET, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        ST_GL_CALL(ST_TAG, glTexParameteri(TARGET, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     }
 
 }

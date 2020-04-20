@@ -1,5 +1,4 @@
 #include "system/Log.h"
-#include "system/Core.h"
 #include "GraphicsContext.h"
 
 namespace storytime

@@ -1,12 +1,15 @@
 #include "VertexAttribute.h"
 
-namespace storytime {
-
+namespace storytime
+{
     VertexAttribute::VertexAttribute(GLSLType glslType, std::string_view name)
-            : glslType(glslType), name(name), size(getSize()), length(getLength()), offset(0), normalized(false) {}
+            : GlslType(glslType), Name(name), Size(GetSize()), Length(GetLength()), Offset(0), Normalized(false)
+    {}
 
-    unsigned int VertexAttribute::getSize() {
-        switch (glslType) {
+    uint32_t VertexAttribute::GetSize()
+    {
+        switch (GlslType)
+        {
             case GLSLType::Bool:
                 return sizeof(bool);
             case GLSLType::Int:
@@ -30,8 +33,10 @@ namespace storytime {
         }
     }
 
-    unsigned int VertexAttribute::getLength() {
-        switch (glslType) {
+    uint32_t VertexAttribute::GetLength()
+    {
+        switch (GlslType)
+        {
             case GLSLType::Bool:
                 return 1;
             case GLSLType::Int:

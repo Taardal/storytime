@@ -9,8 +9,8 @@ namespace storytime
     {
         for (VertexAttribute& attribute : this->attributes)
         {
-            attribute.offset = stride;
-            stride += attribute.size;
+            attribute.Offset = stride;
+            stride += attribute.Size;
         }
     }
 
@@ -27,44 +27,40 @@ namespace storytime
     VertexBuffer::VertexBuffer(uint32_t size)
             : id(0), attributeLayout{}
     {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-        glGenBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-        ST_LOG_TRACE(ST_TAG, "Created");
+        ST_GL_CALL(ST_TAG, glGenBuffers(1, &id));
+        ST_GL_CALL(ST_TAG, glBindBuffer(GL_ARRAY_BUFFER, id));
+        ST_GL_CALL(ST_TAG, glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW));
     }
 
     VertexBuffer::~VertexBuffer()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
-        glDeleteBuffers(1, &id);
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
+        ST_GL_CALL(ST_TAG, glDeleteBuffers(1, &id));
     }
 
-    const VertexBuffer::AttributeLayout& VertexBuffer::getAttributeLayout() const
+    const VertexBuffer::AttributeLayout& VertexBuffer::GetAttributeLayout() const
     {
         return attributeLayout;
     }
 
-    void VertexBuffer::setAttributeLayout(const AttributeLayout& attributeLayout)
+    void VertexBuffer::SetAttributeLayout(const AttributeLayout& attributeLayout)
     {
         this->attributeLayout = attributeLayout;
     }
 
     void VertexBuffer::SetVertices(const void* vertices, uint32_t size) const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, id);
+        ST_GL_CALL(ST_TAG, glBindBuffer(GL_ARRAY_BUFFER, id));
         uint32_t offset = 0;
-        glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices);
+        ST_GL_CALL(ST_TAG, glBufferSubData(GL_ARRAY_BUFFER, offset, size, vertices));
     }
 
-    void VertexBuffer::bind() const
+    void VertexBuffer::Bind() const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, id);
+        ST_GL_CALL(ST_TAG, glBindBuffer(GL_ARRAY_BUFFER, id));
     }
 
-    void VertexBuffer::unbind() const
+    void VertexBuffer::Unbind() const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        ST_GL_CALL(ST_TAG, glBindBuffer(GL_ARRAY_BUFFER, 0));
     }
 }

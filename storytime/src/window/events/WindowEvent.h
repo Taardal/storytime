@@ -2,24 +2,27 @@
 
 #include "Event.h"
 
-namespace storytime {
-    class WindowCloseEvent : public Event {
+namespace storytime
+{
+    class WindowCloseEvent : public Event
+    {
     public:
         WindowCloseEvent();
     };
 
-    class WindowResizeEvent : public Event {
+    class WindowResizeEvent : public Event
+    {
     private:
-        int width;
-        int height;
+        int32_t width;
+        int32_t height;
 
     public:
-        WindowResizeEvent(int width, int height);
+        WindowResizeEvent(int32_t width, int32_t height);
 
-        [[nodiscard]] int getWidth() const;
+        [[nodiscard]] int32_t GetWidth() const;
 
-        [[nodiscard]] int getHeight() const;
+        [[nodiscard]] int32_t GetHeight() const;
 
-        [[nodiscard]] std::string toString() const override;
+        [[nodiscard]] std::string ToString() const override;
     };
 }

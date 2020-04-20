@@ -5,61 +5,70 @@
 #include "window/events/KeyEvent.h"
 #include "window/events/MouseEvent.h"
 
-namespace storytime {
-
-    float Window::Config::getAspectRatio() const {
+namespace storytime
+{
+    float Window::Config::GetAspectRatio() const
+    {
         return (float) width / (float) height;
     }
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext) : config(config) {
+    Window::Window(const Config& config, GraphicsContext* graphicsContext)
+            : config(config)
+    {
         ST_LOG_TRACE(ST_TAG, "Creating");
-        initGlfw();
-        setGlfwWindowHints(graphicsContext);
-        glfwWindow = createGlfwWindow();
+        InitGlfw();
+        SetGlfwWindowHints(graphicsContext);
+        glfwWindow = CreateGlfwWindow();
         graphicsContext->Init(glfwWindow);
-        setGlfwCallbacks();
+        SetGlfwCallbacks();
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
-    Window::~Window() {
+    Window::~Window()
+    {
         ST_LOG_TRACE(ST_TAG, "Destroying");
-        destroyGlfwWindow();
-        terminateGlfw();
+        DestroyGlfwWindow();
+        TerminateGlfw();
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    const Window::Config& Window::getConfig() const {
-        return config;
-    }
-
-    void Window::setOnEventListener(const std::function<void(const Event&)>& onEvent) {
+    void Window::SetOnEventListener(const std::function<void(const Event&)>& onEvent)
+    {
         glfwCallbackData.onEvent = onEvent;
     }
 
-    float Window::getTime() const {
+    float Window::GetTime() const
+    {
         return (float) glfwGetTime();
     }
 
-    void Window::onUpdate() const {
+    void Window::OnUpdate() const
+    {
         glfwPollEvents();
         glfwSwapBuffers(glfwWindow);
     }
 
-    void Window::initGlfw() const {
+    void Window::InitGlfw() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Initializing GLFW");
-        if (glfwInit()) {
-            glfwSetErrorCallback(onGlfwError);
+        if (glfwInit())
+        {
+            glfwSetErrorCallback(OnGlfwError);
             ST_LOG_INFO(ST_TAG, "Initialized GLFW");
-        } else {
+        }
+        else
+        {
             ST_LOG_CRITICAL(ST_TAG, "Could not initialize GLFW");
         }
     }
 
-    void Window::onGlfwError(int error, const char* description) {
+    void Window::OnGlfwError(int32_t error, const char* description)
+    {
         ST_LOG_ERROR(ST_TAG_TYPE(Window), "GLFW error [{0}: {1}]", error, description);
     }
 
-    void Window::setGlfwWindowHints(GraphicsContext* graphicsContext) const {
+    void Window::SetGlfwWindowHints(GraphicsContext* graphicsContext) const
+    {
         uint32_t versionMajor = graphicsContext->getConfig().versionMajor;
         uint32_t versionMinor = graphicsContext->getConfig().versionMinor;
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW context version [{0}.{1}]", versionMajor, versionMinor);
@@ -71,86 +80,103 @@ namespace storytime {
 #endif
     }
 
-    GLFWwindow* Window::createGlfwWindow() const {
+    GLFWwindow* Window::CreateGlfwWindow() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
         GLFWwindow* glfwWindow = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
-        if (glfwWindow != nullptr) {
+        if (glfwWindow != nullptr)
+        {
             ST_LOG_INFO(ST_TAG, "Created GLFW window");
-        } else {
+        }
+        else
+        {
             ST_LOG_ERROR(ST_TAG, "Could not create GLFW window");
         }
         return glfwWindow;
     }
 
-    void Window::setGlfwCallbacks() {
+    void Window::SetGlfwCallbacks()
+    {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW window callback data");
         glfwSetWindowUserPointer(glfwWindow, &glfwCallbackData);
-        setGlfwKeyCallbacks();
-        setGlfwWindowCallbacks();
-        setGlfwMouseCallbacks();
+        SetGlfwKeyCallbacks();
+        SetGlfwWindowCallbacks();
+        SetGlfwMouseCallbacks();
     }
 
-    void Window::setGlfwWindowCallbacks() const {
+    void Window::SetGlfwWindowCallbacks() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW window callbacks");
         glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* glfwWindow) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             WindowCloseEvent event;
             callbackData->onEvent(event);
         });
-        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int width, int height) {
+        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t width, int32_t height) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             WindowResizeEvent event(width, height);
             callbackData->onEvent(event);
         });
     }
 
-    void Window::setGlfwKeyCallbacks() const {
+    void Window::SetGlfwKeyCallbacks() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW key callbacks");
-        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int key, int scanCode, int action, int mods) {
+        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            switch (action) {
-                case GLFW_PRESS: {
+            switch (action)
+            {
+                case GLFW_PRESS:
+                {
                     KeyPressedEvent event(key);
                     callbackData->onEvent(event);
                     break;
                 }
-                case GLFW_RELEASE: {
+                case GLFW_RELEASE:
+                {
                     KeyReleasedEvent event(key);
                     callbackData->onEvent(event);
                     break;
                 }
-                case GLFW_REPEAT: {
+                case GLFW_REPEAT:
+                {
                     KeyRepeatedEvent event(key);
                     callbackData->onEvent(event);
                     break;
                 }
-                default: {
+                default:
+                {
                 }
             }
         });
-        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, unsigned int keyCode) {
+        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, uint32_t keyCode) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             KeyTypedEvent event(keyCode);
             callbackData->onEvent(event);
         });
     }
 
-    void Window::setGlfwMouseCallbacks() const {
+    void Window::SetGlfwMouseCallbacks() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Setting GLFW mouse callbacks");
-        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* glfwWindow, int button, int action, int mods) {
+        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t button, int32_t action, int32_t mods) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            switch (action) {
-                case GLFW_PRESS: {
+            switch (action)
+            {
+                case GLFW_PRESS:
+                {
                     MouseButtonPressedEvent event(button);
                     callbackData->onEvent(event);
                     break;
                 }
-                case GLFW_RELEASE: {
+                case GLFW_RELEASE:
+                {
                     MouseButtonReleasedEvent event(button);
                     callbackData->onEvent(event);
                     break;
                 }
-                default: {
+                default:
+                {
                 }
             }
         });
@@ -166,13 +192,15 @@ namespace storytime {
         });
     }
 
-    void Window::destroyGlfwWindow() const {
+    void Window::DestroyGlfwWindow() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Destroying GLFW window");
         glfwDestroyWindow(glfwWindow);
         ST_LOG_INFO(ST_TAG, "Destroyed GLFW window");
     }
 
-    void Window::terminateGlfw() const {
+    void Window::TerminateGlfw() const
+    {
         ST_LOG_DEBUG(ST_TAG, "Terminating GLFW");
         glfwTerminate();
         ST_LOG_INFO(ST_TAG, "Terminated GLFW");

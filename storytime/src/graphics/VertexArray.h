@@ -5,11 +5,12 @@
 #include "system/Core.h"
 #include <glad/glad.h>
 
-namespace storytime {
-
-    class VertexArray {
+namespace storytime
+{
+    class VertexArray
+    {
     private:
-        unsigned int id;
+        uint32_t id;
         std::vector<Ref<VertexBuffer>> vertexBuffers;
         Ref<IndexBuffer> indexBuffer;
 
@@ -18,16 +19,16 @@ namespace storytime {
 
         ~VertexArray();
 
-        void addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+        void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
 
-        void setIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
+        void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
-        void bind() const;
+        void Bind() const;
 
-        void unbind() const;
+        void Unbind() const;
 
     private:
-        [[nodiscard]] GLenum getOpenGLType(GLSLType glslType) const;
+        [[nodiscard]] uint32_t GetOpenGLType(GLSLType glslType) const;
     };
 
 }

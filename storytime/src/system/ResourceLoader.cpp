@@ -35,9 +35,9 @@ namespace storytime
 
     Image ResourceLoader::LoadImage(const std::string& path) const
     {
-        int width = 0;
-        int height = 0;
-        int channels = 0;
+        int32_t width = 0;
+        int32_t height = 0;
+        int32_t channels = 0;
         unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
         return { pixels, width, height, channels };
     }

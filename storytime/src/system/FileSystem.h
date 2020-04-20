@@ -11,7 +11,7 @@ namespace storytime
 
         virtual ~FileSystem();
 
-        std::string ReadFile(const char* path);
+        std::string ReadFile(const char* path) const;
     };
 }
 

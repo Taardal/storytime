@@ -6,63 +6,59 @@ namespace storytime
     VertexArray::VertexArray()
             : id(0), vertexBuffers{}, indexBuffer(nullptr)
     {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-        glGenVertexArrays(1, &id);
-        ST_LOG_TRACE(ST_TAG, "Created");
+        ST_GL_CALL(ST_TAG, glGenVertexArrays(1, &id));
     }
 
     VertexArray::~VertexArray()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
         for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers)
         {
-            vertexBuffer->unbind();
+            vertexBuffer->Unbind();
         }
         indexBuffer->Unbind();
-        glDeleteVertexArrays(1, &id);
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
+        ST_GL_CALL(ST_TAG, glDeleteVertexArrays(1, &id));
     }
 
-    void VertexArray::addVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+    void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
     {
-        glBindVertexArray(id);
-        vertexBuffer->bind();
-        unsigned int index = 0;
-        const auto& attributeLayout = vertexBuffer->getAttributeLayout();
+        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
+        vertexBuffer->Bind();
+        uint32_t index = 0;
+        const auto& attributeLayout = vertexBuffer->GetAttributeLayout();
         for (const VertexAttribute& attribute : attributeLayout)
         {
-            glEnableVertexAttribArray(index);
-            glVertexAttribPointer(
+            ST_GL_CALL(ST_TAG, glEnableVertexAttribArray(index));
+            ST_GL_CALL(ST_TAG, glVertexAttribPointer(
                     index,
-                    attribute.length,
-                    getOpenGLType(attribute.glslType),
-                    attribute.normalized ? GL_TRUE : GL_FALSE,
+                    attribute.Length,
+                    GetOpenGLType(attribute.GlslType),
+                    attribute.Normalized ? GL_TRUE : GL_FALSE,
                     attributeLayout.stride,
-                    (const void*) (uintptr_t) attribute.offset
-            );
+                    (const void*) (uintptr_t) attribute.Offset
+            ));
             index++;
         }
         vertexBuffers.push_back(vertexBuffer);
     }
 
-    void VertexArray::setIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+    void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
     {
-        glBindVertexArray(id);
+        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
         indexBuffer->Bind();
         this->indexBuffer = indexBuffer;
     }
 
-    void VertexArray::bind() const
+    void VertexArray::Bind() const
     {
-        glBindVertexArray(id);
+        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
     }
 
-    void VertexArray::unbind() const
+    void VertexArray::Unbind() const
     {
-        glBindVertexArray(0);
+        ST_GL_CALL(ST_TAG, glBindVertexArray(0));
     }
 
-    GLenum VertexArray::getOpenGLType(GLSLType glslType) const
+    uint32_t VertexArray::GetOpenGLType(GLSLType glslType) const
     {
         switch (glslType)
         {

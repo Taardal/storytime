@@ -1,18 +1,19 @@
 #pragma once
 
 
-namespace storytime {
-
-    class Timestep {
+namespace storytime
+{
+    class Timestep
+    {
     private:
         float time;
 
     public:
         Timestep(float time = 0.0f);
 
-        [[nodiscard]] float getSeconds() const;
+        [[nodiscard]] float GetSeconds() const;
 
-        [[nodiscard]] float getMilliseconds() const;
+        [[nodiscard]] float GetMilliseconds() const;
 
         operator float() const;
     };

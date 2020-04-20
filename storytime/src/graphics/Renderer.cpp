@@ -12,16 +12,14 @@ namespace storytime
 
     Renderer::Renderer(ResourceLoader* resourceLoader)
     {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1);
+        ST_GL_CALL(ST_TAG, glClearColor(0.1f, 0.1f, 0.1f, 1));
 
         uint32_t vertexBufferSize = sizeof(Vertex) * VERTICES_PER_BATCH;
         vertexBuffer = CreateRef<VertexBuffer>(vertexBufferSize);
-        vertexBuffer->setAttributeLayout({
-            { GLSLType::Vec3, "position" },
-            { GLSLType::Vec4, "color" },
-            { GLSLType::Vec2, "textureCoordinate" },
+        vertexBuffer->SetAttributeLayout({
+            { GLSLType::Vec3,  "position" },
+            { GLSLType::Vec4,  "color" },
+            { GLSLType::Vec2,  "textureCoordinate" },
             { GLSLType::Float, "textureIndex" }
         });
         vertices = new Vertex[VERTICES_PER_BATCH];
@@ -41,12 +39,12 @@ namespace storytime
         auto indexBuffer = CreateRef<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertexArray = CreateRef<VertexArray>();
-        vertexArray->addVertexBuffer(vertexBuffer);
-        vertexArray->setIndexBuffer(indexBuffer);
-        vertexArray->bind();
+        vertexArray->AddVertexBuffer(vertexBuffer);
+        vertexArray->SetIndexBuffer(indexBuffer);
+        vertexArray->Bind();
 
         shader = resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl");
-        shader->bind();
+        shader->Bind();
 
         whiteTextureIndex = 0;
         whiteTexture = CreateRef<Texture>(1, 1);
@@ -61,7 +59,7 @@ namespace storytime
         {
             samplers[i] = i;
         }
-        shader->setIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
+        shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
 
         vertexPositionOriginOffset = new glm::vec4[4];
         vertexPositionOriginOffset[0] = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
@@ -74,9 +72,8 @@ namespace storytime
 
     Renderer::~Renderer()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
-        shader->unbind();
-        vertexArray->unbind();
+        shader->Unbind();
+        vertexArray->Unbind();
         delete[] vertexPositionOriginOffset;
         delete[] textures;
         delete[] indices;
@@ -86,13 +83,13 @@ namespace storytime
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const
     {
-        glViewport(x, y, width, height);
+        ST_GL_CALL(ST_TAG, glViewport(x, y, width, height));
     }
 
     void Renderer::BeginScene(OrthographicCamera* camera)
     {
-        glClear(GL_COLOR_BUFFER_BIT);
-        shader->setMat4("viewProjection", camera->getViewProjection());
+        ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
+        shader->SetMat4("viewProjection", camera->GetViewProjection());
         vertexCount = 0;
         indexCount = 0;
         textureCount = whiteTextureIndex + 1;
@@ -166,7 +163,7 @@ namespace storytime
     void Renderer::DrawIndexed() const
     {
         void* offset = nullptr;
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset);
+        ST_GL_CALL(ST_TAG, glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
     }
 
 }

@@ -3,9 +3,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include "Log.h"
 
-namespace storytime {
-
-    void Log::Init(LogLevel level) {
+namespace storytime
+{
+    void Log::Init(LogLevel level)
+    {
         spdlog::set_level(GetSpdLogLevel(level));
     }
 
@@ -16,8 +17,10 @@ namespace storytime {
         return ss.str();
     }
 
-    spdlog::level::level_enum Log::GetSpdLogLevel(LogLevel level) {
-        switch (level) {
+    spdlog::level::level_enum Log::GetSpdLogLevel(LogLevel level)
+    {
+        switch (level)
+        {
             case LogLevel::Critical:
                 return spdlog::level::critical;
             case LogLevel::Error:

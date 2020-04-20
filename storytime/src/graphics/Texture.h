@@ -7,17 +7,17 @@ namespace storytime
     struct Image
     {
         unsigned char* Pixels;
-        int Width;
-        int Height;
-        int Channels;
+        int32_t Width;
+        int32_t Height;
+        int32_t Channels;
     };
 
     class Texture
     {
     private:
-        static const int TARGET;
-        static const int LEVEL_OF_DETAIL;
-        static const int BORDER;
+        static const int32_t TARGET;
+        static const int32_t LEVEL_OF_DETAIL;
+        static const int32_t BORDER;
 
         uint32_t id;
         uint32_t width;

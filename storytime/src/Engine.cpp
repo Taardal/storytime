@@ -26,7 +26,7 @@ namespace storytime
 
         input = new Input();
         camera = new OrthographicCamera();
-        cameraController = new OrthographicCameraController(camera, config.windowConfig.getAspectRatio());
+        cameraController = new OrthographicCameraController(camera, config.windowConfig.GetAspectRatio());
 
         application = CreateApplication(window, renderer, input, cameraController, resourceLoader);
 
@@ -50,7 +50,7 @@ namespace storytime
 
     void Engine::Run() const
     {
-        application->run();
+        application->Run();
     }
 
 }

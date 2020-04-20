@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Core.h"
 #include "Tag.h"
+#include "graphics/GraphicsLog.h"
 #include <spdlog/spdlog.h>
 
 #define ST_TAG ::storytime::Tag(*this, __func__, __LINE__)
@@ -13,14 +15,19 @@
 #define ST_LOG_ERROR(tag, message, ...) ::storytime::Log::Error(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_CRITICAL(tag, message, ...) ::storytime::Log::Critical(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 
-#define ST_GL_CALL(tag, function) \
+#ifdef ST_DEBUG
+    #define ST_GL_CALL(tag, function) \
         ::storytime::GraphicsLog::ClearErrors(); \
         function; \
         ::storytime::GraphicsLog::LogErrors(tag, #function)
+#else
+    #define ST_GL_CALL(tag, function) function;
+#endif
 
-namespace storytime {
-
-    enum class LogLevel {
+namespace storytime
+{
+    enum class LogLevel
+    {
         None = 0,
         Trace,
         Debug,
@@ -30,37 +37,44 @@ namespace storytime {
         Critical
     };
 
-    class Log {
+    class Log
+    {
     public:
         static void Init(LogLevel level);
 
         template<typename... T>
-        static void Trace(std::string_view message, const T& ... args) {
+        static void Trace(std::string_view message, const T& ... args)
+        {
             spdlog::trace(message, args...);
         }
 
         template<typename... T>
-        static void Debug(std::string_view message, const T& ... args) {
+        static void Debug(std::string_view message, const T& ... args)
+        {
             spdlog::debug(message, args...);
         }
 
         template<typename... T>
-        static void Info(std::string_view message, const T& ... args) {
+        static void Info(std::string_view message, const T& ... args)
+        {
             spdlog::info(message, args...);
         }
 
         template<typename... T>
-        static void Warn(std::string_view message, const T& ... args) {
+        static void Warn(std::string_view message, const T& ... args)
+        {
             spdlog::warn(message, args...);
         }
 
         template<typename... T>
-        static void Error(std::string_view message, const T& ... args) {
+        static void Error(std::string_view message, const T& ... args)
+        {
             spdlog::error(message, args...);
         }
 
         template<typename... T>
-        static void Critical(std::string_view message, const T& ... args) {
+        static void Critical(std::string_view message, const T& ... args)
+        {
             spdlog::critical(message, args...);
         }
 

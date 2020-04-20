@@ -2,9 +2,10 @@
 
 #include <string>
 
-namespace storytime {
-
-    enum class EventType {
+namespace storytime
+{
+    enum class EventType
+    {
         None = 0,
         WindowClose,
         WindowResize,
@@ -18,7 +19,8 @@ namespace storytime {
         MouseButtonReleased
     };
 
-    class Event {
+    class Event
+    {
     protected:
         std::string_view name;
         EventType type;
@@ -30,15 +32,15 @@ namespace storytime {
         virtual ~Event() = default;
 
     public:
-        [[nodiscard]] virtual std::string toString() const;
+        [[nodiscard]] virtual std::string ToString() const;
 
-        [[nodiscard]] std::string_view getName() const;
+        [[nodiscard]] std::string_view GetName() const;
 
-        [[nodiscard]] EventType getType() const;
+        [[nodiscard]] EventType GetType() const;
 
-        [[nodiscard]] bool isHandled() const;
+        [[nodiscard]] bool IsHandled() const;
 
-        void setHandled(bool handled);
+        void SetHandled(bool handled);
     };
 
 }

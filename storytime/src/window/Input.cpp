@@ -2,27 +2,32 @@
 #include "Input.h"
 #include <GLFW/glfw3.h>
 
-namespace storytime {
-
-    Input::Input() {
+namespace storytime
+{
+    Input::Input()
+    {
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
-    Input::~Input() {
+    Input::~Input()
+    {
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    bool Input::isKeyPressed(int keyCode) const {
-        int state = glfwGetKey(glfwGetCurrentContext(), keyCode);
+    bool Input::IsKeyPressed(int32_t keyCode) const
+    {
+        int32_t state = glfwGetKey(glfwGetCurrentContext(), keyCode);
         return state == GLFW_PRESS || state == GLFW_REPEAT;
     }
 
-    bool Input::isMouseButtonPressed(int keyCode) const {
-        int state = glfwGetMouseButton(glfwGetCurrentContext(), keyCode);
+    bool Input::IsMouseButtonPressed(int32_t keyCode) const
+    {
+        int32_t state = glfwGetMouseButton(glfwGetCurrentContext(), keyCode);
         return state == GLFW_PRESS;
     }
 
-    std::pair<float, float> Input::getMousePosition() const {
+    std::pair<float, float> Input::GetMousePosition() const
+    {
         double x;
         double y;
         glfwGetCursorPos(glfwGetCurrentContext(), &x, &y);

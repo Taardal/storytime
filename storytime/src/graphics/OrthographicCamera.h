@@ -2,9 +2,10 @@
 
 #include <glm/glm.hpp>
 
-namespace storytime {
-
-    class OrthographicCamera {
+namespace storytime
+{
+    class OrthographicCamera
+    {
     private:
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
@@ -17,28 +18,28 @@ namespace storytime {
 
         virtual ~OrthographicCamera();
 
-        [[nodiscard]] const glm::mat4& getView() const;
+        [[nodiscard]] const glm::mat4& GetView() const;
 
-        [[nodiscard]] const glm::mat4& getProjection() const;
+        [[nodiscard]] const glm::mat4& GetProjection() const;
 
-        [[nodiscard]] const glm::mat4& getViewProjection() const;
+        [[nodiscard]] const glm::mat4& GetViewProjection() const;
 
-        [[nodiscard]] const glm::vec3& getPosition() const;
+        [[nodiscard]] const glm::vec3& GetPosition() const;
 
-        void setPosition(const glm::vec3& position);
+        void SetPosition(const glm::vec3& position);
 
-        [[nodiscard]] float getRotation() const;
+        [[nodiscard]] float GetRotation() const;
 
-        void setRotation(float rotation);
+        void SetRotation(float rotation);
 
-        void setProjection(float top, float bottom, float left, float right);
+        void SetProjection(float top, float bottom, float left, float right);
 
     private:
-        void updateViewMatrix();
+        void UpdateViewMatrix();
 
-        [[nodiscard]] glm::mat4 getTranslationMatrix() const;
+        [[nodiscard]] glm::mat4 GetTranslationMatrix() const;
 
-        [[nodiscard]] glm::mat4 getRotationMatrix() const;
+        [[nodiscard]] glm::mat4 GetRotationMatrix() const;
     };
 
 }
