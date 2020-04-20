@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Core.h"
 #include "Tag.h"
+#include "graphics/GraphicsLog.h"
 #include <spdlog/spdlog.h>
 
 #define ST_TAG ::storytime::Tag(*this, __func__, __LINE__)
@@ -13,10 +15,14 @@
 #define ST_LOG_ERROR(tag, message, ...) ::storytime::Log::Error(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_CRITICAL(tag, message, ...) ::storytime::Log::Critical(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 
-#define ST_GL_CALL(tag, function) \
+#ifdef ST_DEBUG
+    #define ST_GL_CALL(tag, function) \
         ::storytime::GraphicsLog::ClearErrors(); \
         function; \
         ::storytime::GraphicsLog::LogErrors(tag, #function)
+#else
+    #define ST_GL_CALL(tag, function) function;
+#endif
 
 namespace storytime
 {

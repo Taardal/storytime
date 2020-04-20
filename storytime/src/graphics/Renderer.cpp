@@ -12,9 +12,7 @@ namespace storytime
 
     Renderer::Renderer(ResourceLoader* resourceLoader)
     {
-        ST_LOG_TRACE(ST_TAG, "Creating");
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1);
+        ST_GL_CALL(ST_TAG, glClearColor(0.1f, 0.1f, 0.1f, 1));
 
         uint32_t vertexBufferSize = sizeof(Vertex) * VERTICES_PER_BATCH;
         vertexBuffer = CreateRef<VertexBuffer>(vertexBufferSize);
@@ -74,7 +72,6 @@ namespace storytime
 
     Renderer::~Renderer()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
         shader->Unbind();
         vertexArray->Unbind();
         delete[] vertexPositionOriginOffset;
@@ -86,12 +83,12 @@ namespace storytime
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const
     {
-        glViewport(x, y, width, height);
+        ST_GL_CALL(ST_TAG, glViewport(x, y, width, height));
     }
 
     void Renderer::BeginScene(OrthographicCamera* camera)
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
         shader->SetMat4("viewProjection", camera->GetViewProjection());
         vertexCount = 0;
         indexCount = 0;
@@ -166,7 +163,7 @@ namespace storytime
     void Renderer::DrawIndexed() const
     {
         void* offset = nullptr;
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset);
+        ST_GL_CALL(ST_TAG, glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
     }
 
 }

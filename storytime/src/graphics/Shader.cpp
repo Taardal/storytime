@@ -7,54 +7,50 @@
 namespace storytime {
 
     Shader::Shader(const char* vertexSource, const char* fragmentSource) {
-        ST_LOG_TRACE(ST_TAG, "Creating");
         uint32_t vertexShaderId = CreateShader(vertexSource, GL_VERTEX_SHADER);
         uint32_t fragmentShaderId = CreateShader(fragmentSource, GL_FRAGMENT_SHADER);
         id = CreateProgram(vertexShaderId, fragmentShaderId);
-        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Shader::~Shader() {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
-        glDeleteProgram(id);
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
+        ST_GL_CALL(ST_TAG, glDeleteProgram(id));
     }
 
     void Shader::Bind() const {
-        glUseProgram(id);
+        ST_GL_CALL(ST_TAG, glUseProgram(id));
     }
 
     void Shader::Unbind() const {
-        glUseProgram(0);
+        ST_GL_CALL(ST_TAG, glUseProgram(0));
     }
 
     void Shader::SetInt1(const char* key, uint32_t value) const {
-        int32_t location = glGetUniformLocation(id, key);
-        glUniform1i(location, value);
+        ST_GL_CALL(ST_TAG, int32_t location = glGetUniformLocation(id, key));
+        ST_GL_CALL(ST_TAG, glUniform1i(location, value));
     }
 
     void Shader::SetMat4(const char* key, glm::mat4 value) const {
-        int32_t location = glGetUniformLocation(id, key);
+        ST_GL_CALL(ST_TAG, int32_t location = glGetUniformLocation(id, key));
         int32_t count = 1;
         bool transpose = GL_FALSE;
-        glUniformMatrix4fv(location, count, transpose, glm::value_ptr(value));
+        ST_GL_CALL(ST_TAG, glUniformMatrix4fv(location, count, transpose, glm::value_ptr(value)));
     }
 
     void Shader::SetFloat4(const char* key, glm::vec4 value) const {
-        int32_t location = glGetUniformLocation(id, key);
-        glUniform4f(location, value.x, value.y, value.z, value.w);
+        ST_GL_CALL(ST_TAG, int32_t location = glGetUniformLocation(id, key));
+        ST_GL_CALL(ST_TAG, glUniform4f(location, value.x, value.y, value.z, value.w));
     }
 
     void Shader::SetIntArray(const char* key, const int32_t* values, uint32_t count) const
     {
-        int32_t location = glGetUniformLocation(id, key);
-        glUniform1iv(location, count, values);
+        ST_GL_CALL(ST_TAG, int32_t location = glGetUniformLocation(id, key));
+        ST_GL_CALL(ST_TAG, glUniform1iv(location, count, values));
     }
 
     uint32_t Shader::CreateShader(const char* source, uint32_t type) const {
         const char* typeString = type == GL_VERTEX_SHADER ? ST_TO_STRING(GL_VERTEX_SHADER) : ST_TO_STRING(GL_FRAGMENT_SHADER);
         ST_LOG_DEBUG(ST_TAG, "Creating [{0}] shader", typeString);
-        uint32_t shaderId = glCreateShader(type);
+        ST_GL_CALL(ST_TAG, uint32_t shaderId = glCreateShader(type));
         ST_LOG_TRACE(ST_TAG, "Created shader with id [{0}]", shaderId);
         SetShaderSource(source, shaderId);
         bool compiled = CompileShader(shaderId);
@@ -63,7 +59,7 @@ namespace storytime {
             return shaderId;
         } else {
             ST_LOG_TRACE(ST_TAG, "Deleting shader with id [{0}]", shaderId);
-            glDeleteShader(shaderId);
+            ST_GL_CALL(ST_TAG, glDeleteShader(shaderId));
             return 0;
         }
     }
@@ -72,15 +68,15 @@ namespace storytime {
         ST_LOG_TRACE(ST_TAG, "Setting source on shader [{0}] \n{1}", shaderId, source);
         int32_t count = 1;
         int32_t* length = nullptr;
-        glShaderSource(shaderId, count, &source, length);
+        ST_GL_CALL(ST_TAG, glShaderSource(shaderId, count, &source, length));
         ST_LOG_TRACE(ST_TAG, "Set source on shader [{0}]", shaderId);
     }
 
     bool Shader::CompileShader(uint32_t shaderId) const {
         ST_LOG_TRACE(ST_TAG, "Compiling shader with id [{0}]", shaderId);
-        glCompileShader(shaderId);
+        ST_GL_CALL(ST_TAG, glCompileShader(shaderId));
         int32_t status = 0;
-        glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status);
+        ST_GL_CALL(ST_TAG, glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status));
         bool compiled = status != 0;
         if (!compiled) {
             ST_LOG_ERROR(ST_TAG, "Could not compile shader with id [{0}]: [{1}]", shaderId, GetShaderLog(shaderId));
@@ -90,9 +86,9 @@ namespace storytime {
 
     std::string Shader::GetShaderLog(uint32_t shaderId) const {
         int32_t length = 0;
-        glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length);
+        ST_GL_CALL(ST_TAG, glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length));
         std::vector<char> log(length);
-        glGetShaderInfoLog(shaderId, length, &length, &log[0]);
+        ST_GL_CALL(ST_TAG, glGetShaderInfoLog(shaderId, length, &length, &log[0]));
         return log.data();
     }
 
@@ -100,33 +96,33 @@ namespace storytime {
         ST_LOG_TRACE(ST_TAG, "Creating program using vertex shader with id [{0}] and fragment shader with id [{1}]", vertexShaderId, fragmentShaderId);
         uint32_t programId = glCreateProgram();
         ST_LOG_TRACE(ST_TAG, "Attaching vertex shader with id [{0}]", vertexShaderId);
-        glAttachShader(programId, vertexShaderId);
+        ST_GL_CALL(ST_TAG, glAttachShader(programId, vertexShaderId));
         ST_LOG_TRACE(ST_TAG, "Attaching fragment shader with id [{0}]", fragmentShaderId);
-        glAttachShader(programId, fragmentShaderId);
+        ST_GL_CALL(ST_TAG, glAttachShader(programId, fragmentShaderId));
         bool linked = LinkProgram(programId);
         if (linked) {
             ST_LOG_TRACE(ST_TAG, "Detaching vertex shader with id [{0}]", vertexShaderId);
-            glDetachShader(programId, vertexShaderId);
+            ST_GL_CALL(ST_TAG, glDetachShader(programId, vertexShaderId));
             ST_LOG_TRACE(ST_TAG, "Detaching fragment shader with id [{0}]", fragmentShaderId);
-            glDetachShader(programId, fragmentShaderId);
+            ST_GL_CALL(ST_TAG, glDetachShader(programId, fragmentShaderId));
             ST_LOG_DEBUG(ST_TAG, "Shader program created successfully", programId);
             return programId;
         } else {
             ST_LOG_TRACE(ST_TAG, "Deleting shader program with id [{0}]", programId);
-            glDeleteProgram(programId);
+            ST_GL_CALL(ST_TAG, glDeleteProgram(programId));
             ST_LOG_TRACE(ST_TAG, "Deleting vertex shader with id [{0}]", vertexShaderId);
-            glDeleteShader(vertexShaderId);
+            ST_GL_CALL(ST_TAG, glDeleteShader(vertexShaderId));
             ST_LOG_TRACE(ST_TAG, "Deleting fragment shader with id [{0}]", fragmentShaderId);
-            glDeleteShader(fragmentShaderId);
+            ST_GL_CALL(ST_TAG, glDeleteShader(fragmentShaderId));
             return 0;
         }
     }
 
     bool Shader::LinkProgram(uint32_t id) const {
         ST_LOG_TRACE(ST_TAG, "Linking shader program with id [{0}]", id);
-        glLinkProgram(id);
+        ST_GL_CALL(ST_TAG, glLinkProgram(id));
         int32_t status = 0;
-        glGetProgramiv(id, GL_LINK_STATUS, &status);
+        ST_GL_CALL(ST_TAG, glGetProgramiv(id, GL_LINK_STATUS, &status));
         bool linked = status != 0;
         if (!linked) {
             ST_LOG_ERROR(ST_TAG, "Could not link shader program with id [{0}]: [{1}]", id, GetProgramLog(id));
@@ -136,9 +132,9 @@ namespace storytime {
 
     std::string Shader::GetProgramLog(uint32_t programId) const {
         int32_t logLength = 0;
-        glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &logLength);
+        ST_GL_CALL(ST_TAG, glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &logLength));
         std::vector<char> log(logLength);
-        glGetProgramInfoLog(programId, logLength, &logLength, &log[0]);
+        ST_GL_CALL(ST_TAG, glGetProgramInfoLog(programId, logLength, &logLength, &log[0]));
         return log.data();
     }
 
