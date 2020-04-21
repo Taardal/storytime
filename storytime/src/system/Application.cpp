@@ -6,8 +6,8 @@
 
 namespace storytime
 {
-    Application::Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, Input* input, OrthographicCameraController* cameraController)
-            : window(window), renderer(renderer), imGuiRenderer(imGuiRenderer), input(input), cameraController(cameraController)
+    Application::Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController)
+            : window(window), renderer(renderer), imGuiRenderer(imGuiRenderer), cameraController(cameraController)
     {
         window->SetOnEventListener([this](const Event& event) {
             OnEvent(event);
@@ -39,7 +39,7 @@ namespace storytime
                 renderer->BeginScene(cameraController->GetCamera());
                 for (Layer* layer : layerStack)
                 {
-                    layer->OnUpdate(timestep, renderer, input);
+                    layer->OnUpdate(timestep);
                 }
                 renderer->EndScene();
                 imGuiRenderer->BeginScene();

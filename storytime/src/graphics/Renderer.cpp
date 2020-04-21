@@ -10,10 +10,21 @@ namespace storytime
     constexpr uint32_t Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
     constexpr uint32_t Renderer::MAX_TEXTURE_SLOTS = 16;
 
+    uint32_t Renderer::Statistics::GetVertexCount() const
+    {
+        return QuadCount * VERTICES_PER_QUAD;
+    }
+
+    uint32_t Renderer::Statistics::GetIndexCount() const
+    {
+        return QuadCount * INDICES_PER_QUAD;
+    }
+
     Renderer::Renderer(ResourceLoader* resourceLoader)
     {
         ST_GL_CALL(ST_TAG, glClearColor(0.1f, 0.1f, 0.1f, 1));
 
+        vertices = new Vertex[VERTICES_PER_BATCH];
         uint32_t vertexBufferSize = sizeof(Vertex) * VERTICES_PER_BATCH;
         vertexBuffer = CreateRef<VertexBuffer>(vertexBufferSize);
         vertexBuffer->SetAttributeLayout({
@@ -22,7 +33,6 @@ namespace storytime
             { GLSLType::Vec2,  "textureCoordinate" },
             { GLSLType::Float, "textureIndex" }
         });
-        vertices = new Vertex[VERTICES_PER_BATCH];
 
         indices = new uint32_t[INDICES_PER_BATCH];
         uint32_t offset = 0;
@@ -46,13 +56,14 @@ namespace storytime
         shader = resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl");
         shader->Bind();
 
-        whiteTextureIndex = 0;
+        textures = new Ref<Texture>[MAX_TEXTURE_SLOTS];
+
         whiteTexture = CreateRef<Texture>(1, 1);
         uint32_t whiteTexturePixels = 0xffffffff;
         whiteTexture->SetPixels(&whiteTexturePixels);
-
-        textures = new Ref<Texture>[MAX_TEXTURE_SLOTS];
         textures[0] = whiteTexture;
+        textureCount++;
+        reservedTexturesCount++;
 
         int32_t samplers[MAX_TEXTURE_SLOTS];
         for (uint32_t i = 0; i < MAX_TEXTURE_SLOTS; i++)
@@ -61,12 +72,6 @@ namespace storytime
         }
         shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
 
-        vertexPositionOriginOffset = new glm::vec4[4];
-        vertexPositionOriginOffset[0] = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
-        vertexPositionOriginOffset[1] = glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);
-        vertexPositionOriginOffset[2] = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
-        vertexPositionOriginOffset[3] = glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
-
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
@@ -74,11 +79,15 @@ namespace storytime
     {
         shader->Unbind();
         vertexArray->Unbind();
-        delete[] vertexPositionOriginOffset;
         delete[] textures;
         delete[] indices;
         delete[] vertices;
         ST_LOG_TRACE(ST_TAG, "Destroyed");
+    }
+
+    Renderer::Statistics Renderer::GetStatistics() const
+    {
+        return statistics;
     }
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const
@@ -88,31 +97,40 @@ namespace storytime
 
     void Renderer::BeginScene(OrthographicCamera* camera)
     {
+        Reset();
         ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
         shader->SetMat4("viewProjection", camera->GetViewProjection());
-        vertexCount = 0;
-        indexCount = 0;
-        textureCount = whiteTextureIndex + 1;
+    }
+
+    void Renderer::EndScene()
+    {
+        Flush();
     }
 
     void Renderer::DrawQuad(Quad& quad)
     {
+        if (indexCount >= INDICES_PER_BATCH)
+        {
+            Flush();
+            Reset();
+        }
+
         if (!quad.Texture)
         {
             quad.Texture = whiteTexture;
         }
-        float textureSlot = -1.0f;
-        for (uint32_t i = whiteTextureIndex + 1; i < textureCount; i++)
+        float textureIndex = -1.0f;
+        for (uint32_t i = 0; i < textureCount; i++)
         {
             if (textures[i] == quad.Texture)
             {
-                textureSlot = (float) i;
+                textureIndex = (float) i;
                 break;
             }
         }
-        if (textureSlot == -1.0f)
+        if (textureIndex == -1.0f)
         {
-            textureSlot = (float) textureCount;
+            textureIndex = (float) textureCount;
             textures[textureCount] = quad.Texture;
             textureCount++;
         }
@@ -122,48 +140,58 @@ namespace storytime
         const auto& scale = glm::scale(glm::mat4(1.0f), { quad.Size.x, quad.Size.y, 1.0f });
         glm::mat4 transform = translation * rotation * scale;
 
-        vertices[vertexCount].Position = transform * vertexPositionOriginOffset[0];
+        vertices[vertexCount].Position = transform * glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 0.0f };
-        vertices[vertexCount].TextureIndex = textureSlot;
+        vertices[vertexCount].TextureIndex = textureIndex;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * vertexPositionOriginOffset[1];
+        vertices[vertexCount].Position = transform * glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 0.0f };
-        vertices[vertexCount].TextureIndex = textureSlot;
+        vertices[vertexCount].TextureIndex = textureIndex;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * vertexPositionOriginOffset[2];
+        vertices[vertexCount].Position = transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 1.0f };
-        vertices[vertexCount].TextureIndex = textureSlot;
+        vertices[vertexCount].TextureIndex = textureIndex;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * vertexPositionOriginOffset[3];
+        vertices[vertexCount].Position = transform * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 1.0f };
-        vertices[vertexCount].TextureIndex = textureSlot;
+        vertices[vertexCount].TextureIndex = textureIndex;
         vertexCount++;
 
         indexCount += INDICES_PER_QUAD;
+        statistics.QuadCount++;
     }
 
-    void Renderer::EndScene() const
+    void Renderer::Reset()
+    {
+        vertexCount = 0;
+        indexCount = 0;
+        textureCount = reservedTexturesCount;
+        memset(&statistics, 0, sizeof(Statistics));
+    }
+
+    void Renderer::Flush()
     {
         uint32_t verticesSize = vertexCount * sizeof(Vertex);
         vertexBuffer->SetVertices(vertices, verticesSize);
-        for (uint32_t textureSlot = 0; textureSlot < textureCount; textureSlot++)
+        for (uint32_t i = 0; i < textureCount; i++)
         {
-            textures[textureSlot]->Bind(textureSlot);
+            textures[i]->Bind(i);
         }
         DrawIndexed();
     }
 
-    void Renderer::DrawIndexed() const
+    void Renderer::DrawIndexed()
     {
         void* offset = nullptr;
         ST_GL_CALL(ST_TAG, glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
+        statistics.DrawCalls++;
     }
 
 }

@@ -22,6 +22,17 @@ namespace storytime
 
     class Renderer
     {
+    public:
+        struct Statistics
+        {
+            uint32_t DrawCalls = 0;
+            uint32_t QuadCount = 0;
+
+            [[nodiscard]] uint32_t GetVertexCount() const;
+
+            [[nodiscard]] uint32_t GetIndexCount() const;
+        };
+
     private:
         struct Vertex
         {
@@ -38,6 +49,7 @@ namespace storytime
         static const uint32_t INDICES_PER_BATCH;
         static const uint32_t MAX_TEXTURE_SLOTS;
 
+        Statistics statistics = {};
         Ref<VertexArray> vertexArray = nullptr;
         Ref<VertexBuffer> vertexBuffer = nullptr;
         Ref<Shader> shader = nullptr;
@@ -45,16 +57,17 @@ namespace storytime
         Ref<Texture> whiteTexture = nullptr;
         Vertex* vertices = nullptr;
         uint32_t* indices = nullptr;
-        glm::vec4* vertexPositionOriginOffset = nullptr;
         uint32_t vertexCount = 0;
         uint32_t indexCount = 0;
         uint32_t textureCount = 0;
-        uint32_t whiteTextureIndex = 0;
+        uint32_t reservedTexturesCount = 0;
 
     public:
         explicit Renderer(ResourceLoader* resourceLoader);
 
         ~Renderer();
+
+        [[nodiscard]] Statistics GetStatistics() const;
 
         void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
 
@@ -62,9 +75,13 @@ namespace storytime
 
         void DrawQuad(Quad& quad);
 
-        void EndScene() const;
+        void EndScene();
 
     private:
-        void DrawIndexed() const;
+        void Reset();
+
+        void DrawIndexed();
+
+        void Flush();
     };
 }

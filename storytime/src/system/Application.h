@@ -2,7 +2,6 @@
 
 #include "window/Window.h"
 #include "window/LayerStack.h"
-#include "window/Input.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
 #include "graphics/OrthographicCameraController.h"
@@ -15,7 +14,6 @@ namespace storytime
         Window* window;
         Renderer* renderer;
         ImGuiRenderer* imGuiRenderer;
-        Input* input;
         OrthographicCameraController* cameraController;
         LayerStack layerStack;
         float lastFrameTime = 0.0f;
@@ -23,7 +21,7 @@ namespace storytime
         bool minimized = false;
 
     public:
-        Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, Input* input, OrthographicCameraController* cameraController);
+        Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController);
 
         ~Application();
 
