@@ -31,7 +31,8 @@ namespace storytime
             { GLSLType::Vec3,  "position" },
             { GLSLType::Vec4,  "color" },
             { GLSLType::Vec2,  "textureCoordinate" },
-            { GLSLType::Float, "textureIndex" }
+            { GLSLType::Float, "textureIndex" },
+            { GLSLType::Float, "tilingFactor" }
         });
 
         indices = new uint32_t[INDICES_PER_BATCH];
@@ -144,24 +145,28 @@ namespace storytime
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 0.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
+        vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
         vertices[vertexCount].Position = transform * glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 0.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
+        vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
         vertices[vertexCount].Position = transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 1.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
+        vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
         vertices[vertexCount].Position = transform * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 1.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
+        vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
         indexCount += INDICES_PER_QUAD;

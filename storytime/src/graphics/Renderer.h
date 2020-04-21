@@ -18,6 +18,7 @@ namespace storytime
         glm::vec2 Size = { 0.0f, 0.0f };
         glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
         float RotationInDegrees = 0.0f;
+        float TilingFactor = 1.0f;
     };
 
     class Renderer
@@ -40,6 +41,7 @@ namespace storytime
             glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
             glm::vec2 TextureCoordinate = { 0.0f, 0.0f };
             float TextureIndex = 0.0f;
+            float TilingFactor = 1.0f;
         };
 
         static const uint32_t VERTICES_PER_QUAD;
