@@ -14,6 +14,7 @@ namespace storytime
     private:
         Window* window;
         Renderer* renderer;
+        ImGuiRenderer* imGuiRenderer;
         Input* input;
         OrthographicCameraController* cameraController;
         LayerStack layerStack;
@@ -22,7 +23,7 @@ namespace storytime
         bool minimized = false;
 
     public:
-        Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController);
+        Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, Input* input, OrthographicCameraController* cameraController);
 
         ~Application();
 

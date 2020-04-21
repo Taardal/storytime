@@ -7,8 +7,8 @@ namespace storytime
     void GraphicsLog::Init(GraphicsContext* graphicsContext)
     {
 #ifdef ST_DEBUG
-        uint32_t versionMajor = graphicsContext->getConfig().versionMajor;
-        uint32_t versionMinor = graphicsContext->getConfig().versionMinor;
+        uint32_t versionMajor = graphicsContext->getConfig().VersionMajor;
+        uint32_t versionMinor = graphicsContext->getConfig().VersionMinor;
         if (versionMajor >= 4 && versionMinor >= 3)
         {
             const void* userParam = nullptr;

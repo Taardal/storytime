@@ -22,5 +22,10 @@ private:
 
     void OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) override;
 
+public:
+    void OnImGuiUpdate() override;
+
+private:
+
     void OnEvent(const st::Event& event) override;
 };

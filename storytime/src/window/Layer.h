@@ -27,6 +27,8 @@ namespace storytime
 
         virtual void OnUpdate(Timestep timestep, Renderer* renderer, Input* input) = 0;
 
+        virtual void OnImGuiUpdate() = 0;
+
         virtual void OnEvent(const Event& event) = 0;
     };
 

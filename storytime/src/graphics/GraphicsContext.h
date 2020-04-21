@@ -10,8 +10,9 @@ namespace storytime
     public:
         struct Config
         {
-            uint32_t versionMajor;
-            uint32_t versionMinor;
+            uint32_t VersionMajor;
+            uint32_t VersionMinor;
+            const char* GlslVersion;
         };
 
     private:

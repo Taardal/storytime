@@ -3,6 +3,7 @@
 extern storytime::Application* CreateApplication(
         storytime::Window* window,
         storytime::Renderer* renderer,
+        storytime::ImGuiRenderer* imGuiRenderer,
         storytime::Input* input,
         storytime::OrthographicCameraController* cameraController,
         storytime::ResourceLoader* resourceLoader
@@ -14,13 +15,12 @@ namespace storytime
     {
         Log::Init(config.logLevel);
 
-        ST_LOG_TRACE(ST_TAG, "Creating");
-
         fileSystem = new FileSystem();
         resourceLoader = new ResourceLoader(fileSystem);
 
         graphicsContext = new GraphicsContext(config.graphicsConfig);
-        window = new Window(config.windowConfig, graphicsContext);
+        imGuiRenderer = new ImGuiRenderer(graphicsContext);
+        window = new Window(config.windowConfig, graphicsContext, imGuiRenderer);
         GraphicsLog::Init(graphicsContext);
         renderer = new Renderer(resourceLoader);
 
@@ -28,19 +28,19 @@ namespace storytime
         camera = new OrthographicCamera();
         cameraController = new OrthographicCameraController(camera, config.windowConfig.GetAspectRatio());
 
-        application = CreateApplication(window, renderer, input, cameraController, resourceLoader);
+        application = CreateApplication(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
 
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Engine::~Engine()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
         delete application;
         delete cameraController;
         delete camera;
         delete input;
         delete renderer;
+        delete imGuiRenderer;
         delete window;
         delete graphicsContext;
         delete resourceLoader;

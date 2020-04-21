@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/GraphicsContext.h"
+#include "graphics/ImGuiRenderer.h"
 #include "events/Event.h"
 #include <GLFW/glfw3.h>
 #include <functional>
@@ -12,17 +13,24 @@ namespace storytime
     public:
         struct Config
         {
-            const char* title;
-            int32_t width;
-            int32_t height;
+            const char* Title;
+            int32_t Width;
+            int32_t Height;
+            bool Maximized;
 
             [[nodiscard]] float GetAspectRatio() const;
+        };
+
+        struct Size
+        {
+            int32_t Width;
+            int32_t Height;
         };
 
     private:
         struct GlfwCallbackData
         {
-            std::function<void(const Event&)> onEvent;
+            std::function<void(const Event&)> OnEvent;
         };
 
     private:
@@ -31,13 +39,15 @@ namespace storytime
         GLFWwindow* glfwWindow;
 
     public:
-        Window(const Config& config, GraphicsContext* graphicsContext);
+        Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer);
 
         ~Window();
 
-        void SetOnEventListener(const std::function<void(const Event&)>& onEvent);
+        [[nodiscard]] Size GetSize() const;
 
         [[nodiscard]] float GetTime() const;
+
+        void SetOnEventListener(const std::function<void(const Event&)>& onEvent);
 
         void OnUpdate() const;
 
@@ -61,6 +71,7 @@ namespace storytime
         void DestroyGlfwWindow() const;
 
         void TerminateGlfw() const;
+
     };
 
 }
