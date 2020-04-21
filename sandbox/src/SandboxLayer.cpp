@@ -22,13 +22,14 @@ void SandboxLayer::OnUpdate(st::Timestep timestep)
     static float rotation = 0.0f;
     rotation += timestep * 50.0f;
 
-    for (uint32_t x = 0; x < 10; x++)
+    for (uint32_t x = 0; x < 1; x++)
     {
-        for (uint32_t y = 0; y < 10; y++)
+        for (uint32_t y = 0; y < 1; y++)
         {
             st::Quad quad{};
             quad.Texture = kittenTexture;
-            quad.Size = { 0.1f, 0.1f };
+            //quad.TilingFactor = 20.0f;
+            quad.Size = { 1.0f, 1.0f };
             quad.Position = { x * quad.Size.x, y * quad.Size.y, 0.0f };
             //quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
             quad.RotationInDegrees = rotation;
