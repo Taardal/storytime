@@ -9,37 +9,44 @@ namespace storytime
 {
     float Window::Config::GetAspectRatio() const
     {
-        return (float) width / (float) height;
+        return (float) Width / (float) Height;
     }
 
-    Window::Window(const Config& config, GraphicsContext* graphicsContext)
+    Window::Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer)
             : config(config)
     {
-        ST_LOG_TRACE(ST_TAG, "Creating");
         InitGlfw();
         SetGlfwWindowHints(graphicsContext);
         glfwWindow = CreateGlfwWindow();
         graphicsContext->Init(glfwWindow);
+        imGuiRenderer->Init(glfwWindow);
         SetGlfwCallbacks();
         ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Window::~Window()
     {
-        ST_LOG_TRACE(ST_TAG, "Destroying");
         DestroyGlfwWindow();
         TerminateGlfw();
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    void Window::SetOnEventListener(const std::function<void(const Event&)>& onEvent)
+    Window::Size Window::GetSize() const
     {
-        glfwCallbackData.onEvent = onEvent;
+        int32_t width;
+        int32_t height;
+        glfwGetWindowSize(glfwWindow, &width, &height);
+        return { width, height };
     }
 
     float Window::GetTime() const
     {
         return (float) glfwGetTime();
+    }
+
+    void Window::SetOnEventListener(const std::function<void(const Event&)>& onEvent)
+    {
+        glfwCallbackData.OnEvent = onEvent;
     }
 
     void Window::OnUpdate() const
@@ -69,12 +76,12 @@ namespace storytime
 
     void Window::SetGlfwWindowHints(GraphicsContext* graphicsContext) const
     {
-        uint32_t versionMajor = graphicsContext->getConfig().versionMajor;
-        uint32_t versionMinor = graphicsContext->getConfig().versionMinor;
-        ST_LOG_DEBUG(ST_TAG, "Setting GLFW context version [{0}.{1}]", versionMajor, versionMinor);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
+        const GraphicsContext::Config& graphicsConfig = graphicsContext->getConfig();
+        ST_LOG_DEBUG(ST_TAG, "Setting GLFW context version [{0}.{1}]", graphicsConfig.VersionMajor, graphicsConfig.VersionMinor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, graphicsConfig.VersionMajor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, graphicsConfig.VersionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_MAXIMIZED, this->config.Maximized ? GLFW_TRUE : GLFW_FALSE);
 #ifdef ST_PLATFORM_MACOS
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 #endif
@@ -82,8 +89,8 @@ namespace storytime
 
     GLFWwindow* Window::CreateGlfwWindow() const
     {
-        ST_LOG_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
-        GLFWwindow* glfwWindow = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
+        ST_LOG_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.Title, config.Width, config.Height);
+        GLFWwindow* glfwWindow = glfwCreateWindow(config.Width, config.Height, config.Title, nullptr, nullptr);
         if (glfwWindow != nullptr)
         {
             ST_LOG_INFO(ST_TAG, "Created GLFW window");
@@ -110,12 +117,12 @@ namespace storytime
         glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* glfwWindow) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             WindowCloseEvent event;
-            callbackData->onEvent(event);
+            callbackData->OnEvent(event);
         });
         glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t width, int32_t height) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             WindowResizeEvent event(width, height);
-            callbackData->onEvent(event);
+            callbackData->OnEvent(event);
         });
     }
 
@@ -129,19 +136,19 @@ namespace storytime
                 case GLFW_PRESS:
                 {
                     KeyPressedEvent event(key);
-                    callbackData->onEvent(event);
+                    callbackData->OnEvent(event);
                     break;
                 }
                 case GLFW_RELEASE:
                 {
                     KeyReleasedEvent event(key);
-                    callbackData->onEvent(event);
+                    callbackData->OnEvent(event);
                     break;
                 }
                 case GLFW_REPEAT:
                 {
                     KeyRepeatedEvent event(key);
-                    callbackData->onEvent(event);
+                    callbackData->OnEvent(event);
                     break;
                 }
                 default:
@@ -152,7 +159,7 @@ namespace storytime
         glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, uint32_t keyCode) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             KeyTypedEvent event(keyCode);
-            callbackData->onEvent(event);
+            callbackData->OnEvent(event);
         });
     }
 
@@ -166,13 +173,13 @@ namespace storytime
                 case GLFW_PRESS:
                 {
                     MouseButtonPressedEvent event(button);
-                    callbackData->onEvent(event);
+                    callbackData->OnEvent(event);
                     break;
                 }
                 case GLFW_RELEASE:
                 {
                     MouseButtonReleasedEvent event(button);
-                    callbackData->onEvent(event);
+                    callbackData->OnEvent(event);
                     break;
                 }
                 default:
@@ -183,12 +190,12 @@ namespace storytime
         glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* glfwWindow, double x, double y) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
             MouseMovedEvent event((float) x, (float) y);
-            callbackData->onEvent(event);
+            callbackData->OnEvent(event);
         });
         glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(window);
             MouseScrolledEvent event((float) xOffset, (float) yOffset);
-            callbackData->onEvent(event);
+            callbackData->OnEvent(event);
         });
     }
 

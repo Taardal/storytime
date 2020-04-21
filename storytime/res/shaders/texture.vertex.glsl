@@ -1,4 +1,4 @@
-#version 330 core
+#version 410
 
 struct Vertex {
     vec4 color;

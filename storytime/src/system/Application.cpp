@@ -1,13 +1,13 @@
-#include <window/events/WindowEvent.h>
 #include "Log.h"
 #include "Application.h"
 #include "Timestep.h"
 #include "window/events/KeyEvent.h"
+#include "window/events/WindowEvent.h"
 
 namespace storytime
 {
-    Application::Application(Window* window, Renderer* renderer, Input* input, OrthographicCameraController* cameraController)
-            : window(window), renderer(renderer), input(input), cameraController(cameraController)
+    Application::Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, Input* input, OrthographicCameraController* cameraController)
+            : window(window), renderer(renderer), imGuiRenderer(imGuiRenderer), input(input), cameraController(cameraController)
     {
         window->SetOnEventListener([this](const Event& event) {
             OnEvent(event);
@@ -42,6 +42,12 @@ namespace storytime
                     layer->OnUpdate(timestep, renderer, input);
                 }
                 renderer->EndScene();
+                imGuiRenderer->BeginScene();
+                for (Layer* layer : layerStack)
+                {
+                    layer->OnImGuiUpdate();
+                }
+                imGuiRenderer->EndScene();
             }
             window->OnUpdate();
         }
