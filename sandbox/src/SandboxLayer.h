@@ -5,27 +5,25 @@
 class SandboxLayer : public st::Layer
 {
 private:
-    st::OrthographicCameraController* cameraController = nullptr;
-    st::ResourceLoader* resourceLoader = nullptr;
-    st::Ref<st::Texture> kittenTexture = nullptr;
-    st::Ref<st::Texture> puppyTexture = nullptr;
+    st::Renderer* renderer;
+    st::Input* input;
+    st::OrthographicCameraController* cameraController;
+    st::ResourceLoader* resourceLoader;
+    st::Ref<st::Texture> kittenTexture;
 
 public:
-    explicit SandboxLayer(st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
+    explicit SandboxLayer(st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
 
-    ~SandboxLayer() override;
+    ~SandboxLayer() override = default;
 
-private:
     void OnAttach() override;
 
     void OnDetach() override;
 
-    void OnUpdate(st::Timestep timestep, st::Renderer* renderer, st::Input* input) override;
+    void OnUpdate(st::Timestep timestep) override;
 
-public:
     void OnImGuiUpdate() override;
 
 private:
-
     void OnEvent(const st::Event& event) override;
 };

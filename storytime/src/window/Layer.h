@@ -25,7 +25,7 @@ namespace storytime
 
         virtual void OnDetach() = 0;
 
-        virtual void OnUpdate(Timestep timestep, Renderer* renderer, Input* input) = 0;
+        virtual void OnUpdate(Timestep timestep) = 0;
 
         virtual void OnImGuiUpdate() = 0;
 
