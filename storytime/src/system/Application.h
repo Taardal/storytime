@@ -12,16 +12,17 @@ namespace storytime
     {
     private:
         Window* window;
+        Input* input;
         Renderer* renderer;
         ImGuiRenderer* imGuiRenderer;
         OrthographicCameraController* cameraController;
         LayerStack layerStack;
-        float lastFrameTime = 0.0f;
-        bool running = false;
-        bool minimized = false;
+        float lastFrameTime;
+        bool running;
+        bool minimized;
 
     public:
-        Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController);
+        Application(Window* window, Input* input, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController);
 
         ~Application();
 

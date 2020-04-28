@@ -5,24 +5,12 @@
 #include "graphics/GraphicsLog.h"
 #include <spdlog/spdlog.h>
 
-#define ST_TAG ::storytime::Tag(*this, __func__, __LINE__)
-#define ST_TAG_TYPE(T) ::storytime::Tag<T>(__func__, __LINE__)
-
 #define ST_LOG_TRACE(tag, message, ...) ::storytime::Log::Trace(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_DEBUG(tag, message, ...) ::storytime::Log::Debug(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_INFO(tag, message, ...) ::storytime::Log::Info(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_WARN(tag, message, ...) ::storytime::Log::Warn(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_ERROR(tag, message, ...) ::storytime::Log::Error(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
 #define ST_LOG_CRITICAL(tag, message, ...) ::storytime::Log::Critical(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-
-#ifdef ST_DEBUG
-    #define ST_GL_CALL(tag, function) \
-        ::storytime::GraphicsLog::ClearErrors(); \
-        function; \
-        ::storytime::GraphicsLog::LogErrors(tag, #function)
-#else
-    #define ST_GL_CALL(tag, function) function;
-#endif
 
 namespace storytime
 {

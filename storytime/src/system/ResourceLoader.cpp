@@ -38,7 +38,8 @@ namespace storytime
         int32_t width = 0;
         int32_t height = 0;
         int32_t channels = 0;
-        unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
+        int32_t desiredChannels = STBI_default;
+        unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
         return { pixels, width, height, channels };
     }
 

@@ -16,15 +16,18 @@ namespace storytime
 
         ~LayerStack();
 
-        [[nodiscard]] std::vector<Layer*> GetLayers() const;
+        void PushLayer(Layer* layer);
+
+        void PopLayer(Layer* layer);
 
         [[nodiscard]] std::vector<Layer*>::const_iterator begin() const;
 
         [[nodiscard]] std::vector<Layer*>::const_iterator end() const;
 
-        void PushLayer(Layer* layer);
+        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rbegin() const;
 
-        void PopLayer(Layer* layer);
+        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rend() const;
+
     };
 
 }

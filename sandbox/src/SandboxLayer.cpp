@@ -1,10 +1,13 @@
 #include "system/Log.h"
 #include "SandboxLayer.h"
 
-SandboxLayer::SandboxLayer(st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
-        : Layer("TriangleLayer"), renderer(renderer), input(input), cameraController(cameraController), resourceLoader(resourceLoader)
+SandboxLayer::SandboxLayer(st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
+        : Layer("TriangleLayer"),
+          renderer(renderer),
+          cameraController(cameraController),
+          resourceLoader(resourceLoader),
+          kittenTexture(resourceLoader->LoadTexture("kitten.png"))
 {
-    kittenTexture = resourceLoader->LoadTexture("kitten.png");
 }
 
 void SandboxLayer::OnAttach()
@@ -15,7 +18,7 @@ void SandboxLayer::OnDetach()
 {
 }
 
-void SandboxLayer::OnUpdate(st::Timestep timestep)
+void SandboxLayer::OnUpdate(st::Input* input, const st::Timestep& timestep)
 {
     cameraController->OnUpdate(timestep, input);
 
@@ -33,21 +36,24 @@ void SandboxLayer::OnUpdate(st::Timestep timestep)
             quad.Position = { x * quad.Size.x, y * quad.Size.y, 0.0f };
             //quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
             quad.RotationInDegrees = rotation;
-            renderer->DrawQuad(quad);
+            renderer->SubmitQuad(quad);
         }
     }
 }
 
-void SandboxLayer::OnImGuiUpdate()
+void SandboxLayer::OnRender(st::Renderer* renderer)
 {
-    ImGui::Begin("Renderer statistics");
 
+}
+
+void SandboxLayer::OnImGuiRender()
+{
     auto stats = renderer->GetStatistics();
+    ImGui::Begin("Rendering");
     ImGui::Text("Draw Calls: %d", stats.DrawCalls);
     ImGui::Text("Quads: %d", stats.QuadCount);
     ImGui::Text("Vertices: %d", stats.GetVertexCount());
     ImGui::Text("Indices: %d", stats.GetIndexCount());
-
     ImGui::End();
 }
 

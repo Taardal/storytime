@@ -3,6 +3,9 @@
 #include <sstream>
 #include <typeinfo>
 
+#define ST_TAG ::storytime::Tag(*this, __func__, __LINE__)
+#define ST_TAG_TYPE(T) ::storytime::Tag<T>(__func__, __LINE__)
+
 namespace storytime
 {
     const char* DemangleTypeName(const char* typeName);

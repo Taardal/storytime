@@ -17,21 +17,6 @@ namespace storytime
         }
     }
 
-    std::vector<Layer*> LayerStack::GetLayers() const
-    {
-        return layers;
-    }
-
-    std::vector<Layer*>::const_iterator LayerStack::begin() const
-    {
-        return layers.begin();
-    }
-
-    std::vector<Layer*>::const_iterator LayerStack::end() const
-    {
-        return layers.end();
-    }
-
     void LayerStack::PushLayer(Layer* layer)
     {
         layers.emplace(layers.begin() + insertIndex, layer);
@@ -51,6 +36,26 @@ namespace storytime
             insertIndex--;
         }
         ST_LOG_INFO(ST_TAG, "Popped layer [{0}]", layer->GetName());
+    }
+
+    std::vector<Layer*>::const_iterator LayerStack::begin() const
+    {
+        return layers.begin();
+    }
+
+    std::vector<Layer*>::const_iterator LayerStack::end() const
+    {
+        return layers.end();
+    }
+
+    std::vector<Layer*>::const_reverse_iterator LayerStack::rbegin() const
+    {
+        return layers.rbegin();
+    }
+
+    std::vector<Layer*>::const_reverse_iterator LayerStack::rend() const
+    {
+        return layers.rend();
     }
 
 }
