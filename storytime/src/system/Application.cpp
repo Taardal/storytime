@@ -6,8 +6,16 @@
 
 namespace storytime
 {
-    Application::Application(Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController)
-            : window(window), renderer(renderer), imGuiRenderer(imGuiRenderer), cameraController(cameraController)
+    Application::Application(Window* window, Input* input, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController)
+            : window(window),
+              input(input),
+              renderer(renderer),
+              imGuiRenderer(imGuiRenderer),
+              cameraController(cameraController),
+              layerStack(),
+              lastFrameTime(0.0f),
+              running(false),
+              minimized(false)
     {
         window->SetOnEventListener([this](const Event& event) {
             OnEvent(event);
@@ -39,13 +47,14 @@ namespace storytime
                 renderer->BeginScene(cameraController->GetCamera());
                 for (Layer* layer : layerStack)
                 {
-                    layer->OnUpdate(timestep);
+                    layer->OnUpdate(input, timestep);
+                    layer->OnRender(renderer);
                 }
                 renderer->EndScene();
                 imGuiRenderer->BeginScene();
                 for (Layer* layer : layerStack)
                 {
-                    layer->OnImGuiUpdate();
+                    layer->OnImGuiRender();
                 }
                 imGuiRenderer->EndScene();
             }
@@ -97,9 +106,9 @@ namespace storytime
 
     void Application::OnLayerEvent(const Event& event) const
     {
-        for (auto iterator = layerStack.end(); iterator != layerStack.begin();)
+        for (auto iterator = layerStack.end() - 1; iterator != layerStack.begin(); --iterator)
         {
-            Layer* layer = *--iterator;
+            Layer* layer = *iterator;
             layer->OnEvent(event);
         }
     }

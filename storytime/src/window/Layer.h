@@ -25,11 +25,13 @@ namespace storytime
 
         virtual void OnDetach() = 0;
 
-        virtual void OnUpdate(Timestep timestep) = 0;
+        virtual void OnUpdate(Input* input, const Timestep& timestep) = 0;
 
-        virtual void OnImGuiUpdate() = 0;
+        virtual void OnImGuiRender() = 0;
 
         virtual void OnEvent(const Event& event) = 0;
+
+        virtual void OnRender(Renderer* renderer) = 0;
     };
 
 }

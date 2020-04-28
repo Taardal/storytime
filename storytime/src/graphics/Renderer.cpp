@@ -10,6 +10,20 @@ namespace storytime
     constexpr uint32_t Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
     constexpr uint32_t Renderer::MAX_TEXTURE_SLOTS = 16;
 
+    Quad::Quad()
+            : Texture(nullptr),
+              Position(0.0f, 0.0f, 0.0f),
+              Size(0.0f, 0.0f),
+              Color(1.0f, 1.0f, 1.0f, 1.0f),
+              RotationInDegrees(0.0f),
+              TilingFactor(1.0f)
+    {}
+
+    Renderer::Statistics::Statistics()
+            : DrawCalls(0),
+              QuadCount(0)
+    {}
+
     uint32_t Renderer::Statistics::GetVertexCount() const
     {
         return QuadCount * VERTICES_PER_QUAD;
@@ -20,22 +34,40 @@ namespace storytime
         return QuadCount * INDICES_PER_QUAD;
     }
 
+    Renderer::Vertex::Vertex()
+            : Position(0.0f, 0.0f, 0.0f),
+              Color(1.0f, 1.0f, 1.0f, 1.0f),
+              TextureCoordinate(0.0f, 0.0f),
+              TextureIndex(0.0f),
+              TilingFactor(1.0f)
+    {}
+
     Renderer::Renderer(ResourceLoader* resourceLoader)
+            : vertexArray(CreateRef<VertexArray>()),
+              vertexBuffer(CreateRef<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+              shader(resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl")),
+              textures(new Ref<Texture>[MAX_TEXTURE_SLOTS]),
+              whiteTexture(CreateRef<Texture>(1, 1)),
+              vertices(new Vertex[VERTICES_PER_BATCH]),
+              indices(new uint32_t[INDICES_PER_BATCH]),
+              vertexCount(0),
+              indexCount(0),
+              textureCount(0),
+              reservedTexturesCount(0),
+              statistics()
     {
+        ST_GL_CALL(ST_TAG, glEnable(GL_BLEND));
+        ST_GL_CALL(ST_TAG, glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
         ST_GL_CALL(ST_TAG, glClearColor(0.1f, 0.1f, 0.1f, 1));
 
-        vertices = new Vertex[VERTICES_PER_BATCH];
-        uint32_t vertexBufferSize = sizeof(Vertex) * VERTICES_PER_BATCH;
-        vertexBuffer = CreateRef<VertexBuffer>(vertexBufferSize);
         vertexBuffer->SetAttributeLayout({
-            { GLSLType::Vec3,  "position" },
-            { GLSLType::Vec4,  "color" },
-            { GLSLType::Vec2,  "textureCoordinate" },
+            { GLSLType::Vec3, "position" },
+            { GLSLType::Vec4, "color" },
+            { GLSLType::Vec2, "textureCoordinate" },
             { GLSLType::Float, "textureIndex" },
             { GLSLType::Float, "tilingFactor" }
         });
 
-        indices = new uint32_t[INDICES_PER_BATCH];
         uint32_t offset = 0;
         for (uint32_t i = 0; i < INDICES_PER_BATCH; i += INDICES_PER_QUAD)
         {
@@ -49,17 +81,10 @@ namespace storytime
         }
         auto indexBuffer = CreateRef<IndexBuffer>(indices, INDICES_PER_BATCH);
 
-        vertexArray = CreateRef<VertexArray>();
         vertexArray->AddVertexBuffer(vertexBuffer);
         vertexArray->SetIndexBuffer(indexBuffer);
         vertexArray->Bind();
 
-        shader = resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl");
-        shader->Bind();
-
-        textures = new Ref<Texture>[MAX_TEXTURE_SLOTS];
-
-        whiteTexture = CreateRef<Texture>(1, 1);
         uint32_t whiteTexturePixels = 0xffffffff;
         whiteTexture->SetPixels(&whiteTexturePixels);
         textures[0] = whiteTexture;
@@ -71,6 +96,7 @@ namespace storytime
         {
             samplers[i] = i;
         }
+        shader->Bind();
         shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
 
         ST_LOG_TRACE(ST_TAG, "Created");
@@ -108,7 +134,7 @@ namespace storytime
         Flush();
     }
 
-    void Renderer::DrawQuad(Quad& quad)
+    void Renderer::SubmitQuad(Quad& quad)
     {
         if (indexCount >= INDICES_PER_BATCH)
         {
@@ -183,8 +209,7 @@ namespace storytime
 
     void Renderer::Flush()
     {
-        uint32_t verticesSize = vertexCount * sizeof(Vertex);
-        vertexBuffer->SetVertices(vertices, verticesSize);
+        vertexBuffer->SetVertices(vertices, vertexCount * sizeof(Vertex));
         for (uint32_t i = 0; i < textureCount; i++)
         {
             textures[i]->Bind(i);

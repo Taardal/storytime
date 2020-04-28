@@ -1,4 +1,5 @@
-#include "storytime/Storytime.h"
+#include "SandboxLayer.h"
+#include <storytime/Storytime.h>
 
 int main()
 {
@@ -22,3 +23,42 @@ int main()
     engine->Run();
     delete engine;
 }
+
+class Sandbox : public st::Application
+{
+private:
+    SandboxLayer* sandboxLayer;
+public:
+    Sandbox(
+            st::Window* window,
+            st::Renderer* renderer,
+            st::ImGuiRenderer* imGuiRenderer,
+            st::Input* input,
+            st::OrthographicCameraController* cameraController,
+            storytime::ResourceLoader* resourceLoader
+    )
+            : Application(window, input, renderer, imGuiRenderer, cameraController),
+              sandboxLayer(new SandboxLayer(renderer, cameraController, resourceLoader))
+    {
+        PushLayer(sandboxLayer);
+    }
+
+    ~Sandbox()
+    {
+        delete sandboxLayer;
+    }
+};
+
+st::Application* CreateApplication(
+        st::Window* window,
+        st::Renderer* renderer,
+        st::ImGuiRenderer* imGuiRenderer,
+        st::Input* input,
+        st::OrthographicCameraController* cameraController,
+        st::ResourceLoader* resourceLoader
+)
+{
+    return new Sandbox(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
+}
+
+

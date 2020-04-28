@@ -9,7 +9,7 @@ namespace storytime
     class Shader
     {
     private:
-        uint32_t id = 0;
+        uint32_t id;
 
     public:
         Shader(const char* vertexSource, const char* fragmentSource);

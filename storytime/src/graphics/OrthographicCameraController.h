@@ -13,12 +13,12 @@ namespace storytime
     private:
         OrthographicCamera* camera;
         float aspectRatio;
-        glm::vec3 cameraPosition = { 0.0f, 0.0f, 0.0f };
-        float cameraRotation = 0.0f;
-        float cameraTranslationSpeed = 5.0f;
-        float cameraRotationSpeed = 180.0f;
-        float zoomLevel = 1.0f;
-        bool rotation = true;
+        glm::vec3 cameraPosition;
+        float cameraRotation;
+        float cameraTranslationSpeed;
+        float cameraRotationSpeed;
+        float zoomLevel;
+        bool rotationEnabled;
 
     public:
         OrthographicCameraController(OrthographicCamera* camera, float aspectRatio);
@@ -26,6 +26,8 @@ namespace storytime
         ~OrthographicCameraController();
 
         [[nodiscard]] OrthographicCamera* GetCamera() const;
+
+        void SetZoomLevel(float zoomLevel);
 
         void OnUpdate(Timestep timestep, Input* input);
 

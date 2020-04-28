@@ -6,13 +6,12 @@ class SandboxLayer : public st::Layer
 {
 private:
     st::Renderer* renderer;
-    st::Input* input;
     st::OrthographicCameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
 
 public:
-    explicit SandboxLayer(st::Renderer* renderer, st::Input* input, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
+    SandboxLayer(st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
 
     ~SandboxLayer() override = default;
 
@@ -20,9 +19,11 @@ public:
 
     void OnDetach() override;
 
-    void OnUpdate(st::Timestep timestep) override;
+    void OnUpdate(st::Input* input, const st::Timestep& timestep) override;
 
-    void OnImGuiUpdate() override;
+    void OnRender(st::Renderer* renderer) override;
+
+    void OnImGuiRender() override;
 
 private:
     void OnEvent(const st::Event& event) override;

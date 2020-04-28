@@ -13,12 +13,14 @@ namespace storytime
 {
     struct Quad
     {
-        Ref<Texture> Texture = nullptr;
-        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-        glm::vec2 Size = { 0.0f, 0.0f };
-        glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        float RotationInDegrees = 0.0f;
-        float TilingFactor = 1.0f;
+        Ref<Texture> Texture;
+        glm::vec3 Position;
+        glm::vec2 Size;
+        glm::vec4 Color;
+        float RotationInDegrees;
+        float TilingFactor;
+
+        Quad();
     };
 
     class Renderer
@@ -26,8 +28,10 @@ namespace storytime
     public:
         struct Statistics
         {
-            uint32_t DrawCalls = 0;
-            uint32_t QuadCount = 0;
+            uint32_t DrawCalls;
+            uint32_t QuadCount;
+
+            Statistics();
 
             [[nodiscard]] uint32_t GetVertexCount() const;
 
@@ -37,11 +41,13 @@ namespace storytime
     private:
         struct Vertex
         {
-            glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-            glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-            glm::vec2 TextureCoordinate = { 0.0f, 0.0f };
-            float TextureIndex = 0.0f;
-            float TilingFactor = 1.0f;
+            glm::vec3 Position;
+            glm::vec4 Color;
+            glm::vec2 TextureCoordinate;
+            float TextureIndex;
+            float TilingFactor;
+
+            Vertex();
         };
 
         static const uint32_t VERTICES_PER_QUAD;
@@ -51,18 +57,18 @@ namespace storytime
         static const uint32_t INDICES_PER_BATCH;
         static const uint32_t MAX_TEXTURE_SLOTS;
 
-        Statistics statistics = {};
-        Ref<VertexArray> vertexArray = nullptr;
-        Ref<VertexBuffer> vertexBuffer = nullptr;
-        Ref<Shader> shader = nullptr;
-        Ref<Texture>* textures = nullptr;
-        Ref<Texture> whiteTexture = nullptr;
-        Vertex* vertices = nullptr;
-        uint32_t* indices = nullptr;
-        uint32_t vertexCount = 0;
-        uint32_t indexCount = 0;
-        uint32_t textureCount = 0;
-        uint32_t reservedTexturesCount = 0;
+        Ref<VertexArray> vertexArray;
+        Ref<VertexBuffer> vertexBuffer;
+        Ref<Shader> shader;
+        Ref<Texture>* textures;
+        Ref<Texture> whiteTexture;
+        Vertex* vertices;
+        uint32_t* indices;
+        uint32_t vertexCount;
+        uint32_t indexCount;
+        uint32_t textureCount;
+        uint32_t reservedTexturesCount;
+        Statistics statistics;
 
     public:
         explicit Renderer(ResourceLoader* resourceLoader);
@@ -75,7 +81,7 @@ namespace storytime
 
         void BeginScene(OrthographicCamera* camera);
 
-        void DrawQuad(Quad& quad);
+        void SubmitQuad(Quad& quad);
 
         void EndScene();
 

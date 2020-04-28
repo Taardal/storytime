@@ -13,7 +13,7 @@ namespace storytime
     }
 
     Window::Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer)
-            : config(config)
+            : config(config), glfwCallbackData(), glfwWindow(nullptr)
     {
         InitGlfw();
         SetGlfwWindowHints(graphicsContext);
@@ -90,7 +90,9 @@ namespace storytime
     GLFWwindow* Window::CreateGlfwWindow() const
     {
         ST_LOG_DEBUG(ST_TAG, "Creating GLFW window [{0}, {1}x{2}]", config.Title, config.Width, config.Height);
-        GLFWwindow* glfwWindow = glfwCreateWindow(config.Width, config.Height, config.Title, nullptr, nullptr);
+        GLFWmonitor* fullscreenMonitor = nullptr;
+        GLFWwindow* sharedWindow = nullptr;
+        GLFWwindow* glfwWindow = glfwCreateWindow(config.Width, config.Height, config.Title, fullscreenMonitor, sharedWindow);
         if (glfwWindow != nullptr)
         {
             ST_LOG_INFO(ST_TAG, "Created GLFW window");

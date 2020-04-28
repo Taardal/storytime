@@ -7,7 +7,14 @@
 namespace storytime
 {
     OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
-            : camera(camera), aspectRatio(aspectRatio)
+            : camera(camera),
+              aspectRatio(aspectRatio),
+              cameraPosition(0.0f, 0.0f, 0.0f),
+              cameraRotation(0.0f),
+              cameraTranslationSpeed(5.0f),
+              cameraRotationSpeed(180.0f),
+              zoomLevel(1.0f),
+              rotationEnabled(true)
     {
         SetCameraProjection();
         ST_LOG_TRACE(ST_TAG, "Created");
@@ -21,6 +28,12 @@ namespace storytime
     OrthographicCamera* OrthographicCameraController::GetCamera() const
     {
         return camera;
+    }
+
+    void OrthographicCameraController::SetZoomLevel(float zoomLevel)
+    {
+        this->zoomLevel = zoomLevel;
+        SetCameraProjection();
     }
 
     void OrthographicCameraController::OnUpdate(Timestep timestep, Input* input)
@@ -45,7 +58,7 @@ namespace storytime
             cameraPosition.x -= -sin(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
             cameraPosition.y -= cos(glm::radians(cameraRotation)) * cameraTranslationSpeed * timestep;
         }
-        if (rotation)
+        if (rotationEnabled)
         {
             if (input->IsKeyPressed(KeyCode::KEY_Q))
             {
