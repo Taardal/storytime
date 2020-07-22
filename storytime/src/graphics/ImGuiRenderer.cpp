@@ -10,6 +10,10 @@ namespace storytime
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     }
 
     ImGuiRenderer::~ImGuiRenderer()
@@ -33,10 +37,21 @@ namespace storytime
         ImGui::NewFrame();
     }
 
-    void ImGuiRenderer::EndScene() const
+    void ImGuiRenderer::EndScene(float windowWidth, float windowHeight) const
     {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(windowWidth, windowHeight);
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* glfwWindow = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(glfwWindow);
+        }
     }
 
 }
