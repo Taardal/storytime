@@ -110,8 +110,7 @@ namespace storytime
 
     uint32_t Shader::CreateProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId) const
     {
-        ST_LOG_TRACE(ST_TAG, "Creating program using vertex shader with id [{0}] and fragment shader with id [{1}]", vertexShaderId,
-                     fragmentShaderId);
+        ST_LOG_TRACE(ST_TAG, "Creating program using vertex shader with id [{0}] and fragment shader with id [{1}]", vertexShaderId, fragmentShaderId);
         uint32_t programId = glCreateProgram();
         ST_LOG_TRACE(ST_TAG, "Attaching vertex shader with id [{0}]", vertexShaderId);
         ST_GL_CALL(ST_TAG, glAttachShader(programId, vertexShaderId));

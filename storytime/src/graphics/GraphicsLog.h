@@ -34,5 +34,3 @@ namespace storytime
         static const char* GetDebugMessageSeverity(uint32_t severity);
     };
 }
-
-

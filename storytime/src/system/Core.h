@@ -6,6 +6,7 @@
 
 #if defined(_WIN32)
 	#if defined(_WIN64)
+        #include <windows.h>
 		#define ST_PLATFORM_WINDOWS
 	#else
 		#error "Unsupported platform: Windows x86"
@@ -47,8 +48,8 @@
 
 #ifdef ST_DEBUG
     #include "system/Log.h"
-    #if __has_builtin(__debugbreak)
-        #define ST_BREAK() __debugBreak()
+    #ifdef ST_PLATFORM_WINDOWS
+        #define ST_BREAK() __debugbreak()
     #elif __has_builtin(__builtin_debugtrap)
         #define ST_BREAK() __builtin_debugtrap()
     #else

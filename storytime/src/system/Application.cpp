@@ -56,7 +56,7 @@ namespace storytime
                 {
                     layer->OnImGuiRender();
                 }
-                imGuiRenderer->EndScene();
+                imGuiRenderer->EndScene(window->GetSize().Width, window->GetSize().Height);
             }
             window->OnUpdate();
         }

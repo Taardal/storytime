@@ -34,6 +34,10 @@ namespace storytime
         ST_GL_CALL(ST_TAG, glDeleteTextures(1, &id));
     }
 
+    uint32_t Texture::GetId() const {
+        return id;
+    }
+
     void Texture::SetPixels(const void* pixels) const
     {
         ST_GL_CALL(ST_TAG, glTexImage2D(

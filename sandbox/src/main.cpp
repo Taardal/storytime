@@ -40,6 +40,9 @@ public:
             : Application(window, input, renderer, imGuiRenderer, cameraController),
               sandboxLayer(new SandboxLayer(renderer, cameraController, resourceLoader))
     {
+        sandboxLayer->SetOnCloseListener([this]() {
+            Stop();
+        });
         PushLayer(sandboxLayer);
     }
 

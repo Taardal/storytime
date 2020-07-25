@@ -19,7 +19,7 @@ namespace storytime
 
         void BeginScene() const;
 
-        void EndScene() const;
+        void EndScene(float windowWidth, float windowHeight) const;
     };
 }
 

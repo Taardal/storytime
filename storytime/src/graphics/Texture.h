@@ -32,6 +32,8 @@ namespace storytime
 
         ~Texture();
 
+        uint32_t GetId() const;
+
         void SetPixels(const void* data) const;
 
         void Bind(uint32_t textureSlot = 0) const;

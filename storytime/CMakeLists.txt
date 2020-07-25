@@ -49,7 +49,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS})
 
 set(IMGUI_NAME imgui)
-set(IMGUI_DIR ${LIB_DIR}/imgui-1.76)
+set(IMGUI_DIR ${LIB_DIR}/imgui-docking-1.77)
 add_library(${IMGUI_NAME} ${IMGUI_DIR}/imconfig.h ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui.h ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_internal.h ${IMGUI_DIR}/imgui_widgets.cpp ${IMGUI_DIR}/imstb_rectpack.h ${IMGUI_DIR}/imstb_textedit.h ${IMGUI_DIR}/imstb_truetype.h ${IMGUI_DIR}/imgui_impl_glfw.cpp ${IMGUI_DIR}/imgui_impl_glfw.h ${IMGUI_DIR}/imgui_impl_opengl3.cpp ${IMGUI_DIR}/imgui_impl_opengl3.h)
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLFW_DIR}/include)
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)

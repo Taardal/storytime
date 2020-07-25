@@ -25,7 +25,7 @@ namespace storytime
         AttributeLayout attributeLayout;
 
     public:
-        explicit VertexBuffer(uint32_t size);
+        explicit VertexBuffer(size_t size);
 
         ~VertexBuffer();
 

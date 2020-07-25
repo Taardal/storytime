@@ -9,11 +9,14 @@ private:
     st::OrthographicCameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
+    std::function<void()> onClose;
 
 public:
     SandboxLayer(st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
 
     ~SandboxLayer() override = default;
+
+    void SetOnCloseListener(const std::function<void()>& onClose);
 
     void OnAttach() override;
 

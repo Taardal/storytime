@@ -28,12 +28,12 @@ namespace storytime
 
         void Run();
 
+        void Stop();
+
         void PushLayer(Layer* layer);
 
     private:
         void OnEvent(const Event& event);
-
-        void Stop();
 
         void OnLayerEvent(const Event& event) const;
     };

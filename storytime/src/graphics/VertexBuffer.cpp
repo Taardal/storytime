@@ -24,7 +24,7 @@ namespace storytime
         return attributes.end();
     }
 
-    VertexBuffer::VertexBuffer(uint32_t size)
+    VertexBuffer::VertexBuffer(size_t size)
             : id(0), attributeLayout{}
     {
         ST_GL_CALL(ST_TAG, glGenBuffers(1, &id));
