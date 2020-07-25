@@ -58,7 +58,7 @@ namespace storytime
     {
         ST_GL_CALL(ST_TAG, glEnable(GL_BLEND));
         ST_GL_CALL(ST_TAG, glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        ST_GL_CALL(ST_TAG, glClearColor(0.1f, 0.1f, 0.1f, 1));
+        ST_GL_CALL(ST_TAG, glClearColor(1.0f, 0.0f, 1.0f, 1));
 
         vertexBuffer->SetAttributeLayout({
             { GLSLType::Vec3, "position" },

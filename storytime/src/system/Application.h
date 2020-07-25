@@ -33,7 +33,7 @@ namespace storytime
         void PushLayer(Layer* layer);
 
     private:
-        void OnEvent(const Event& event);
+        void OnEvent(Event& event);
 
         void OnLayerEvent(const Event& event) const;
     };

@@ -5,29 +5,35 @@
 class SandboxLayer : public st::Layer
 {
 private:
+    st::Window* window;
     st::Renderer* renderer;
     st::OrthographicCameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
-    std::function<void()> onClose;
+    st::Ref<st::Framebuffer> framebuffer;
+    glm::vec2 viewportSize;
+    bool viewportFocused;
+    bool viewportHovered;
 
 public:
-    SandboxLayer(st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
+    SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
 
     ~SandboxLayer() override = default;
 
-    void SetOnCloseListener(const std::function<void()>& onClose);
-
     void OnAttach() override;
+
+    void OnEvent(const st::Event& event) override;
+
+    void OnUpdate(const st::Timestep& timestep, st::Input* input, st::Renderer* renderer) override;
+
+    void OnImGuiRender(st::ImGuiRenderer* imGuiRenderer) override;
 
     void OnDetach() override;
 
-    void OnUpdate(st::Input* input, const st::Timestep& timestep) override;
-
-    void OnRender(st::Renderer* renderer) override;
-
-    void OnImGuiRender() override;
-
 private:
-    void OnEvent(const st::Event& event) override;
+    void SetupDockspacePanel() const;
+
+    void SetupViewportPanel(st::ImGuiRenderer* imGuiRenderer);
+
+    void SetupSettingsPanel() const;
 };

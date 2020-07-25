@@ -30,7 +30,7 @@ namespace storytime
     private:
         struct GlfwCallbackData
         {
-            std::function<void(const Event&)> OnEvent;
+            std::function<void(Event&)> OnEvent;
         };
 
     private:
@@ -47,7 +47,7 @@ namespace storytime
 
         [[nodiscard]] float GetTime() const;
 
-        void SetOnEventListener(const std::function<void(const Event&)>& onEvent);
+        void SetOnEventListener(const std::function<void(Event&)>& onEvent);
 
         void OnUpdate() const;
 
