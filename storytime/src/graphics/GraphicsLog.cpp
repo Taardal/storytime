@@ -4,12 +4,10 @@
 
 namespace storytime
 {
-    void GraphicsLog::Init(GraphicsContext* graphicsContext)
+    void GraphicsLog::Init(const GraphicsContext::Config& graphicsConfig)
     {
 #ifdef ST_DEBUG
-        uint32_t versionMajor = graphicsContext->getConfig().VersionMajor;
-        uint32_t versionMinor = graphicsContext->getConfig().VersionMinor;
-        if (versionMajor >= 4 && versionMinor >= 3)
+        if (graphicsConfig.VersionMajor >= 4 && graphicsConfig.VersionMinor >= 3)
         {
             const void* userParam = nullptr;
             ST_GL_CALL(ST_TAG_TYPE(GraphicsLog), glDebugMessageCallback(OnDebugMessage, userParam));
@@ -26,11 +24,13 @@ namespace storytime
     void GraphicsLog::LogErrors(std::string_view tag, std::string_view functionSignature)
     {
         uint32_t errorCode;
+        uint32_t errorCount = 0;
         while ((errorCode = glGetError()) != GL_NO_ERROR)
         {
             ST_LOG_ERROR(tag, "OpenGL error on function [{0}] - {1}", functionSignature, GetErrorMessage(errorCode));
-            ST_BREAK();
+            errorCount++;
         }
+        ST_ASSERT(ST_TAG_TYPE(GraphicsLog), errorCount == 0);
     }
 
     const char* GraphicsLog::GetErrorMessage(uint32_t errorCode)

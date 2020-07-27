@@ -14,6 +14,7 @@ namespace storytime
     Engine::Engine(const Config& config)
     {
         Log::Init(config.logLevel);
+        GraphicsLog::Init(config.graphicsConfig);
 
         fileSystem = new FileSystem();
         resourceLoader = new ResourceLoader(fileSystem);
@@ -21,7 +22,6 @@ namespace storytime
         graphicsContext = new GraphicsContext(config.graphicsConfig);
         imGuiRenderer = new ImGuiRenderer(graphicsContext);
         window = new Window(config.windowConfig, graphicsContext, imGuiRenderer);
-        GraphicsLog::Init(graphicsContext);
         renderer = new Renderer(resourceLoader);
 
         input = new Input();
