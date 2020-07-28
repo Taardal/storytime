@@ -16,7 +16,7 @@ namespace storytime
     class GraphicsLog
     {
     public:
-        static void Init(GraphicsContext* graphicsContext);
+        static void Init(const GraphicsContext::Config& graphicsConfig);
 
         static void ClearErrors();
 

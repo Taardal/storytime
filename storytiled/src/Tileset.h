@@ -2,20 +2,23 @@
 
 #include <string>
 
-namespace storytiled {
+namespace storytiled
+{
+    struct Tileset
+    {
+        std::string Name;
+        std::string Image;
+        int FirstGlobalId;
+        int ImageWidth;
+        int ImageHeight;
+        int TileWidth;
+        int TileHeight;
+        int TileCount;
+        int Columns;
+        int Margin;
+        int Spacing;
 
-    struct Tileset {
-        std::string name;
-        std::string imagePath;
-        int firstGlobalId;
-        int numberOfColumns;
-        int numberOfTiles;
-        int tileWidth;
-        int imageWidth;
-        int imageHeight;
-        int tileHeight;
-        int margin;
-        int spacing;
+        Tileset();
     };
 
 }

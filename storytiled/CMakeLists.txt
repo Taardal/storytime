@@ -3,7 +3,7 @@ project(storytiled)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(${PROJECT_NAME} src/World.cpp src/World.h src/Tileset.cpp src/Tileset.h)
+add_library(${PROJECT_NAME} src/World.cpp src/World.h src/Tileset.cpp src/Tileset.h src/Layer.cpp src/Layer.h src/Object.cpp src/Object.h src/Property.cpp src/Property.h)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
