@@ -4,7 +4,7 @@
 namespace storytime
 {
     EditorLayer::EditorLayer(Window* window, Renderer* renderer, OrthographicCameraController* cameraController, ResourceLoader* resourceLoader)
-            : Layer("TriangleLayer"),
+            : Layer("EditorLayer"),
               window(window),
               renderer(renderer),
               cameraController(cameraController),
@@ -113,12 +113,12 @@ namespace storytime
 
     void EditorLayer::SetupSettingsPanel() const
     {
+        const st::Renderer::Statistics& statistics = renderer->GetStatistics();
         ImGui::Begin("Settings");
-        auto stats = renderer->GetStatistics();
-        ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-        ImGui::Text("Quads: %d", stats.QuadCount);
-        ImGui::Text("Vertices: %d", stats.GetVertexCount());
-        ImGui::Text("Indices: %d", stats.GetIndexCount());
+        ImGui::Text("Draw Calls: %d", statistics.DrawCalls);
+        ImGui::Text("Quads: %d", statistics.QuadCount);
+        ImGui::Text("Vertices: %d", statistics.GetVertexCount());
+        ImGui::Text("Indices: %d", statistics.GetIndexCount());
         ImGui::End();
     }
 }

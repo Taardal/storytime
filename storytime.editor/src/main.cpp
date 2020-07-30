@@ -50,18 +50,18 @@ namespace storytime
             delete editorLayer;
         }
     };
+}
 
-    Application* CreateApplication(
-            Window* window,
-            Renderer* renderer,
-            ImGuiRenderer* imGuiRenderer,
-            Input* input,
-            OrthographicCameraController* cameraController,
-            ResourceLoader* resourceLoader
-    )
-    {
-        return new Editor(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
-    }
+st::Application* CreateApplication(
+        st::Window* window,
+        st::Renderer* renderer,
+        st::ImGuiRenderer* imGuiRenderer,
+        st::Input* input,
+        st::OrthographicCameraController* cameraController,
+        st::ResourceLoader* resourceLoader
+)
+{
+    return new st::Editor(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
 }
 
 
