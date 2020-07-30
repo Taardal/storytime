@@ -33,6 +33,8 @@ namespace storytime
 
         void OnEvent(const Event& event);
 
+        void Resize(uint32_t width, uint32_t height);
+
     private:
         void SetCameraProjection();
     };

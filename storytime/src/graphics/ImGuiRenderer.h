@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsContext.h"
+#include "window/events/Event.h"
 #include <imgui.h>
 
 namespace storytime
@@ -9,6 +10,7 @@ namespace storytime
     {
     private:
         GraphicsContext* graphicsContext;
+        bool consumeEvents;
 
     public:
         explicit ImGuiRenderer(GraphicsContext* graphicsContext);
@@ -17,9 +19,14 @@ namespace storytime
 
         void Init(GLFWwindow* glfwWindow) const;
 
-        void BeginScene() const;
+        void Begin() const;
 
-        void EndScene(float windowWidth, float windowHeight) const;
+        void End(float windowWidth, float windowHeight) const;
+
+        void SetConsumeEvents(bool consumeEvents);
+
+        void OnEvent(Event& event) const;
+
     };
 }
 

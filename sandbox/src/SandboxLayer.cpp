@@ -1,35 +1,50 @@
 #include "system/Log.h"
 #include "SandboxLayer.h"
 
-SandboxLayer::SandboxLayer(st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
+SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
         : Layer("TriangleLayer"),
+          window(window),
           renderer(renderer),
           cameraController(cameraController),
           resourceLoader(resourceLoader),
           kittenTexture(resourceLoader->LoadTexture("kitten.png")),
-          onClose(nullptr)
+          framebuffer(nullptr),
+          viewportSize(0.0f, 0.0f)
 {
-}
-
-void SandboxLayer::SetOnCloseListener(const std::function<void()>& onClose) {
-    this->onClose = onClose;
+    st::Framebuffer::Config config;
+    config.Width = window->GetSize().Width;
+    config.Height = window->GetSize().Height;
+    framebuffer = st::CreateRef<st::Framebuffer>(config);
 }
 
 void SandboxLayer::OnAttach()
 {
 }
 
-void SandboxLayer::OnDetach()
+void SandboxLayer::OnEvent(const st::Event& event)
 {
+    cameraController->OnEvent(event);
 }
 
-void SandboxLayer::OnUpdate(st::Input* input, const st::Timestep& timestep)
+void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::Renderer* renderer)
 {
-    cameraController->OnUpdate(timestep, input);
+    const st::Framebuffer::Config& config = framebuffer->GetConfig();
+    bool validViewportSize = viewportSize.x > 0.0f && viewportSize.y > 0.0f;
+    bool changedViewportSize = viewportSize.x != config.Width || viewportSize.y != config.Height;
+    if (validViewportSize && changedViewportSize)
+    {
+        framebuffer->Resize((uint32_t) viewportSize.x, (uint32_t) viewportSize.y);
+        cameraController->Resize((uint32_t) viewportSize.x, (uint32_t) viewportSize.y);
+    }
+    if (viewportFocused)
+    {
+        cameraController->OnUpdate(timestep, input);
+    }
+    framebuffer->Bind();
+    renderer->BeginScene(cameraController->GetCamera());
 
     static float rotation = 0.0f;
     rotation += timestep * 50.0f;
-
     for (uint32_t x = 0; x < 1; x++)
     {
         for (uint32_t y = 0; y < 1; y++)
@@ -37,101 +52,81 @@ void SandboxLayer::OnUpdate(st::Input* input, const st::Timestep& timestep)
             st::Quad quad{};
             quad.Texture = kittenTexture;
             quad.Size = { 1.0f, 1.0f };
-            quad.Position = { x * quad.Size.x, y * quad.Size.y, 0.0f };
+            quad.Position = { 0.0f, 0.0f, 0.0f };
+            //quad.Position = { x * quad.Size.x, y * quad.Size.y, 0.0f };
             //quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
             //quad.TilingFactor = 20.0f;
             //quad.RotationInDegrees = rotation;
             renderer->SubmitQuad(quad);
         }
     }
+
+    renderer->EndScene();
+    framebuffer->Unbind();
 }
 
-void SandboxLayer::OnRender(st::Renderer* renderer)
+void SandboxLayer::OnImGuiRender(st::ImGuiRenderer* imGuiRenderer)
 {
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->GetWorkPos());
+    ImGui::SetNextWindowSize(viewport->GetWorkSize());
+    ImGui::SetNextWindowViewport(viewport->ID);
 
+    SetupDockspacePanel();
+    SetupViewportPanel(imGuiRenderer);
+    SetupSettingsPanel();
 }
 
-void SandboxLayer::OnImGuiRender()
+void SandboxLayer::OnDetach()
 {
-    static bool fullscreen = true;
-    static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+}
 
-    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-    // because it would be confusing to have two docking targets within each others.
-    static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    if (fullscreen)
-    {
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->GetWorkPos());
-        ImGui::SetNextWindowSize(viewport->GetWorkSize());
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    }
+void SandboxLayer::SetupDockspacePanel() const
+{
+    static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking;
+    windowFlags |= ImGuiWindowFlags_NoTitleBar;
+    windowFlags |= ImGuiWindowFlags_NoCollapse;
+    windowFlags |= ImGuiWindowFlags_NoResize;
+    windowFlags |= ImGuiWindowFlags_NoMove;
+    windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    windowFlags |= ImGuiWindowFlags_NoNavFocus;
 
-    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-    // and handle the pass-thru hole, so we ask Begin() to not render a background.
-    if (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
-    {
-        windowFlags |= ImGuiWindowFlags_NoBackground;
-    }
-
-    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-    // all active windows docked into it will lose their parent and become undocked.
-    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    
     static bool showDockspace = true;
-    ImGui::Begin("DockSpace Demo", &showDockspace, windowFlags);
-    
-    ImGui::PopStyleVar();
-    if (fullscreen)
+    ImGui::Begin("Editor", &showDockspace, windowFlags);
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
     {
-        ImGui::PopStyleVar(2);
-    }
-
-    // DockSpace
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-    {
-        ImGuiID dockspaceId = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
-    }
-
-    if (ImGui::BeginMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("Exit"))
-            {
-                onClose();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
+        ImGuiID dockspaceId = ImGui::GetID("EditorDockspace");
+        const ImVec2& dockspaceSize = ImVec2(0.0f, 0.0f);
+        ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+        ImGui::DockSpace(dockspaceId, dockspaceSize, dockspaceFlags);
     }
     ImGui::End();
+    ImGui::PopStyleVar();
+}
 
+void SandboxLayer::SetupViewportPanel(st::ImGuiRenderer* imGuiRenderer)
+{
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+    ImGui::Begin("Viewport");
+    viewportFocused = ImGui::IsWindowFocused();
+    viewportHovered = ImGui::IsWindowHovered();
+    imGuiRenderer->SetConsumeEvents(!viewportFocused || !viewportHovered);
+    const ImVec2& viewportSize = ImGui::GetContentRegionAvail();
+    this->viewportSize = { viewportSize.x, viewportSize.y };
+    size_t textureId = (size_t) framebuffer->GetColorAttachmentTexture()->GetId();
+    ImGui::Image((void*) textureId, viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+    ImGui::End();
+    ImGui::PopStyleVar();
+}
 
+void SandboxLayer::SetupSettingsPanel() const
+{
+    ImGui::Begin("Settings");
     auto stats = renderer->GetStatistics();
-    ImGui::Begin("Rendering");
     ImGui::Text("Draw Calls: %d", stats.DrawCalls);
     ImGui::Text("Quads: %d", stats.QuadCount);
     ImGui::Text("Vertices: %d", stats.GetVertexCount());
     ImGui::Text("Indices: %d", stats.GetIndexCount());
-    size_t textureId = (size_t) kittenTexture->GetId();
-    ImGui::Image((void*) textureId, ImVec2(320, 240), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
     ImGui::End();
-
-    bool showDemo = true;
-    ImGui::ShowDemoWindow(&showDemo);
-}
-
-void SandboxLayer::OnEvent(const st::Event& event)
-{
-    cameraController->OnEvent(event);
 }

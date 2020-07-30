@@ -91,6 +91,12 @@ namespace storytime
         }
     }
 
+    void OrthographicCameraController::Resize(uint32_t width, uint32_t height)
+    {
+        aspectRatio = width / height;
+        SetCameraProjection();
+    }
+
     void OrthographicCameraController::SetCameraProjection()
     {
         float top = zoomLevel;

@@ -44,7 +44,7 @@ namespace storytime
         return (float) glfwGetTime();
     }
 
-    void Window::SetOnEventListener(const std::function<void(const Event&)>& onEvent)
+    void Window::SetOnEventListener(const std::function<void(Event&)>& onEvent)
     {
         glfwCallbackData.OnEvent = onEvent;
     }

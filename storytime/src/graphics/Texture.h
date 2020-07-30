@@ -14,25 +14,42 @@ namespace storytime
 
     class Texture
     {
+    public:
+        struct Config
+        {
+            Config();
+
+            uint32_t Width;
+            uint32_t Height;
+            int32_t Format;
+            int32_t InternalFormat;
+            int32_t LevelOfDetail;
+            int32_t Border;
+        };
+
     private:
         static const int32_t TARGET;
-        static const int32_t LEVEL_OF_DETAIL;
-        static const int32_t BORDER;
 
         uint32_t id;
         uint32_t width;
         uint32_t height;
         int32_t format;
         int32_t internalFormat;
+        int32_t levelOfDetail;
+        int32_t border;
 
     public:
-        explicit Texture(const Image& image);
+        Texture(const Config& config);
+
+        Texture(const Image& image);
 
         Texture(uint32_t width, uint32_t height);
 
         ~Texture();
 
         uint32_t GetId() const;
+
+        int32_t GetLevelOfDetail() const;
 
         void SetPixels(const void* data) const;
 
@@ -41,11 +58,7 @@ namespace storytime
         void Unbind() const;
 
     private:
-        void CreateTexture();
-
-        static int32_t GetFormat(int32_t channels = 4);
-
-        static int32_t GetInternalFormat(int32_t channels = 4);
+        void Init();
     };
 }
 

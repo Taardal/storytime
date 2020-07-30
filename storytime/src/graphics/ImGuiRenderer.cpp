@@ -5,7 +5,7 @@
 namespace storytime
 {
     ImGuiRenderer::ImGuiRenderer(GraphicsContext* graphicsContext)
-        : graphicsContext(graphicsContext)
+        : graphicsContext(graphicsContext), consumeEvents(false)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -30,14 +30,14 @@ namespace storytime
         ImGui_ImplOpenGL3_Init(graphicsContext->getConfig().GlslVersion);
     }
 
-    void ImGuiRenderer::BeginScene() const
+    void ImGuiRenderer::Begin() const
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
-    void ImGuiRenderer::EndScene(float windowWidth, float windowHeight) const
+    void ImGuiRenderer::End(float windowWidth, float windowHeight) const
     {
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2(windowWidth, windowHeight);
@@ -51,6 +51,19 @@ namespace storytime
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(glfwWindow);
+        }
+    }
+
+    void ImGuiRenderer::SetConsumeEvents(bool consumeEvents)
+    {
+        this->consumeEvents = consumeEvents;
+    }
+
+    void ImGuiRenderer::OnEvent(Event& event) const
+    {
+        if (consumeEvents)
+        {
+
         }
     }
 

@@ -7,7 +7,7 @@ int main()
     windowConfig.Title = "Sandbox";
     windowConfig.Width = 1280;
     windowConfig.Height = windowConfig.Width / 16 * 12;
-    windowConfig.Maximized = true;
+    windowConfig.Maximized = false;
 
     storytime::GraphicsContext::Config graphicsConfig = {};
     graphicsConfig.VersionMajor = 4;
@@ -38,11 +38,8 @@ public:
             storytime::ResourceLoader* resourceLoader
     )
             : Application(window, input, renderer, imGuiRenderer, cameraController),
-              sandboxLayer(new SandboxLayer(renderer, cameraController, resourceLoader))
+              sandboxLayer(new SandboxLayer(window, renderer, cameraController, resourceLoader))
     {
-        sandboxLayer->SetOnCloseListener([this]() {
-            Stop();
-        });
         PushLayer(sandboxLayer);
     }
 
