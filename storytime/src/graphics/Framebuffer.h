@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture.h"
 #include <cstdint>
 
 namespace storytime
@@ -20,8 +21,8 @@ namespace storytime
     private:
         Config config;
         uint32_t id;
-        uint32_t colorAttachmentId;
-        uint32_t depthAttachmentId;
+        Texture* colorAttachmentTexture;
+        Texture* depthAttachmentTexture;
 
     public:
         Framebuffer(const Config& config);
@@ -30,7 +31,7 @@ namespace storytime
 
         const Config& GetConfig() const;
 
-        uint32_t GetColorAttachmentId() const;
+        Texture* GetColorAttachmentTexture() const;
 
         void Bind();
 
@@ -39,7 +40,11 @@ namespace storytime
         void Resize(uint32_t width, uint32_t height);
 
     private:
-        void Invalidate();
+        void Init();
+
+        void AttachTexture(uint32_t attachment, Texture* texture) const;
+
+        void Delete() const;
     };
 }
 

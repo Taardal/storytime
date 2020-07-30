@@ -12,16 +12,14 @@ namespace storytime
 namespace storytime
 {
     Framebuffer::Framebuffer(const Framebuffer::Config& config)
-            : config(config), id(0), colorAttachmentId(0), depthAttachmentId(0)
+            : config(config), id(0), colorAttachmentTexture(nullptr), depthAttachmentTexture(nullptr)
     {
-        Invalidate();
+        Init();
     }
 
     Framebuffer::~Framebuffer()
     {
-        ST_GL_CALL(ST_TAG, glDeleteFramebuffers(1, &id));
-        ST_GL_CALL(ST_TAG, glDeleteTextures(1, &colorAttachmentId));
-        ST_GL_CALL(ST_TAG, glDeleteTextures(1, &depthAttachmentId));
+        Delete();
     }
 
     const Framebuffer::Config& Framebuffer::GetConfig() const
@@ -29,9 +27,9 @@ namespace storytime
         return config;
     }
 
-    uint32_t Framebuffer::GetColorAttachmentId() const
+    Texture* Framebuffer::GetColorAttachmentTexture() const
     {
-        return colorAttachmentId;
+        return colorAttachmentTexture;
     }
 
     void Framebuffer::Bind()
@@ -45,78 +43,62 @@ namespace storytime
         ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
-    void Framebuffer::Invalidate()
+    void Framebuffer::Resize(uint32_t width, uint32_t height)
     {
-        if (id)
+        if (width > 0 && height > 0)
         {
-            ST_GL_CALL(ST_TAG, glDeleteFramebuffers(1, &id));
-            ST_GL_CALL(ST_TAG, glDeleteTextures(1, &colorAttachmentId));
-            ST_GL_CALL(ST_TAG, glDeleteTextures(1, &depthAttachmentId));
+            config.Width = width;
+            config.Height = height;
+            if (id)
+            {
+                Delete();
+            }
+            Init();
         }
+    }
 
+    void Framebuffer::Init()
+    {
         ST_GL_CALL(ST_TAG, glGenFramebuffers(1, &id));
         ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, id));
-
-        int levelOfDetail = 0;
-        int border = 0;
-
-        ST_GL_CALL(ST_TAG, glGenTextures(1, &colorAttachmentId));
-        ST_GL_CALL(ST_TAG, glBindTexture(GL_TEXTURE_2D, colorAttachmentId));
-        ST_GL_CALL(ST_TAG, glTexImage2D(
-                GL_TEXTURE_2D,
-                levelOfDetail,
-                GL_RGBA8,
-                config.Width,
-                config.Height,
-                border,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                nullptr
-        ));
-        ST_GL_CALL(ST_TAG, glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        ST_GL_CALL(ST_TAG, glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        ST_GL_CALL(ST_TAG, glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_COLOR_ATTACHMENT0,
-                GL_TEXTURE_2D,
-                colorAttachmentId,
-                levelOfDetail
-        ));
-        ST_GL_CALL(ST_TAG, glBindTexture(GL_TEXTURE_2D, 0));
-
-        ST_GL_CALL(ST_TAG, glGenTextures(1, &depthAttachmentId));
-        ST_GL_CALL(ST_TAG, glBindTexture(GL_TEXTURE_2D, depthAttachmentId));
-        ST_GL_CALL(ST_TAG, glTexImage2D(
-                GL_TEXTURE_2D,
-                levelOfDetail,
-                GL_DEPTH_COMPONENT,
-                config.Width,
-                config.Height,
-                border,
-                GL_DEPTH_COMPONENT,
-                GL_UNSIGNED_BYTE,
-                nullptr
-        ));
-        ST_GL_CALL(ST_TAG, glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_DEPTH_ATTACHMENT,
-                GL_TEXTURE_2D,
-                depthAttachmentId,
-                levelOfDetail
-        ));
-        ST_GL_CALL(ST_TAG, glBindTexture(GL_TEXTURE_2D, 0));
-
-        ST_GL_CALL(ST_TAG, uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-        ST_ASSERT(ST_TAG, status == GL_FRAMEBUFFER_COMPLETE);
-
+        {
+            Texture::Config textureConfig;
+            textureConfig.Width = config.Width;
+            textureConfig.Height = config.Height;
+            textureConfig.Format = GL_RGBA;
+            textureConfig.InternalFormat = GL_RGBA8;
+            colorAttachmentTexture = new Texture(textureConfig);
+            AttachTexture(GL_COLOR_ATTACHMENT0, colorAttachmentTexture);
+        }
+        {
+            Texture::Config textureConfig;
+            textureConfig.Width = config.Width;
+            textureConfig.Height = config.Height;
+            textureConfig.Format = GL_DEPTH_COMPONENT;
+            textureConfig.InternalFormat = GL_DEPTH_COMPONENT;
+            depthAttachmentTexture = new Texture(textureConfig);
+            AttachTexture(GL_DEPTH_ATTACHMENT, depthAttachmentTexture);
+        }
+        ST_GL_CALL(ST_TAG, ST_ASSERT(ST_TAG, glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
         ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
-    void Framebuffer::Resize(uint32_t width, uint32_t height)
+    void Framebuffer::AttachTexture(uint32_t attachmentType, Texture* texture) const
     {
-        config.Width = width;
-        config.Height = height;
-        Invalidate();
+        ST_GL_CALL(ST_TAG, glFramebufferTexture2D(
+                GL_FRAMEBUFFER,
+                attachmentType,
+                GL_TEXTURE_2D,
+                texture->GetId(),
+                texture->GetLevelOfDetail()
+        ));
+    }
+
+    void Framebuffer::Delete() const
+    {
+        ST_GL_CALL(ST_TAG, glDeleteFramebuffers(1, &id));
+        delete colorAttachmentTexture;
+        delete depthAttachmentTexture;
     }
 
 }

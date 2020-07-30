@@ -114,7 +114,7 @@ void SandboxLayer::SetupViewportPanel(st::ImGuiRenderer* imGuiRenderer)
     imGuiRenderer->SetConsumeEvents(!viewportFocused || !viewportHovered);
     const ImVec2& viewportSize = ImGui::GetContentRegionAvail();
     this->viewportSize = { viewportSize.x, viewportSize.y };
-    size_t textureId = (size_t) framebuffer->GetColorAttachmentId();
+    size_t textureId = (size_t) framebuffer->GetColorAttachmentTexture()->GetId();
     ImGui::Image((void*) textureId, viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
     ImGui::End();
     ImGui::PopStyleVar();
