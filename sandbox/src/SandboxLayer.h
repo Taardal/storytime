@@ -1,6 +1,7 @@
 #pragma once
 
 #include "storytime/Storytime.h"
+#include <storytiled/Storytiled.h>
 
 class SandboxLayer : public st::Layer
 {
@@ -10,10 +11,6 @@ private:
     st::OrthographicCameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
-    st::Ref<st::Framebuffer> framebuffer;
-    glm::vec2 viewportSize;
-    bool viewportFocused;
-    bool viewportHovered;
 
 public:
     SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
@@ -31,9 +28,7 @@ public:
     void OnDetach() override;
 
 private:
-    void SetupDockspacePanel() const;
-
-    void SetupViewportPanel(st::ImGuiRenderer* imGuiRenderer);
-
     void SetupSettingsPanel() const;
+
+    void DrawWorld() const;
 };
