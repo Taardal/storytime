@@ -16,9 +16,9 @@ namespace storytime
 
         virtual ~ResourceLoader();
 
-        [[nodiscard]] Ref<Shader> LoadShader(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename) const;
+        [[nodiscard]] Ref<Shader> LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const;
 
-        [[nodiscard]] Ref<Texture> LoadTexture(const std::string& name) const;
+        [[nodiscard]] Ref<Texture> LoadTexture(const std::string& path) const;
 
     private:
         [[nodiscard]] Image LoadImage(const std::string& path) const;
@@ -26,5 +26,3 @@ namespace storytime
         void FreeImage(const Image& image) const;
     };
 }
-
-

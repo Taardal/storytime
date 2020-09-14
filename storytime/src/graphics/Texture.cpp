@@ -62,6 +62,16 @@ namespace storytime
         return id;
     }
 
+    uint32_t Texture::GetWidth() const
+    {
+        return width;
+    }
+
+    uint32_t Texture::GetHeight() const
+    {
+        return height;
+    }
+
     int32_t Texture::GetLevelOfDetail() const
     {
         return levelOfDetail;

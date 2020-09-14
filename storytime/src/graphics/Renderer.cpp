@@ -3,13 +3,6 @@
 
 namespace storytime
 {
-    constexpr uint32_t Renderer::VERTICES_PER_QUAD = 4;
-    constexpr uint32_t Renderer::INDICES_PER_QUAD = 6;
-    constexpr uint32_t Renderer::QUADS_PER_BATCH = 1000;
-    constexpr uint32_t Renderer::VERTICES_PER_BATCH = QUADS_PER_BATCH * VERTICES_PER_QUAD;
-    constexpr uint32_t Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
-    constexpr uint32_t Renderer::MAX_TEXTURE_SLOTS = 16;
-
     Quad::Quad()
             : Texture(nullptr),
               Position(0.0f, 0.0f, 0.0f),
@@ -18,7 +11,10 @@ namespace storytime
               RotationInDegrees(0.0f),
               TilingFactor(1.0f)
     {}
+}
 
+namespace storytime
+{
     Renderer::Statistics::Statistics()
             : DrawCalls(0),
               QuadCount(0)
@@ -33,7 +29,10 @@ namespace storytime
     {
         return QuadCount * INDICES_PER_QUAD;
     }
+}
 
+namespace storytime
+{
     Renderer::Vertex::Vertex()
             : Position(0.0f, 0.0f, 0.0f),
               Color(1.0f, 1.0f, 1.0f, 1.0f),
@@ -41,11 +40,21 @@ namespace storytime
               TextureIndex(0.0f),
               TilingFactor(1.0f)
     {}
+}
+
+namespace storytime
+{
+    constexpr uint32_t Renderer::VERTICES_PER_QUAD = 4;
+    constexpr uint32_t Renderer::INDICES_PER_QUAD = 6;
+    constexpr uint32_t Renderer::QUADS_PER_BATCH = 1000;
+    constexpr uint32_t Renderer::VERTICES_PER_BATCH = QUADS_PER_BATCH * VERTICES_PER_QUAD;
+    constexpr uint32_t Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
+    constexpr uint32_t Renderer::MAX_TEXTURE_SLOTS = 16;
 
     Renderer::Renderer(ResourceLoader* resourceLoader)
             : vertexArray(CreateRef<VertexArray>()),
               vertexBuffer(CreateRef<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
-              shader(resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl")),
+              shader(resourceLoader->LoadShader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
               textures(new Ref<Texture>[MAX_TEXTURE_SLOTS]),
               whiteTexture(CreateRef<Texture>(1, 1)),
               vertices(new Vertex[VERTICES_PER_BATCH]),

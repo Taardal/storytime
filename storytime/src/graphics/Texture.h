@@ -39,17 +39,21 @@ namespace storytime
         int32_t border;
 
     public:
-        Texture(const Config& config);
+        explicit Texture(const Config& config);
 
-        Texture(const Image& image);
+        explicit Texture(const Image& image);
 
         Texture(uint32_t width, uint32_t height);
 
         ~Texture();
 
-        uint32_t GetId() const;
+        [[nodiscard]] uint32_t GetId() const;
 
-        int32_t GetLevelOfDetail() const;
+        [[nodiscard]] uint32_t GetWidth() const;
+
+        [[nodiscard]] uint32_t GetHeight() const;
+
+        [[nodiscard]] int32_t GetLevelOfDetail() const;
 
         void SetPixels(const void* data) const;
 

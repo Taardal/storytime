@@ -15,19 +15,17 @@ namespace storytime
         ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
-    Ref<Shader> ResourceLoader::LoadShader(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename) const
+    Ref<Shader> ResourceLoader::LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const
     {
-        static const std::string& path = "res/shaders/";
-        const std::string& vertexShaderSource = fileSystem->ReadFile((path + vertexShaderFilename).c_str());
-        const std::string& fragmentShaderSource = fileSystem->ReadFile((path + fragmentShaderFilename).c_str());
+        const std::string& vertexShaderSource = fileSystem->ReadFile(vertexShaderPath.c_str());
+        const std::string& fragmentShaderSource = fileSystem->ReadFile(fragmentShaderPath.c_str());
         return CreateRef<Shader>(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
     }
 
-    Ref<Texture> ResourceLoader::LoadTexture(const std::string& name) const
+    Ref<Texture> ResourceLoader::LoadTexture(const std::string& path) const
     {
-        static const std::string& path = "res/textures/";
         stbi_set_flip_vertically_on_load(1);
-        Image image = LoadImage(path + name);
+        Image image = LoadImage(path);
         Ref<Texture> texture = CreateRef<Texture>(image);
         FreeImage(image);
         return texture;
