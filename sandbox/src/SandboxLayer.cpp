@@ -9,7 +9,8 @@ SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::Ortho
           resourceLoader(resourceLoader),
           kittenTexture(resourceLoader->LoadTexture("res/textures/kitten.png")),
           tilesets(nullptr),
-          tiles()
+          tiles(),
+          subTextures()
 {
 }
 
@@ -19,14 +20,14 @@ void SandboxLayer::OnAttach()
 
     st::FileSystem fileSystem;
     const std::string& json = fileSystem.ReadFile("res/worlds/sandbox.json");
-    const sti::World& world = sti::World::FromJson(json);
+    world = sti::World::FromJson(json);
     std::cout << "Parsed world with " << world.Tilesets.size() << " tilesets" << std::endl;
 
     //
     // TILESETS
     //
     this->tilesets = new st::Ref<st::Texture>[world.Tilesets.size()];
-    for (uint32_t i = 0; i < world.Tilesets.size(); ++i)
+    for (uint32_t i = 0; i < world.Tilesets.size(); i++)
     {
         const std::string& path = world.Tilesets[i].Image;
         std::cout << "Loading tileset with path " << path << std::endl;
@@ -40,7 +41,7 @@ void SandboxLayer::OnAttach()
     //
     // SUB TEXTURES / TILES
     //
-    for (uint32_t i = 0; i < world.Tilesets.size(); ++i)
+    for (uint32_t i = 0; i < world.Tilesets.size(); i++)
     {
         uint32_t globalId = world.Tilesets[i].FirstGlobalId;
         std::cout << "First global ID [" << globalId << "]" << std::endl;
@@ -52,15 +53,15 @@ void SandboxLayer::OnAttach()
         std::cout << "Number of tiles X [" << numberOfTilesX << "]" << std::endl;
 
         //st::SubTexture* subTextures = new st::SubTexture[world.Tilesets[i].TileCount];
-        std::vector<st::SubTexture> subTextures;
-        for (uint32_t y = 0; y < numberOfTilesY; ++y)
+
+        for (uint32_t y = 0; y < numberOfTilesY; y++)
         {
-            for (uint32_t x = 0; x < numberOfTilesX; ++x)
+            for (uint32_t x = 0; x < numberOfTilesX; x++)
             {
                 st::SubTexture::Config config;
-                config.texture = this->tilesets[i];
-                config.size = { world.Tilesets[i].TileWidth, world.Tilesets[i].TileHeight };
-                config.coordinates = { x, y };
+                config.Texture = this->tilesets[i];
+                config.Size = { world.Tilesets[i].TileWidth, world.Tilesets[i].TileHeight };
+                config.Coordinates = { x, y };
                 st::SubTexture subTexture(config);
                 subTextures.push_back(subTexture);
                 tiles.insert({ globalId, subTexture });
@@ -121,23 +122,65 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     cameraController->OnUpdate(timestep, input);
     renderer->BeginScene(cameraController->GetCamera());
 
-    static float rotation = 0.0f;
-    rotation += timestep * 50.0f;
-    for (uint32_t x = 0; x < 1; x++)
+#if 0
+    for (const sti::Layer& layer : world.Layers)
     {
-        for (uint32_t y = 0; y < 1; y++)
+        if (layer.Type == "tilelayer" && layer.Visible)
         {
-            st::Quad quad{};
-            quad.Texture = kittenTexture;
-            quad.Size = { 1.0f, 1.0f };
-            quad.Position = { 0.0f, 0.0f, 0.0f };
-            //quad.Position = { x * quad.Size.x, y * quad.Size.y, 0.0f };
-            //quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
-            //quad.TilingFactor = 20.0f;
-            //quad.RotationInDegrees = rotation;
-            renderer->SubmitQuad(quad);
+            for (int y = 0; y < layer.Width; y++)
+            {
+                for (int x = 0; x < layer.Height; x++)
+                {
+                    int tileId = layer.Data[x + y * layer.Width];
+                    if (tileId > 0)
+                    {
+                        const auto& iterator = tiles.find(tileId);
+                        if (iterator != tiles.end())
+                        {
+                            st::SubTexture& subTexture = iterator->second;
+
+                            auto x1 = (float) (x * world.TileWidth);
+                            auto y1 = (float) (y * world.TileHeight);
+                            std::cout << "Drawing tile [" << tileId << "]" << " at [X: " << x << ", Y: " << y << "]" << std::endl;
+
+                            st::Quad quad{};
+                            quad.Texture = subTexture.GetTexture();
+                            quad.Size = subTexture.GetSize();
+                            quad.Position = { x, y, 0.0f };
+                            renderer->SubmitQuadFoo(quad, subTexture.GetTextureCoordinates());
+                        }
+                    }
+                }
+            }
         }
     }
+#endif
+
+#if 1
+    st::Quad quad{};
+    quad.Texture = subTextures[0].GetTexture();
+    quad.Size = { 1.0f, 1.0f };
+    quad.Position = { 0.0f, 0.0f, 0.0f };
+
+    static float width = 128;
+    static float height = 240;
+    static float tileSize = 16;
+
+    static float minX = 0 * tileSize / width;
+    static float maxX = 1 * tileSize / width;
+    static float minY = 0 * tileSize / height;
+    static float maxY = 1 * tileSize / height;
+
+    static glm::vec2 c[4];
+    c[0] = { minX, minY };
+    c[1] = { maxX, minY };
+    c[2] = { maxX, maxY };
+    c[3] = { minX, maxY };
+
+    const glm::vec2* coordinates = subTextures[0].GetTextureCoordinates();
+    //renderer->SubmitQuad(quad);
+    renderer->SubmitQuadFoo(quad, c);
+#endif
 
     renderer->EndScene();
 }

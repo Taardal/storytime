@@ -11,25 +11,24 @@ namespace storytime
     public:
         struct Config
         {
-            Ref<Texture> texture;
-            glm::vec2 coordinates;
-            glm::vec2 size;
+            Ref<Texture> Texture;
+            glm::vec2 Coordinates;
+            glm::vec2 Size;
         };
 
     private:
         Ref<Texture> texture;
         glm::vec2 textureCoordinates[4];
+        glm::vec2 size;
 
     public:
         explicit SubTexture(const Config& config);
-
-        SubTexture(const glm::vec2& min, const glm::vec2& max, const Ref<Texture>& texture);
 
         [[nodiscard]] const Ref<storytime::Texture>& GetTexture() const;
 
         [[nodiscard]] const glm::vec2* GetTextureCoordinates() const;
 
-        void Init(const glm::vec2& min, const glm::vec2& max);
+        [[nodiscard]] const glm::vec2& GetSize() const;
     };
 }
 

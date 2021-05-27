@@ -13,8 +13,10 @@ private:
     st::OrthographicCameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
+    sti::World world;
     st::Ref<st::Texture>* tilesets;
     std::unordered_map<uint32_t, st::SubTexture> tiles;
+    std::vector<st::SubTexture> subTextures;
 
 public:
     SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);

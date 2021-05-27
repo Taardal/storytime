@@ -62,9 +62,12 @@ namespace storytime
         Ref<Shader> shader;
         Ref<Texture>* textures;
         Ref<Texture> whiteTexture;
+
         Vertex* vertices;
-        uint32_t* indices;
+        glm::vec4* vertexPositions;
         uint32_t vertexCount;
+
+        uint32_t* indices;
         uint32_t indexCount;
         uint32_t textureCount;
         uint32_t reservedTexturesCount;
@@ -82,6 +85,8 @@ namespace storytime
         void BeginScene(OrthographicCamera* camera);
 
         void SubmitQuad(Quad& quad);
+
+        void SubmitQuadFoo(Quad& quad, const glm::vec2* textureCoordinates);
 
         void EndScene();
 

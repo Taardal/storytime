@@ -58,8 +58,9 @@ namespace storytime
               textures(new Ref<Texture>[MAX_TEXTURE_SLOTS]),
               whiteTexture(CreateRef<Texture>(1, 1)),
               vertices(new Vertex[VERTICES_PER_BATCH]),
-              indices(new uint32_t[INDICES_PER_BATCH]),
+              vertexPositions(new glm::vec4[4]),
               vertexCount(0),
+              indices(new uint32_t[INDICES_PER_BATCH]),
               indexCount(0),
               textureCount(0),
               reservedTexturesCount(0),
@@ -76,6 +77,11 @@ namespace storytime
             { GLSLType::Float, "textureIndex" },
             { GLSLType::Float, "tilingFactor" }
         });
+
+        vertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+        vertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+        vertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+        vertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
 
         uint32_t offset = 0;
         for (uint32_t i = 0; i < INDICES_PER_BATCH; i += INDICES_PER_QUAD)
@@ -206,6 +212,49 @@ namespace storytime
 
         indexCount += INDICES_PER_QUAD;
         statistics.QuadCount++;
+    }
+
+    void Renderer::SubmitQuadFoo(Quad& quad, const glm::vec2* textureCoordinates)
+    {
+        if (indexCount >= INDICES_PER_BATCH)
+        {
+            Flush();
+            Reset();
+        }
+        if (!quad.Texture)
+        {
+            quad.Texture = whiteTexture;
+        }
+        float textureIndex = -1.0f;
+        for (uint32_t i = 0; i < textureCount; i++)
+        {
+            if (textures[i] == quad.Texture)
+            {
+                textureIndex = (float) i;
+                break;
+            }
+        }
+        if (textureIndex == -1.0f)
+        {
+            textureIndex = (float) textureCount;
+            textures[textureCount] = quad.Texture;
+            textureCount++;
+        }
+        const glm::mat4& translation = glm::translate(glm::mat4(1.0f), quad.Position);
+        const glm::mat4& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.RotationInDegrees), { 0.0f, 0.0f, 1.0f });
+        const glm::mat4& scale = glm::scale(glm::mat4(1.0f), { quad.Size.x, quad.Size.y, 1.0f });
+        glm::mat4 transform = translation * rotation * scale;
+        for (int i = 0; i < VERTICES_PER_QUAD; i++)
+        {
+            vertices[vertexCount].Position = translation * vertexPositions[i];
+            vertices[vertexCount].Color = quad.Color;
+            vertices[vertexCount].TextureCoordinate = textureCoordinates[i];
+            vertices[vertexCount].TextureIndex = textureIndex;
+            vertices[vertexCount].TilingFactor = quad.TilingFactor;
+            vertexCount++;
+            indexCount += INDICES_PER_QUAD;
+            statistics.QuadCount++;
+        }
     }
 
     void Renderer::Reset()
