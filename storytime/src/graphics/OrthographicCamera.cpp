@@ -75,7 +75,7 @@ namespace storytime
     glm::mat4 OrthographicCamera::GetRotationMatrix() const
     {
         float angle = glm::radians(rotation);
-        glm::vec3 zAxis = glm::vec3(0, 0, 1);
+        const glm::vec3& zAxis = glm::vec3(0, 0, 1);
         return glm::rotate(glm::mat4(1.0f), angle, zAxis);
     }
 

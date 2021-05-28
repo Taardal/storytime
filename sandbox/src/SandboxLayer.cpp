@@ -12,6 +12,7 @@ SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::Ortho
           tiles(),
           subTextures()
 {
+    this->cameraController->SetZoomLevel(200.0f);
 }
 
 void SandboxLayer::OnAttach()
@@ -61,7 +62,7 @@ void SandboxLayer::OnAttach()
                 st::SubTexture::Config config;
                 config.Texture = this->tilesets[i];
                 config.Size = { world.Tilesets[i].TileWidth, world.Tilesets[i].TileHeight };
-                config.Coordinates = { x, y };
+                config.Coordinates = { x, numberOfTilesY - (y + 1) };
                 st::SubTexture subTexture(config);
                 subTextures.push_back(subTexture);
                 tiles.insert({ globalId, subTexture });
@@ -122,14 +123,14 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     cameraController->OnUpdate(timestep, input);
     renderer->BeginScene(cameraController->GetCamera());
 
-#if 0
+#if 1
     for (const sti::Layer& layer : world.Layers)
     {
         if (layer.Type == "tilelayer" && layer.Visible)
         {
-            for (int y = 0; y < layer.Width; y++)
+            for (int y = 0; y < layer.Height; y++)
             {
-                for (int x = 0; x < layer.Height; x++)
+                for (int x = 0; x < layer.Width; x++)
                 {
                     int tileId = layer.Data[x + y * layer.Width];
                     if (tileId > 0)
@@ -141,12 +142,15 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
 
                             auto x1 = (float) (x * world.TileWidth);
                             auto y1 = (float) (y * world.TileHeight);
-                            std::cout << "Drawing tile [" << tileId << "]" << " at [X: " << x << ", Y: " << y << "]" << std::endl;
+                            //std::cout << "Drawing tile [" << tileId << "]" << " at [X: " << x << ", Y: " << y << "]" << std::endl;
+
+                            auto x2 = x1 - (world.Width * world.TileWidth) / 2;
+                            auto y2 = (world.Height * world.TileHeight) - y1 - (world.Height * world.TileHeight) / 2;
 
                             st::Quad quad{};
                             quad.Texture = subTexture.GetTexture();
                             quad.Size = subTexture.GetSize();
-                            quad.Position = { x, y, 0.0f };
+                            quad.Position = { x2, y2, 0.0f };
                             renderer->SubmitQuadFoo(quad, subTexture.GetTextureCoordinates());
                         }
                     }
@@ -156,20 +160,25 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     }
 #endif
 
-#if 1
+#if 0
     st::Quad quad{};
     quad.Texture = subTextures[0].GetTexture();
-    quad.Size = { 1.0f, 1.0f };
+    quad.Size = subTextures[0].GetSize();
     quad.Position = { 0.0f, 0.0f, 0.0f };
 
     static float width = 128;
     static float height = 240;
     static float tileSize = 16;
+    static float tileCountY = 15;
+    static float tileCountX = 8;
 
-    static float minX = 0 * tileSize / width;
-    static float maxX = 1 * tileSize / width;
-    static float minY = 0 * tileSize / height;
-    static float maxY = 1 * tileSize / height;
+    static float x = 7;
+    static float y = 1;
+
+    static float minX = x * tileSize / width;
+    static float maxX = (x + 1) * tileSize / width;
+    static float minY = y * tileSize / height;
+    static float maxY = (y + 1) * tileSize / height;
 
     static glm::vec2 c[4];
     c[0] = { minX, minY };
@@ -177,9 +186,9 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     c[2] = { maxX, maxY };
     c[3] = { minX, maxY };
 
-    const glm::vec2* coordinates = subTextures[0].GetTextureCoordinates();
+    const glm::vec2* c1 = subTextures[0].GetTextureCoordinates();
     //renderer->SubmitQuad(quad);
-    renderer->SubmitQuadFoo(quad, c);
+    renderer->SubmitQuadFoo(quad, c1);
 #endif
 
     renderer->EndScene();

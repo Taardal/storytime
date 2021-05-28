@@ -14,5 +14,5 @@ in Vertex vertex;
 uniform sampler2D textureSamplers[16];
 
 void main() {
-    color = texture(textureSamplers[int(vertex.TextureIndex)], vec2(vertex.TextureCoordinate.x, 1.0 - vertex.TextureCoordinate.y) * vertex.TilingFactor) * vertex.Color;
+    color = texture(textureSamplers[int(vertex.TextureIndex)], vertex.TextureCoordinate * vertex.TilingFactor) * vertex.Color;
 }
