@@ -1,0 +1,1974 @@
+fileFormatVersion: 2
+guid: 03797fb8c0d7f0742a2188c423c0393f
+timeCreated: 1460227268
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: spritesheet-knight-black_0
+    21300002: spritesheet-knight-black_1
+    21300004: spritesheet-knight-black_2
+    21300006: spritesheet-knight-black_3
+    21300008: spritesheet-knight-black_4
+    21300010: spritesheet-knight-black_5
+    21300012: spritesheet-knight-black_6
+    21300014: spritesheet-knight-black_7
+    21300016: spritesheet-knight-black_8
+    21300018: spritesheet-knight-black_9
+    21300020: spritesheet-knight-black_10
+    21300022: spritesheet-knight-black_11
+    21300024: spritesheet-knight-black_12
+    21300026: spritesheet-knight-black_13
+    21300028: spritesheet-knight-black_14
+    21300030: spritesheet-knight-black_15
+    21300032: spritesheet-knight-black_16
+    21300034: spritesheet-knight-black_17
+    21300036: spritesheet-knight-black_18
+    21300038: spritesheet-knight-black_19
+    21300040: spritesheet-knight-black_20
+    21300042: spritesheet-knight-black_21
+    21300044: spritesheet-knight-black_22
+    21300046: spritesheet-knight-black_23
+    21300048: spritesheet-knight-black_24
+    21300050: spritesheet-knight-black_25
+    21300052: spritesheet-knight-black_26
+    21300054: spritesheet-knight-black_27
+    21300056: spritesheet-knight-black_28
+    21300058: spritesheet-knight-black_29
+    21300060: spritesheet-knight-black_30
+    21300062: spritesheet-knight-black_31
+    21300064: spritesheet-knight-black_32
+    21300066: spritesheet-knight-black_33
+    21300068: spritesheet-knight-black_34
+    21300070: spritesheet-knight-black_35
+    21300072: spritesheet-knight-black_36
+    21300074: spritesheet-knight-black_37
+    21300076: spritesheet-knight-black_38
+    21300078: spritesheet-knight-black_39
+    21300080: spritesheet-knight-black_40
+    21300082: spritesheet-knight-black_41
+    21300084: spritesheet-knight-black_42
+    21300086: spritesheet-knight-black_43
+    21300088: spritesheet-knight-black_44
+    21300090: spritesheet-knight-black_45
+    21300092: spritesheet-knight-black_46
+    21300094: spritesheet-knight-black_47
+    21300096: spritesheet-knight-black_48
+    21300098: spritesheet-knight-black_49
+    21300100: spritesheet-knight-black_50
+    21300102: spritesheet-knight-black_51
+    21300104: spritesheet-knight-black_52
+    21300106: spritesheet-knight-black_53
+    21300108: spritesheet-knight-black_54
+    21300110: spritesheet-knight-black_55
+    21300112: spritesheet-knight-black_56
+    21300114: spritesheet-knight-black_57
+    21300116: spritesheet-knight-black_58
+    21300118: spritesheet-knight-black_59
+    21300120: spritesheet-knight-black_60
+    21300122: spritesheet-knight-black_61
+    21300124: spritesheet-knight-black_62
+    21300126: spritesheet-knight-black_63
+    21300128: spritesheet-knight-black_64
+    21300130: spritesheet-knight-black_65
+    21300132: spritesheet-knight-black_66
+    21300134: spritesheet-knight-black_67
+    21300136: spritesheet-knight-black_68
+    21300138: spritesheet-knight-black_69
+    21300140: spritesheet-knight-black_70
+    21300142: spritesheet-knight-black_71
+    21300144: spritesheet-knight-black_72
+    21300146: spritesheet-knight-black_73
+    21300148: spritesheet-knight-black_74
+    21300150: spritesheet-knight-black_75
+    21300152: spritesheet-knight-black_76
+    21300154: spritesheet-knight-black_77
+    21300156: spritesheet-knight-black_78
+    21300158: spritesheet-knight-black_79
+    21300160: spritesheet-knight-black_80
+    21300162: spritesheet-knight-black_81
+    21300164: spritesheet-knight-black_82
+    21300166: spritesheet-knight-black_83
+    21300168: spritesheet-knight-black_84
+    21300170: spritesheet-knight-black_85
+    21300172: spritesheet-knight-black_86
+    21300174: spritesheet-knight-black_87
+    21300176: spritesheet-knight-black_88
+    21300178: spritesheet-knight-black_89
+    21300180: spritesheet-knight-black_90
+    21300182: spritesheet-knight-black_91
+    21300184: spritesheet-knight-black_92
+    21300186: spritesheet-knight-black_93
+    21300188: spritesheet-knight-black_94
+    21300190: spritesheet-knight-black_95
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: spritesheet-knight-black_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 560
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: 11}
+        - {x: -10, y: 11}
+        - {x: -17, y: 1}
+        - {x: -17, y: -9}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -9}
+        - {x: 5, y: -1}
+    - name: spritesheet-knight-black_1
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 560
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: 11}
+        - {x: -11, y: 11}
+        - {x: -17, y: 1}
+        - {x: -17, y: -4}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -8}
+        - {x: 5, y: 0}
+    - name: spritesheet-knight-black_2
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 560
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: 10}
+        - {x: -11, y: 10}
+        - {x: -17, y: 0}
+        - {x: -17, y: -9}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -13}
+        - {x: 5, y: -3}
+    - name: spritesheet-knight-black_3
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 560
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -10, y: 10}
+        - {x: -17, y: 0}
+        - {x: -17, y: -13}
+        - {x: -15, y: -20}
+        - {x: 4, y: -20}
+        - {x: 5, y: -17}
+        - {x: 5, y: -1}
+        - {x: -2, y: 10}
+    - name: spritesheet-knight-black_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: 10}
+        - {x: -13, y: 10}
+        - {x: -18, y: 1}
+        - {x: -18, y: -15}
+        - {x: -16, y: -20}
+        - {x: 3, y: -20}
+        - {x: 5, y: -9}
+        - {x: 5, y: -1}
+    - name: spritesheet-knight-black_5
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -11, y: 10}
+        - {x: -17, y: 4}
+        - {x: -20, y: 0}
+        - {x: -20, y: -11}
+        - {x: -16, y: -20}
+        - {x: 4, y: -20}
+        - {x: 4, y: 10}
+    - name: spritesheet-knight-black_6
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -4, y: 14}
+        - {x: -20, y: 14}
+        - {x: -20, y: -20}
+        - {x: 2, y: -20}
+        - {x: 3, y: -10}
+        - {x: 3, y: -1}
+        - {x: -1, y: 8}
+    - name: spritesheet-knight-black_7
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -14, y: 14}
+        - {x: -20, y: 12}
+        - {x: -20, y: -20}
+        - {x: 2, y: -20}
+        - {x: 2, y: 11}
+        - {x: -2, y: 14}
+    - name: spritesheet-knight-black_8
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 14}
+        - {x: -11, y: 12}
+        - {x: -14, y: 4}
+        - {x: -14, y: -20}
+        - {x: 10, y: -20}
+        - {x: 16, y: -13}
+        - {x: 16, y: 8}
+        - {x: 5, y: 14}
+    - name: spritesheet-knight-black_9
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 9, y: 8}
+        - {x: -6, y: 8}
+        - {x: -14, y: 2}
+        - {x: -14, y: -20}
+        - {x: 11, y: -20}
+        - {x: 15, y: -14}
+        - {x: 15, y: 4}
+        - {x: 10, y: 7}
+    - name: spritesheet-knight-black_10
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 8}
+        - {x: -9, y: 7}
+        - {x: -11, y: -1}
+        - {x: -14, y: -16}
+        - {x: -14, y: -20}
+        - {x: 6, y: -20}
+        - {x: 14, y: -16}
+        - {x: 14, y: -6}
+        - {x: 2, y: 8}
+    - name: spritesheet-knight-black_11
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -7, y: 9}
+        - {x: -12, y: 8}
+        - {x: -14, y: -4}
+        - {x: -14, y: -20}
+        - {x: 4, y: -20}
+        - {x: 11, y: -16}
+        - {x: 11, y: -9}
+        - {x: -2, y: 9}
+    - name: spritesheet-knight-black_12
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 520
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -4, y: 10}
+        - {x: -14, y: 10}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 9, y: -13}
+        - {x: 1, y: 9}
+    - name: spritesheet-knight-black_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 480
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 11}
+        - {x: -17, y: 0}
+        - {x: -17, y: -8}
+        - {x: -14, y: -20}
+        - {x: 3, y: -20}
+        - {x: 5, y: -8}
+        - {x: 5, y: 1}
+        - {x: -3, y: 11}
+    - name: spritesheet-knight-black_14
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 480
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -1, y: 10}
+        - {x: -9, y: 10}
+        - {x: -17, y: 0}
+        - {x: -17, y: -5}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -8}
+        - {x: 5, y: 3}
+    - name: spritesheet-knight-black_15
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 480
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 4}
+        - {x: 0, y: 9}
+        - {x: -9, y: 9}
+        - {x: -12, y: 7}
+        - {x: -17, y: 0}
+        - {x: -17, y: -8}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -4}
+    - name: spritesheet-knight-black_16
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 480
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -10, y: 9}
+        - {x: -18, y: 0}
+        - {x: -18, y: -7}
+        - {x: -14, y: -20}
+        - {x: 4, y: -20}
+        - {x: 4, y: 5}
+        - {x: -3, y: 9}
+    - name: spritesheet-knight-black_17
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 440
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 9}
+        - {x: -16, y: -1}
+        - {x: -16, y: -12}
+        - {x: -14, y: -20}
+        - {x: 3, y: -20}
+        - {x: 6, y: -15}
+        - {x: 6, y: 0}
+        - {x: 0, y: 9}
+    - name: spritesheet-knight-black_18
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 440
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 0, y: 7}
+        - {x: -9, y: 7}
+        - {x: -16, y: -3}
+        - {x: -16, y: -8}
+        - {x: -12, y: -20}
+        - {x: 4, y: -20}
+        - {x: 6, y: -15}
+        - {x: 6, y: 1}
+        - {x: 4, y: 6}
+    - name: spritesheet-knight-black_19
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 440
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 4}
+        - {x: -6, y: 4}
+        - {x: -16, y: -2}
+        - {x: -16, y: -14}
+        - {x: -13, y: -20}
+        - {x: 4, y: -20}
+        - {x: 5, y: -18}
+        - {x: 5, y: -5}
+        - {x: 3, y: 2}
+    - name: spritesheet-knight-black_20
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 440
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -6, y: 3}
+        - {x: -16, y: -6}
+        - {x: -16, y: -12}
+        - {x: -13, y: -20}
+        - {x: 4, y: -20}
+        - {x: 5, y: -18}
+        - {x: 5, y: -4}
+        - {x: 1, y: 3}
+    - name: spritesheet-knight-black_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 0, y: 3}
+        - {x: -9, y: 3}
+        - {x: -18, y: -6}
+        - {x: -18, y: -10}
+        - {x: -14, y: -20}
+        - {x: 4, y: -20}
+        - {x: 5, y: -18}
+        - {x: 5, y: -3}
+        - {x: 4, y: 1}
+    - name: spritesheet-knight-black_22
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -1, y: 9}
+        - {x: -12, y: 9}
+        - {x: -18, y: 1}
+        - {x: -18, y: -15}
+        - {x: -14, y: -20}
+        - {x: 5, y: -20}
+        - {x: 5, y: -6}
+        - {x: -1, y: 8}
+    - name: spritesheet-knight-black_23
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -14, y: 9}
+        - {x: -19, y: 7}
+        - {x: -19, y: -16}
+        - {x: -18, y: -20}
+        - {x: 5, y: -20}
+        - {x: 5, y: 1}
+        - {x: -1, y: 9}
+    - name: spritesheet-knight-black_24
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 9}
+        - {x: -8, y: 7}
+        - {x: -7, y: 4}
+        - {x: 1, y: 2}
+        - {x: 5, y: -3}
+        - {x: 0, y: 2}
+        - {x: -4, y: 2}
+        - {x: -12, y: -3}
+        - {x: -12, y: -20}
+        - {x: 11, y: -20}
+        - {x: 19, y: -15}
+        - {x: 19, y: 3}
+        - {x: 5, y: 9}
+    - name: spritesheet-knight-black_25
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -7, y: 3}
+        - {x: -11, y: -2}
+        - {x: -12, y: -4}
+        - {x: -12, y: -20}
+        - {x: 15, y: -20}
+        - {x: 17, y: -18}
+        - {x: 17, y: 3}
+    - name: spritesheet-knight-black_26
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 16, y: -6}
+        - {x: 4, y: 3}
+        - {x: -10, y: 3}
+        - {x: -12, y: -1}
+        - {x: -12, y: -20}
+        - {x: 7, y: -20}
+        - {x: 14, y: -18}
+        - {x: 16, y: -16}
+    - name: spritesheet-knight-black_27
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -1, y: 3}
+        - {x: -8, y: 3}
+        - {x: -12, y: -4}
+        - {x: -12, y: -20}
+        - {x: 14, y: -20}
+        - {x: 14, y: -14}
+    - name: spritesheet-knight-black_28
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 400
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -1, y: 3}
+        - {x: -9, y: 3}
+        - {x: -15, y: -5}
+        - {x: -15, y: -16}
+        - {x: -13, y: -20}
+        - {x: 7, y: -20}
+        - {x: 7, y: -8}
+        - {x: 2, y: 1}
+    - name: spritesheet-knight-black_29
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 360
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -6, y: 4}
+        - {x: -16, y: -5}
+        - {x: -16, y: -13}
+        - {x: -13, y: -20}
+        - {x: 5, y: -20}
+        - {x: 5, y: -5}
+        - {x: 4, y: 3}
+        - {x: -1, y: 4}
+    - name: spritesheet-knight-black_30
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 360
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 4}
+        - {x: -17, y: -4}
+        - {x: -17, y: -14}
+        - {x: -13, y: -20}
+        - {x: 2, y: -20}
+        - {x: 5, y: -15}
+        - {x: 5, y: -3}
+        - {x: -1, y: 4}
+    - name: spritesheet-knight-black_31
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 360
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 4}
+        - {x: -17, y: -5}
+        - {x: -17, y: -12}
+        - {x: -14, y: -20}
+        - {x: 5, y: -20}
+        - {x: 6, y: -18}
+        - {x: 6, y: -2}
+        - {x: 4, y: 4}
+    - name: spritesheet-knight-black_32
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 360
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -3, y: 4}
+        - {x: -10, y: 4}
+        - {x: -18, y: -3}
+        - {x: -18, y: -14}
+        - {x: -15, y: -20}
+        - {x: 3, y: -20}
+        - {x: 5, y: -17}
+        - {x: 5, y: -2}
+        - {x: 2, y: 3}
+    - name: spritesheet-knight-black_33
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 320
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 4, y: -11}
+        - {x: 4, y: 0}
+        - {x: -4, y: 11}
+        - {x: -17, y: 11}
+        - {x: -18, y: 6}
+        - {x: -18, y: -19}
+        - {x: -15, y: -20}
+        - {x: 2, y: -20}
+    - name: spritesheet-knight-black_34
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 320
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 4, y: -11}
+        - {x: 4, y: 0}
+        - {x: -4, y: 11}
+        - {x: -17, y: 11}
+        - {x: -18, y: 6}
+        - {x: -18, y: -19}
+        - {x: -15, y: -20}
+        - {x: 2, y: -20}
+    - name: spritesheet-knight-black_35
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -11, y: 11}
+        - {x: -17, y: 2}
+        - {x: -17, y: -11}
+        - {x: -14, y: -20}
+        - {x: 3, y: -20}
+        - {x: 5, y: -9}
+        - {x: 5, y: 0}
+        - {x: -2, y: 11}
+    - name: spritesheet-knight-black_36
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 9}
+        - {x: -12, y: 7}
+        - {x: -17, y: -5}
+        - {x: -17, y: -14}
+        - {x: -14, y: -20}
+        - {x: 3, y: -20}
+        - {x: 7, y: -12}
+        - {x: 7, y: 2}
+        - {x: 1, y: 9}
+    - name: spritesheet-knight-black_37
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 2}
+        - {x: 1, y: 4}
+        - {x: -7, y: 4}
+        - {x: -16, y: -12}
+        - {x: -17, y: -15}
+        - {x: -17, y: -17}
+        - {x: -13, y: -20}
+        - {x: 8, y: -20}
+        - {x: 11, y: -18}
+        - {x: 11, y: -8}
+    - name: spritesheet-knight-black_38
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 3}
+        - {x: 1, y: 5}
+        - {x: -7, y: 5}
+        - {x: -17, y: -13}
+        - {x: -17, y: -20}
+        - {x: 8, y: -20}
+        - {x: 12, y: -18}
+        - {x: 12, y: -8}
+    - name: spritesheet-knight-black_39
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 9, y: -7}
+        - {x: 5, y: 1}
+        - {x: 2, y: 4}
+        - {x: -4, y: 4}
+        - {x: -17, y: -17}
+        - {x: -17, y: -20}
+        - {x: 13, y: -20}
+        - {x: 13, y: -11}
+    - name: spritesheet-knight-black_40
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 7, y: 3}
+        - {x: 3, y: 4}
+        - {x: -5, y: 4}
+        - {x: -16, y: -17}
+        - {x: -16, y: -20}
+        - {x: 12, y: -20}
+        - {x: 14, y: -19}
+        - {x: 14, y: -9}
+    - name: spritesheet-knight-black_41
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 10, y: 2}
+        - {x: 5, y: 2}
+        - {x: -4, y: -1}
+        - {x: -16, y: -19}
+        - {x: -16, y: -20}
+        - {x: 14, y: -20}
+        - {x: 16, y: -18}
+        - {x: 16, y: -11}
+        - {x: 12, y: -1}
+    - name: spritesheet-knight-black_42
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 16, y: -8}
+        - {x: -1, y: -8}
+        - {x: -16, y: -17}
+        - {x: -16, y: -20}
+        - {x: 18, y: -20}
+        - {x: 19, y: -19}
+        - {x: 19, y: -9}
+    - name: spritesheet-knight-black_43
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: -11}
+        - {x: -14, y: -13}
+        - {x: -16, y: -19}
+        - {x: -16, y: -20}
+        - {x: 20, y: -20}
+        - {x: 20, y: -13}
+        - {x: 19, y: -11}
+    - name: spritesheet-knight-black_44
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 280
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 0, y: -12}
+        - {x: -13, y: -14}
+        - {x: -16, y: -19}
+        - {x: -16, y: -20}
+        - {x: 20, y: -20}
+        - {x: 20, y: -16}
+        - {x: 18, y: -12}
+    - name: spritesheet-knight-black_45
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1, y: 7}
+        - {x: -13, y: -10}
+        - {x: -13, y: -20}
+        - {x: 8, y: -20}
+        - {x: 20, y: -7}
+        - {x: 20, y: 7}
+    - name: spritesheet-knight-black_46
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 10, y: 13}
+        - {x: -5, y: 4}
+        - {x: -9, y: -1}
+        - {x: -13, y: -8}
+        - {x: -13, y: -16}
+        - {x: -11, y: -19}
+        - {x: 6, y: -19}
+        - {x: 16, y: -5}
+        - {x: 16, y: 5}
+        - {x: 13, y: 13}
+    - name: spritesheet-knight-black_47
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 12}
+        - {x: -3, y: 12}
+        - {x: -11, y: 9}
+        - {x: -13, y: 0}
+        - {x: -13, y: -14}
+        - {x: -11, y: -17}
+        - {x: -3, y: -20}
+        - {x: 12, y: -20}
+        - {x: 13, y: -17}
+        - {x: 13, y: 4}
+    - name: spritesheet-knight-black_48
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 8, y: 11}
+        - {x: -7, y: 1}
+        - {x: -11, y: -8}
+        - {x: -11, y: -15}
+        - {x: -7, y: -20}
+        - {x: 14, y: -20}
+        - {x: 16, y: -10}
+        - {x: 16, y: 11}
+    - name: spritesheet-knight-black_49
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 18, y: 5}
+        - {x: 5, y: 5}
+        - {x: -6, y: 1}
+        - {x: -9, y: -11}
+        - {x: -9, y: -18}
+        - {x: -6, y: -20}
+        - {x: 3, y: -20}
+        - {x: 14, y: -10}
+        - {x: 19, y: -3}
+        - {x: 19, y: 1}
+    - name: spritesheet-knight-black_50
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 15, y: 6}
+        - {x: 5, y: 6}
+        - {x: -7, y: 1}
+        - {x: -10, y: -14}
+        - {x: -10, y: -20}
+        - {x: 6, y: -20}
+        - {x: 18, y: -14}
+        - {x: 18, y: -2}
+        - {x: 16, y: 5}
+    - name: spritesheet-knight-black_51
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 7}
+        - {x: -6, y: 2}
+        - {x: -13, y: -11}
+        - {x: -13, y: -20}
+        - {x: 13, y: -20}
+        - {x: 16, y: -18}
+        - {x: 16, y: 7}
+    - name: spritesheet-knight-black_52
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 8}
+        - {x: -11, y: 4}
+        - {x: -14, y: -7}
+        - {x: -14, y: -16}
+        - {x: -13, y: -19}
+        - {x: -10, y: -20}
+        - {x: 8, y: -20}
+        - {x: 17, y: -8}
+        - {x: 17, y: 8}
+    - name: spritesheet-knight-black_53
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 7}
+        - {x: -3, y: 6}
+        - {x: -12, y: -11}
+        - {x: -12, y: -20}
+        - {x: 15, y: -20}
+        - {x: 17, y: -6}
+        - {x: 17, y: 0}
+        - {x: 12, y: 7}
+    - name: spritesheet-knight-black_54
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: -8}
+        - {x: 6, y: -12}
+        - {x: 9, y: -14}
+        - {x: 13, y: -14}
+        - {x: 17, y: -12}
+        - {x: 17, y: -2}
+        - {x: 12, y: 6}
+        - {x: -2, y: 6}
+        - {x: -11, y: -7}
+        - {x: -11, y: -12}
+        - {x: -5, y: -20}
+        - {x: 11, y: -20}
+        - {x: 11, y: -17}
+        - {x: 6, y: -12}
+    - name: spritesheet-knight-black_55
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1, y: 5}
+        - {x: -8, y: 2}
+        - {x: -9, y: -14}
+        - {x: -7, y: -20}
+        - {x: 17, y: -20}
+        - {x: 17, y: -11}
+        - {x: 12, y: 5}
+    - name: spritesheet-knight-black_56
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 240
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 13, y: 6}
+        - {x: 4, y: 6}
+        - {x: 0, y: 4}
+        - {x: -5, y: -1}
+        - {x: -7, y: -13}
+        - {x: -7, y: -20}
+        - {x: 5, y: -20}
+        - {x: 20, y: -14}
+        - {x: 20, y: -7}
+        - {x: 18, y: -6}
+    - name: spritesheet-knight-black_57
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -2, y: 10}
+        - {x: -13, y: 10}
+        - {x: -18, y: 1}
+        - {x: -18, y: -15}
+        - {x: -16, y: -20}
+        - {x: 3, y: -20}
+        - {x: 5, y: -9}
+        - {x: 5, y: -1}
+    - name: spritesheet-knight-black_58
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -11, y: 10}
+        - {x: -17, y: 4}
+        - {x: -20, y: 0}
+        - {x: -20, y: -11}
+        - {x: -16, y: -20}
+        - {x: 4, y: -20}
+        - {x: 4, y: 10}
+    - name: spritesheet-knight-black_59
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -4, y: 14}
+        - {x: -20, y: 14}
+        - {x: -20, y: -20}
+        - {x: 2, y: -20}
+        - {x: 3, y: -10}
+        - {x: 3, y: -1}
+        - {x: -1, y: 8}
+    - name: spritesheet-knight-black_60
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -14, y: 14}
+        - {x: -20, y: 12}
+        - {x: -20, y: -20}
+        - {x: 2, y: -20}
+        - {x: 2, y: 11}
+        - {x: -2, y: 14}
+    - name: spritesheet-knight-black_61
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1, y: 10}
+        - {x: -7, y: 10}
+        - {x: -14, y: 8}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 6, y: -3}
+        - {x: 6, y: 2}
+    - name: spritesheet-knight-black_62
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1, y: 10}
+        - {x: -7, y: 11}
+        - {x: -14, y: 11}
+        - {x: -15, y: 10}
+        - {x: -15, y: -20}
+        - {x: 2, y: -20}
+        - {x: 6, y: -6}
+        - {x: 6, y: 4}
+    - name: spritesheet-knight-black_63
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -12, y: 16}
+        - {x: -14, y: 13}
+        - {x: -14, y: -20}
+        - {x: 5, y: -20}
+        - {x: 5, y: 13}
+        - {x: -9, y: 16}
+    - name: spritesheet-knight-black_64
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 16}
+        - {x: -2, y: 16}
+        - {x: -6, y: 14}
+        - {x: -13, y: 2}
+        - {x: -14, y: -17}
+        - {x: -14, y: -20}
+        - {x: 1, y: -20}
+        - {x: 4, y: -6}
+        - {x: 4, y: 7}
+    - name: spritesheet-knight-black_65
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 6}
+        - {x: 3, y: 6}
+        - {x: -5, y: 10}
+        - {x: -11, y: 10}
+        - {x: -14, y: 3}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 7, y: 2}
+        - {x: 7, y: 4}
+    - name: spritesheet-knight-black_66
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 200
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -4, y: 10}
+        - {x: -14, y: 10}
+        - {x: -14, y: -20}
+        - {x: 2, y: -20}
+        - {x: 9, y: -13}
+        - {x: 1, y: 9}
+    - name: spritesheet-knight-black_67
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 9}
+        - {x: -16, y: -1}
+        - {x: -16, y: -7}
+        - {x: -14, y: -20}
+        - {x: 1, y: -20}
+        - {x: 7, y: -10}
+        - {x: 7, y: 0}
+        - {x: 1, y: 9}
+    - name: spritesheet-knight-black_68
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 14}
+        - {x: -18, y: 6}
+        - {x: -18, y: -8}
+        - {x: -5, y: -17}
+        - {x: 0, y: -17}
+        - {x: 6, y: -12}
+        - {x: 6, y: 6}
+        - {x: -2, y: 14}
+    - name: spritesheet-knight-black_69
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -3, y: 19}
+        - {x: -10, y: 19}
+        - {x: -18, y: 13}
+        - {x: -18, y: -5}
+        - {x: -12, y: -10}
+        - {x: 1, y: -10}
+        - {x: 5, y: 3}
+        - {x: 5, y: 13}
+        - {x: 1, y: 18}
+    - name: spritesheet-knight-black_70
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -15, y: 20}
+        - {x: -18, y: 13}
+        - {x: -18, y: -10}
+        - {x: 7, y: -10}
+        - {x: 7, y: 11}
+        - {x: -1, y: 20}
+    - name: spritesheet-knight-black_71
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -16, y: 20}
+        - {x: -18, y: 14}
+        - {x: -18, y: -3}
+        - {x: -17, y: -8}
+        - {x: -14, y: -9}
+        - {x: 7, y: -9}
+        - {x: 7, y: 13}
+        - {x: 0, y: 20}
+    - name: spritesheet-knight-black_72
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -10, y: 18}
+        - {x: -18, y: 16}
+        - {x: -18, y: -10}
+        - {x: -16, y: -12}
+        - {x: 7, y: -12}
+        - {x: 7, y: 9}
+        - {x: 0, y: 18}
+    - name: spritesheet-knight-black_73
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -3, y: 17}
+        - {x: -15, y: 17}
+        - {x: -17, y: 13}
+        - {x: -17, y: -3}
+        - {x: -12, y: -14}
+        - {x: -9, y: -15}
+        - {x: 1, y: -15}
+        - {x: 4, y: -9}
+        - {x: 6, y: -4}
+        - {x: 6, y: 9}
+    - name: spritesheet-knight-black_74
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 14}
+        - {x: -18, y: 14}
+        - {x: -18, y: -16}
+        - {x: -8, y: -20}
+        - {x: 5, y: -20}
+        - {x: 5, y: 1}
+        - {x: 0, y: 13}
+    - name: spritesheet-knight-black_75
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -11, y: 6}
+        - {x: -12, y: 0}
+        - {x: -13, y: -1}
+        - {x: -13, y: -20}
+        - {x: 9, y: -20}
+        - {x: 9, y: -4}
+        - {x: 8, y: 1}
+        - {x: 6, y: 6}
+    - name: spritesheet-knight-black_76
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 160
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 9}
+        - {x: -16, y: -1}
+        - {x: -16, y: -7}
+        - {x: -14, y: -20}
+        - {x: 1, y: -20}
+        - {x: 7, y: -10}
+        - {x: 7, y: 0}
+        - {x: 1, y: 9}
+    - name: spritesheet-knight-black_77
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 120
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -19, y: -18}
+        - {x: 7, y: -18}
+        - {x: 7, y: 3}
+        - {x: -1, y: 17}
+        - {x: -12, y: 17}
+        - {x: -19, y: 15}
+    - name: spritesheet-knight-black_78
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 120
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -16, y: 20}
+        - {x: -16, y: -15}
+        - {x: 8, y: -15}
+        - {x: 16, y: -9}
+        - {x: 16, y: 9}
+        - {x: 12, y: 20}
+    - name: spritesheet-knight-black_79
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 120
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -12, y: 12}
+        - {x: -18, y: 8}
+        - {x: -18, y: -14}
+        - {x: -17, y: -18}
+        - {x: 9, y: -18}
+        - {x: 9, y: 7}
+        - {x: 7, y: 12}
+    - name: spritesheet-knight-black_80
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 80
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 11}
+        - {x: -4, y: 11}
+        - {x: -9, y: 10}
+        - {x: -10, y: 5}
+        - {x: -10, y: -20}
+        - {x: 10, y: -20}
+        - {x: 10, y: -7}
+        - {x: 6, y: 9}
+    - name: spritesheet-knight-black_81
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 80
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 11}
+        - {x: -12, y: 2}
+        - {x: -12, y: -11}
+        - {x: -9, y: -20}
+        - {x: 5, y: -20}
+        - {x: 7, y: -14}
+        - {x: 7, y: 3}
+        - {x: 2, y: 11}
+    - name: spritesheet-knight-black_82
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 80
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -6, y: 11}
+        - {x: -11, y: 3}
+        - {x: -12, y: -11}
+        - {x: -10, y: -20}
+        - {x: 7, y: -20}
+        - {x: 7, y: 8}
+        - {x: 6, y: 11}
+    - name: spritesheet-knight-black_83
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 80
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 0, y: 11}
+        - {x: -6, y: 11}
+        - {x: -12, y: 1}
+        - {x: -12, y: -19}
+        - {x: -11, y: -20}
+        - {x: 6, y: -20}
+        - {x: 8, y: -17}
+        - {x: 8, y: 5}
+        - {x: 4, y: 10}
+    - name: spritesheet-knight-black_84
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -7, y: 13}
+        - {x: -12, y: 4}
+        - {x: -12, y: -20}
+        - {x: 6, y: -20}
+        - {x: 7, y: -14}
+        - {x: 7, y: 8}
+        - {x: 6, y: 13}
+    - name: spritesheet-knight-black_85
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 13}
+        - {x: -12, y: 3}
+        - {x: -12, y: -20}
+        - {x: 7, y: -20}
+        - {x: 7, y: 11}
+        - {x: 4, y: 13}
+    - name: spritesheet-knight-black_86
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -6, y: 12}
+        - {x: -13, y: 6}
+        - {x: -13, y: -16}
+        - {x: -11, y: -20}
+        - {x: 5, y: -20}
+        - {x: 7, y: -8}
+        - {x: 7, y: 6}
+        - {x: 1, y: 12}
+    - name: spritesheet-knight-black_87
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -8, y: 13}
+        - {x: -10, y: 11}
+        - {x: -12, y: 8}
+        - {x: -12, y: -20}
+        - {x: 4, y: -20}
+        - {x: 6, y: -19}
+        - {x: 6, y: 8}
+        - {x: -4, y: 13}
+    - name: spritesheet-knight-black_88
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 13}
+        - {x: -12, y: 7}
+        - {x: -12, y: -20}
+        - {x: 6, y: -20}
+        - {x: 6, y: 13}
+    - name: spritesheet-knight-black_89
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 40
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 8, y: 10}
+        - {x: 2, y: 13}
+        - {x: -9, y: 13}
+        - {x: -12, y: 6}
+        - {x: -12, y: -16}
+        - {x: -9, y: -20}
+        - {x: 6, y: -20}
+        - {x: 6, y: -19}
+        - {x: 9, y: -2}
+        - {x: 9, y: 7}
+    - name: spritesheet-knight-black_90
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -5, y: 11}
+        - {x: -13, y: 3}
+        - {x: -13, y: -13}
+        - {x: -11, y: -20}
+        - {x: 6, y: -20}
+        - {x: 9, y: -10}
+        - {x: 9, y: 1}
+        - {x: 1, y: 11}
+    - name: spritesheet-knight-black_91
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 12}
+        - {x: -9, y: 12}
+        - {x: -13, y: 4}
+        - {x: -13, y: -14}
+        - {x: -9, y: -18}
+        - {x: 7, y: -18}
+        - {x: 9, y: -11}
+        - {x: 9, y: 1}
+    - name: spritesheet-knight-black_92
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 3, y: 13}
+        - {x: -6, y: 13}
+        - {x: -11, y: 6}
+        - {x: -13, y: -5}
+        - {x: -10, y: -15}
+        - {x: 2, y: -15}
+        - {x: 5, y: -14}
+        - {x: 8, y: -6}
+        - {x: 8, y: 3}
+    - name: spritesheet-knight-black_93
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 2, y: 17}
+        - {x: -7, y: 17}
+        - {x: -12, y: 9}
+        - {x: -12, y: -6}
+        - {x: -6, y: -8}
+        - {x: 7, y: -8}
+        - {x: 8, y: -6}
+        - {x: 8, y: 4}
+        - {x: 5, y: 16}
+    - name: spritesheet-knight-black_94
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1, y: 19}
+        - {x: -7, y: 19}
+        - {x: -12, y: 12}
+        - {x: -12, y: -5}
+        - {x: 7, y: -5}
+        - {x: 7, y: 15}
+        - {x: 5, y: 18}
+    - name: spritesheet-knight-black_95
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 20}
+        - {x: -13, y: 10}
+        - {x: -13, y: -3}
+        - {x: -9, y: -6}
+        - {x: 5, y: -6}
+        - {x: 6, y: -4}
+        - {x: 6, y: 18}
+        - {x: 3, y: 20}
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,37 @@
+{
+    "activeFile": "pixelcave.json",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "pixelcave.json": {
+            "scale": 2.0555624999999997,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 400.3770257532914,
+                "y": 272.18826963422424
+            }
+        },
+        "pixelcave.json#spritesheet-knight-black": {
+            "dynamicWrapping": true
+        },
+        "tilesets/cave_tileset.json": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "tilesets/trees-trunk-white.json": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "pixelcave.json"
+    ],
+    "project": "pixelcave.tiled-project",
+    "recentFiles": [
+        "pixelcave.json"
+    ]
+}

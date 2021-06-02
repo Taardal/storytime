@@ -1,5 +1,6 @@
 #include "system/Log.h"
 #include "SandboxLayer.h"
+#include <algorithm>
 
 SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
         : Layer("SandboxLayer"),
@@ -8,6 +9,7 @@ SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::Ortho
           cameraController(cameraController),
           resourceLoader(resourceLoader),
           kittenTexture(resourceLoader->LoadTexture("res/textures/kitten.png")),
+          skyTexture(resourceLoader->LoadTexture("res/tiled/pixelcave/environments/parallax_bg_set_02.png")),
           tilesets(nullptr),
           tiles(),
           subTextures()
@@ -17,6 +19,7 @@ SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::Ortho
 
 void SandboxLayer::OnAttach()
 {
+#if 0
     std::cout << "OnAttach START" << std::endl;
 
     st::FileSystem fileSystem;
@@ -106,6 +109,8 @@ void SandboxLayer::OnAttach()
     }
 
     std::cout << "OnAttach END" << std::endl;
+
+#endif
 }
 
 void SandboxLayer::OnDetach()
@@ -123,7 +128,7 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     cameraController->OnUpdate(timestep, input);
     renderer->BeginScene(cameraController->GetCamera());
 
-#if 1
+#if 0
     for (const sti::Layer& layer : world.Layers)
     {
         if (layer.Type == "tilelayer" && layer.Visible)
@@ -166,8 +171,8 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     quad.Size = subTextures[0].GetSize();
     quad.Position = { 0.0f, 0.0f, 0.0f };
 
-    static float width = 128;
-    static float height = 240;
+    static float textureWidth = 128;
+    static float textureHeight = 240;
     static float tileSize = 16;
     static float tileCountY = 15;
     static float tileCountX = 8;
@@ -175,10 +180,10 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     static float x = 7;
     static float y = 1;
 
-    static float minX = x * tileSize / width;
-    static float maxX = (x + 1) * tileSize / width;
-    static float minY = y * tileSize / height;
-    static float maxY = (y + 1) * tileSize / height;
+    static float minX = x * tileSize / textureWidth;
+    static float maxX = (x + 1) * tileSize / textureWidth;
+    static float minY = y * tileSize / textureHeight;
+    static float maxY = (y + 1) * tileSize / textureHeight;
 
     static glm::vec2 c[4];
     c[0] = { minX, minY };
@@ -189,6 +194,46 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     const glm::vec2* c1 = subTextures[0].GetTextureCoordinates();
     //renderer->SubmitQuad(quad);
     renderer->SubmitQuadFoo(quad, c1);
+#endif
+
+#if 0
+    float cameraX = cameraController->GetCamera()->GetPosition().x;
+    float cameraY = cameraController->GetCamera()->GetPosition().y;
+
+    //int32_t cameraWidth = cameraController->GetAspectRatio() * cameraController->GetZoomLevel();
+    //int32_t cameraHeight = cameraController->GetZoomLevel();
+
+    int32_t cameraWidth = cameraController->GetSize().Width;
+    int32_t cameraHeight = cameraController->GetSize().Height;
+
+    int32_t windowWidth = window->GetSize().Width;
+    int32_t windowHeight = window->GetSize().Height;
+
+    int32_t textureWidth = skyTexture->GetWidth();
+    int32_t textureHeight = skyTexture->GetHeight();
+
+    float quadWidth = std::min(cameraWidth, textureWidth);
+    float quadHeight = std::min(cameraHeight, textureHeight);
+
+    float x = cameraX;
+    float y = cameraY;
+
+    float minX = x;
+    float maxX = x + quadWidth;
+    float minY = y;
+    float maxY = y + quadHeight;
+
+    glm::vec2 c[4];
+    c[0] = { minX / textureWidth, minY / textureHeight };
+    c[1] = { maxX / textureWidth, minY / textureHeight };
+    c[2] = { maxX / textureWidth, maxY / textureHeight };
+    c[3] = { minX / textureWidth, maxY / textureHeight };
+
+    st::Quad quad{};
+    quad.Texture = skyTexture;
+    quad.Size = { quadWidth, quadHeight };
+    quad.Position = { 0.0f, 0.0f, 0.0f };
+    renderer->SubmitQuadFoo(quad, c);
 #endif
 
     renderer->EndScene();

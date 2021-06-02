@@ -1,0 +1,14 @@
+{ "columns":60,
+ "image":"trees-trunk-white.png",
+ "imageheight":320,
+ "imagewidth":960,
+ "margin":0,
+ "name":"trees-trunk-white",
+ "spacing":0,
+ "tilecount":1200,
+ "tiledversion":"1.6.0",
+ "tileheight":16,
+ "tilewidth":16,
+ "type":"tileset",
+ "version":"1.6"
+}

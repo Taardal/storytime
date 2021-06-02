@@ -30,6 +30,16 @@ namespace storytime
         return camera;
     }
 
+    float OrthographicCameraController::GetAspectRatio() const
+    {
+        return aspectRatio;
+    }
+
+    float OrthographicCameraController::GetZoomLevel() const
+    {
+        return zoomLevel;
+    }
+
     void OrthographicCameraController::SetZoomLevel(float zoomLevel)
     {
         this->zoomLevel = zoomLevel;
@@ -104,6 +114,13 @@ namespace storytime
         float left = -aspectRatio * zoomLevel;
         float right = aspectRatio * zoomLevel;
         camera->SetProjection(top, bottom, left, right);
+    }
+
+    OrthographicCameraController::Size OrthographicCameraController::GetSize() const
+    {
+        int32_t width = aspectRatio * zoomLevel * 2;
+        int32_t height = zoomLevel * 2;
+        return { width, height };
     }
 
 }

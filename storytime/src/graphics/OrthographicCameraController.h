@@ -10,6 +10,13 @@ namespace storytime
 {
     class OrthographicCameraController
     {
+    public:
+        struct Size
+        {
+            int32_t Width;
+            int32_t Height;
+        };
+
     private:
         OrthographicCamera* camera;
         float aspectRatio;
@@ -26,6 +33,12 @@ namespace storytime
         ~OrthographicCameraController();
 
         [[nodiscard]] OrthographicCamera* GetCamera() const;
+
+        Size GetSize() const;
+
+        float GetAspectRatio() const;
+
+        float GetZoomLevel() const;
 
         void SetZoomLevel(float zoomLevel);
 

@@ -78,7 +78,7 @@ namespace storytime
             { GLSLType::Float, "tilingFactor" }
         });
 
-#if 0
+#if 1
         vertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
         vertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
         vertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
@@ -92,7 +92,7 @@ namespace storytime
         vertexPositions[3] = { -1.0f, 1.0f, 0.0f, 1.0f };
 #endif
 
-#if 1
+#if 0
         vertexPositions[0] = { 0.0f, -0.5f, 0.0f, 1.0f };
         vertexPositions[1] = { 1.0f, -0.5f, 0.0f, 1.0f };
         vertexPositions[2] = { 1.0f, 0.5f, 0.0f, 1.0f };
