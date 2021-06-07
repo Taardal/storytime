@@ -6,7 +6,7 @@ namespace storytime
 {
     std::string FileSystem::ReadFile(const char* path) const
     {
-        ST_LOG_TRACE("Reading file [{0}]", path);
+        ST_LOG_DEBUG("Reading file [{0}]", path);
         std::string result;
         std::ifstream inputStream(path, std::ios::in | std::ios::binary);
         if (inputStream)

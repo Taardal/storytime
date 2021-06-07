@@ -19,10 +19,10 @@ namespace storytime
     public:
         WindowResizeEvent(int32_t width, int32_t height);
 
-        [[nodiscard]] int32_t GetWidth() const;
+        int32_t GetWidth() const;
 
-        [[nodiscard]] int32_t GetHeight() const;
+        int32_t GetHeight() const;
 
-        [[nodiscard]] std::string ToString() const override;
+        std::string ToString() const override;
     };
 }

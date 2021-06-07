@@ -29,19 +29,19 @@ namespace storytime
         void SetIntArray(const char* key, const int32_t* values, uint32_t count) const;
 
     private:
-        [[nodiscard]] uint32_t CreateShader(const char* source, uint32_t type) const;
+        uint32_t CreateShader(const char* source, uint32_t type) const;
 
         void SetShaderSource(const char* source, uint32_t shaderId) const;
 
-        [[nodiscard]] bool CompileShader(uint32_t shaderId) const;
+        bool CompileShader(uint32_t shaderId) const;
 
-        [[nodiscard]] std::string GetShaderLog(uint32_t shaderId) const;
+        std::string GetShaderLog(uint32_t shaderId) const;
 
-        [[nodiscard]] uint32_t CreateProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId) const;
+        uint32_t CreateProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId) const;
 
-        [[nodiscard]] bool LinkProgram(uint32_t id) const;
+        bool LinkProgram(uint32_t id) const;
 
-        [[nodiscard]] std::string GetProgramLog(uint32_t programId) const;
+        std::string GetProgramLog(uint32_t programId) const;
 
     };
 

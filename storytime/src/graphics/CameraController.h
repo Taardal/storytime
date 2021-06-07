@@ -31,7 +31,7 @@ namespace storytime
     public:
         CameraController(Camera* camera, Input* input, float aspectRatio);
 
-        [[nodiscard]] Camera* GetCamera() const;
+        Camera* GetCamera() const;
 
         Size GetSize() const;
 

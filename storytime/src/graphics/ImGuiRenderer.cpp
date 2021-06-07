@@ -27,7 +27,7 @@ namespace storytime
     {
         bool glfwCallbacksEnabled = true;
         ImGui_ImplGlfw_InitForOpenGL(glfwWindow, glfwCallbacksEnabled);
-        ImGui_ImplOpenGL3_Init(graphicsContext->getConfig().GlslVersion);
+        ImGui_ImplOpenGL3_Init(graphicsContext->getConfig().GLSLVersion);
     }
 
     void ImGuiRenderer::Begin() const

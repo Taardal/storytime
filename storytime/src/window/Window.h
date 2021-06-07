@@ -13,12 +13,12 @@ namespace storytime
     public:
         struct Config
         {
-            const char* Title;
-            int32_t Width;
-            int32_t Height;
-            bool Maximized;
+            const char* Title = "Storytime";
+            int32_t Width = 800;
+            int32_t Height = 600;
+            bool Maximized = false;
 
-            [[nodiscard]] float GetAspectRatio() const;
+            float GetAspectRatio() const;
         };
 
         struct Size
@@ -43,9 +43,9 @@ namespace storytime
 
         ~Window();
 
-        [[nodiscard]] Size GetSize() const;
+        Size GetSize() const;
 
-        [[nodiscard]] float GetTime() const;
+        float GetTime() const;
 
         void SetOnEventListener(const std::function<void(Event&)>& onEvent);
 
@@ -58,7 +58,7 @@ namespace storytime
 
         void SetGlfwWindowHints(GraphicsContext* graphicsContext) const;
 
-        [[nodiscard]] GLFWwindow* CreateGlfwWindow() const;
+        GLFWwindow* CreateGlfwWindow() const;
 
         void SetGlfwCallbacks();
 

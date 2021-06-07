@@ -7,11 +7,11 @@ namespace storytime
     class Input
     {
     public:
-        [[nodiscard]] bool IsKeyPressed(int32_t keyCode) const;
+        bool IsKeyPressed(int32_t keyCode) const;
 
-        [[nodiscard]] bool IsMouseButtonPressed(int32_t keyCode) const;
+        bool IsMouseButtonPressed(int32_t keyCode) const;
 
-        [[nodiscard]] std::pair<float, float> GetMousePosition() const;
+        std::pair<float, float> GetMousePosition() const;
     };
 
     class MouseButtonCode

@@ -13,20 +13,20 @@ namespace storytime
 {
     Engine::Engine(const Config& config)
     {
-        Log::Init(config.logLevel);
-        GraphicsLog::Init(config.graphicsConfig);
+        Log::Init(config.LogLevel);
+        GraphicsLog::Init(config.Graphics);
 
         fileSystem = new FileSystem();
         resourceLoader = new ResourceLoader(fileSystem);
 
-        graphicsContext = new GraphicsContext(config.graphicsConfig);
+        graphicsContext = new GraphicsContext(config.Graphics);
         imGuiRenderer = new ImGuiRenderer(graphicsContext);
-        window = new Window(config.windowConfig, graphicsContext, imGuiRenderer);
+        window = new Window(config.Window, graphicsContext, imGuiRenderer);
         renderer = new Renderer(resourceLoader);
 
         input = new Input();
         camera = new Camera();
-        cameraController = new CameraController(camera, input, config.windowConfig.GetAspectRatio());
+        cameraController = new CameraController(camera, input, config.Window.GetAspectRatio());
 
         game = CreateGame(cameraController, input, window, renderer, resourceLoader);
         application = new Application(game, camera, window, renderer, imGuiRenderer);

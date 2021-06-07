@@ -7,7 +7,7 @@ namespace storytime
     void GraphicsLog::Init(const GraphicsContext::Config& graphicsConfig)
     {
 #ifdef ST_DEBUG
-        if (graphicsConfig.VersionMajor >= 4 && graphicsConfig.VersionMinor >= 3)
+        if (graphicsConfig.OpenGLVersionMajor >= 4 && graphicsConfig.OpenGLVersionMinor >= 3)
         {
             const void* userParam = nullptr;
             ST_GL_CALL(ST_TAG, glDebugMessageCallback(OnDebugMessage, userParam));

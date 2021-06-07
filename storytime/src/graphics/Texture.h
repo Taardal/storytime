@@ -49,13 +49,13 @@ namespace storytime
 
         ~Texture();
 
-        [[nodiscard]] uint32_t GetId() const;
+        uint32_t GetId() const;
 
-        [[nodiscard]] uint32_t GetWidth() const;
+        uint32_t GetWidth() const;
 
-        [[nodiscard]] uint32_t GetHeight() const;
+        uint32_t GetHeight() const;
 
-        [[nodiscard]] int32_t GetLevelOfDetail() const;
+        int32_t GetLevelOfDetail() const;
 
         void SetPixels(const void* data) const;
 

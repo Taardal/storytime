@@ -20,13 +20,13 @@ namespace storytime
 
         void PopLayer(Layer* layer);
 
-        [[nodiscard]] std::vector<Layer*>::const_iterator begin() const;
+        std::vector<Layer*>::const_iterator begin() const;
 
-        [[nodiscard]] std::vector<Layer*>::const_iterator end() const;
+        std::vector<Layer*>::const_iterator end() const;
 
-        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rbegin() const;
+        std::vector<Layer*>::const_reverse_iterator rbegin() const;
 
-        [[nodiscard]] std::vector<Layer*>::const_reverse_iterator rend() const;
+        std::vector<Layer*>::const_reverse_iterator rend() const;
 
     };
 

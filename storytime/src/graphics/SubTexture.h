@@ -24,11 +24,11 @@ namespace storytime
     public:
         explicit SubTexture(const Config& config);
 
-        [[nodiscard]] const Ref<storytime::Texture>& GetTexture() const;
+        const Ref<storytime::Texture>& GetTexture() const;
 
-        [[nodiscard]] const glm::vec2* GetTextureCoordinates() const;
+        const glm::vec2* GetTextureCoordinates() const;
 
-        [[nodiscard]] const glm::vec2& GetSize() const;
+        const glm::vec2& GetSize() const;
     };
 }
 

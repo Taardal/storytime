@@ -32,9 +32,9 @@ namespace storytime
 
             Statistics();
 
-            [[nodiscard]] uint32_t GetVertexCount() const;
+            uint32_t GetVertexCount() const;
 
-            [[nodiscard]] uint32_t GetIndexCount() const;
+            uint32_t GetIndexCount() const;
         };
 
     private:
@@ -77,7 +77,7 @@ namespace storytime
 
         ~Renderer();
 
-        [[nodiscard]] Statistics GetStatistics() const;
+        Statistics GetStatistics() const;
 
         void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
 

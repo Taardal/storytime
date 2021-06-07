@@ -32,13 +32,13 @@ namespace storytime
         virtual ~Event() = default;
 
     public:
-        [[nodiscard]] virtual std::string ToString() const;
+        virtual std::string ToString() const;
 
-        [[nodiscard]] std::string_view GetName() const;
+        std::string_view GetName() const;
 
-        [[nodiscard]] EventType GetType() const;
+        EventType GetType() const;
 
-        [[nodiscard]] bool IsHandled() const;
+        bool IsHandled() const;
 
         void SetHandled(bool handled);
     };

@@ -10,9 +10,9 @@ namespace storytime
     public:
         struct Config
         {
-            uint32_t VersionMajor;
-            uint32_t VersionMinor;
-            const char* GlslVersion;
+            uint32_t OpenGLVersionMajor = 4;
+            uint32_t OpenGLVersionMinor = 1;
+            const char* GLSLVersion = "#version 410";
         };
 
     private:
@@ -21,7 +21,7 @@ namespace storytime
     public:
         explicit GraphicsContext(const Config& config);
 
-        [[nodiscard]] const Config& getConfig() const;
+        const Config& getConfig() const;
 
         void Init(GLFWwindow* glfwWindow) const;
 

@@ -75,9 +75,9 @@ namespace storytime
     void Window::SetGlfwWindowHints(GraphicsContext* graphicsContext) const
     {
         const GraphicsContext::Config& graphicsConfig = graphicsContext->getConfig();
-        ST_LOG_DEBUG("Setting GLFW context version [{0}.{1}]", graphicsConfig.VersionMajor, graphicsConfig.VersionMinor);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, graphicsConfig.VersionMajor);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, graphicsConfig.VersionMinor);
+        ST_LOG_DEBUG("Setting GLFW context version [{0}.{1}]", graphicsConfig.OpenGLVersionMajor, graphicsConfig.OpenGLVersionMinor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, graphicsConfig.OpenGLVersionMajor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, graphicsConfig.OpenGLVersionMinor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_MAXIMIZED, this->config.Maximized ? GLFW_TRUE : GLFW_FALSE);
 #ifdef ST_PLATFORM_MACOS

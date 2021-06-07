@@ -28,7 +28,7 @@ namespace storytime
         void Unbind() const;
 
     private:
-        [[nodiscard]] uint32_t GetOpenGLType(GLSLType glslType) const;
+        uint32_t GetOpenGLType(GLSLType glslType) const;
     };
 
 }

@@ -20,9 +20,9 @@ namespace storytime
     public:
         struct Config
         {
-            LogLevel logLevel;
-            Window::Config windowConfig;
-            GraphicsContext::Config graphicsConfig;
+            LogLevel LogLevel = LogLevel::Trace;
+            Window::Config Window;
+            GraphicsContext::Config Graphics;
         };
 
     private:

@@ -16,17 +16,17 @@ namespace storytime
     public:
         Camera();
 
-        [[nodiscard]] const glm::mat4& GetView() const;
+        const glm::mat4& GetView() const;
 
-        [[nodiscard]] const glm::mat4& GetProjection() const;
+        const glm::mat4& GetProjection() const;
 
-        [[nodiscard]] const glm::mat4& GetViewProjection() const;
+        const glm::mat4& GetViewProjection() const;
 
-        [[nodiscard]] const glm::vec3& GetPosition() const;
+        const glm::vec3& GetPosition() const;
 
         void SetPosition(const glm::vec3& position);
 
-        [[nodiscard]] float GetRotation() const;
+        float GetRotation() const;
 
         void SetRotation(float rotation);
 
@@ -35,9 +35,9 @@ namespace storytime
     private:
         void UpdateViewMatrix();
 
-        [[nodiscard]] glm::mat4 GetTranslationMatrix() const;
+        glm::mat4 GetTranslationMatrix() const;
 
-        [[nodiscard]] glm::mat4 GetRotationMatrix() const;
+        glm::mat4 GetRotationMatrix() const;
     };
 
 }

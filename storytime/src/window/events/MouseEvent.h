@@ -13,11 +13,11 @@ namespace storytime
     public:
         MouseMovedEvent(float x, float y);
 
-        [[nodiscard]] std::string ToString() const override;
+        std::string ToString() const override;
 
-        [[nodiscard]] float GetX() const;
+        float GetX() const;
 
-        [[nodiscard]] float GetY() const;
+        float GetY() const;
     };
 
     class MouseScrolledEvent : public Event
@@ -29,11 +29,11 @@ namespace storytime
     public:
         MouseScrolledEvent(float xOffset, float yOffset);
 
-        [[nodiscard]] std::string ToString() const override;
+        std::string ToString() const override;
 
-        [[nodiscard]] float GetXOffset() const;
+        float GetXOffset() const;
 
-        [[nodiscard]] float GetYOffset() const;
+        float GetYOffset() const;
     };
 
     class MouseButtonEvent : public Event
@@ -44,10 +44,10 @@ namespace storytime
     protected:
         MouseButtonEvent(std::string_view name, EventType type, int32_t button);
 
-        [[nodiscard]] std::string ToString() const override;
+        std::string ToString() const override;
 
     public:
-        [[nodiscard]] int32_t GetButton() const;
+        int32_t GetButton() const;
     };
 
     class MouseButtonPressedEvent : public MouseButtonEvent

@@ -18,9 +18,9 @@ namespace storytime
 
         virtual ~Layer() = default;
 
-        [[nodiscard]] std::string_view GetName() const;
+        std::string_view GetName() const;
 
-        [[nodiscard]] std::string ToString() const;
+        std::string ToString() const;
 
         virtual void OnAttach() = 0;
 

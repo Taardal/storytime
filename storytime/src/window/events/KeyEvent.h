@@ -13,9 +13,9 @@ namespace storytime
         KeyEvent(std::string_view name, EventType type, uint32_t keyCode);
 
     public:
-        [[nodiscard]] std::string ToString() const override;
+        std::string ToString() const override;
 
-        [[nodiscard]] virtual uint32_t GetKeyCode() const;
+        virtual uint32_t GetKeyCode() const;
     };
 
     class KeyPressedEvent : public KeyEvent

@@ -10,14 +10,14 @@ int main()
     windowConfig.Maximized = false;
 
     st::GraphicsContext::Config graphicsConfig = {};
-    graphicsConfig.VersionMajor = 4;
-    graphicsConfig.VersionMinor = 1;
-    graphicsConfig.GlslVersion = "#version 410";
+    graphicsConfig.OpenGLVersionMajor = 4;
+    graphicsConfig.OpenGLVersionMinor = 1;
+    graphicsConfig.GLSLVersion = "#version 410";
 
     st::Engine::Config engineConfig = {};
-    engineConfig.logLevel = st::LogLevel::Trace;
-    engineConfig.windowConfig = windowConfig;
-    engineConfig.graphicsConfig = graphicsConfig;
+    engineConfig.LogLevel = st::LogLevel::Trace;
+    engineConfig.Window = windowConfig;
+    engineConfig.Graphics = graphicsConfig;
 
 #if 0
     auto engine = new st::Engine(engineConfig);
