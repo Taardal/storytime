@@ -1,41 +1,37 @@
 #pragma once
 
+#include "Game.h"
 #include "window/Window.h"
 #include "window/LayerStack.h"
 #include "window/events/Event.h"
 #include "graphics/Renderer.h"
-#include "graphics/OrthographicCameraController.h"
+#include "graphics/CameraController.h"
 
 namespace storytime
 {
     class Application
     {
     private:
+        Game* game;
+        Camera* camera;
         Window* window;
-        Input* input;
         Renderer* renderer;
         ImGuiRenderer* imGuiRenderer;
-        OrthographicCameraController* cameraController;
-        LayerStack layerStack;
         float lastFrameTime;
         bool running;
         bool minimized;
 
     public:
-        Application(Window* window, Input* input, Renderer* renderer, ImGuiRenderer* imGuiRenderer, OrthographicCameraController* cameraController);
-
-        ~Application();
+        Application(Game* game, Camera* camera, Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer);
 
         void Run();
 
+    private:
+        void Start();
+
         void Stop();
 
-        void PushLayer(Layer* layer);
-
-    private:
         void OnEvent(Event& event);
-
-        void OnLayerEvent(const Event& event) const;
     };
 
 }

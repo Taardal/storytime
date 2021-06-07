@@ -7,10 +7,11 @@
 #include "graphics/GraphicsContext.h"
 #include "graphics/Renderer.h"
 #include "graphics/ImGuiRenderer.h"
-#include "graphics/OrthographicCamera.h"
-#include "graphics/OrthographicCameraController.h"
+#include "graphics/Camera.h"
+#include "graphics/CameraController.h"
 #include "window/Window.h"
 #include "window/Input.h"
+#include "Game.h"
 
 namespace storytime
 {
@@ -32,8 +33,9 @@ namespace storytime
         Renderer* renderer;
         ImGuiRenderer* imGuiRenderer;
         Input* input;
-        OrthographicCamera* camera;
-        OrthographicCameraController* cameraController;
+        Camera* camera;
+        CameraController* cameraController;
+        Game* game;
         Application* application;
 
     public:

@@ -4,7 +4,7 @@
 
 namespace storytime
 {
-    class OrthographicCamera
+    class Camera
     {
     private:
         glm::mat4 viewMatrix;
@@ -14,9 +14,7 @@ namespace storytime
         float rotation;
 
     public:
-        OrthographicCamera();
-
-        virtual ~OrthographicCamera();
+        Camera();
 
         [[nodiscard]] const glm::mat4& GetView() const;
 

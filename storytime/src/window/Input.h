@@ -7,10 +7,6 @@ namespace storytime
     class Input
     {
     public:
-        Input();
-
-        ~Input();
-
         [[nodiscard]] bool IsKeyPressed(int32_t keyCode) const;
 
         [[nodiscard]] bool IsMouseButtonPressed(int32_t keyCode) const;

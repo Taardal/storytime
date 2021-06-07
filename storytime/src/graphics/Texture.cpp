@@ -5,13 +5,28 @@
 namespace storytime
 {
     Texture::Config::Config()
-        : Width(0), Height(0), Format(0), InternalFormat(0), LevelOfDetail(0), Border(0)
+            : Width(0),
+              Height(0),
+              Format(0),
+              InternalFormat(0),
+              LevelOfDetail(0),
+              Border(0)
     {}
 }
 
 namespace storytime
 {
     constexpr int32_t Texture::TARGET = GL_TEXTURE_2D;
+
+    Texture::Texture()
+            : id(0),
+              width(0),
+              height(0),
+              format(0),
+              internalFormat(0),
+              levelOfDetail(0),
+              border(0)
+    {}
 
     Texture::Texture(const Texture::Config& config)
             : id(0),

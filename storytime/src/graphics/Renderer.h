@@ -1,6 +1,5 @@
 #pragma once
 
-#include "OrthographicCamera.h"
 #include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
@@ -82,13 +81,13 @@ namespace storytime
 
         void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
 
-        void BeginScene(OrthographicCamera* camera);
+        void BeginFrame(const glm::mat4& viewProjection);
 
         void SubmitQuad(Quad& quad);
 
         void SubmitQuadFoo(Quad& quad, const glm::vec2* textureCoordinates);
 
-        void EndScene();
+        void EndFrame();
 
     private:
         void Reset();

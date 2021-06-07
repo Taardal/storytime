@@ -6,14 +6,12 @@
 
 namespace storytime
 {
-    Application::Application(Window* window, Input* input, Renderer* renderer, ImGuiRenderer* imGuiRenderer,
-                             OrthographicCameraController* cameraController)
-            : window(window),
-              input(input),
+    Application::Application(Game* game, Camera* camera, Window* window, Renderer* renderer, ImGuiRenderer* imGuiRenderer)
+            : game(game),
+              camera(camera),
+              window(window),
               renderer(renderer),
               imGuiRenderer(imGuiRenderer),
-              cameraController(cameraController),
-              layerStack(),
               lastFrameTime(0.0f),
               running(false),
               minimized(false)
@@ -21,17 +19,6 @@ namespace storytime
         window->SetOnEventListener([this](Event& event) {
             OnEvent(event);
         });
-        ST_LOG_TRACE(ST_TAG, "Created");
-    }
-
-    Application::~Application()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
-    }
-
-    void Application::PushLayer(Layer* layer)
-    {
-        layerStack.PushLayer(layer);
     }
 
     void Application::Run()
@@ -43,18 +30,12 @@ namespace storytime
             float time = window->GetTime();
             Timestep timestep = time - lastFrameTime;
             lastFrameTime = time;
+            game->OnUpdate(timestep);
             if (!minimized)
             {
-                for (Layer* layer : layerStack)
-                {
-                    layer->OnUpdate(timestep, input, renderer);
-                }
-                imGuiRenderer->Begin();
-                for (Layer* layer : layerStack)
-                {
-                    layer->OnImGuiRender(imGuiRenderer);
-                }
-                imGuiRenderer->End(window->GetSize().Width, window->GetSize().Height);
+                renderer->BeginFrame(camera->GetViewProjection());
+                game->OnRender();
+                renderer->EndFrame();
             }
             window->OnUpdate();
         }
@@ -92,14 +73,9 @@ namespace storytime
                 event.SetHandled(true);
             }
         }
-        for (auto iterator = layerStack.rbegin(); iterator != layerStack.rend(); ++iterator)
+        if (!event.IsHandled())
         {
-            if (event.IsHandled())
-            {
-                break;
-            }
-            Layer* layer = *iterator;
-            layer->OnEvent(event);
+            game->OnEvent(event);
         }
     }
 

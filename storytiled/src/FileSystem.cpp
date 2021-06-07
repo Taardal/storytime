@@ -1,12 +1,10 @@
-#include "Log.h"
 #include "FileSystem.h"
 #include <fstream>
 
-namespace storytime
+namespace storytiled
 {
-    std::string FileSystem::ReadFile(const char* path) const
+    std::string FileSystem::ReadFile(const char* path)
     {
-        ST_LOG_TRACE(ST_TAG, "Reading file [{0}]", path);
         std::string result;
         std::ifstream inputStream(path, std::ios::in | std::ios::binary);
         if (inputStream)
@@ -20,14 +18,6 @@ namespace storytime
                 inputStream.read(&result[0], length);
                 inputStream.close();
             }
-            else
-            {
-                ST_LOG_ERROR(ST_TAG, "Could not read from file [{0}]", path);
-            }
-        }
-        else
-        {
-            ST_LOG_ERROR(ST_TAG, "Could not open file [{0}]", path);
         }
         return result;
     }

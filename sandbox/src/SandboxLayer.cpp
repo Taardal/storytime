@@ -2,7 +2,7 @@
 #include "SandboxLayer.h"
 #include <algorithm>
 
-SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader)
+SandboxLayer::SandboxLayer(st::Window* window, st::Renderer* renderer, st::CameraController* cameraController, st::ResourceLoader* resourceLoader)
         : Layer("SandboxLayer"),
           window(window),
           renderer(renderer),
@@ -125,8 +125,8 @@ void SandboxLayer::OnEvent(const st::Event& event)
 
 void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::Renderer* renderer)
 {
-    cameraController->OnUpdate(timestep, input);
-    renderer->BeginScene(cameraController->GetCamera());
+    //cameraController->OnUpdate(timestep, input);
+    //renderer->BeginFrame(cameraController->GetCamera());
 
 #if 0
     for (const sti::Layer& layer : world.Layers)
@@ -236,7 +236,7 @@ void SandboxLayer::OnUpdate(const st::Timestep& timestep, st::Input* input, st::
     renderer->SubmitQuadFoo(quad, c);
 #endif
 
-    renderer->EndScene();
+    renderer->EndFrame();
 }
 
 void SandboxLayer::OnImGuiRender(st::ImGuiRenderer* imGuiRenderer)

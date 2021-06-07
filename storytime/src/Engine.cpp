@@ -1,11 +1,11 @@
 #include "Engine.h"
+#include "Game.h"
 
-extern storytime::Application* CreateApplication(
+extern storytime::Game* CreateGame(
+        storytime::CameraController* cameraController,
+        storytime::Input* input,
         storytime::Window* window,
         storytime::Renderer* renderer,
-        storytime::ImGuiRenderer* imGuiRenderer,
-        storytime::Input* input,
-        storytime::OrthographicCameraController* cameraController,
         storytime::ResourceLoader* resourceLoader
 );
 
@@ -25,17 +25,17 @@ namespace storytime
         renderer = new Renderer(resourceLoader);
 
         input = new Input();
-        camera = new OrthographicCamera();
-        cameraController = new OrthographicCameraController(camera, config.windowConfig.GetAspectRatio());
+        camera = new Camera();
+        cameraController = new CameraController(camera, input, config.windowConfig.GetAspectRatio());
 
-        application = CreateApplication(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
-
-        ST_LOG_TRACE(ST_TAG, "Created");
+        game = CreateGame(cameraController, input, window, renderer, resourceLoader);
+        application = new Application(game, camera, window, renderer, imGuiRenderer);
     }
 
     Engine::~Engine()
     {
         delete application;
+        delete game;
         delete cameraController;
         delete camera;
         delete input;
@@ -45,7 +45,6 @@ namespace storytime
         delete graphicsContext;
         delete resourceLoader;
         delete fileSystem;
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     void Engine::Run() const

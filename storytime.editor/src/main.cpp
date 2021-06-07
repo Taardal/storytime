@@ -19,11 +19,14 @@ int main()
     engineConfig.windowConfig = windowConfig;
     engineConfig.graphicsConfig = graphicsConfig;
 
+#if 0
     auto engine = new st::Engine(engineConfig);
     engine->Run();
     delete engine;
+#endif
 }
 
+#if 0
 namespace storytime
 {
     class Editor : public Application
@@ -36,7 +39,7 @@ namespace storytime
                 Renderer* renderer,
                 ImGuiRenderer* imGuiRenderer,
                 Input* input,
-                OrthographicCameraController* cameraController,
+                CameraController* cameraController,
                 ResourceLoader* resourceLoader
         )
                 : Application(window, input, renderer, imGuiRenderer, cameraController),
@@ -57,11 +60,10 @@ st::Application* CreateApplication(
         st::Renderer* renderer,
         st::ImGuiRenderer* imGuiRenderer,
         st::Input* input,
-        st::OrthographicCameraController* cameraController,
+        st::CameraController* cameraController,
         st::ResourceLoader* resourceLoader
 )
 {
     return new st::Editor(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
 }
-
-
+#endif

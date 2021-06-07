@@ -1,4 +1,4 @@
-#include "SandboxLayer.h"
+#include "Scene.h"
 #include <storytime/Storytime.h>
 
 int main()
@@ -24,41 +24,46 @@ int main()
     delete engine;
 }
 
-class Sandbox : public st::Application
+class Sandbox : public st::Game
 {
 private:
-    SandboxLayer* sandboxLayer;
+    Scene* scene;
 public:
-    Sandbox(
-            st::Window* window,
-            st::Renderer* renderer,
-            st::ImGuiRenderer* imGuiRenderer,
-            st::Input* input,
-            st::OrthographicCameraController* cameraController,
-            storytime::ResourceLoader* resourceLoader
-    )
-            : Application(window, input, renderer, imGuiRenderer, cameraController),
-              sandboxLayer(new SandboxLayer(window, renderer, cameraController, resourceLoader))
+    Sandbox(st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader)
+            : scene(new Scene(cameraController, renderer, resourceLoader))
     {
-        PushLayer(sandboxLayer);
     }
 
     ~Sandbox()
     {
-        delete sandboxLayer;
+        delete scene;
+    }
+
+    void OnUpdate(st::Timestep timestep) override
+    {
+        scene->OnUpdate(timestep);
+    }
+
+    void OnRender() override
+    {
+        scene->OnRender();
+    }
+
+    void OnEvent(const storytime::Event& event) override
+    {
+        scene->OnEvent(event);
     }
 };
 
-st::Application* CreateApplication(
+st::Game* CreateGame(
+        st::CameraController* cameraController,
+        st::Input* input,
         st::Window* window,
         st::Renderer* renderer,
-        st::ImGuiRenderer* imGuiRenderer,
-        st::Input* input,
-        st::OrthographicCameraController* cameraController,
         st::ResourceLoader* resourceLoader
 )
 {
-    return new Sandbox(window, renderer, imGuiRenderer, input, cameraController, resourceLoader);
+    return new Sandbox(cameraController, renderer, resourceLoader);
 }
 
 

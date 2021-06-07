@@ -4,11 +4,11 @@
 #include "system/Timestep.h"
 #include "window/Input.h"
 #include "window/events/Event.h"
-#include "graphics/OrthographicCamera.h"
+#include "graphics/Camera.h"
 
 namespace storytime
 {
-    class OrthographicCameraController
+    class CameraController
     {
     public:
         struct Size
@@ -18,7 +18,8 @@ namespace storytime
         };
 
     private:
-        OrthographicCamera* camera;
+        Camera* camera;
+        Input* input;
         float aspectRatio;
         glm::vec3 cameraPosition;
         float cameraRotation;
@@ -28,28 +29,24 @@ namespace storytime
         bool rotationEnabled;
 
     public:
-        OrthographicCameraController(OrthographicCamera* camera, float aspectRatio);
+        CameraController(Camera* camera, Input* input, float aspectRatio);
 
-        ~OrthographicCameraController();
-
-        [[nodiscard]] OrthographicCamera* GetCamera() const;
+        [[nodiscard]] Camera* GetCamera() const;
 
         Size GetSize() const;
 
-        float GetAspectRatio() const;
-
-        float GetZoomLevel() const;
+        void SetPosition(float x, float y);
 
         void SetZoomLevel(float zoomLevel);
 
-        void OnUpdate(Timestep timestep, Input* input);
+        void OnUpdate(Timestep timestep);
 
         void OnEvent(const Event& event);
 
         void Resize(uint32_t width, uint32_t height);
 
     private:
-        void SetCameraProjection();
+        void UpdateCameraProjection();
     };
 
 }

@@ -6,12 +6,6 @@ namespace storytime
     GraphicsContext::GraphicsContext(const Config& config)
             : config(config)
     {
-        ST_LOG_TRACE(ST_TAG, "Created");
-    }
-
-    GraphicsContext::~GraphicsContext()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     const GraphicsContext::Config& GraphicsContext::getConfig() const

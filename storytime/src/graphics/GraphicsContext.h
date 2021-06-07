@@ -21,8 +21,6 @@ namespace storytime
     public:
         explicit GraphicsContext(const Config& config);
 
-        ~GraphicsContext();
-
         [[nodiscard]] const Config& getConfig() const;
 
         void Init(GLFWwindow* glfwWindow) const;

@@ -78,25 +78,18 @@ namespace storytime
             { GLSLType::Float, "tilingFactor" }
         });
 
-#if 1
+#if 0
         vertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
         vertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
         vertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
         vertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
 #endif
 
-#if 0
-        vertexPositions[0] = { -1.0f, 0.0f, 0.0f, 1.0f };
-        vertexPositions[1] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        vertexPositions[2] = { 0.0f,  1.0f, 0.0f, 1.0f };
-        vertexPositions[3] = { -1.0f, 1.0f, 0.0f, 1.0f };
-#endif
-
-#if 0
-        vertexPositions[0] = { 0.0f, -0.5f, 0.0f, 1.0f };
-        vertexPositions[1] = { 1.0f, -0.5f, 0.0f, 1.0f };
-        vertexPositions[2] = { 1.0f, 0.5f, 0.0f, 1.0f };
-        vertexPositions[3] = { 0.0f, 0.5f, 0.0f, 1.0f };
+#if 1
+        vertexPositions[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
+        vertexPositions[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
+        vertexPositions[2] = { 1.0f, -1.0f, 0.0f, 1.0f };
+        vertexPositions[3] = { 0.0f, -1.0f, 0.0f, 1.0f };
 #endif
 
         uint32_t offset = 0;
@@ -129,8 +122,6 @@ namespace storytime
         }
         shader->Bind();
         shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
-
-        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Renderer::~Renderer()
@@ -140,7 +131,6 @@ namespace storytime
         delete[] textures;
         delete[] indices;
         delete[] vertices;
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     Renderer::Statistics Renderer::GetStatistics() const
@@ -153,14 +143,14 @@ namespace storytime
         ST_GL_CALL(ST_TAG, glViewport(x, y, width, height));
     }
 
-    void Renderer::BeginScene(OrthographicCamera* camera)
+    void Renderer::BeginFrame(const glm::mat4& viewProjection)
     {
         Reset();
         ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
-        shader->SetMat4("viewProjection", camera->GetViewProjection());
+        shader->SetMat4("viewProjection", viewProjection);
     }
 
-    void Renderer::EndScene()
+    void Renderer::EndFrame()
     {
         Flush();
     }
@@ -198,28 +188,28 @@ namespace storytime
         const auto& scale = glm::scale(glm::mat4(1.0f), { quad.Size.x, quad.Size.y, 1.0f });
         glm::mat4 transform = translation * rotation * scale;
 
-        vertices[vertexCount].Position = transform * glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
+        vertices[vertexCount].Position = transform * vertexPositions[0];
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 0.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
         vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);
+        vertices[vertexCount].Position = transform * vertexPositions[1];
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 0.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
         vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
+        vertices[vertexCount].Position = transform * vertexPositions[2];
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 1.0f, 1.0f };
         vertices[vertexCount].TextureIndex = textureIndex;
         vertices[vertexCount].TilingFactor = quad.TilingFactor;
         vertexCount++;
 
-        vertices[vertexCount].Position = transform * glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);
+        vertices[vertexCount].Position = transform * vertexPositions[3];
         vertices[vertexCount].Color = quad.Color;
         vertices[vertexCount].TextureCoordinate = { 0.0f, 1.0f };
         vertices[vertexCount].TextureIndex = textureIndex;

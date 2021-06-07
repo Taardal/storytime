@@ -18,6 +18,8 @@ namespace storytiled
         int Id;
         int X;
         int Y;
+        int OffsetX;
+        int OffsetY;
         int Width;
         int Height;
         int Opacity;

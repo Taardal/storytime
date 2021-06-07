@@ -3,7 +3,7 @@ project(sandbox)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/SandboxLayer.cpp src/SandboxLayer.h)
+add_executable(${PROJECT_NAME} src/main.cpp src/SandboxLayer.cpp src/SandboxLayer.h src/Scene.cpp src/Scene.h)
 
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)

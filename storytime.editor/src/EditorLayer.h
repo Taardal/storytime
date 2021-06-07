@@ -9,7 +9,7 @@ namespace storytime
     private:
         Window* window;
         Renderer* renderer;
-        OrthographicCameraController* cameraController;
+        CameraController* cameraController;
         ResourceLoader* resourceLoader;
         Ref<Texture> kittenTexture;
         Ref<Framebuffer> framebuffer;
@@ -18,7 +18,7 @@ namespace storytime
         bool viewportHovered;
 
     public:
-        EditorLayer(Window* window, Renderer* renderer, OrthographicCameraController* cameraController, ResourceLoader* resourceLoader);
+        EditorLayer(Window* window, Renderer* renderer, CameraController* cameraController, ResourceLoader* resourceLoader);
 
         ~EditorLayer() override = default;
 

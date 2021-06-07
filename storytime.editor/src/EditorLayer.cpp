@@ -3,7 +3,7 @@
 
 namespace storytime
 {
-    EditorLayer::EditorLayer(Window* window, Renderer* renderer, OrthographicCameraController* cameraController, ResourceLoader* resourceLoader)
+    EditorLayer::EditorLayer(Window* window, Renderer* renderer, CameraController* cameraController, ResourceLoader* resourceLoader)
             : Layer("EditorLayer"),
               window(window),
               renderer(renderer),
@@ -43,7 +43,7 @@ namespace storytime
             cameraController->OnUpdate(timestep, input);
         }
         framebuffer->Bind();
-        renderer->BeginScene(cameraController->GetCamera());
+        renderer->BeginFrame(cameraController->GetCamera());
 
         Quad quad{};
         quad.Texture = kittenTexture;
@@ -52,7 +52,7 @@ namespace storytime
         //quad.Color = { (x + y) % 2, 0.2f, 0.5f, 1.0f };
         renderer->SubmitQuad(quad);
 
-        renderer->EndScene();
+        renderer->EndFrame();
         framebuffer->Unbind();
     }
 

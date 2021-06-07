@@ -21,14 +21,12 @@ namespace storytime
         graphicsContext->Init(glfwWindow);
         imGuiRenderer->Init(glfwWindow);
         SetGlfwCallbacks();
-        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Window::~Window()
     {
         DestroyGlfwWindow();
         TerminateGlfw();
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     Window::Size Window::GetSize() const

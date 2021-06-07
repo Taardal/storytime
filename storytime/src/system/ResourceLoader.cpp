@@ -7,12 +7,6 @@ namespace storytime
     ResourceLoader::ResourceLoader(FileSystem* fileSystem)
             : fileSystem(fileSystem)
     {
-        ST_LOG_TRACE(ST_TAG, "Created");
-    }
-
-    ResourceLoader::~ResourceLoader()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     Ref<Shader> ResourceLoader::LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const
@@ -24,7 +18,7 @@ namespace storytime
 
     Ref<Texture> ResourceLoader::LoadTexture(const std::string& path) const
     {
-        stbi_set_flip_vertically_on_load(1);
+        stbi_set_flip_vertically_on_load(0);
         Image image = LoadImage(path);
         Ref<Texture> texture = CreateRef<Texture>(image);
         FreeImage(image);

@@ -14,14 +14,12 @@ namespace storytime
     public:
         explicit ResourceLoader(FileSystem* fileSystem);
 
-        virtual ~ResourceLoader();
+        Ref<Shader> LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const;
 
-        [[nodiscard]] Ref<Shader> LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const;
-
-        [[nodiscard]] Ref<Texture> LoadTexture(const std::string& path) const;
+        Ref<Texture> LoadTexture(const std::string& path) const;
 
     private:
-        [[nodiscard]] Image LoadImage(const std::string& path) const;
+        Image LoadImage(const std::string& path) const;
 
         void FreeImage(const Image& image) const;
     };

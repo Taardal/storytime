@@ -1,4 +1,5 @@
 #include "World.h"
+#include "FileSystem.h"
 #include <nlohmann/json.hpp>
 
 namespace storytiled
@@ -14,7 +15,7 @@ namespace storytiled
         world.Type = json.at("type").get<std::string>();
         world.Orientation = json.at("orientation").get<std::string>();
         world.RenderOrder = json.at("renderorder").get<std::string>();
-        world.Version = json.at("version").get<float>();
+        world.Version = json.at("version").get<std::string>();
         world.Width = json.at("width").get<int>();
         world.Height = json.at("height").get<int>();
         world.TileWidth = json.at("tilewidth").get<int>();
@@ -33,7 +34,7 @@ namespace storytiled
               Type(),
               Orientation(),
               RenderOrder(),
-              Version(0.0f),
+              Version(),
               Width(0),
               Height(0),
               TileWidth(0),
@@ -46,6 +47,11 @@ namespace storytiled
     World World::FromJson(const std::string& json)
     {
         return nlohmann::json::parse(json).get<World>();
+    }
+
+    World World::FromJsonFile(const std::string& path)
+    {
+        return FromJson(FileSystem::ReadFile(path.c_str()));
     }
 }
 

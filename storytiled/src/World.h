@@ -14,7 +14,7 @@ namespace storytiled
         std::string Type;
         std::string Orientation;
         std::string RenderOrder;
-        float Version;
+        std::string Version;
         int Width;
         int Height;
         int TileWidth;
@@ -26,6 +26,8 @@ namespace storytiled
         World();
 
         static World FromJson(const std::string& json);
+
+        static World FromJsonFile(const std::string& path);
     };
 }
 

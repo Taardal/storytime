@@ -2,12 +2,12 @@
 
 #include <string>
 
-namespace storytime
+namespace storytiled
 {
     class FileSystem
     {
     public:
-        std::string ReadFile(const char* path) const;
+        static std::string ReadFile(const char* path);
     };
 }
 

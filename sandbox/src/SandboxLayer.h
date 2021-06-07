@@ -10,7 +10,7 @@ class SandboxLayer : public st::Layer
 private:
     st::Window* window;
     st::Renderer* renderer;
-    st::OrthographicCameraController* cameraController;
+    st::CameraController* cameraController;
     st::ResourceLoader* resourceLoader;
     st::Ref<st::Texture> kittenTexture;
     st::Ref<st::Texture> skyTexture;
@@ -20,7 +20,7 @@ private:
     std::vector<st::SubTexture> subTextures;
 
 public:
-    SandboxLayer(st::Window* window, st::Renderer* renderer, st::OrthographicCameraController* cameraController, st::ResourceLoader* resourceLoader);
+    SandboxLayer(st::Window* window, st::Renderer* renderer, st::CameraController* cameraController, st::ResourceLoader* resourceLoader);
 
     ~SandboxLayer() override = default;
 

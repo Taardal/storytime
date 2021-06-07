@@ -39,6 +39,8 @@ namespace storytime
         int32_t border;
 
     public:
+        Texture();
+
         explicit Texture(const Config& config);
 
         explicit Texture(const Image& image);

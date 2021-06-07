@@ -1,4 +1,4 @@
-#include "OrthographicCameraController.h"
+#include "CameraController.h"
 #include "window/events/WindowEvent.h"
 #include "window/events/MouseEvent.h"
 #include "system/Log.h"
@@ -6,8 +6,9 @@
 
 namespace storytime
 {
-    OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
+    CameraController::CameraController(Camera* camera, Input* input, float aspectRatio)
             : camera(camera),
+              input(input),
               aspectRatio(aspectRatio),
               cameraPosition(0.0f, 0.0f, 0.0f),
               cameraRotation(0.0f),
@@ -16,37 +17,28 @@ namespace storytime
               zoomLevel(1.0f),
               rotationEnabled(true)
     {
-        SetCameraProjection();
-        ST_LOG_TRACE(ST_TAG, "Created");
+        UpdateCameraProjection();
     }
 
-    OrthographicCameraController::~OrthographicCameraController()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
-    }
-
-    OrthographicCamera* OrthographicCameraController::GetCamera() const
+    Camera* CameraController::GetCamera() const
     {
         return camera;
     }
 
-    float OrthographicCameraController::GetAspectRatio() const
+    void CameraController::SetPosition(float x, float y)
     {
-        return aspectRatio;
+        cameraPosition.x = x;
+        cameraPosition.y = y;
+        camera->SetPosition(cameraPosition);
     }
 
-    float OrthographicCameraController::GetZoomLevel() const
-    {
-        return zoomLevel;
-    }
-
-    void OrthographicCameraController::SetZoomLevel(float zoomLevel)
+    void CameraController::SetZoomLevel(float zoomLevel)
     {
         this->zoomLevel = zoomLevel;
-        SetCameraProjection();
+        UpdateCameraProjection();
     }
 
-    void OrthographicCameraController::OnUpdate(Timestep timestep, Input* input)
+    void CameraController::OnUpdate(Timestep timestep)
     {
         if (input->IsKeyPressed(KeyCode::KEY_A))
         {
@@ -84,30 +76,30 @@ namespace storytime
         cameraTranslationSpeed = zoomLevel;
     }
 
-    void OrthographicCameraController::OnEvent(const Event& event)
+    void CameraController::OnEvent(const Event& event)
     {
         if (event.GetType() == EventType::MouseScrolled)
         {
             const auto* mouseScrolledEvent = (MouseScrolledEvent*) &event;
             zoomLevel -= mouseScrolledEvent->GetYOffset() * 0.25f;
             zoomLevel = std::fmax(zoomLevel, 0.25f);
-            SetCameraProjection();
+            UpdateCameraProjection();
         }
         if (event.GetType() == EventType::WindowResize)
         {
             const auto* windowResizeEvent = (WindowResizeEvent*) &event;
             aspectRatio = (float) windowResizeEvent->GetWidth() / (float) windowResizeEvent->GetHeight();
-            SetCameraProjection();
+            UpdateCameraProjection();
         }
     }
 
-    void OrthographicCameraController::Resize(uint32_t width, uint32_t height)
+    void CameraController::Resize(uint32_t width, uint32_t height)
     {
         aspectRatio = width / height;
-        SetCameraProjection();
+        UpdateCameraProjection();
     }
 
-    void OrthographicCameraController::SetCameraProjection()
+    void CameraController::UpdateCameraProjection()
     {
         float top = zoomLevel;
         float bottom = -zoomLevel;
@@ -116,7 +108,7 @@ namespace storytime
         camera->SetProjection(top, bottom, left, right);
     }
 
-    OrthographicCameraController::Size OrthographicCameraController::GetSize() const
+    CameraController::Size CameraController::GetSize() const
     {
         int32_t width = aspectRatio * zoomLevel * 2;
         int32_t height = zoomLevel * 2;

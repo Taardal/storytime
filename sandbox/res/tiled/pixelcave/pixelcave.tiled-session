@@ -1,7 +1,8 @@
 {
     "activeFile": "pixelcave.json",
     "expandedProjectPaths": [
-        "."
+        ".",
+        "tilesets"
     ],
     "fileStates": {
         "": {
@@ -9,11 +10,15 @@
         },
         "pixelcave.json": {
             "scale": 2.0555624999999997,
-            "selectedLayer": 6,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 400.3770257532914,
-                "y": 272.18826963422424
+                "x": 370.9446927544164,
+                "y": 268.78287573352793
             }
+        },
+        "pixelcave.json#cave_tileset": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "pixelcave.json#spritesheet-knight-black": {
             "dynamicWrapping": true
@@ -27,11 +32,17 @@
             "scaleInDock": 1
         }
     },
+    "last.imagePath": "/Users/taardal/dev/me/storytime/sandbox/res/tiled/pixelcave/tilesets",
     "openFiles": [
         "pixelcave.json"
     ],
     "project": "pixelcave.tiled-project",
     "recentFiles": [
         "pixelcave.json"
-    ]
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
 }

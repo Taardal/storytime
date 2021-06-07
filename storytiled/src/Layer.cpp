@@ -27,9 +27,17 @@ namespace storytiled
             layer.Width = json.at("width").get<int>();
             layer.Height = json.at("height").get<int>();
         }
-        else if (layer.Type == "image")
+        else if (layer.Type == "imagelayer")
         {
             layer.Image = json.at("image").get<std::string>();
+            if (json.find("offsetx") != json.end())
+            {
+                layer.OffsetX = json.at("offsetx").get<int>();
+            }
+            if (json.find("offsety") != json.end())
+            {
+                layer.OffsetY = json.at("offsety").get<int>();
+            }
         }
         else if (layer.Type == "group")
         {
@@ -55,6 +63,8 @@ namespace storytiled
               Id(0),
               X(0),
               Y(0),
+              OffsetX(0),
+              OffsetY(0),
               Width(0),
               Height(0),
               Opacity(0),
