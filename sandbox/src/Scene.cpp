@@ -1,8 +1,9 @@
 #include "Scene.h"
 #include <iostream>
 
-Scene::Scene(st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader)
-        : cameraController(cameraController),
+Scene::Scene(st::CoordinateSystem coordinateSystem, st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader)
+        : coordinateSystem(coordinateSystem),
+          cameraController(cameraController),
           renderer(renderer),
           world(sti::World::FromJsonFile("res/tiled/pixelcave/pixelcave.json")),
           imageLayerTextures(),
@@ -14,7 +15,11 @@ Scene::Scene(st::CameraController* cameraController, st::Renderer* renderer, st:
     CreateTileSubTextures();
 
     cameraController->SetZoomLevel(200.0f);
-    cameraController->SetPosition(0.0f, 0.0f); //-(cameraController->GetSize().Width / 2)
+#if 1
+    cameraController->SetPosition(0.0f, 0.0f);
+#else
+    cameraController->SetPosition(-(cameraController->GetSize().Width / 2), (cameraController->GetSize().Height / 2));
+#endif
 }
 
 void Scene::OnEvent(const st::Event& event)
@@ -97,8 +102,14 @@ void Scene::CreateTileSubTextures()
                 st::SubTexture::Config config;
                 config.Texture = tilesetTextures[i];
                 config.Size = { world.Tilesets[i].TileWidth, world.Tilesets[i].TileHeight };
-                //config.Coordinates = { x, numberOfTilesY - (y + 1) };
-                config.Coordinates = { x, y };
+                if (coordinateSystem == st::CoordinateSystem::RightUp)
+                {
+                    config.Coordinates = { x, numberOfTilesY - (y + 1) };
+                }
+                else
+                {
+                    config.Coordinates = { x, y };
+                }
                 st::SubTexture subTexture(config);
                 tileSubTextures.insert({ globalId, subTexture });
                 globalId++;
@@ -111,10 +122,16 @@ void Scene::CreateTileSubTextures()
 void Scene::RenderImageLayer(const sti::Layer& layer) const
 {
     st::Ref<st::Texture> texture = imageLayerTextures.at(layer.Id);
+    float x = layer.X - layer.OffsetX;
+    float y = layer.Y - layer.OffsetY;
+    if (coordinateSystem == st::CoordinateSystem::RightUp)
+    {
+        y = ((float) (world.TileHeight * world.Height)) - (texture->GetHeight() + layer.Y + layer.OffsetY);
+    }
     st::Quad quad{};
     quad.Texture = texture;
     quad.Size = { texture->GetWidth(), texture->GetHeight() };
-    quad.Position = { layer.X - layer.OffsetX, layer.Y - layer.OffsetY, 0.0f };
+    quad.Position = { x, y, 0.0f };
     renderer->SubmitQuad(quad);
 }
 
@@ -130,12 +147,21 @@ void Scene::RenderTileLayer(const sti::Layer& layer) const
                 auto x1 = (float) (x * world.TileWidth);
                 auto y1 = (float) (y * world.TileHeight);
 
+                if (coordinateSystem == st::CoordinateSystem::RightDown)
+                {
+                    y1 = -y1;
+                }
+                if (coordinateSystem == st::CoordinateSystem::RightUp)
+                {
+                    y1 = ((float) (world.TileHeight * world.Height)) - (y1 + world.TileHeight);
+                }
+
                 const st::SubTexture& subTexture = tileSubTextures.at(tileId);
 
                 st::Quad quad{};
                 quad.Texture = subTexture.GetTexture();
                 quad.Size = subTexture.GetSize();
-                quad.Position = { x1, -y1, 0.0f };
+                quad.Position = { x1, y1, 0.0f };
                 renderer->SubmitQuadFoo(quad, subTexture.GetTextureCoordinates());
             }
         }

@@ -2,6 +2,7 @@
 
 #include "system/Log.h"
 #include "system/Application.h"
+#include "system/CoordinateSystem.h"
 #include "system/FileSystem.h"
 #include "system/ResourceLoader.h"
 #include "graphics/GraphicsContext.h"
@@ -20,9 +21,12 @@ namespace storytime
     public:
         struct Config
         {
-            LogLevel LogLevel = LogLevel::Trace;
+            LogLevel LogLevel;
+            CoordinateSystem CoordinateSystem;
             Window::Config Window;
             GraphicsContext::Config Graphics;
+
+            Config();
         };
 
     private:

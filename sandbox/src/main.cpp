@@ -1,14 +1,16 @@
 #include "Scene.h"
-#include <storytime/Storytime.h>
+#include <storytime//Storytime.h>
 
 int main()
 {
-    storytime::Engine::Config config = {};
+    st::Engine::Config config = {};
+    config.LogLevel = st::LogLevel::Trace;
+    config.CoordinateSystem = st::CoordinateSystem::RightDown;
     config.Window.Title = "Sandbox";
     config.Window.Width = 1280;
     config.Window.Height = config.Window.Width / 16 * 12;
 
-    auto engine = new storytime::Engine(config);
+    auto engine = new st::Engine(config);
     engine->Run();
     delete engine;
 }
@@ -18,8 +20,8 @@ class Sandbox : public st::Game
 private:
     Scene* scene;
 public:
-    Sandbox(st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader)
-            : scene(new Scene(cameraController, renderer, resourceLoader))
+    Sandbox(st::CoordinateSystem coordinateSystem, st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader)
+            : scene(new Scene(coordinateSystem, cameraController, renderer, resourceLoader))
     {
     }
 
@@ -38,21 +40,20 @@ public:
         scene->OnRender();
     }
 
-    void OnEvent(const storytime::Event& event) override
+    void OnEvent(const st::Event& event) override
     {
         scene->OnEvent(event);
     }
 };
 
 st::Game* CreateGame(
-        st::CameraController* cameraController,
-        st::Input* input,
-        st::Window* window,
+        st::ResourceLoader* resourceLoader,
         st::Renderer* renderer,
-        st::ResourceLoader* resourceLoader
+        st::CameraController* cameraController,
+        st::CoordinateSystem coordinateSystem
 )
 {
-    return new Sandbox(cameraController, renderer, resourceLoader);
+    return new Sandbox(coordinateSystem, cameraController, renderer, resourceLoader);
 }
 
 

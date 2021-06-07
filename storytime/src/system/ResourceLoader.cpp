@@ -4,8 +4,9 @@
 
 namespace storytime
 {
-    ResourceLoader::ResourceLoader(FileSystem* fileSystem)
-            : fileSystem(fileSystem)
+    ResourceLoader::ResourceLoader(FileSystem* fileSystem, CoordinateSystem coordinateSystem)
+            : fileSystem(fileSystem),
+              coordinateSystem(coordinateSystem)
     {
     }
 
@@ -18,7 +19,7 @@ namespace storytime
 
     Ref<Texture> ResourceLoader::LoadTexture(const std::string& path) const
     {
-        stbi_set_flip_vertically_on_load(0);
+        stbi_set_flip_vertically_on_load(coordinateSystem != CoordinateSystem::RightDown);
         Image image = LoadImage(path);
         Ref<Texture> texture = CreateRef<Texture>(image);
         FreeImage(image);

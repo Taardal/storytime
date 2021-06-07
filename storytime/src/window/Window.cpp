@@ -7,13 +7,25 @@
 
 namespace storytime
 {
+    Window::Config::Config()
+            : Title("Storytime"),
+              Width(800),
+              Height(600),
+              Maximized(false)
+    {}
+
     float Window::Config::GetAspectRatio() const
     {
         return (float) Width / (float) Height;
     }
+}
 
+namespace storytime
+{
     Window::Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer)
-            : config(config), glfwCallbackData(), glfwWindow(nullptr)
+            : config(config),
+              glfwCallbackData(),
+              glfwWindow(nullptr)
     {
         InitGlfw();
         SetGlfwWindowHints(graphicsContext);

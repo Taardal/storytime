@@ -6,6 +6,7 @@
 class Scene
 {
 private:
+    st::CoordinateSystem coordinateSystem;
     st::CameraController* cameraController;
     st::Renderer* renderer;
     sti::World world;
@@ -14,7 +15,7 @@ private:
     std::unordered_map<uint32_t, st::SubTexture> tileSubTextures;
 
 public:
-    Scene(st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader);
+    Scene(st::CoordinateSystem coordinateSystem, st::CameraController* cameraController, st::Renderer* renderer, st::ResourceLoader* resourceLoader);
 
     void OnEvent(const st::Event& event);
 

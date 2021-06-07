@@ -51,7 +51,7 @@ namespace storytime
     constexpr uint32_t Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
     constexpr uint32_t Renderer::MAX_TEXTURE_SLOTS = 16;
 
-    Renderer::Renderer(ResourceLoader* resourceLoader)
+    Renderer::Renderer(ResourceLoader* resourceLoader, CoordinateSystem coordinateSystem)
             : vertexArray(CreateRef<VertexArray>()),
               vertexBuffer(CreateRef<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
               shader(resourceLoader->LoadShader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
@@ -78,19 +78,28 @@ namespace storytime
             { GLSLType::Float, "tilingFactor" }
         });
 
-#if 0
-        vertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-        vertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-        vertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
-        vertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
-#endif
-
-#if 1
-        vertexPositions[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        vertexPositions[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
-        vertexPositions[2] = { 1.0f, -1.0f, 0.0f, 1.0f };
-        vertexPositions[3] = { 0.0f, -1.0f, 0.0f, 1.0f };
-#endif
+        VertexTransform vertexTransform = GetVertexTransform(coordinateSystem);
+        if (vertexTransform == VertexTransform::RightUp)
+        {
+            vertexPositions[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
+            vertexPositions[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
+            vertexPositions[2] = { 1.0f, 1.0f, 0.0f, 1.0f };
+            vertexPositions[3] = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
+        if (vertexTransform == VertexTransform::RightDown)
+        {
+            vertexPositions[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
+            vertexPositions[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
+            vertexPositions[2] = { 1.0f, -1.0f, 0.0f, 1.0f };
+            vertexPositions[3] = { 0.0f, -1.0f, 0.0f, 1.0f };
+        }
+        if (vertexTransform == VertexTransform::Center)
+        {
+            vertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+            vertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+            vertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+            vertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
+        }
 
         uint32_t offset = 0;
         for (uint32_t i = 0; i < INDICES_PER_BATCH; i += INDICES_PER_QUAD)
@@ -293,6 +302,19 @@ namespace storytime
         void* offset = nullptr;
         ST_GL_CALL(ST_TAG, glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
         statistics.DrawCalls++;
+    }
+
+    Renderer::VertexTransform Renderer::GetVertexTransform(CoordinateSystem coordinateSystem)
+    {
+        switch (coordinateSystem)
+        {
+            case CoordinateSystem::RightUp:
+                return VertexTransform::RightUp;
+            case CoordinateSystem::RightDown:
+                return VertexTransform::RightDown;
+            default:
+                return VertexTransform::Center;
+        }
     }
 
 }

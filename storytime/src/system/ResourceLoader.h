@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "FileSystem.h"
+#include "CoordinateSystem.h"
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
@@ -11,8 +12,10 @@ namespace storytime
     {
     private:
         FileSystem* fileSystem;
+        CoordinateSystem coordinateSystem;
+
     public:
-        explicit ResourceLoader(FileSystem* fileSystem);
+        ResourceLoader(FileSystem* fileSystem, CoordinateSystem coordinateSystem);
 
         Ref<Shader> LoadShader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) const;
 

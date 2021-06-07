@@ -49,6 +49,14 @@ namespace storytime
             Vertex();
         };
 
+        enum class VertexTransform
+        {
+            None = 0,
+            Center,
+            RightUp,
+            RightDown
+        };
+
         static const uint32_t VERTICES_PER_QUAD;
         static const uint32_t INDICES_PER_QUAD;
         static const uint32_t QUADS_PER_BATCH;
@@ -61,11 +69,9 @@ namespace storytime
         Ref<Shader> shader;
         Ref<Texture>* textures;
         Ref<Texture> whiteTexture;
-
         Vertex* vertices;
         glm::vec4* vertexPositions;
         uint32_t vertexCount;
-
         uint32_t* indices;
         uint32_t indexCount;
         uint32_t textureCount;
@@ -73,7 +79,7 @@ namespace storytime
         Statistics statistics;
 
     public:
-        explicit Renderer(ResourceLoader* resourceLoader);
+        Renderer(ResourceLoader* resourceLoader, CoordinateSystem coordinateSystem);
 
         ~Renderer();
 
@@ -95,5 +101,7 @@ namespace storytime
         void DrawIndexed();
 
         void Flush();
+
+        VertexTransform GetVertexTransform(CoordinateSystem coordinateSystem);
     };
 }

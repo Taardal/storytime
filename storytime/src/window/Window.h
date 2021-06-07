@@ -13,10 +13,12 @@ namespace storytime
     public:
         struct Config
         {
-            const char* Title = "Storytime";
-            int32_t Width = 800;
-            int32_t Height = 600;
-            bool Maximized = false;
+            const char* Title;
+            int32_t Width;
+            int32_t Height;
+            bool Maximized;
+
+            Config();
 
             float GetAspectRatio() const;
         };

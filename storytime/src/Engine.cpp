@@ -2,12 +2,21 @@
 #include "Game.h"
 
 extern storytime::Game* CreateGame(
-        storytime::CameraController* cameraController,
-        storytime::Input* input,
-        storytime::Window* window,
+        storytime::ResourceLoader* resourceLoader,
         storytime::Renderer* renderer,
-        storytime::ResourceLoader* resourceLoader
+        storytime::CameraController* cameraController,
+        storytime::CoordinateSystem coordinateSystem
 );
+
+namespace storytime
+{
+    Engine::Config::Config()
+            : LogLevel(LogLevel::Trace),
+              CoordinateSystem(CoordinateSystem::RightDown),
+              Window(),
+              Graphics()
+    {}
+}
 
 namespace storytime
 {
@@ -17,18 +26,18 @@ namespace storytime
         GraphicsLog::Init(config.Graphics);
 
         fileSystem = new FileSystem();
-        resourceLoader = new ResourceLoader(fileSystem);
+        resourceLoader = new ResourceLoader(fileSystem, config.CoordinateSystem);
 
         graphicsContext = new GraphicsContext(config.Graphics);
         imGuiRenderer = new ImGuiRenderer(graphicsContext);
         window = new Window(config.Window, graphicsContext, imGuiRenderer);
-        renderer = new Renderer(resourceLoader);
+        renderer = new Renderer(resourceLoader, config.CoordinateSystem);
 
         input = new Input();
         camera = new Camera();
         cameraController = new CameraController(camera, input, config.Window.GetAspectRatio());
 
-        game = CreateGame(cameraController, input, window, renderer, resourceLoader);
+        game = CreateGame(resourceLoader, renderer, cameraController, config.CoordinateSystem);
         application = new Application(game, camera, window, renderer, imGuiRenderer);
     }
 
