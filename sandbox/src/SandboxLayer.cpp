@@ -1,4 +1,3 @@
-#include "system/Log.h"
 #include "SandboxLayer.h"
 #include <algorithm>
 

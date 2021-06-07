@@ -23,7 +23,7 @@ namespace storytime
 
     void Application::Run()
     {
-        ST_LOG_INFO(ST_TAG, "Running...");
+        ST_LOG_INFO("Running...");
         running = true;
         while (running)
         {
@@ -43,7 +43,7 @@ namespace storytime
 
     void Application::Stop()
     {
-        ST_LOG_INFO(ST_TAG, "Stopping...");
+        ST_LOG_INFO("Stopping...");
         running = false;
     }
 
@@ -51,7 +51,7 @@ namespace storytime
     {
         if (event.GetType() != EventType::MouseMoved)
         {
-            ST_LOG_TRACE(ST_TAG, "Received event [{0}]", event.ToString());
+            ST_LOG_TRACE("Received event [{0}]", event.ToString());
         }
         if (event.GetType() == EventType::WindowClose)
         {

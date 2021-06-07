@@ -5,12 +5,12 @@
 #include "graphics/GraphicsLog.h"
 #include <spdlog/spdlog.h>
 
-#define ST_LOG_TRACE(tag, message, ...) ::storytime::Log::Trace(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-#define ST_LOG_DEBUG(tag, message, ...) ::storytime::Log::Debug(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-#define ST_LOG_INFO(tag, message, ...) ::storytime::Log::Info(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-#define ST_LOG_WARN(tag, message, ...) ::storytime::Log::Warn(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-#define ST_LOG_ERROR(tag, message, ...) ::storytime::Log::Error(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
-#define ST_LOG_CRITICAL(tag, message, ...) ::storytime::Log::Critical(::storytime::Log::Format(tag, message), ##__VA_ARGS__)
+#define ST_LOG_TRACE(message, ...) ::storytime::Log::Trace(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
+#define ST_LOG_DEBUG(message, ...) ::storytime::Log::Debug(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
+#define ST_LOG_INFO(message, ...) ::storytime::Log::Info(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
+#define ST_LOG_WARN(message, ...) ::storytime::Log::Warn(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
+#define ST_LOG_ERROR(message, ...) ::storytime::Log::Error(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
+#define ST_LOG_CRITICAL(message, ...) ::storytime::Log::Critical(::storytime::Log::Format(ST_TAG, message), ##__VA_ARGS__)
 
 namespace storytime
 {

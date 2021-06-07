@@ -22,7 +22,7 @@ namespace storytime
         layers.emplace(layers.begin() + insertIndex, layer);
         insertIndex++;
         layer->OnAttach();
-        ST_LOG_INFO(ST_TAG, "Pushed layer [{0}]", layer->GetName());
+        ST_LOG_INFO("Pushed layer [{0}]", layer->GetName());
     }
 
     void LayerStack::PopLayer(Layer* layer)
@@ -35,7 +35,7 @@ namespace storytime
             layers.erase(iterator);
             insertIndex--;
         }
-        ST_LOG_INFO(ST_TAG, "Popped layer [{0}]", layer->GetName());
+        ST_LOG_INFO("Popped layer [{0}]", layer->GetName());
     }
 
     std::vector<Layer*>::const_iterator LayerStack::begin() const

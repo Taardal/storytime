@@ -10,8 +10,8 @@ namespace storytime
         if (graphicsConfig.VersionMajor >= 4 && graphicsConfig.VersionMinor >= 3)
         {
             const void* userParam = nullptr;
-            ST_GL_CALL(ST_TAG_TYPE(GraphicsLog), glDebugMessageCallback(OnDebugMessage, userParam));
-            ST_GL_CALL(ST_TAG_TYPE(GraphicsLog), glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+            ST_GL_CALL(ST_TAG, glDebugMessageCallback(OnDebugMessage, userParam));
+            ST_GL_CALL(ST_TAG, glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
         }
 #endif
     }
@@ -30,7 +30,7 @@ namespace storytime
             ST_LOG_ERROR(tag, "OpenGL error on function [{0}] - {1}", functionSignature, GetErrorMessage(errorCode));
             errorCount++;
         }
-        ST_ASSERT(ST_TAG_TYPE(GraphicsLog), errorCount == 0);
+        ST_ASSERT(ST_TAG, errorCount == 0);
     }
 
     const char* GraphicsLog::GetErrorMessage(uint32_t errorCode)
@@ -58,7 +58,6 @@ namespace storytime
 
     void GraphicsLog::OnDebugMessage(uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int32_t length, const char* message, const void* userParam)
     {
-        const std::string& tag = ST_TAG_TYPE(GraphicsLog);
         const char* logMessage = "OpenGL message [id = {0}, type = {1}, severity = {2}, source = {3}, length = {4}] - {5}";
         const char* messageType = GetDebugMessageType(type);
         const char* messageSource = GetDebugMessageSource(source);
@@ -66,19 +65,19 @@ namespace storytime
         switch (severity)
         {
             case GL_DEBUG_SEVERITY_HIGH:
-                ST_LOG_ERROR(tag, logMessage, id, messageType, messageSeverity, messageSource, length, message);
+                ST_LOG_ERROR(logMessage, id, messageType, messageSeverity, messageSource, length, message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                ST_LOG_WARN(tag, logMessage, id, messageType, messageSeverity, messageSource, length, message);
+                ST_LOG_WARN(logMessage, id, messageType, messageSeverity, messageSource, length, message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                ST_LOG_INFO(tag, logMessage, id, messageType, messageSeverity, messageSource, length, message);
+                ST_LOG_INFO(logMessage, id, messageType, messageSeverity, messageSource, length, message);
                 break;
             case GL_DEBUG_SEVERITY_NOTIFICATION:
-                ST_LOG_DEBUG(tag, logMessage, id, messageType, messageSeverity, messageSource, length, message);
+                ST_LOG_DEBUG(logMessage, id, messageType, messageSeverity, messageSource, length, message);
                 break;
             default:
-                ST_LOG_TRACE(tag, logMessage, id, messageType, messageSeverity, messageSource, length, message);
+                ST_LOG_TRACE(logMessage, id, messageType, messageSeverity, messageSource, length, message);
                 break;
         }
     }

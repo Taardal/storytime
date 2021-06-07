@@ -25,7 +25,9 @@ void Scene::OnEvent(const st::Event& event)
 void Scene::OnUpdate(st::Timestep timestep)
 {
     cameraController->OnUpdate(timestep);
-    std::cout << "x " << cameraController->GetCamera()->GetPosition().x << ", y " << cameraController->GetCamera()->GetPosition().y << std::endl;
+#if 0
+    ST_LOG_TRACE("x {0}, y {1}", cameraController->GetCamera()->GetPosition().x, cameraController->GetCamera()->GetPosition().y);
+#endif
 }
 
 void Scene::OnRender()
@@ -125,23 +127,16 @@ void Scene::RenderTileLayer(const sti::Layer& layer) const
             int tileId = layer.Data[x + y * layer.Width];
             if (tileId > 0)
             {
-                const auto& iterator = tileSubTextures.find(tileId);
-                if (iterator != tileSubTextures.end())
-                {
-                    const st::SubTexture& subTexture = iterator->second;
+                auto x1 = (float) (x * world.TileWidth);
+                auto y1 = (float) (y * world.TileHeight);
 
-                    auto x1 = (float) (x * world.TileWidth);
-                    auto y1 = (float) (y * world.TileHeight);
+                const st::SubTexture& subTexture = tileSubTextures.at(tileId);
 
-                    auto x2 = x1 - (world.Width * world.TileWidth) / 2;
-                    auto y2 = (world.Height * world.TileHeight) - y1 - (world.Height * world.TileHeight) / 2;
-
-                    st::Quad quad{};
-                    quad.Texture = subTexture.GetTexture();
-                    quad.Size = subTexture.GetSize();
-                    quad.Position = { x1, -y1, 0.0f };
-                    renderer->SubmitQuadFoo(quad, subTexture.GetTextureCoordinates());
-                }
+                st::Quad quad{};
+                quad.Texture = subTexture.GetTexture();
+                quad.Size = subTexture.GetSize();
+                quad.Position = { x1, -y1, 0.0f };
+                renderer->SubmitQuadFoo(quad, subTexture.GetTextureCoordinates());
             }
         }
     }

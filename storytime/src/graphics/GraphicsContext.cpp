@@ -22,23 +22,23 @@ namespace storytime
 
     void GraphicsContext::InitGlad() const
     {
-        ST_LOG_DEBUG(ST_TAG, "Initializing GLAD");
+        ST_LOG_DEBUG("Initializing GLAD");
         bool initialized = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress) != 0;
         if (initialized)
         {
-            ST_LOG_INFO(ST_TAG, "Initialized GLAD");
+            ST_LOG_INFO("Initialized GLAD");
         }
         else
         {
-            ST_LOG_CRITICAL(ST_TAG, "Could not initialize GLAD");
+            ST_LOG_CRITICAL("Could not initialize GLAD");
         }
     }
 
     void GraphicsContext::LogContext() const
     {
-        ST_LOG_INFO(ST_TAG, "Vendor [{0}]", glGetString(GL_VENDOR));
-        ST_LOG_INFO(ST_TAG, "Renderer [{0}]", glGetString(GL_RENDERER));
-        ST_LOG_INFO(ST_TAG, "Version [{0}]", glGetString(GL_VERSION));
+        ST_LOG_INFO("Vendor [{0}]", glGetString(GL_VENDOR));
+        ST_LOG_INFO("Renderer [{0}]", glGetString(GL_RENDERER));
+        ST_LOG_INFO("Version [{0}]", glGetString(GL_VERSION));
     }
 
 }
