@@ -1,11 +1,9 @@
 #include "Scene.h"
-#include <storytime//Storytime.h>
+#include <storytime/Storytime.h>
 
 int main()
 {
     st::Engine::Config config = {};
-    config.LogLevel = st::LogLevel::Trace;
-    config.CoordinateSystem = st::CoordinateSystem::RightDown;
     config.Window.Title = "Sandbox";
     config.Window.Width = 1280;
     config.Window.Height = config.Window.Width / 16 * 12;

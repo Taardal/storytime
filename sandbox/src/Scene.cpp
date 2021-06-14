@@ -61,9 +61,9 @@ void Scene::LoadImageLayerTextures(st::ResourceLoader* resourceLoader)
         if (layer.Type == "imagelayer")
         {
             const std::string& path = layer.Image;
-            std::cout << "Loading image layer with path " << path << std::endl;
+            ST_LOG_DEBUG("Loading image layer with path [{0}]", path);
             st::Ref<st::Texture> texture = resourceLoader->LoadTexture("res/tiled/pixelcave/" + path);
-            std::cout << "Loaded image layer with ID " << texture->GetId() << std::endl;
+            ST_LOG_DEBUG("Loaded image layer with ID [{0}]", texture->GetId());
             imageLayerTextures.insert({ layer.Id, texture });
         }
     }
@@ -71,13 +71,13 @@ void Scene::LoadImageLayerTextures(st::ResourceLoader* resourceLoader)
 
 void Scene::LoadTilesetTextures(st::ResourceLoader* resourceLoader)
 {
-    std::cout << "Parsed world with " << world.Tilesets.size() << " tilesets" << std::endl;
+    ST_LOG_DEBUG("Parsed world with [{0}] tilesets", world.Tilesets.size());
     for (uint32_t i = 0; i < world.Tilesets.size(); i++)
     {
         const std::string& path = world.Tilesets[i].Image;
-        std::cout << "Loading tileset with path " << path << std::endl;
+        ST_LOG_DEBUG("Loading tileset with path [{0}]", path);
         st::Ref<st::Texture> texture = resourceLoader->LoadTexture("res/tiled/pixelcave/" + path);
-        std::cout << "Loaded tileset with ID " << texture->GetId() << std::endl;
+        ST_LOG_DEBUG("Loaded tileset with ID [{0}]", texture->GetId());
         tilesetTextures[i] = texture;
     }
 }
@@ -87,13 +87,13 @@ void Scene::CreateTileSubTextures()
     for (uint32_t i = 0; i < world.Tilesets.size(); i++)
     {
         uint32_t globalId = world.Tilesets[i].FirstGlobalId;
-        std::cout << "First global ID [" << globalId << "]" << std::endl;
+        ST_LOG_DEBUG("First global ID [{0}]", globalId);
 
         uint32_t numberOfTilesY = tilesetTextures[i]->GetHeight() / world.Tilesets[i].TileHeight;
-        std::cout << "Number of tiles Y [" << numberOfTilesY << "]" << std::endl;
+        ST_LOG_DEBUG("Number of tiles Y [{0}]", numberOfTilesY);
 
         uint32_t numberOfTilesX = tilesetTextures[i]->GetWidth() / world.Tilesets[i].TileWidth;
-        std::cout << "Number of tiles X [" << numberOfTilesX << "]" << std::endl;
+        ST_LOG_DEBUG("Number of tiles X [{0}]", numberOfTilesX);
 
         for (uint32_t y = 0; y < numberOfTilesY; y++)
         {
@@ -115,19 +115,26 @@ void Scene::CreateTileSubTextures()
                 globalId++;
             }
         }
-        std::cout << "Tiles [" << tileSubTextures.size() << "]" << std::endl;
+        ST_LOG_DEBUG("Tiles [{0}]", tileSubTextures.size());
     }
 }
 
 void Scene::RenderImageLayer(const sti::Layer& layer) const
 {
     st::Ref<st::Texture> texture = imageLayerTextures.at(layer.Id);
-    float x = layer.X - layer.OffsetX;
-    float y = layer.Y - layer.OffsetY;
+
+    float x = layer.X;
+    float y = layer.Y;
+
+    if (coordinateSystem == st::CoordinateSystem::RightDown)
+    {
+        y = y - layer.OffsetY;
+    }
     if (coordinateSystem == st::CoordinateSystem::RightUp)
     {
         y = ((float) (world.TileHeight * world.Height)) - (texture->GetHeight() + layer.Y + layer.OffsetY);
     }
+
     st::Quad quad{};
     quad.Texture = texture;
     quad.Size = { texture->GetWidth(), texture->GetHeight() };

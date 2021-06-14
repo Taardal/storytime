@@ -62,9 +62,56 @@
          "width":50,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":9,
+         "name":"player",
+         "objects":[
+                {
+                 "gid":121,
+                 "height":40,
+                 "id":12,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":40,
+                 "x":129.756097560976,
+                 "y":60.4878048780488
+                }, 
+                {
+                 "gid":3221225601,
+                 "height":40,
+                 "id":13,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":40,
+                 "x":165.853658536585,
+                 "y":58.0487804878049
+                }, 
+                {
+                 "gid":121,
+                 "height":40,
+                 "id":14,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":40,
+                 "x":296.585365853659,
+                 "y":124.390243902439
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":9,
- "nextobjectid":11,
+ "nextlayerid":10,
+ "nextobjectid":15,
  "orientation":"orthogonal",
  "renderorder":"right-up",
  "tiledversion":"1.6.0",
@@ -82,6 +129,48 @@
          "tilecount":120,
          "tileheight":16,
          "tilewidth":16
+        }, 
+        {
+         "columns":0,
+         "firstgid":121,
+         "grid":
+            {
+             "height":1,
+             "orientation":"orthogonal",
+             "width":1
+            },
+         "margin":0,
+         "name":"spritesheet-knight-black",
+         "spacing":0,
+         "tilecount":2,
+         "tileheight":40,
+         "tiles":[
+                {
+                 "id":0,
+                 "image":"spritesheets\/spritesheet-knight-black\/spritesheet-knight-black-0.png",
+                 "imageheight":40,
+                 "imagewidth":40
+                }, 
+                {
+                 "id":8,
+                 "image":"spritesheets\/spritesheet-knight-black\/spritesheet-knight-black-49.png",
+                 "imageheight":40,
+                 "imagewidth":40
+                }],
+         "tilewidth":40
+        }, 
+        {
+         "columns":12,
+         "firstgid":130,
+         "image":"spritesheets\/spritesheet-knight-black.png",
+         "imageheight":640,
+         "imagewidth":480,
+         "margin":0,
+         "name":"spritesheet-knight-black-2",
+         "spacing":0,
+         "tilecount":192,
+         "tileheight":40,
+         "tilewidth":40
         }],
  "tilewidth":16,
  "type":"map",
