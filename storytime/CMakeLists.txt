@@ -9,12 +9,12 @@ set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        ${BIN_DIR}/${PROJECT_NAME}
-)
+#add_custom_command(
+#        TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy
+#        $<TARGET_FILE:${PROJECT_NAME}>
+#        ${BIN_DIR}/${PROJECT_NAME}
+#)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR})
 
