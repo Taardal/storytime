@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 
-namespace storytime
+namespace Storytime
 {
     class Window
     {
@@ -39,6 +39,8 @@ namespace storytime
         GLFWwindow* glfwWindow;
 
     public:
+        explicit Window(const Config& config);
+
         Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer);
 
         ~Window();

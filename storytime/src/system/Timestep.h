@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace storytime
+namespace Storytime
 {
     class Timestep
     {

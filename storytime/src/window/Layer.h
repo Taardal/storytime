@@ -6,7 +6,7 @@
 #include "window/Input.h"
 #include "window/events/Event.h"
 
-namespace storytime
+namespace Storytime
 {
     class Layer
     {

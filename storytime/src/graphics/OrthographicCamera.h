@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace storytime
+namespace Storytime
 {
     class OrthographicCamera
     {

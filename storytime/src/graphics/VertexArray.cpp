@@ -1,7 +1,9 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "VertexArray.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
 
-namespace storytime
+namespace Storytime
 {
     VertexArray::VertexArray()
             : id(0), vertexBuffers{}, indexBuffer(nullptr)

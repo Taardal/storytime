@@ -1,8 +1,8 @@
 #include "OrthographicCamera.h"
-#include "system/Log.h"
+#include "system/log.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace storytime
+namespace Storytime
 {
     constexpr float Z_NEAR = -1.0f;
     constexpr float Z_FAR = 1.0f;

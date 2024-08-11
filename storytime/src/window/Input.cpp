@@ -1,8 +1,8 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "Input.h"
 #include <GLFW/glfw3.h>
 
-namespace storytime
+namespace Storytime
 {
     Input::Input()
     {

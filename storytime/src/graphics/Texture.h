@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace storytime
+namespace Storytime
 {
     struct Image
     {

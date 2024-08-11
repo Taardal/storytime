@@ -1,15 +1,18 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "Texture.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
+
 #include <glad/glad.h>
 
-namespace storytime
+namespace Storytime
 {
     Texture::Config::Config()
         : Width(0), Height(0), Format(0), InternalFormat(0), LevelOfDetail(0), Border(0)
     {}
 }
 
-namespace storytime
+namespace Storytime
 {
     constexpr int32_t Texture::TARGET = GL_TEXTURE_2D;
 

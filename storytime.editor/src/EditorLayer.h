@@ -2,7 +2,7 @@
 
 #include "storytime/Storytime.h"
 
-namespace storytime
+namespace Storytime
 {
     class EditorLayer : public Layer
     {

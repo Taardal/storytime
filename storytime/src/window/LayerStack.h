@@ -3,7 +3,7 @@
 #include "Layer.h"
 #include <vector>
 
-namespace storytime
+namespace Storytime
 {
     class LayerStack
     {

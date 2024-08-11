@@ -1,7 +1,7 @@
 #include "Random.h"
 
 
-namespace storytime
+namespace Storytime
 {
     Random::Random()
             : generator(std::mt19937(std::random_device()())),

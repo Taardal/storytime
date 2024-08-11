@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-namespace storytime
+namespace Storytime
 {
     class MouseMovedEvent : public Event
     {

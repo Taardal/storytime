@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system/Log.h"
+#include "system/log.h"
 #include "system/Application.h"
 #include "system/FileSystem.h"
 #include "system/ResourceLoader.h"
@@ -12,7 +12,7 @@
 #include "window/Window.h"
 #include "window/Input.h"
 
-namespace storytime
+namespace Storytime
 {
     class Engine
     {

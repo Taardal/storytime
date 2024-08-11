@@ -1,8 +1,9 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "system/Core.h"
 #include "GraphicsLog.h"
+#include "system/Tag.h"
 
-namespace storytime
+namespace Storytime
 {
     void GraphicsLog::Init(const GraphicsContext::Config& graphicsConfig)
     {
@@ -30,7 +31,7 @@ namespace storytime
             ST_LOG_ERROR(tag, "OpenGL error on function [{0}] - {1}", functionSignature, GetErrorMessage(errorCode));
             errorCount++;
         }
-        ST_ASSERT(ST_TAG_TYPE(GraphicsLog), errorCount == 0);
+        ST_ASSERT(errorCount == 0);
     }
 
     const char* GraphicsLog::GetErrorMessage(uint32_t errorCode)

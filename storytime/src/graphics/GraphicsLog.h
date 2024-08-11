@@ -4,14 +4,14 @@
 
 #ifdef ST_DEBUG
 #define ST_GL_CALL(tag, function) \
-        ::storytime::GraphicsLog::ClearErrors(); \
+        ::Storytime::GraphicsLog::ClearErrors(); \
         function; \
-        ::storytime::GraphicsLog::LogErrors(tag, #function)
+        ::Storytime::GraphicsLog::LogErrors(tag, #function)
 #else
 #define ST_GL_CALL(tag, function) function;
 #endif
 
-namespace storytime
+namespace Storytime
 {
     class GraphicsLog
     {

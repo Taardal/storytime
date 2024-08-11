@@ -3,6 +3,9 @@
 #include "Engine.h"
 #include "system/Random.h"
 #include "graphics/Framebuffer.h"
+#include "window/events/KeyEvent.h"
 
-namespace story = storytime;
-namespace st = story;
+#include "run.h"
+#include "new_application.h"
+
+namespace st = Storytime;

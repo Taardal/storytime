@@ -2,7 +2,7 @@
 
 #include "string_view"
 
-namespace storytime
+namespace Storytime
 {
     enum class GLSLType
     {

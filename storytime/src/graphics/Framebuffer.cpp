@@ -1,15 +1,16 @@
 #include "Framebuffer.h"
+#include "system/Core.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
 
-#include "system/Log.h"
-
-namespace storytime
+namespace Storytime
 {
     Framebuffer::Config::Config()
             : Width(0), Height(0), Samples(1), SwapChainTarget(false)
     {}
 }
 
-namespace storytime
+namespace Storytime
 {
     Framebuffer::Framebuffer(const Framebuffer::Config& config)
             : config(config), id(0), colorAttachmentTexture(nullptr), depthAttachmentTexture(nullptr)
@@ -79,7 +80,7 @@ namespace storytime
             depthAttachmentTexture = new Texture(textureConfig);
             AttachTexture(GL_DEPTH_ATTACHMENT, depthAttachmentTexture);
         }
-        ST_GL_CALL(ST_TAG, ST_ASSERT(ST_TAG, glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
+        ST_GL_CALL(ST_TAG, ST_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
         ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 

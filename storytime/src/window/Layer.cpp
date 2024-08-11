@@ -1,7 +1,7 @@
 #include "Layer.h"
 #include <sstream>
 
-namespace storytime
+namespace Storytime
 {
     Layer::Layer(std::string_view name)
             : name(name)

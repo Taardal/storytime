@@ -9,7 +9,7 @@
 #include <system/ResourceLoader.h>
 #include <vector>
 
-namespace storytime
+namespace Storytime
 {
     struct Quad
     {
@@ -79,7 +79,7 @@ namespace storytime
 
         void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
 
-        void BeginScene(OrthographicCamera* camera);
+        void BeginScene(const glm::mat4& view_projection);
 
         void SubmitQuad(Quad& quad);
 

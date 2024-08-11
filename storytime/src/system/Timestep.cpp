@@ -1,6 +1,6 @@
 #include "Timestep.h"
 
-namespace storytime
+namespace Storytime
 {
     Timestep::Timestep(float time)
             : time(time)

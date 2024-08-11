@@ -1,10 +1,12 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "system/Core.h"
 #include "Shader.h"
 #include "GraphicsLog.h"
+#include "system/Tag.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
-namespace storytime
+namespace Storytime
 {
     Shader::Shader(const char* vertexSource, const char* fragmentSource)
             : id(0)

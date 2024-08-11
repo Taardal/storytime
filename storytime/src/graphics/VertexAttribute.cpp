@@ -1,6 +1,6 @@
 #include "VertexAttribute.h"
 
-namespace storytime
+namespace Storytime
 {
     VertexAttribute::VertexAttribute(GLSLType glslType, std::string_view name)
             : GlslType(glslType), Name(name), Size(GetSize()), Length(GetLength()), Offset(0), Normalized(false)

@@ -1,6 +1,6 @@
 #include "Timer.h"
 
-namespace storytime
+namespace Storytime
 {
     void Timer::Reset()
     {

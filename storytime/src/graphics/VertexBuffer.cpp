@@ -1,8 +1,11 @@
 #include "VertexBuffer.h"
-#include "system/Log.h"
+#include "system/log.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
+
 #include <glad/glad.h>
 
-namespace storytime
+namespace Storytime
 {
     VertexBuffer::AttributeLayout::AttributeLayout(const std::initializer_list<VertexAttribute>& attributes)
             : attributes(attributes), stride(0)

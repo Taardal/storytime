@@ -1,7 +1,7 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "LayerStack.h"
 
-namespace storytime
+namespace Storytime
 {
     LayerStack::LayerStack()
             : layers{}, insertIndex(0)

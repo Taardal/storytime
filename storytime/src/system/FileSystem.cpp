@@ -1,8 +1,8 @@
-#include "Log.h"
+#include "log.h"
 #include "FileSystem.h"
 #include <fstream>
 
-namespace storytime
+namespace Storytime
 {
     FileSystem::FileSystem()
     {

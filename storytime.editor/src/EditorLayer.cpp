@@ -1,7 +1,7 @@
 #include "system/Log.h"
 #include "EditorLayer.h"
 
-namespace storytime
+namespace Storytime
 {
     EditorLayer::EditorLayer(Window* window, Renderer* renderer, OrthographicCameraController* cameraController, ResourceLoader* resourceLoader)
             : Layer("EditorLayer"),

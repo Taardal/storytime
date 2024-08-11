@@ -1,15 +1,15 @@
 #pragma once
 
+#include "window/new_window.h"
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-namespace storytime
-{
-    class GraphicsContext
-    {
+namespace Storytime {
+    class GraphicsContext {
     public:
-        struct Config
-        {
+        struct Config {
+            NewWindow* window = nullptr;
             uint32_t VersionMajor;
             uint32_t VersionMinor;
             const char* GlslVersion;
@@ -32,7 +32,4 @@ namespace storytime
 
         void LogContext() const;
     };
-
 }
-
-

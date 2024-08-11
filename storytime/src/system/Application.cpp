@@ -1,10 +1,10 @@
-#include "Log.h"
+#include "log.h"
 #include "Application.h"
 #include "Timestep.h"
 #include "window/events/KeyEvent.h"
 #include "window/events/WindowEvent.h"
 
-namespace storytime
+namespace Storytime
 {
     Application::Application(Window* window, Input* input, Renderer* renderer, ImGuiRenderer* imGuiRenderer,
                              OrthographicCameraController* cameraController)

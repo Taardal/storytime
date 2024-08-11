@@ -5,7 +5,7 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
-namespace storytime
+namespace Storytime
 {
     class ResourceLoader
     {

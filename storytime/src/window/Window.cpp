@@ -1,15 +1,22 @@
 #include "system/Core.h"
-#include "system/Log.h"
+#include "system/log.h"
 #include "Window.h"
 #include "window/events/WindowEvent.h"
 #include "window/events/KeyEvent.h"
 #include "window/events/MouseEvent.h"
 
-namespace storytime
+namespace Storytime
 {
     float Window::Config::GetAspectRatio() const
     {
         return (float) Width / (float) Height;
+    }
+
+    Window::Window(const Config& config) : config(config) {
+        InitGlfw();
+        glfwWindow = CreateGlfwWindow();
+        //SetGlfwCallbacks();
+        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Window::Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer)
@@ -18,8 +25,8 @@ namespace storytime
         InitGlfw();
         SetGlfwWindowHints(graphicsContext);
         glfwWindow = CreateGlfwWindow();
-        graphicsContext->Init(glfwWindow);
-        imGuiRenderer->Init(glfwWindow);
+        //graphicsContext->Init(glfwWindow);
+        //imGuiRenderer->Init(glfwWindow);
         SetGlfwCallbacks();
         ST_LOG_TRACE(ST_TAG, "Created");
     }
@@ -130,39 +137,39 @@ namespace storytime
 
     void Window::SetGlfwKeyCallbacks() const
     {
-        ST_LOG_DEBUG(ST_TAG, "Setting GLFW key callbacks");
-        glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
-            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            switch (action)
-            {
-                case GLFW_PRESS:
-                {
-                    KeyPressedEvent event(key);
-                    callbackData->OnEvent(event);
-                    break;
-                }
-                case GLFW_RELEASE:
-                {
-                    KeyReleasedEvent event(key);
-                    callbackData->OnEvent(event);
-                    break;
-                }
-                case GLFW_REPEAT:
-                {
-                    KeyRepeatedEvent event(key);
-                    callbackData->OnEvent(event);
-                    break;
-                }
-                default:
-                {
-                }
-            }
-        });
-        glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, uint32_t keyCode) {
-            auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
-            KeyTypedEvent event(keyCode);
-            callbackData->OnEvent(event);
-        });
+        // ST_LOG_DEBUG(ST_TAG, "Setting GLFW key callbacks");
+        // glfwSetKeyCallback(glfwWindow, [](GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
+        //     auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+        //     switch (action)
+        //     {
+        //         case GLFW_PRESS:
+        //         {
+        //             KeyPressedEvent event(key);
+        //             callbackData->OnEvent(event);
+        //             break;
+        //         }
+        //         case GLFW_RELEASE:
+        //         {
+        //             KeyReleasedEvent event(key);
+        //             callbackData->OnEvent(event);
+        //             break;
+        //         }
+        //         case GLFW_REPEAT:
+        //         {
+        //             KeyRepeatedEvent event(key);
+        //             callbackData->OnEvent(event);
+        //             break;
+        //         }
+        //         default:
+        //         {
+        //         }
+        //     }
+        // });
+        // glfwSetCharCallback(glfwWindow, [](GLFWwindow* glfwWindow, uint32_t keyCode) {
+        //     auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(glfwWindow);
+        //     KeyTypedEvent event(keyCode);
+        //     callbackData->OnEvent(event);
+        // });
     }
 
     void Window::SetGlfwMouseCallbacks() const

@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace storytime
+namespace Storytime
 {
     enum class EventType
     {
@@ -41,6 +41,8 @@ namespace storytime
         [[nodiscard]] bool IsHandled() const;
 
         void SetHandled(bool handled);
+
+        static std::string get_name(EventType event_type);
     };
 
 }

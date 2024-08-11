@@ -1,8 +1,8 @@
-#include "Log.h"
+#include "log.h"
 #include "ResourceLoader.h"
 #include <stb_image.h>
 
-namespace storytime
+namespace Storytime
 {
     ResourceLoader::ResourceLoader(FileSystem* fileSystem)
             : fileSystem(fileSystem)

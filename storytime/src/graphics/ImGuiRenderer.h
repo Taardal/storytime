@@ -4,7 +4,7 @@
 #include "window/events/Event.h"
 #include <imgui.h>
 
-namespace storytime
+namespace Storytime
 {
     class ImGuiRenderer
     {

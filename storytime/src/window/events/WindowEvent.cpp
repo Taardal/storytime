@@ -1,7 +1,7 @@
 #include "WindowEvent.h"
 #include <sstream>
 
-namespace storytime
+namespace Storytime
 {
     WindowCloseEvent::WindowCloseEvent()
             : Event("WindowCloseEvent", EventType::WindowClose)

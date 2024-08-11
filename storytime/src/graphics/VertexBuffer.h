@@ -3,7 +3,7 @@
 #include "VertexAttribute.h"
 #include <vector>
 
-namespace storytime
+namespace Storytime
 {
     class VertexBuffer
     {

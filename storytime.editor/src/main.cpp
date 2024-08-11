@@ -24,7 +24,7 @@ int main()
     delete engine;
 }
 
-namespace storytime
+namespace Storytime
 {
     class Editor : public Application
     {

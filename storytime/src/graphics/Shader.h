@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <glad/glad.h>
 
-namespace storytime
+namespace Storytime
 {
     class Shader
     {

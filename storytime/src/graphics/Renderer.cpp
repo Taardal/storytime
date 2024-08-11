@@ -1,7 +1,10 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "Renderer.h"
+#include "system/Core.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
 
-namespace storytime
+namespace Storytime
 {
     constexpr uint32_t Renderer::VERTICES_PER_QUAD = 4;
     constexpr uint32_t Renderer::INDICES_PER_QUAD = 6;
@@ -122,11 +125,11 @@ namespace storytime
         ST_GL_CALL(ST_TAG, glViewport(x, y, width, height));
     }
 
-    void Renderer::BeginScene(OrthographicCamera* camera)
+    void Renderer::BeginScene(const glm::mat4& view_projection)
     {
         Reset();
         ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
-        shader->SetMat4("viewProjection", camera->GetViewProjection());
+        shader->SetMat4("viewProjection", view_projection);
     }
 
     void Renderer::EndScene()

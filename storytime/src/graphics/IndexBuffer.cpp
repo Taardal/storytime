@@ -1,8 +1,11 @@
-#include "system/Log.h"
+#include "system/log.h"
 #include "IndexBuffer.h"
+#include "system/Tag.h"
+#include "graphics/GraphicsLog.h"
+
 #include <glad/glad.h>
 
-namespace storytime
+namespace Storytime
 {
     IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
             : id(0), count(count)

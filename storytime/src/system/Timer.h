@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace storytime
+namespace Storytime
 {
     class Timer
     {

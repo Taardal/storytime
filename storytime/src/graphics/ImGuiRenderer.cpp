@@ -2,7 +2,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-namespace storytime
+namespace Storytime
 {
     ImGuiRenderer::ImGuiRenderer(GraphicsContext* graphicsContext)
         : graphicsContext(graphicsContext), consumeEvents(false)

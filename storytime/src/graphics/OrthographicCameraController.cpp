@@ -1,10 +1,10 @@
 #include "OrthographicCameraController.h"
 #include "window/events/WindowEvent.h"
 #include "window/events/MouseEvent.h"
-#include "system/Log.h"
+#include "system/log.h"
 #include <cmath>
 
-namespace storytime
+namespace Storytime
 {
     OrthographicCameraController::OrthographicCameraController(OrthographicCamera* camera, float aspectRatio)
             : camera(camera),

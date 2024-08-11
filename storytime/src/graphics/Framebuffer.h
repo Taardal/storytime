@@ -3,7 +3,7 @@
 #include "Texture.h"
 #include <cstdint>
 
-namespace storytime
+namespace Storytime
 {
     class Framebuffer
     {

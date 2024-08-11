@@ -6,7 +6,7 @@
 #include "window/events/Event.h"
 #include "graphics/OrthographicCamera.h"
 
-namespace storytime
+namespace Storytime
 {
     class OrthographicCameraController
     {

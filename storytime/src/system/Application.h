@@ -6,7 +6,7 @@
 #include "graphics/Renderer.h"
 #include "graphics/OrthographicCameraController.h"
 
-namespace storytime
+namespace Storytime
 {
     class Application
     {

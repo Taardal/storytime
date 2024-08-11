@@ -1,19 +1,20 @@
 #include "Engine.h"
+#include "graphics/GraphicsLog.h"
 
-extern storytime::Application* CreateApplication(
-        storytime::Window* window,
-        storytime::Renderer* renderer,
-        storytime::ImGuiRenderer* imGuiRenderer,
-        storytime::Input* input,
-        storytime::OrthographicCameraController* cameraController,
-        storytime::ResourceLoader* resourceLoader
+extern Storytime::Application* CreateApplication(
+        Storytime::Window* window,
+        Storytime::Renderer* renderer,
+        Storytime::ImGuiRenderer* imGuiRenderer,
+        Storytime::Input* input,
+        Storytime::OrthographicCameraController* cameraController,
+        Storytime::ResourceLoader* resourceLoader
 );
 
-namespace storytime
+namespace Storytime
 {
     Engine::Engine(const Config& config)
     {
-        Log::Init(config.logLevel);
+        set_log_level(config.logLevel);
         GraphicsLog::Init(config.graphicsConfig);
 
         fileSystem = new FileSystem();

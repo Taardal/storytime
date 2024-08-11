@@ -1,7 +1,7 @@
 #include "MouseEvent.h"
 #include <sstream>
 
-namespace storytime
+namespace Storytime
 {
     MouseMovedEvent::MouseMovedEvent(float x, float y)
             : Event("MouseMovedEvent", EventType::MouseMoved), x(x), y(y)

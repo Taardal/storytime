@@ -3,32 +3,171 @@ project(storytime)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(${PROJECT_NAME} src/system/Log.cpp src/system/Log.h src/Engine.cpp src/Engine.h src/system/Application.cpp src/system/Application.h src/window/Window.cpp src/window/Window.h src/graphics/GraphicsContext.cpp src/graphics/GraphicsContext.h src/window/events/Event.cpp src/window/events/Event.h src/window/events/WindowEvent.cpp src/window/events/WindowEvent.h src/window/events/KeyEvent.cpp src/window/events/KeyEvent.h src/window/events/MouseEvent.cpp src/window/events/MouseEvent.h src/graphics/Renderer.cpp src/graphics/Renderer.h src/graphics/VertexArray.cpp src/graphics/VertexArray.h src/graphics/VertexBuffer.cpp src/graphics/VertexBuffer.h src/graphics/VertexAttribute.cpp src/graphics/VertexAttribute.h src/graphics/Shader.cpp src/graphics/Shader.h src/system/Core.h src/window/LayerStack.cpp src/window/LayerStack.h src/window/Layer.cpp src/window/Layer.h src/system/Timestep.cpp src/system/Timestep.h src/graphics/OrthographicCameraController.cpp src/graphics/OrthographicCameraController.h src/graphics/OrthographicCamera.cpp src/graphics/OrthographicCamera.h src/window/Input.cpp src/window/Input.h src/graphics/IndexBuffer.cpp src/graphics/IndexBuffer.h src/system/ResourceLoader.cpp src/system/ResourceLoader.h src/system/FileSystem.cpp src/system/FileSystem.h src/system/Tag.h src/system/Tag.cpp src/graphics/Texture.cpp src/graphics/Texture.h lib/stb_image-2.22/include/stb_image.h lib/stb_image-2.22/src/stb_image.cpp src/graphics/GraphicsLog.cpp src/graphics/GraphicsLog.h src/graphics/ImGuiRenderer.cpp src/graphics/ImGuiRenderer.h src/system/Random.cpp src/system/Random.h src/system/Timer.cpp src/system/Timer.h src/graphics/Framebuffer.cpp src/graphics/Framebuffer.h)
+set(STORYTIME_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(STORYTIME_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+set(STORYTIME_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
+set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
-set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
-set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
-set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
+add_library(${PROJECT_NAME}
 
-#add_custom_command(
-#        TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        $<TARGET_FILE:${PROJECT_NAME}>
-#        ${BIN_DIR}/${PROJECT_NAME}
+        lib/stb_image-2.22/include/stb_image.h
+        lib/stb_image-2.22/src/stb_image.cpp
+
+        ${STORYTIME_SRC_DIR}/Engine.cpp
+        ${STORYTIME_SRC_DIR}/Engine.h
+        ${STORYTIME_SRC_DIR}/new_application.cpp
+        ${STORYTIME_SRC_DIR}/new_application.h
+        ${STORYTIME_SRC_DIR}/pch.h
+        ${STORYTIME_SRC_DIR}/run.cpp
+        ${STORYTIME_SRC_DIR}/run.h
+
+        ${STORYTIME_SRC_DIR}/graphics/Framebuffer.h
+        ${STORYTIME_SRC_DIR}/graphics/Framebuffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.h
+        ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.cpp
+        ${STORYTIME_SRC_DIR}/graphics/GraphicsLog.h
+        ${STORYTIME_SRC_DIR}/graphics/GraphicsLog.cpp
+        ${STORYTIME_SRC_DIR}/graphics/graphics_module.h
+        ${STORYTIME_SRC_DIR}/graphics/graphics_module.cpp
+        ${STORYTIME_SRC_DIR}/graphics/OrthographicCamera.h
+        ${STORYTIME_SRC_DIR}/graphics/OrthographicCamera.cpp
+        ${STORYTIME_SRC_DIR}/graphics/IndexBuffer.h
+        ${STORYTIME_SRC_DIR}/graphics/IndexBuffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/ImGuiRenderer.h
+        ${STORYTIME_SRC_DIR}/graphics/ImGuiRenderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/OrthographicCameraController.h
+        ${STORYTIME_SRC_DIR}/graphics/OrthographicCameraController.cpp
+        ${STORYTIME_SRC_DIR}/graphics/Renderer.h
+        ${STORYTIME_SRC_DIR}/graphics/Renderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/Shader.h
+        ${STORYTIME_SRC_DIR}/graphics/Shader.cpp
+        ${STORYTIME_SRC_DIR}/graphics/Texture.h
+        ${STORYTIME_SRC_DIR}/graphics/Texture.cpp
+        ${STORYTIME_SRC_DIR}/graphics/VertexArray.h
+        ${STORYTIME_SRC_DIR}/graphics/VertexArray.cpp
+        ${STORYTIME_SRC_DIR}/graphics/VertexAttribute.h
+        ${STORYTIME_SRC_DIR}/graphics/VertexAttribute.cpp
+        ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.h
+        ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.cpp
+
+        ${STORYTIME_SRC_DIR}/system/Application.h
+        ${STORYTIME_SRC_DIR}/system/Application.cpp
+        ${STORYTIME_SRC_DIR}/system/assert.h
+        ${STORYTIME_SRC_DIR}/system/clock.h
+        ${STORYTIME_SRC_DIR}/system/clock.cpp
+        ${STORYTIME_SRC_DIR}/system/Core.h
+        ${STORYTIME_SRC_DIR}/system/error.h
+        ${STORYTIME_SRC_DIR}/system/error.cpp
+        ${STORYTIME_SRC_DIR}/system/error_signal.h
+        ${STORYTIME_SRC_DIR}/system/error_signal.cpp
+        ${STORYTIME_SRC_DIR}/system/FileSystem.h
+        ${STORYTIME_SRC_DIR}/system/FileSystem.cpp
+        ${STORYTIME_SRC_DIR}/system/Log.h
+        ${STORYTIME_SRC_DIR}/system/Log.cpp
+        ${STORYTIME_SRC_DIR}/system/Random.h
+        ${STORYTIME_SRC_DIR}/system/Random.cpp
+        ${STORYTIME_SRC_DIR}/system/ResourceLoader.h
+        ${STORYTIME_SRC_DIR}/system/ResourceLoader.cpp
+        ${STORYTIME_SRC_DIR}/system/system_module.h
+        ${STORYTIME_SRC_DIR}/system/system_module.cpp
+        ${STORYTIME_SRC_DIR}/system/Tag.h
+        ${STORYTIME_SRC_DIR}/system/Tag.cpp
+        ${STORYTIME_SRC_DIR}/system/Timer.h
+        ${STORYTIME_SRC_DIR}/system/Timer.cpp
+        ${STORYTIME_SRC_DIR}/system/Timestep.h
+        ${STORYTIME_SRC_DIR}/system/Timestep.cpp
+        ${STORYTIME_SRC_DIR}/system/utils.h
+
+        ${STORYTIME_SRC_DIR}/window/Input.h
+        ${STORYTIME_SRC_DIR}/window/Input.cpp
+        ${STORYTIME_SRC_DIR}/window/Layer.h
+        ${STORYTIME_SRC_DIR}/window/Layer.cpp
+        ${STORYTIME_SRC_DIR}/window/LayerStack.h
+        ${STORYTIME_SRC_DIR}/window/LayerStack.cpp
+        ${STORYTIME_SRC_DIR}/window/new_window.h
+        ${STORYTIME_SRC_DIR}/window/new_window.cpp
+        ${STORYTIME_SRC_DIR}/window/Window.h
+        ${STORYTIME_SRC_DIR}/window/Window.cpp
+        ${STORYTIME_SRC_DIR}/window/window_module.h
+        ${STORYTIME_SRC_DIR}/window/window_module.cpp
+
+        ${STORYTIME_SRC_DIR}/window/event_manager.h
+        ${STORYTIME_SRC_DIR}/window/event_manager.cpp
+        ${STORYTIME_SRC_DIR}/window/events/Event.h
+        ${STORYTIME_SRC_DIR}/window/events/Event.cpp
+        ${STORYTIME_SRC_DIR}/window/events/KeyEvent.h
+        ${STORYTIME_SRC_DIR}/window/events/KeyEvent.cpp
+        ${STORYTIME_SRC_DIR}/window/events/WindowEvent.h
+        ${STORYTIME_SRC_DIR}/window/events/WindowEvent.cpp
+        ${STORYTIME_SRC_DIR}/window/events/MouseEvent.h
+        ${STORYTIME_SRC_DIR}/window/events/MouseEvent.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/pch.h)
+
+if ("${STORYTIME_OUTPUT_DIR}" STREQUAL "")
+    message(FATAL_ERROR "Required variable STORYTIME_OUTPUT_DIR was not set")
+endif()
+
+set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
+add_custom_target(
+        CopyResources
+        COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
+        COMMENT "Copying resources"
+)
+
+add_dependencies(
+        ${PROJECT_NAME}
+        CopyResources
+)
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+message("-- Fetching dependencies")
+include(FetchContent)
+#FetchContent_Declare(
+#        glfw
+#        GIT_REPOSITORY https://github.com/glfw/glfw
+#        GIT_TAG 3.4
 #)
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm
+        GIT_TAG 1.0.1
+)
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog
+        GIT_TAG v1.9.2
+)
+message("-- Fetching dependencies - done")
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR})
+message("-- Compiling dependencies")
+FetchContent_MakeAvailable(
+#        glfw
+        glm
+        spdlog
+)
+message("-- Compiling dependencies - done")
 
-set(SPD_LOG_DIR ${LIB_DIR}/spdlog-1.4.2)
-target_include_directories(${PROJECT_NAME} PUBLIC ${SPD_LOG_DIR}/include)
+#target_link_libraries(${PROJECT_NAME} glfw)
+target_link_libraries(${PROJECT_NAME} glm::glm)
+target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
+# GLAD
 set(GLAD_NAME glad)
-set(GLAD_DIR ${LIB_DIR}/glad-0.1.33)
+set(GLAD_DIR ${STORYTIME_LIB_DIR}/glad-0.1.33)
 add_library(${GLAD_NAME} ${GLAD_DIR}/src/glad.c)
 target_include_directories(${GLAD_NAME} PRIVATE ${GLAD_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLAD_DIR}/include)
 target_link_libraries(${PROJECT_NAME} glad ${CMAKE_DL_LIBS})
 
-set(GLFW_DIR ${LIB_DIR}/glfw-3.3)
+# GLFW
+set(GLFW_DIR ${STORYTIME_LIB_DIR}/glfw-3.3)
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL Build the GLFW example programs)
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL Build the GLFW test programs)
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL Build the GLFW documentation)
@@ -38,19 +177,34 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_INCLUDE_NONE)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLFW_DIR}/include)
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 
-set(GLM_DIR ${LIB_DIR}/glm-0.9.9.6)
-target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_DIR})
-
+# STB IMAGE
 set(STB_IMAGE_NAME stb_image)
-set(STB_IMAGE_DIR ${LIB_DIR}/stb_image-2.22)
+set(STB_IMAGE_DIR ${STORYTIME_LIB_DIR}/stb_image-2.22)
 add_library(${STB_IMAGE_NAME} ${STB_IMAGE_DIR}/src/stb_image.cpp)
 target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS})
 
+# ImGui
 set(IMGUI_NAME imgui)
-set(IMGUI_DIR ${LIB_DIR}/imgui-docking-1.77)
-add_library(${IMGUI_NAME} ${IMGUI_DIR}/imconfig.h ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui.h ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_internal.h ${IMGUI_DIR}/imgui_widgets.cpp ${IMGUI_DIR}/imstb_rectpack.h ${IMGUI_DIR}/imstb_textedit.h ${IMGUI_DIR}/imstb_truetype.h ${IMGUI_DIR}/imgui_impl_glfw.cpp ${IMGUI_DIR}/imgui_impl_glfw.h ${IMGUI_DIR}/imgui_impl_opengl3.cpp ${IMGUI_DIR}/imgui_impl_opengl3.h)
+set(IMGUI_DIR ${STORYTIME_LIB_DIR}/imgui-docking-1.77)
+add_library(
+        ${IMGUI_NAME}
+        ${IMGUI_DIR}/imconfig.h
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui.h
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_internal.h
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/imstb_rectpack.h
+        ${IMGUI_DIR}/imstb_textedit.h
+        ${IMGUI_DIR}/imstb_truetype.h
+        ${IMGUI_DIR}/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/imgui_impl_glfw.h
+        ${IMGUI_DIR}/imgui_impl_opengl3.cpp
+        ${IMGUI_DIR}/imgui_impl_opengl3.h
+)
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLFW_DIR}/include)
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${IMGUI_DIR})

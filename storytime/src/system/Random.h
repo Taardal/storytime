@@ -2,7 +2,7 @@
 
 #include <random>
 
-namespace storytime
+namespace Storytime
 {
     class Random
     {

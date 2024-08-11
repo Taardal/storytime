@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace storytime
+namespace Storytime
 {
     class Input
     {

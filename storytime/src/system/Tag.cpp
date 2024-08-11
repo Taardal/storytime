@@ -5,7 +5,7 @@
 
 #include <cxxabi.h>
 
-const char* storytime::DemangleTypeName(const char* typeName)
+const char* Storytime::DemangleTypeName(const char* typeName)
 {
     static constexpr int32_t INITIAL_STATUS = 1;
     static constexpr int32_t SUCCESS_STATUS = 0;
@@ -18,14 +18,14 @@ const char* storytime::DemangleTypeName(const char* typeName)
 
 #else
 
-const char* storytime::DemangleTypeName(const char* typeName)
+const char* Storytime::DemangleTypeName(const char* typeName)
 {
     return typeName;
 }
 
 #endif
 
-std::string storytime::FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber)
+std::string Storytime::FormatTag(const char* typeName, const char* functionName, uint32_t lineNumber)
 {
     std::stringstream ss;
     ss << typeName << ":" << functionName << ":" << lineNumber;
