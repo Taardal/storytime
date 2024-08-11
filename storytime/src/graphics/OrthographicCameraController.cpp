@@ -76,9 +76,9 @@ namespace Storytime
 
     void OrthographicCameraController::OnEvent(const Event& event)
     {
-        if (event.GetType() == EventType::MouseScrolled)
+        if (event.GetType() == EventType::MouseScroll)
         {
-            const auto* mouseScrolledEvent = (MouseScrolledEvent*) &event;
+            const auto* mouseScrolledEvent = (MouseScrollEvent*) &event;
             zoomLevel -= mouseScrolledEvent->GetYOffset() * 0.25f;
             zoomLevel = std::fmax(zoomLevel, 0.25f);
             SetCameraProjection();

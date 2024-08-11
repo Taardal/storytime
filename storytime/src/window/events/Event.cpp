@@ -44,7 +44,7 @@ namespace Storytime {
                 return ST_TO_STRING(KeyTyped);
             case EventType::MouseMoved:
                 return ST_TO_STRING(MouseMoved);
-            case EventType::MouseScrolled:
+            case EventType::MouseScroll:
                 return ST_TO_STRING(MouseScrolled);
             case EventType::MouseButtonPressed:
                 return ST_TO_STRING(MouseButtonPressed);

@@ -203,7 +203,7 @@ namespace Storytime
         });
         glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
             auto* callbackData = (GlfwCallbackData*) glfwGetWindowUserPointer(window);
-            MouseScrolledEvent event((float) xOffset, (float) yOffset);
+            MouseScrollEvent event((float) xOffset, (float) yOffset);
             callbackData->OnEvent(event);
         });
     }

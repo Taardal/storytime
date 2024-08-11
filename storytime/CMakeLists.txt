@@ -101,6 +101,8 @@ add_library(${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/window/events/WindowEvent.cpp
         ${STORYTIME_SRC_DIR}/window/events/MouseEvent.h
         ${STORYTIME_SRC_DIR}/window/events/MouseEvent.cpp
+        src/graphics/camera.cpp
+        src/graphics/camera.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})

@@ -4,12 +4,14 @@
 #include "window/events/WindowEvent.h"
 
 namespace Storytime {
-    NewWindow::NewWindow(const NewWindowConfig& config): config(config) {
+    NewWindow::NewWindow(const NewWindowConfig& config, EventManager* event_manager)
+        : config(config), event_manager(event_manager)
+    {
         ST_LOG_T("Initializing GLFW");
         ST_ASSERT_THROW(glfwInit());
         ST_LOG_D("Initialized GLFW");
 
-        glfwSetErrorCallback(OnGlfwError);
+        glfwSetErrorCallback(on_glfw_error);
 
         ST_LOG_T("Setting GLFW window hints");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
@@ -24,79 +26,98 @@ namespace Storytime {
         ST_LOG_T("Creating GLFW window");
         GLFWmonitor* fullscreenMonitor = nullptr;
         GLFWwindow* sharedWindow = nullptr;
-        glfwWindow = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor, sharedWindow);
-        ST_ASSERT_THROW(glfwWindow != nullptr);
+        glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor,
+                                      sharedWindow);
+        ST_ASSERT_THROW(glfw_window != nullptr);
         ST_LOG_D("Created GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
 
-        glfwMakeContextCurrent(glfwWindow);
-        glfwSetWindowUserPointer(glfwWindow, this);
+        glfwMakeContextCurrent(glfw_window);
+        glfwSetWindowUserPointer(glfw_window, this);
 
-        glfwSetKeyCallback(glfwWindow, on_key_change);
-        glfwSetWindowCloseCallback(glfwWindow, on_window_close_change);
-        // glfwSetMouseButtonCallback(glfwWindow, onMouseButtonChange);
-        // glfwSetWindowIconifyCallback(glfwWindow, onWindowIconifyChange);
-        // glfwSetFramebufferSizeCallback(glfwWindow, onFramebufferSizeChange);
-
+        glfwSetFramebufferSizeCallback(glfw_window, on_framebuffer_size_change);
+        glfwSetKeyCallback(glfw_window, on_key_change);
+        glfwSetMouseButtonCallback(glfw_window, on_mouse_button_change);
+        glfwSetScrollCallback(glfw_window, on_mouse_scroll_change);
+        glfwSetWindowCloseCallback(glfw_window, on_window_close_change);
+        glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
     }
 
     void NewWindow::update() const {
         glfwPollEvents();
-        glfwSwapBuffers(glfwWindow);
+        glfwSwapBuffers(glfw_window);
     }
 
-    SubscriptionID NewWindow::subscribe_to_event(const EventType event_type, const Subscription& subscription) {
-        return event_manager.subscribe(event_type, subscription);
+    WindowSize NewWindow::get_size_in_pixels() const  {
+        i32 width = 0;
+        i32 height = 0;
+        get_size_in_pixels(&width, &height);
+        return { width, height };
     }
 
-    void NewWindow::OnGlfwError(int32_t error, const char* description) {
+    void NewWindow::get_size_in_pixels(i32* width, i32* height) const {
+        glfwGetFramebufferSize(glfw_window, width, height);
+    }
+
+    f32 NewWindow::get_aspect_ratio() const {
+        auto [width, height] = get_size_in_pixels();
+        return static_cast<f32>(width) / static_cast<f32>(height);
+    }
+
+    void NewWindow::on_glfw_error(i32 error, const char* description) {
         ST_LOG_E("GLFW error [{0}: {1}]", error, description);
     }
 
-    void NewWindow::on_key_change(GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
+    void NewWindow::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
+        WindowResizeEvent event(width, height);
+        on_event(glfw_window, EventType::WindowResize, event);
+    }
+
+    void NewWindow::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             KeyPressedEvent event(key, mods, scanCode);
-            send_event(glfwWindow, EventType::KeyPressed, event);
+            on_event(glfw_window, EventType::KeyPressed, event);
         } else if (action == GLFW_RELEASE) {
             KeyReleasedEvent event(key, mods, scanCode);
-            send_event(glfwWindow, EventType::KeyReleased, event);
+            on_event(glfw_window, EventType::KeyReleased, event);
         } else if (action == GLFW_REPEAT) {
             KeyRepeatedEvent event(key, mods, scanCode);
-            send_event(glfwWindow, EventType::KeyRepeated, event);
+            on_event(glfw_window, EventType::KeyRepeated, event);
         }
     }
 
-    void NewWindow::onMouseButtonChange(GLFWwindow* glfwWindow, int32_t button, int32_t action, int32_t mods) {
-        // if (action == GLFW_PRESS) {
-        //     MouseButtonPressedEvent event(button);
-        //     sendEvent(MouseButtonPressedEvent::type, event, glfwWindow);
-        // }
-        // if (action == GLFW_RELEASE) {
-        //     MouseButtonReleasedEvent event(button);
-        //     sendEvent(MouseButtonReleasedEvent::type, event, glfwWindow);
-        // }
+    void NewWindow::on_mouse_button_change(GLFWwindow* glfw_window, i32 button, i32 action, i32 mods) {
+        if (action == GLFW_PRESS) {
+            MouseButtonPressedEvent event(button);
+            on_event(glfw_window, EventType::MouseButtonPressed, event);
+        }
+        if (action == GLFW_RELEASE) {
+            MouseButtonReleasedEvent event(button);
+            on_event(glfw_window, EventType::MouseButtonReleased, event);
+        }
     }
 
-    void NewWindow::on_window_close_change(GLFWwindow* glfwWindow) {
+    void NewWindow::on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset) {
+        MouseScrollEvent event(xoffset, yoffset);
+        on_event(glfw_window, EventType::MouseScroll, event);
+    }
+
+    void NewWindow::on_window_close_change(GLFWwindow* glfw_window) {
         WindowCloseEvent event{};
-        send_event(glfwWindow, EventType::WindowClose, event);
+        on_event(glfw_window, EventType::WindowClose, event);
     }
 
-    void NewWindow::onFramebufferSizeChange(GLFWwindow* glfwWindow, int width, int height) {
-        // WindowResizeEvent event(width, height);
-        // sendEvent(WindowResizeEvent::type, event, glfwWindow);
+    void NewWindow::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
+        bool minimized = iconified == 1;
+        WindowMinimizeEvent event(minimized);
+        on_event(glfw_window, EventType::WindowMinimize, event);
     }
 
-    void NewWindow::onWindowIconifyChange(GLFWwindow* glfwWindow, int iconified) {
-        // bool minimized = iconified == 1;
-        // WindowMinimizeEvent event(minimized);
-        // sendEvent(event, glfwWindow);
-    }
-
-    void NewWindow::send_event(GLFWwindow* glfwWindow, EventType event_type, const Event& event) {
+    void NewWindow::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
         ST_LOG_T(event.ToString());
-        auto window = (NewWindow*) glfwGetWindowUserPointer(glfwWindow);
+        auto window = static_cast<NewWindow*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr);
-        window->event_manager.trigger_event(event_type, event);
+        auto event_manager = window->event_manager;
+        ST_ASSERT(event_manager != nullptr);
+        event_manager->trigger_event(event_type, event);
     }
-
 }

@@ -29,4 +29,19 @@ namespace Storytime
         ss << name << "{width=" << width << ", height=" << height << "}";
         return ss.str();
     }
+
+    WindowMinimizeEvent::WindowMinimizeEvent(bool minimized) : Event("WindowMinimizeEvent", EventType::WindowMinimize),
+        minimized(minimized) {
+    }
+
+    std::string WindowMinimizeEvent::ToString() const {
+        std::stringstream ss;
+        ss << name << "{minimized=" << minimized << "}";
+        return ss.str();
+    }
+
+    std::ostream& operator<<(std::ostream& os, const WindowMinimizeEvent& event) {
+        os << event.ToString();
+        return os;
+    }
 }

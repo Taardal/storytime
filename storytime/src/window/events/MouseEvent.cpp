@@ -25,22 +25,22 @@ namespace Storytime
         return ss.str();
     }
 
-    MouseScrolledEvent::MouseScrolledEvent(float xOffset, float yOffset)
-            : Event("MouseScrolledEvent", EventType::MouseScrolled), xOffset(xOffset), yOffset(yOffset)
+    MouseScrollEvent::MouseScrollEvent(float xOffset, float yOffset)
+            : Event("MouseScrolledEvent", EventType::MouseScroll), xOffset(xOffset), yOffset(yOffset)
     {
     }
 
-    float MouseScrolledEvent::GetXOffset() const
+    float MouseScrollEvent::GetXOffset() const
     {
         return xOffset;
     }
 
-    float MouseScrolledEvent::GetYOffset() const
+    float MouseScrollEvent::GetYOffset() const
     {
         return yOffset;
     }
 
-    std::string MouseScrolledEvent::ToString() const
+    std::string MouseScrollEvent::ToString() const
     {
         std::stringstream ss;
         ss << name << "{xOffset=" << xOffset << ", yOffset=" << yOffset << "}";

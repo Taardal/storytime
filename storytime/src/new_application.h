@@ -25,8 +25,11 @@ namespace Storytime {
         bool running;
 
     protected:
+        EventManager* event_manager;
         NewWindow* window;
         Renderer* renderer;
+        OrthographicCamera* camera;
+        Input* input;
 
     public:
         explicit NewApplication(const NewApplicationConfig& config);

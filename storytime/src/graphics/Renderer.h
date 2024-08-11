@@ -57,6 +57,7 @@ namespace Storytime
         static const uint32_t INDICES_PER_BATCH;
         static const uint32_t MAX_TEXTURE_SLOTS;
 
+        glm::vec4 clearColor = { 1.0f, 0.0f, 1.0f, 1 };
         Ref<VertexArray> vertexArray;
         Ref<VertexBuffer> vertexBuffer;
         Ref<Shader> shader;
@@ -76,6 +77,10 @@ namespace Storytime
         ~Renderer();
 
         [[nodiscard]] Statistics GetStatistics() const;
+
+        void SetClearColor(const glm::vec3& color);
+
+        void SetClearColor(const glm::vec4& color);
 
         void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0, uint32_t y = 0) const;
 

@@ -23,14 +23,15 @@ namespace Storytime {
                   .GlslVersion = config.glsl_version,
               },
           }),
+          event_manager(&window_module.event_manager),
           window(&window_module.window),
-          renderer(&graphics_module.renderer)
+          renderer(&graphics_module.renderer),
+          camera(&graphics_module.camera),
+          input(&window_module.input)
     {
-        ST_LOG_TRACE(ST_TAG, "Created app");
     }
 
     void NewApplication::run() {
-        ST_LOG_TRACE(ST_TAG, "Running...");
         running = true;
 
         Clock clock;

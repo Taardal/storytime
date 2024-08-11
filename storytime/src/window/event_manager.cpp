@@ -4,7 +4,7 @@ namespace Storytime {
     u32 EventManager::subscription_counter = 0;
 
     SubscriptionID EventManager::subscribe(const EventType event_type, const Subscription& subscription) {
-        ST_LOG_T("Adding listener for event type [{}]", event_type);
+        ST_LOG_T("Adding subscription for event type [{}]", event_type);
         SubscriptionID subscription_id = ++subscription_counter;
         subscriptions[event_type].emplace_back(subscription_id, subscription);
         ST_LOG_D("Added subscription with ID [{}] for event type [{}]", subscription_id, event_type);
@@ -20,7 +20,6 @@ namespace Storytime {
             ST_LOG_D("Triggered event of type [{}]", event_type);
             return true;
         }
-        ST_LOG_W("Could not find any listeners for event type [{}]", event_type);
         return false;
     }
 }

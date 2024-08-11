@@ -20,14 +20,14 @@ namespace Storytime
         [[nodiscard]] float GetY() const;
     };
 
-    class MouseScrolledEvent : public Event
+    class MouseScrollEvent : public Event
     {
     private:
         float xOffset;
         float yOffset;
 
     public:
-        MouseScrolledEvent(float xOffset, float yOffset);
+        MouseScrollEvent(float xOffset, float yOffset);
 
         [[nodiscard]] std::string ToString() const override;
 

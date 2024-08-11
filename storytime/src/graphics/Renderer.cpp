@@ -61,7 +61,7 @@ namespace Storytime
     {
         ST_GL_CALL(ST_TAG, glEnable(GL_BLEND));
         ST_GL_CALL(ST_TAG, glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        ST_GL_CALL(ST_TAG, glClearColor(1.0f, 0.0f, 1.0f, 1));
+        ST_GL_CALL(ST_TAG, glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
 
         vertexBuffer->SetAttributeLayout({
             { GLSLType::Vec3, "position" },
@@ -118,6 +118,15 @@ namespace Storytime
     Renderer::Statistics Renderer::GetStatistics() const
     {
         return statistics;
+    }
+
+    void Renderer::SetClearColor(const glm::vec3& color) {
+        SetClearColor({ color.r, color.g, color.b, 1.0f });
+    }
+
+    void Renderer::SetClearColor(const glm::vec4& color) {
+        this->clearColor = color;
+        ST_GL_CALL(ST_TAG, glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
     }
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const

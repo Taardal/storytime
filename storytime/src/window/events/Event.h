@@ -9,12 +9,13 @@ namespace Storytime
         None = 0,
         WindowClose,
         WindowResize,
+        WindowMinimize,
         KeyPressed,
         KeyReleased,
         KeyRepeated,
         KeyTyped,
         MouseMoved,
-        MouseScrolled,
+        MouseScroll,
         MouseButtonPressed,
         MouseButtonReleased
     };
