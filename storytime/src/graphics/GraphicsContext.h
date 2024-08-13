@@ -1,6 +1,6 @@
 #pragma once
 
-#include "window/new_window.h"
+#include "window/window.h"
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -9,7 +9,7 @@ namespace Storytime {
     class GraphicsContext {
     public:
         struct Config {
-            NewWindow* window = nullptr;
+            Window* window = nullptr;
             uint32_t VersionMajor;
             uint32_t VersionMinor;
             const char* GlslVersion;

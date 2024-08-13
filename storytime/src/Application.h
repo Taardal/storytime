@@ -3,9 +3,10 @@
 #include "system/system_module.h"
 #include "window/window_module.h"
 #include "graphics/graphics_module.h"
+#include "service_locator.h"
 
 namespace Storytime {
-    struct NewApplicationConfig {
+    struct AppConfig {
         LogLevel log_level;
         std::string window_title;
         int32_t window_width;
@@ -17,24 +18,20 @@ namespace Storytime {
         const char* glsl_version;
     };
 
-    class NewApplication {
+    class Application {
     private:
+        bool running = false;
         SystemModule system_module;
         WindowModule window_module;
         GraphicsModule graphics_module;
-        bool running;
 
     protected:
-        EventManager* event_manager;
-        NewWindow* window;
-        Renderer* renderer;
-        OrthographicCamera* camera;
-        Input* input;
+        ServiceLocator service_locator;
 
     public:
-        explicit NewApplication(const NewApplicationConfig& config);
+        explicit Application(const AppConfig& config);
 
-        virtual ~NewApplication() = default;
+        virtual ~Application() = default;
 
         void run();
 

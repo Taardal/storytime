@@ -1,10 +1,10 @@
-#include "new_application.h"
+#include "Application.h"
+#include "service_locator.h"
 #include "system/clock.h"
 
 namespace Storytime {
-    NewApplication::NewApplication(const NewApplicationConfig& config)
-        : system_module(),
-          window_module({
+    Application::Application(const AppConfig& config)
+        : window_module({
               .window_config = {
                   .title = config.window_title,
                   .width = config.window_width,
@@ -22,16 +22,16 @@ namespace Storytime {
                   .VersionMinor = config.open_gl_version_minor,
                   .GlslVersion = config.glsl_version,
               },
-          }),
-          event_manager(&window_module.event_manager),
-          window(&window_module.window),
-          renderer(&graphics_module.renderer),
-          camera(&graphics_module.camera),
-          input(&window_module.input)
+          })
     {
+        service_locator.set<EventManager>(&window_module.event_manager);
+        service_locator.set<Window>(&window_module.window);
+        service_locator.set<Renderer>(&graphics_module.renderer);
+        service_locator.set<OrthographicCamera>(&graphics_module.camera);
+        service_locator.set<Input>(&window_module.input);
     }
 
-    void NewApplication::run() {
+    void Application::run() {
         running = true;
 
         Clock clock;
@@ -60,7 +60,7 @@ namespace Storytime {
         }
     }
 
-    void NewApplication::stop() {
+    void Application::stop() {
         running = false;
     }
 }

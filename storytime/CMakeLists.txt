@@ -13,10 +13,10 @@ add_library(${PROJECT_NAME}
         lib/stb_image-2.22/include/stb_image.h
         lib/stb_image-2.22/src/stb_image.cpp
 
-        ${STORYTIME_SRC_DIR}/Engine.cpp
-        ${STORYTIME_SRC_DIR}/Engine.h
-        ${STORYTIME_SRC_DIR}/new_application.cpp
-        ${STORYTIME_SRC_DIR}/new_application.h
+        ${STORYTIME_SRC_DIR}/engine.cpp
+        ${STORYTIME_SRC_DIR}/engine.h
+        ${STORYTIME_SRC_DIR}/Application.cpp
+        ${STORYTIME_SRC_DIR}/Application.h
         ${STORYTIME_SRC_DIR}/pch.h
         ${STORYTIME_SRC_DIR}/run.cpp
         ${STORYTIME_SRC_DIR}/run.h
@@ -50,8 +50,6 @@ add_library(${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.h
         ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.cpp
 
-        ${STORYTIME_SRC_DIR}/system/Application.h
-        ${STORYTIME_SRC_DIR}/system/Application.cpp
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
@@ -84,10 +82,8 @@ add_library(${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/window/Layer.cpp
         ${STORYTIME_SRC_DIR}/window/LayerStack.h
         ${STORYTIME_SRC_DIR}/window/LayerStack.cpp
-        ${STORYTIME_SRC_DIR}/window/new_window.h
-        ${STORYTIME_SRC_DIR}/window/new_window.cpp
-        ${STORYTIME_SRC_DIR}/window/Window.h
-        ${STORYTIME_SRC_DIR}/window/Window.cpp
+        ${STORYTIME_SRC_DIR}/window/window.h
+        ${STORYTIME_SRC_DIR}/window/window.cpp
         ${STORYTIME_SRC_DIR}/window/window_module.h
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
 
@@ -108,22 +104,19 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/pch.h)
 
-if ("${STORYTIME_OUTPUT_DIR}" STREQUAL "")
-    message(FATAL_ERROR "Required variable STORYTIME_OUTPUT_DIR was not set")
+if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
+    set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
+    set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+    add_custom_target(
+            CopyResources
+            COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
+            COMMENT "Copying resources"
+    )
+    add_dependencies(
+            ${PROJECT_NAME}
+            CopyResources
+    )
 endif()
-
-set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
-add_custom_target(
-        CopyResources
-        COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
-        COMMENT "Copying resources"
-)
-
-add_dependencies(
-        ${PROJECT_NAME}
-        CopyResources
-)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)

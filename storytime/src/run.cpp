@@ -2,9 +2,9 @@
 #include "system/error_signal.h"
 #include "graphics/GraphicsLog.h"
 
-extern void run_app(const Storytime::NewApplicationConfig&);
+extern void run_app(const Storytime::AppConfig&);
 
-void Storytime::run(const NewApplicationConfig& config) {
+void Storytime::run(const AppConfig& config) {
     initialize_error_signal_handlers();
     set_log_level(config.log_level);
     GraphicsLog::Init({

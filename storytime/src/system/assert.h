@@ -25,7 +25,7 @@
     if (expression) {\
         /* Continue */\
     } else {\
-        ST_LOG_CRITICAL("Assertion failed: {}", #expression); \
+        ST_LOG_C("Assertion failed: [{}]", #expression); \
         ST_BREAK(); \
     }
 #else

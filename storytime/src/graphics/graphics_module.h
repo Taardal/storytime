@@ -4,6 +4,7 @@
 #include "graphics/GraphicsContext.h"
 #include "graphics/ImGuiRenderer.h"
 #include "graphics/Renderer.h"
+#include "graphics/OrthographicCamera.h"
 #include "graphics/OrthographicCameraController.h"
 
 namespace Storytime {
