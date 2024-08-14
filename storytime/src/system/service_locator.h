@@ -18,6 +18,7 @@ namespace Storytime {
             Type type = get_type<T>();
             auto it = services.find(type);
             if (it == services.end()) {
+                ST_LOG_W("Could not find service of type [{}]", type.name());
                 return nullptr;
             }
             return static_cast<T*>(it->second);

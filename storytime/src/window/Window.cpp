@@ -1,4 +1,6 @@
 #include "window.h"
+
+#include "system/assert.h"
 #include "window/events/KeyEvent.h"
 #include "window/events/MouseEvent.h"
 #include "window/events/WindowEvent.h"
@@ -40,6 +42,11 @@ namespace Storytime {
         glfwSetScrollCallback(glfw_window, on_mouse_scroll_change);
         glfwSetWindowCloseCallback(glfw_window, on_window_close_change);
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
+    }
+
+    Window::operator GLFWwindow*() const {
+        ST_ASSERT(glfw_window != nullptr);
+        return glfw_window;
     }
 
     void Window::update() const {

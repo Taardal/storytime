@@ -4,7 +4,8 @@
 
 namespace Storytime {
     StorytimeApp::StorytimeApp(const AppConfig& config)
-        : system_module(),
+        : config(config),
+          system_module(),
           window_module({
               .window_config = {
                   .title = config.window_title,
@@ -18,6 +19,7 @@ namespace Storytime {
           }),
           graphics_module({
               .system_module = &system_module,
+              .window_module = &window_module,
               .context_config = {
                   .VersionMajor = config.open_gl_version_major,
                   .VersionMinor = config.open_gl_version_minor,
@@ -43,7 +45,7 @@ namespace Storytime {
         clock.start();
 
         f64 last_uptime_sec = 0.0;
-        f64 target_frame_time = 1.0 / 60.0;
+        f64 target_frame_time = 1.0 / config.target_fps;
         f64 timestep = 0.0;
 
         while (running) {
@@ -62,6 +64,12 @@ namespace Storytime {
             graphics_module.renderer.BeginScene(graphics_module.camera.GetViewProjection());
             on_render();
             graphics_module.renderer.EndScene();
+
+            auto [window_width, window_height] = window_module.window.get_size_in_pixels();
+
+            graphics_module.imgui_renderer.Begin();
+            on_imgui_render();
+            graphics_module.imgui_renderer.End(window_width, window_height);
         }
     }
 

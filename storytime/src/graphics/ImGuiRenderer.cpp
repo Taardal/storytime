@@ -16,6 +16,21 @@ namespace Storytime
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     }
 
+    ImGuiRenderer::ImGuiRenderer(GraphicsContext* graphicsContext, Window* window)
+        : graphicsContext(graphicsContext), window(window), consumeEvents(false)
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+        ST_LOG_C("NOOT");
+        Init(*window);
+    }
+
     ImGuiRenderer::~ImGuiRenderer()
     {
         ImGui_ImplOpenGL3_Shutdown();
@@ -25,6 +40,7 @@ namespace Storytime
 
     void ImGuiRenderer::Init(GLFWwindow* glfwWindow) const
     {
+        ST_LOG_C("BOOT");
         bool glfwCallbacksEnabled = true;
         ImGui_ImplGlfw_InitForOpenGL(glfwWindow, glfwCallbacksEnabled);
         ImGui_ImplOpenGL3_Init(graphicsContext->getConfig().GlslVersion);

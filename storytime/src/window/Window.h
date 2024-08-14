@@ -29,6 +29,8 @@ namespace Storytime {
     public:
         explicit Window(const WindowConfig& config, EventManager* event_manager);
 
+        operator GLFWwindow*() const;
+
         void update() const;
 
         WindowSize get_size_in_pixels() const;

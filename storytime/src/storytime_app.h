@@ -6,18 +6,22 @@
 
 namespace Storytime {
     struct AppConfig {
-        LogLevel log_level;
-        std::string window_title;
-        int32_t window_width;
-        int32_t window_height;
-        bool window_maximized;
-        bool window_resizable;
-        uint32_t open_gl_version_major;
-        uint32_t open_gl_version_minor;
-        const char* glsl_version;
+        LogLevel log_level = LogLevel::info;
+        u32 target_fps = 60;
+        std::string window_title = "Storytime";
+        i32 window_width = 1280;
+        i32 window_height = 760;
+        bool window_maximized = false;
+        bool window_resizable = true;
+        u32 open_gl_version_major = 4;
+        u32 open_gl_version_minor = 1;
+        const char* glsl_version = "#version 410";
     };
 
     class StorytimeApp {
+    protected:
+        AppConfig config;
+
     private:
         bool running = false;
         SystemModule system_module;
@@ -42,5 +46,7 @@ namespace Storytime {
         virtual void on_update(f64 timestep) = 0;
 
         virtual void on_render() = 0;
+
+        virtual void on_imgui_render() {}
     };
 }
