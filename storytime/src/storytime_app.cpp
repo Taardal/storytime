@@ -1,10 +1,11 @@
-#include "Application.h"
-#include "service_locator.h"
+#include "storytime_app.h"
 #include "system/clock.h"
+#include "window/events/WindowEvent.h"
 
 namespace Storytime {
-    Application::Application(const AppConfig& config)
-        : window_module({
+    StorytimeApp::StorytimeApp(const AppConfig& config)
+        : system_module(),
+          window_module({
               .window_config = {
                   .title = config.window_title,
                   .width = config.window_width,
@@ -24,14 +25,18 @@ namespace Storytime {
               },
           })
     {
-        service_locator.set<EventManager>(&window_module.event_manager);
-        service_locator.set<Window>(&window_module.window);
-        service_locator.set<Renderer>(&graphics_module.renderer);
-        service_locator.set<OrthographicCamera>(&graphics_module.camera);
-        service_locator.set<Input>(&window_module.input);
+        system_module.service_locator.set<EventManager>(&window_module.event_manager);
+        system_module.service_locator.set<Window>(&window_module.window);
+        system_module.service_locator.set<Renderer>(&graphics_module.renderer);
+        system_module.service_locator.set<OrthographicCamera>(&graphics_module.camera);
+        system_module.service_locator.set<Input>(&window_module.input);
+
+        window_module.event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
+            stop();
+        });
     }
 
-    void Application::run() {
+    void StorytimeApp::run() {
         running = true;
 
         Clock clock;
@@ -60,7 +65,7 @@ namespace Storytime {
         }
     }
 
-    void Application::stop() {
+    void StorytimeApp::stop() {
         running = false;
     }
 }

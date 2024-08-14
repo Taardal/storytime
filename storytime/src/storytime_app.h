@@ -3,7 +3,6 @@
 #include "system/system_module.h"
 #include "window/window_module.h"
 #include "graphics/graphics_module.h"
-#include "service_locator.h"
 
 namespace Storytime {
     struct AppConfig {
@@ -18,26 +17,28 @@ namespace Storytime {
         const char* glsl_version;
     };
 
-    class Application {
+    class StorytimeApp {
     private:
         bool running = false;
         SystemModule system_module;
         WindowModule window_module;
         GraphicsModule graphics_module;
 
-    protected:
-        ServiceLocator service_locator;
-
     public:
-        explicit Application(const AppConfig& config);
+        explicit StorytimeApp(const AppConfig& config);
 
-        virtual ~Application() = default;
+        virtual ~StorytimeApp() = default;
 
         void run();
 
         void stop();
 
     protected:
+        template<typename T>
+        T* get() {
+            return system_module.service_locator.get<T>();
+        }
+
         virtual void on_update(f64 timestep) = 0;
 
         virtual void on_render() = 0;

@@ -1,5 +1,5 @@
 #include "EditorLayer.h"
-#include <storytime/Storytime.h>
+#include <storytime/storytime.h>
 
 int main()
 {

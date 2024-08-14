@@ -2,11 +2,13 @@
 
 #include "FileSystem.h"
 #include "ResourceLoader.h"
+#include "service_locator.h"
 
 namespace Storytime {
     struct SystemModule {
-        FileSystem fileSystem;
-        ResourceLoader resourceLoader;
+        ServiceLocator service_locator;
+        FileSystem file_system;
+        ResourceLoader resource_loader;
 
         SystemModule();
     };

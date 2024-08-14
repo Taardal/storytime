@@ -1,5 +1,5 @@
 #include "SandboxLayer.h"
-#include <storytime/Storytime.h>
+#include <storytime/storytime.h>
 
 int main()
 {

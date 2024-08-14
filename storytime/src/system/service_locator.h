@@ -15,20 +15,25 @@ namespace Storytime {
     public:
         template<typename T>
         T* get() {
-            Type type = std::type_index(typeid(T));
+            Type type = get_type<T>();
             auto it = services.find(type);
-            ST_ASSERT(it != services.end());
-            // if (it == services.end()) {
-            //     return nullptr;
-            // }
+            if (it == services.end()) {
+                return nullptr;
+            }
             return static_cast<T*>(it->second);
         }
 
         template<typename T>
         void set(void* service) {
-            Type type = std::type_index(typeid(T));
             ST_ASSERT(service != nullptr);
+            Type type = get_type<T>();
             services.emplace(type, service);
+        }
+
+    private:
+        template<typename T>
+        static Type get_type() {
+            return std::type_index(typeid(T));
         }
     };
 }

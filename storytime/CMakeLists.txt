@@ -13,13 +13,11 @@ add_library(${PROJECT_NAME}
         lib/stb_image-2.22/include/stb_image.h
         lib/stb_image-2.22/src/stb_image.cpp
 
-        ${STORYTIME_SRC_DIR}/engine.cpp
-        ${STORYTIME_SRC_DIR}/engine.h
-        ${STORYTIME_SRC_DIR}/Application.cpp
-        ${STORYTIME_SRC_DIR}/Application.h
-        ${STORYTIME_SRC_DIR}/pch.h
-        ${STORYTIME_SRC_DIR}/run.cpp
-        ${STORYTIME_SRC_DIR}/run.h
+        ${STORYTIME_SRC_DIR}/storytime_app.cpp
+        ${STORYTIME_SRC_DIR}/storytime_app.h
+        ${STORYTIME_SRC_DIR}/storytime_pch.h
+        ${STORYTIME_SRC_DIR}/storytime_main.cpp
+        ${STORYTIME_SRC_DIR}/storytime_main.h
 
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.h
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.cpp
@@ -102,7 +100,7 @@ add_library(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/pch.h)
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
 
 if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
     set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
