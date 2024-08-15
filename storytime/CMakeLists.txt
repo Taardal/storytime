@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.15)
+
 project(storytime)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(STORYTIME_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(STORYTIME_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 set(STORYTIME_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
-add_library(${PROJECT_NAME}
+add_library(
+        ${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/storytime_app.cpp
         ${STORYTIME_SRC_DIR}/storytime_app.h
         ${STORYTIME_SRC_DIR}/storytime_pch.h
@@ -86,8 +89,13 @@ add_library(${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
 )
 
+# Precompiled header
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
+
+# --------------------------------------------------------------------------------------------------------------
+# Custom targets
+# --------------------------------------------------------------------------------------------------------------
 
 if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
     set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
@@ -103,40 +111,20 @@ if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
     )
 endif()
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# --------------------------------------------------------------------------------------------------------------
+# Dependencies
+# --------------------------------------------------------------------------------------------------------------
 
-message("-- Fetching dependencies")
 include(FetchContent)
-#FetchContent_Declare(
-#        glfw
-#        GIT_REPOSITORY https://github.com/glfw/glfw
-#        GIT_TAG 3.4
-#)
+
+# GLM
 FetchContent_Declare(
         glm
         GIT_REPOSITORY https://github.com/g-truc/glm
         GIT_TAG 1.0.1
 )
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG v1.9.2
-)
-message("-- Fetching dependencies - done")
-
-message("-- Compiling dependencies")
-FetchContent_MakeAvailable(
-#        glfw
-        glm
-        spdlog
-)
-message("-- Compiling dependencies - done")
-
-#target_link_libraries(${PROJECT_NAME} glfw)
+FetchContent_MakeAvailable(glm)
 target_link_libraries(${PROJECT_NAME} glm::glm)
-target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
 # GLAD
 set(GLAD_NAME glad)
@@ -144,28 +132,22 @@ set(GLAD_DIR ${STORYTIME_LIB_DIR}/glad-0.1.33)
 add_library(${GLAD_NAME} ${GLAD_DIR}/src/glad.c)
 target_include_directories(${GLAD_NAME} PRIVATE ${GLAD_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLAD_DIR}/include)
-target_link_libraries(${PROJECT_NAME} glad ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME} glad ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
 
 # GLFW
-set(GLFW_DIR ${STORYTIME_LIB_DIR}/glfw-3.3)
-set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL Build the GLFW example programs)
-set(GLFW_BUILD_TESTS OFF CACHE INTERNAL Build the GLFW test programs)
-set(GLFW_BUILD_DOCS OFF CACHE INTERNAL Build the GLFW documentation)
 set(GLFW_INSTALL OFF CACHE INTERNAL Generate installation target)
-add_subdirectory(${GLFW_DIR})
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_INCLUDE_NONE)
-target_include_directories(${PROJECT_NAME} PUBLIC ${GLFW_DIR}/include)
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
+set(GLFW_BUILD_DOCS OFF CACHE INTERNAL Build the GLFW documentation)
+set(GLFW_BUILD_TESTS OFF CACHE INTERNAL Build the GLFW test programs)
+set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL Build the GLFW example programs)
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw
+        GIT_TAG 3.4
+)
+FetchContent_MakeAvailable(glfw)
+target_link_libraries(${PROJECT_NAME} glfw)
 
-# STB IMAGE
-set(STB_IMAGE_NAME stb_image)
-set(STB_IMAGE_DIR ${STORYTIME_LIB_DIR}/stb_image-2.22)
-add_library(${STB_IMAGE_NAME} ${STB_IMAGE_DIR}/src/stb_image.cpp)
-target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS})
-
-# ImGui
+# IMGUI
 set(IMGUI_NAME imgui)
 set(IMGUI_DIR ${STORYTIME_LIB_DIR}/imgui-docking-1.77)
 add_library(
@@ -185,7 +167,27 @@ add_library(
         ${IMGUI_DIR}/imgui_impl_opengl3.cpp
         ${IMGUI_DIR}/imgui_impl_opengl3.h
 )
-target_include_directories(${IMGUI_NAME} PRIVATE ${GLFW_DIR}/include)
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
+target_link_libraries(${IMGUI_NAME} glfw)
 target_include_directories(${PROJECT_NAME} PUBLIC ${IMGUI_DIR})
 target_link_libraries(${PROJECT_NAME} ${IMGUI_NAME})
+
+# STB IMAGE
+set(STB_IMAGE_NAME stb_image)
+set(STB_IMAGE_DIR ${STORYTIME_LIB_DIR}/stb_image-2.22)
+add_library(
+        ${STB_IMAGE_NAME}
+        ${STB_IMAGE_DIR}/src/stb_image.cpp
+)
+target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
+
+# SPDLOG
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog
+        GIT_TAG v1.9.2
+)
+FetchContent_MakeAvailable(spdlog)
+target_link_libraries(${PROJECT_NAME} spdlog::spdlog)

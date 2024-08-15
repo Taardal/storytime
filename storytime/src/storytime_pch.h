@@ -18,6 +18,13 @@
 // 3rd-party
 // --------------------------------------------------------------------------------------------------------------
 
+// Include GLAD before GLFW to let GLAD include the OpenGL header (gl.h)
+#include <glad/glad.h>
+
+// Explicitly prevent GLFW from including the OpenGL header (gl.h)
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 // --------------------------------------------------------------------------------------------------------------
 // App
 // --------------------------------------------------------------------------------------------------------------
