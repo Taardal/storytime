@@ -1,6 +1,6 @@
 #include "OrthographicCameraController.h"
-#include "window/WindowEvent.h"
-#include "window/MouseEvent.h"
+#include "window/window_event.h"
+#include "window/mouse_event.h"
 #include "system/log.h"
 #include <cmath>
 
@@ -70,17 +70,17 @@ namespace Storytime
 
     void OrthographicCameraController::OnEvent(const Event& event)
     {
-        if (event.GetType() == EventType::MouseScroll)
+        if (event.get_type() == EventType::MouseScroll)
         {
             const auto* mouseScrolledEvent = (MouseScrollEvent*) &event;
-            zoomLevel -= mouseScrolledEvent->GetYOffset() * 0.25f;
+            zoomLevel -= mouseScrolledEvent->y_offset * 0.25f;
             zoomLevel = std::fmax(zoomLevel, 0.25f);
             SetCameraProjection();
         }
-        if (event.GetType() == EventType::WindowResize)
+        if (event.get_type() == EventType::WindowResize)
         {
             const auto* windowResizeEvent = (WindowResizeEvent*) &event;
-            aspectRatio = (float) windowResizeEvent->GetWidth() / (float) windowResizeEvent->GetHeight();
+            aspectRatio = (float) windowResizeEvent->width / (float) windowResizeEvent->height;
             SetCameraProjection();
         }
     }

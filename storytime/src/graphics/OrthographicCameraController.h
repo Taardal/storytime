@@ -1,7 +1,7 @@
 #pragma once
 
 #include "window/Input.h"
-#include "window/Event.h"
+#include "window/event.h"
 #include "graphics/OrthographicCamera.h"
 
 namespace Storytime

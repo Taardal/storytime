@@ -17,6 +17,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
+        ${STORYTIME_SRC_DIR}/graphics/camera.cpp
+        ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.h
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.h
@@ -65,26 +67,21 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/system_module.h
         ${STORYTIME_SRC_DIR}/system/system_module.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
-        ${STORYTIME_SRC_DIR}/window/Event.h
-        ${STORYTIME_SRC_DIR}/window/Event.cpp
+
+        ${STORYTIME_SRC_DIR}/window/event.h
+        ${STORYTIME_SRC_DIR}/window/event.cpp
         ${STORYTIME_SRC_DIR}/window/event_manager.h
         ${STORYTIME_SRC_DIR}/window/event_manager.cpp
-        ${STORYTIME_SRC_DIR}/graphics/camera.cpp
-        ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/window/Input.h
         ${STORYTIME_SRC_DIR}/window/Input.cpp
-        ${STORYTIME_SRC_DIR}/window/KeyEvent.h
-        ${STORYTIME_SRC_DIR}/window/KeyEvent.cpp
-        ${STORYTIME_SRC_DIR}/window/Layer.h
-        ${STORYTIME_SRC_DIR}/window/Layer.cpp
-        ${STORYTIME_SRC_DIR}/window/LayerStack.h
-        ${STORYTIME_SRC_DIR}/window/LayerStack.cpp
-        ${STORYTIME_SRC_DIR}/window/MouseEvent.h
-        ${STORYTIME_SRC_DIR}/window/MouseEvent.cpp
+        ${STORYTIME_SRC_DIR}/window/key_event.h
+        ${STORYTIME_SRC_DIR}/window/key_event.cpp
+        ${STORYTIME_SRC_DIR}/window/mouse_event.h
+        ${STORYTIME_SRC_DIR}/window/mouse_event.cpp
         ${STORYTIME_SRC_DIR}/window/window.h
         ${STORYTIME_SRC_DIR}/window/window.cpp
-        ${STORYTIME_SRC_DIR}/window/WindowEvent.h
-        ${STORYTIME_SRC_DIR}/window/WindowEvent.cpp
+        ${STORYTIME_SRC_DIR}/window/window_event.h
+        ${STORYTIME_SRC_DIR}/window/window_event.cpp
         ${STORYTIME_SRC_DIR}/window/window_module.h
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
 )

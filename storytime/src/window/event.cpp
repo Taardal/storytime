@@ -1,28 +1,18 @@
-#include "Event.h"
-#include <sstream>
+#include "event.h"
 
 namespace Storytime {
-    Event::Event(std::string_view name, EventType type)
-        : type(type), name(name), handled(false) {
+    Event::Event(EventType type, const std::string& name) : type(type), name(name) {
     }
 
-    std::string_view Event::GetName() const {
+    std::string Event::get_name() const {
         return name;
     }
 
-    EventType Event::GetType() const {
+    EventType Event::get_type() const {
         return type;
     }
 
-    bool Event::IsHandled() const {
-        return handled;
-    }
-
-    void Event::SetHandled(bool handled) {
-        this->handled = handled;
-    }
-
-    std::string Event::ToString() const {
+    std::string Event::to_string() const {
         std::stringstream ss;
         ss << name << "{}";
         return ss.str();

@@ -2,7 +2,7 @@
 
 #include "GraphicsContext.h"
 #include "window/window.h"
-#include "window/Event.h"
+#include "window/event.h"
 #include <imgui.h>
 
 namespace Storytime

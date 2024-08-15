@@ -1,9 +1,9 @@
 #include "window.h"
 
 #include "system/assert.h"
-#include "KeyEvent.h"
-#include "MouseEvent.h"
-#include "window/WindowEvent.h"
+#include "key_event.h"
+#include "mouse_event.h"
+#include "window/window_event.h"
 
 namespace Storytime {
     Window::Window(const WindowConfig& config, EventManager* event_manager)
@@ -120,7 +120,7 @@ namespace Storytime {
     }
 
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
-        ST_LOG_TRACE(event.ToString());
+        ST_LOG_TRACE(event.to_string());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr);
         auto event_manager = window->event_manager;

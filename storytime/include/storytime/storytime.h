@@ -5,9 +5,9 @@
 
 #include "system/random.h"
 #include "graphics/Framebuffer.h"
-#include "window/Event.h"
-#include "window/KeyEvent.h"
-#include "window/MouseEvent.h"
-#include "window/WindowEvent.h"
+#include "window/event.h"
+#include "window/key_event.h"
+#include "window/mouse_event.h"
+#include "window/window_event.h"
 
 namespace st = Storytime;
