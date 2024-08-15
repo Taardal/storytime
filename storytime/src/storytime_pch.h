@@ -23,8 +23,10 @@
 // --------------------------------------------------------------------------------------------------------------
 
 #include "system/assert.h"
-#include "system/Core.h"
+#include "system/environment.h"
 #include "system/error.h"
 #include "system/log.h"
 #include "system/numbers.h"
+#include "system/pointers.h"
+#include "system/utils.h"
 

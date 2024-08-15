@@ -1,6 +1,6 @@
 #include "storytime_app.h"
 #include "system/clock.h"
-#include "window/events/WindowEvent.h"
+#include "window/WindowEvent.h"
 
 namespace Storytime {
     StorytimeApp::StorytimeApp(const AppConfig& config)

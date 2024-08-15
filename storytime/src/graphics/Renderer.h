@@ -4,16 +4,16 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "system/Core.h"
+#include "system/environment.h"
 #include <glm/glm.hpp>
-#include <system/ResourceLoader.h>
+#include <system/resource_loader.h>
 #include <vector>
 
 namespace Storytime
 {
     struct Quad
     {
-        Ref<Texture> Texture;
+        Shared<Texture> Texture;
         glm::vec3 Position;
         glm::vec2 Size;
         glm::vec4 Color;
@@ -58,11 +58,11 @@ namespace Storytime
         static const uint32_t MAX_TEXTURE_SLOTS;
 
         glm::vec4 clearColor = { 1.0f, 0.0f, 1.0f, 1 };
-        Ref<VertexArray> vertexArray;
-        Ref<VertexBuffer> vertexBuffer;
-        Ref<Shader> shader;
-        Ref<Texture>* textures;
-        Ref<Texture> whiteTexture;
+        Shared<VertexArray> vertexArray;
+        Shared<VertexBuffer> vertexBuffer;
+        Shared<Shader> shader;
+        Shared<Texture>* textures;
+        Shared<Texture> whiteTexture;
         Vertex* vertices;
         uint32_t* indices;
         uint32_t vertexCount;

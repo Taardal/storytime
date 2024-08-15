@@ -1,6 +1,5 @@
 #include "Framebuffer.h"
-#include "system/Core.h"
-#include "system/Tag.h"
+#include "system/environment.h"
 #include "graphics/GraphicsLog.h"
 
 namespace Storytime
@@ -35,13 +34,13 @@ namespace Storytime
 
     void Framebuffer::Bind()
     {
-        ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, id));
-        ST_GL_CALL(ST_TAG, glViewport(0, 0, config.Width, config.Height));
+        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, id));
+        ST_GL_CALL(glViewport(0, 0, config.Width, config.Height));
     }
 
     void Framebuffer::Unbind()
     {
-        ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
     void Framebuffer::Resize(uint32_t width, uint32_t height)
@@ -60,8 +59,8 @@ namespace Storytime
 
     void Framebuffer::Init()
     {
-        ST_GL_CALL(ST_TAG, glGenFramebuffers(1, &id));
-        ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, id));
+        ST_GL_CALL(glGenFramebuffers(1, &id));
+        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, id));
         {
             Texture::Config textureConfig;
             textureConfig.Width = config.Width;
@@ -80,13 +79,13 @@ namespace Storytime
             depthAttachmentTexture = new Texture(textureConfig);
             AttachTexture(GL_DEPTH_ATTACHMENT, depthAttachmentTexture);
         }
-        ST_GL_CALL(ST_TAG, ST_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
-        ST_GL_CALL(ST_TAG, glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        ST_GL_CALL(ST_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
+        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
     void Framebuffer::AttachTexture(uint32_t attachmentType, Texture* texture) const
     {
-        ST_GL_CALL(ST_TAG, glFramebufferTexture2D(
+        ST_GL_CALL(glFramebufferTexture2D(
                 GL_FRAMEBUFFER,
                 attachmentType,
                 GL_TEXTURE_2D,
@@ -97,7 +96,7 @@ namespace Storytime
 
     void Framebuffer::Delete() const
     {
-        ST_GL_CALL(ST_TAG, glDeleteFramebuffers(1, &id));
+        ST_GL_CALL(glDeleteFramebuffers(1, &id));
         delete colorAttachmentTexture;
         delete depthAttachmentTexture;
     }

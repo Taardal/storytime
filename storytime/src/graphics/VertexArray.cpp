@@ -1,6 +1,5 @@
 #include "system/log.h"
 #include "VertexArray.h"
-#include "system/Tag.h"
 #include "graphics/GraphicsLog.h"
 
 namespace Storytime
@@ -8,29 +7,29 @@ namespace Storytime
     VertexArray::VertexArray()
             : id(0), vertexBuffers{}, indexBuffer(nullptr)
     {
-        ST_GL_CALL(ST_TAG, glGenVertexArrays(1, &id));
+        ST_GL_CALL(glGenVertexArrays(1, &id));
     }
 
     VertexArray::~VertexArray()
     {
-        for (const Ref<VertexBuffer>& vertexBuffer : vertexBuffers)
+        for (const Shared<VertexBuffer>& vertexBuffer : vertexBuffers)
         {
             vertexBuffer->Unbind();
         }
         indexBuffer->Unbind();
-        ST_GL_CALL(ST_TAG, glDeleteVertexArrays(1, &id));
+        ST_GL_CALL(glDeleteVertexArrays(1, &id));
     }
 
-    void VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+    void VertexArray::AddVertexBuffer(const Shared<VertexBuffer>& vertexBuffer)
     {
-        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
+        ST_GL_CALL(glBindVertexArray(id));
         vertexBuffer->Bind();
         uint32_t index = 0;
         const auto& attributeLayout = vertexBuffer->GetAttributeLayout();
         for (const VertexAttribute& attribute : attributeLayout)
         {
-            ST_GL_CALL(ST_TAG, glEnableVertexAttribArray(index));
-            ST_GL_CALL(ST_TAG, glVertexAttribPointer(
+            ST_GL_CALL(glEnableVertexAttribArray(index));
+            ST_GL_CALL(glVertexAttribPointer(
                     index,
                     attribute.Length,
                     GetOpenGLType(attribute.GlslType),
@@ -43,21 +42,21 @@ namespace Storytime
         vertexBuffers.push_back(vertexBuffer);
     }
 
-    void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+    void VertexArray::SetIndexBuffer(const Shared<IndexBuffer>& indexBuffer)
     {
-        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
+        ST_GL_CALL(glBindVertexArray(id));
         indexBuffer->Bind();
         this->indexBuffer = indexBuffer;
     }
 
     void VertexArray::Bind() const
     {
-        ST_GL_CALL(ST_TAG, glBindVertexArray(id));
+        ST_GL_CALL(glBindVertexArray(id));
     }
 
     void VertexArray::Unbind() const
     {
-        ST_GL_CALL(ST_TAG, glBindVertexArray(0));
+        ST_GL_CALL(glBindVertexArray(0));
     }
 
     uint32_t VertexArray::GetOpenGLType(GLSLType glslType) const

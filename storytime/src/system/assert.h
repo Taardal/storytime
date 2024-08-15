@@ -1,7 +1,7 @@
 #pragma once
 
 #include "system/log.h"
-#include "system/Core.h"
+#include "system/environment.h"
 
 #ifdef ST_DEBUG
     #define ST_ENABLE_BREAK
@@ -25,7 +25,7 @@
     if (expression) {\
         /* Continue */\
     } else {\
-        ST_LOG_C("Assertion failed: [{}]", #expression); \
+        ST_LOG_CRITICAL("Assertion failed: [{}]", #expression); \
         ST_BREAK(); \
     }
 #else

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <chrono>
-
 namespace Storytime {
     typedef std::chrono::high_resolution_clock::time_point Time;
     typedef std::chrono::high_resolution_clock::duration Duration;

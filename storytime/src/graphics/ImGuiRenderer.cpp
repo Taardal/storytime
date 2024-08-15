@@ -27,7 +27,6 @@ namespace Storytime
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-        ST_LOG_C("NOOT");
         Init(*window);
     }
 
@@ -40,7 +39,6 @@ namespace Storytime
 
     void ImGuiRenderer::Init(GLFWwindow* glfwWindow) const
     {
-        ST_LOG_C("BOOT");
         bool glfwCallbacksEnabled = true;
         ImGui_ImplGlfw_InitForOpenGL(glfwWindow, glfwCallbacksEnabled);
         ImGui_ImplOpenGL3_Init(graphicsContext->getConfig().GlslVersion);

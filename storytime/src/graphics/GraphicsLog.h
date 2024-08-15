@@ -3,12 +3,12 @@
 #include "GraphicsContext.h"
 
 #ifdef ST_DEBUG
-#define ST_GL_CALL(tag, function) \
-        ::Storytime::GraphicsLog::ClearErrors(); \
-        function; \
-        ::Storytime::GraphicsLog::LogErrors(tag, #function)
+    #define ST_GL_CALL(function) \
+            ::Storytime::GraphicsLog::ClearErrors(); \
+            function; \
+            ::Storytime::GraphicsLog::LogErrors(ST_TAG(), #function)
 #else
-#define ST_GL_CALL(tag, function) function;
+    #define ST_GL_CALL(tag, function) function;
 #endif
 
 namespace Storytime

@@ -4,22 +4,22 @@
 
 #include <iostream>
 
-#define ST_THROW(message) throw Error(message, ST_TAGZ())
+#define ST_THROW(message) throw Error(message, ST_TAG())
 
 #define ST_ASSERT_THROW(expression) \
     if (expression) {\
         /* Continue */\
     } else {\
-        throw Error(std::string("Assertion failed: ") + #expression, ST_TAGZ());\
+        throw Error(std::string("Assertion failed: ") + #expression, ST_TAG());\
     }
 
 #define ST_EXECUTE_THROW(expression) \
     try {\
         expression;\
     } catch (const Error& e) { \
-        throw Error(#expression, ST_TAGZ(), std::make_shared<Error>(e));\
+        throw Error(#expression, ST_TAG(), std::make_shared<Error>(e));\
     } catch (const std::exception& e) {\
-        throw Error(#expression, ST_TAGZ(), std::make_shared<Error>(e.what()));\
+        throw Error(#expression, ST_TAG(), std::make_shared<Error>(e.what()));\
     }
 
 namespace Storytime {
@@ -32,18 +32,18 @@ namespace Storytime {
     private:
         std::string message;
         std::string tag;
-        std::shared_ptr<Error> previousError = nullptr;
+        std::shared_ptr<Error> previous_error = nullptr;
 
     public:
-        Error(const std::string& message, const std::string& tag = "", const std::shared_ptr<Error>& previousError = nullptr);
+        Error(const std::string& message, const std::string& tag = "", const std::shared_ptr<Error>& previous_error = nullptr);
 
         const char* what() const noexcept override;
 
-        std::vector<StacktraceEntry> getStacktrace() const;
+        std::vector<StacktraceEntry> get_stacktrace() const;
 
-        void printStacktrace() const;
+        void print_stacktrace() const;
 
-        static void printStacktrace(const Error& error);
+        static void print_stacktrace(const Error& error);
     };
 
     std::ostream& operator<<(std::ostream& os, const Error& error);

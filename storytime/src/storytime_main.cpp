@@ -14,23 +14,23 @@ void Storytime::run(int argc, char *argv[], const AppConfig& config) {
     });
     StorytimeApp* app = nullptr;
     try {
-        ST_LOG_I("Initializing app...");
+        ST_LOG_INFO("Initializing app...");
         app = create_app(config);
     } catch (const Error& e) {
-        ST_LOG_C("Initialization error");
-        e.printStacktrace();
+        ST_LOG_CRITICAL("Initialization error");
+        e.print_stacktrace();
     } catch (const std::exception& e) {
-        ST_LOG_C("Initialization error: {}", e.what());
+        ST_LOG_CRITICAL("Initialization error: {}", e.what());
     }
     if (app != nullptr) {
         try {
-            ST_LOG_I("Running app...");
+            ST_LOG_INFO("Running app...");
             app->run();
         } catch (const Error& e) {
-            ST_LOG_C("Runtime error");
-            e.printStacktrace();
+            ST_LOG_CRITICAL("Runtime error");
+            e.print_stacktrace();
         } catch (const std::exception& e) {
-            ST_LOG_C("Runtime error: {}", e.what());
+            ST_LOG_CRITICAL("Runtime error: {}", e.what());
         }
     }
     delete app;

@@ -4,16 +4,6 @@
 
 namespace Storytime
 {
-    Input::Input()
-    {
-        ST_LOG_TRACE(ST_TAG, "Created");
-    }
-
-    Input::~Input()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
-    }
-
     bool Input::IsKeyPressed(int32_t keyCode) const
     {
         int32_t state = glfwGetKey(glfwGetCurrentContext(), keyCode);

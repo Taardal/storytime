@@ -1,9 +1,7 @@
 #pragma once
 
-#include "system/Core.h"
-#include "system/Timestep.h"
 #include "window/Input.h"
-#include "window/events/Event.h"
+#include "window/Event.h"
 #include "graphics/OrthographicCamera.h"
 
 namespace Storytime
@@ -23,13 +21,11 @@ namespace Storytime
     public:
         OrthographicCameraController(OrthographicCamera* camera, float aspectRatio);
 
-        ~OrthographicCameraController();
-
         [[nodiscard]] OrthographicCamera* GetCamera() const;
 
         void SetZoomLevel(float zoomLevel);
 
-        void OnUpdate(Timestep timestep, Input* input);
+        void OnUpdate(f32 timestep, Input* input);
 
         void OnEvent(const Event& event);
 

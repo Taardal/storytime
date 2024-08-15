@@ -16,8 +16,6 @@ namespace Storytime
     public:
         OrthographicCamera();
 
-        virtual ~OrthographicCamera();
-
         [[nodiscard]] const glm::mat4& GetView() const;
 
         [[nodiscard]] const glm::mat4& GetProjection() const;

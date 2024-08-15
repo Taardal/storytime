@@ -2,9 +2,8 @@
 
 #include "graphics/Renderer.h"
 #include "graphics/ImGuiRenderer.h"
-#include "system/Timestep.h"
 #include "window/Input.h"
-#include "window/events/Event.h"
+#include "Event.h"
 
 namespace Storytime
 {
@@ -26,7 +25,7 @@ namespace Storytime
 
         virtual void OnEvent(const Event& event) = 0;
 
-        virtual void OnUpdate(const Timestep& timestep, Input* input, Renderer* renderer) = 0;
+        virtual void OnUpdate(f32 timestep, Input* input, Renderer* renderer) = 0;
 
         virtual void OnImGuiRender(ImGuiRenderer* imGuiRenderer) = 0;
 

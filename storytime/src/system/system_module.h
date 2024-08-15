@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FileSystem.h"
-#include "ResourceLoader.h"
+#include "file_system.h"
+#include "resource_loader.h"
 #include "service_locator.h"
 
 namespace Storytime {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "environment.h"
 #include <string>
 
 #if defined(ST_PLATFORM_MACOS) || defined(ST_PLATFORM_LINUX)

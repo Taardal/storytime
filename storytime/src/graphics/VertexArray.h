@@ -2,7 +2,7 @@
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "system/Core.h"
+#include "system/environment.h"
 #include <glad/glad.h>
 
 namespace Storytime
@@ -11,17 +11,17 @@ namespace Storytime
     {
     private:
         uint32_t id;
-        std::vector<Ref<VertexBuffer>> vertexBuffers;
-        Ref<IndexBuffer> indexBuffer;
+        std::vector<Shared<VertexBuffer>> vertexBuffers;
+        Shared<IndexBuffer> indexBuffer;
 
     public:
         VertexArray();
 
         ~VertexArray();
 
-        void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+        void AddVertexBuffer(const Shared<VertexBuffer>& vertexBuffer);
 
-        void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
+        void SetIndexBuffer(const Shared<IndexBuffer>& indexBuffer);
 
         void Bind() const;
 

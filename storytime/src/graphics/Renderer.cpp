@@ -1,7 +1,6 @@
 #include "system/log.h"
 #include "Renderer.h"
-#include "system/Core.h"
-#include "system/Tag.h"
+#include "system/environment.h"
 #include "graphics/GraphicsLog.h"
 
 namespace Storytime
@@ -46,11 +45,11 @@ namespace Storytime
     {}
 
     Renderer::Renderer(ResourceLoader* resourceLoader)
-            : vertexArray(CreateRef<VertexArray>()),
-              vertexBuffer(CreateRef<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
-              shader(resourceLoader->LoadShader("texture.vertex.glsl", "texture.fragment.glsl")),
-              textures(new Ref<Texture>[MAX_TEXTURE_SLOTS]),
-              whiteTexture(CreateRef<Texture>(1, 1)),
+            : vertexArray(make_shared<VertexArray>()),
+              vertexBuffer(make_shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+              shader(resourceLoader->load_shader("texture.vertex.glsl", "texture.fragment.glsl")),
+              textures(new Shared<Texture>[MAX_TEXTURE_SLOTS]),
+              whiteTexture(make_shared<Texture>(1, 1)),
               vertices(new Vertex[VERTICES_PER_BATCH]),
               indices(new uint32_t[INDICES_PER_BATCH]),
               vertexCount(0),
@@ -59,9 +58,9 @@ namespace Storytime
               reservedTexturesCount(0),
               statistics()
     {
-        ST_GL_CALL(ST_TAG, glEnable(GL_BLEND));
-        ST_GL_CALL(ST_TAG, glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        ST_GL_CALL(ST_TAG, glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
+        ST_GL_CALL(glEnable(GL_BLEND));
+        ST_GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        ST_GL_CALL(glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
 
         vertexBuffer->SetAttributeLayout({
             { GLSLType::Vec3, "position" },
@@ -82,7 +81,7 @@ namespace Storytime
             indices[i + 5] = offset + 0;
             offset += VERTICES_PER_QUAD;
         }
-        auto indexBuffer = CreateRef<IndexBuffer>(indices, INDICES_PER_BATCH);
+        auto indexBuffer = make_shared<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertexArray->AddVertexBuffer(vertexBuffer);
         vertexArray->SetIndexBuffer(indexBuffer);
@@ -101,8 +100,6 @@ namespace Storytime
         }
         shader->Bind();
         shader->SetIntArray("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
-
-        ST_LOG_TRACE(ST_TAG, "Created");
     }
 
     Renderer::~Renderer()
@@ -112,7 +109,6 @@ namespace Storytime
         delete[] textures;
         delete[] indices;
         delete[] vertices;
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     Renderer::Statistics Renderer::GetStatistics() const
@@ -126,18 +122,18 @@ namespace Storytime
 
     void Renderer::SetClearColor(const glm::vec4& color) {
         this->clearColor = color;
-        ST_GL_CALL(ST_TAG, glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
+        ST_GL_CALL(glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a));
     }
 
     void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) const
     {
-        ST_GL_CALL(ST_TAG, glViewport(x, y, width, height));
+        ST_GL_CALL(glViewport(x, y, width, height));
     }
 
     void Renderer::BeginScene(const glm::mat4& view_projection)
     {
         Reset();
-        ST_GL_CALL(ST_TAG, glClear(GL_COLOR_BUFFER_BIT));
+        ST_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
         shader->SetMat4("viewProjection", view_projection);
     }
 
@@ -232,7 +228,7 @@ namespace Storytime
     void Renderer::DrawIndexed()
     {
         void* offset = nullptr;
-        ST_GL_CALL(ST_TAG, glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
+        ST_GL_CALL(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, offset));
         statistics.DrawCalls++;
     }
 

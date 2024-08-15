@@ -1,21 +1,21 @@
 #include "window.h"
 
 #include "system/assert.h"
-#include "window/events/KeyEvent.h"
-#include "window/events/MouseEvent.h"
-#include "window/events/WindowEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
+#include "window/WindowEvent.h"
 
 namespace Storytime {
     Window::Window(const WindowConfig& config, EventManager* event_manager)
         : config(config), event_manager(event_manager)
     {
-        ST_LOG_T("Initializing GLFW");
+        ST_LOG_TRACE("Initializing GLFW");
         ST_ASSERT_THROW(glfwInit());
-        ST_LOG_D("Initialized GLFW");
+        ST_LOG_DEBUG("Initialized GLFW");
 
         glfwSetErrorCallback(on_glfw_error);
 
-        ST_LOG_T("Setting GLFW window hints");
+        ST_LOG_TRACE("Setting GLFW window hints");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.context_version_minor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -23,15 +23,15 @@ namespace Storytime {
 #ifdef ST_PLATFORM_MACOS
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 #endif
-        ST_LOG_D("GLFW context version [{0}.{1}]", config.context_version_major, config.context_version_minor);
+        ST_LOG_DEBUG("GLFW context version [{0}.{1}]", config.context_version_major, config.context_version_minor);
 
-        ST_LOG_T("Creating GLFW window");
+        ST_LOG_TRACE("Creating GLFW window");
         GLFWmonitor* fullscreenMonitor = nullptr;
         GLFWwindow* sharedWindow = nullptr;
         glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor,
                                       sharedWindow);
         ST_ASSERT_THROW(glfw_window != nullptr);
-        ST_LOG_D("Created GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
+        ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
 
         glfwMakeContextCurrent(glfw_window);
         glfwSetWindowUserPointer(glfw_window, this);
@@ -71,7 +71,7 @@ namespace Storytime {
     }
 
     void Window::on_glfw_error(i32 error, const char* description) {
-        ST_LOG_E("GLFW error [{0}: {1}]", error, description);
+        ST_LOG_ERROR("GLFW error [{0}: {1}]", error, description);
     }
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
@@ -120,7 +120,7 @@ namespace Storytime {
     }
 
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
-        ST_LOG_T(event.ToString());
+        ST_LOG_TRACE(event.ToString());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr);
         auto event_manager = window->event_manager;

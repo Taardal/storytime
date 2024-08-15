@@ -9,16 +9,11 @@ set(STORYTIME_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(${PROJECT_NAME}
-
-        lib/stb_image-2.22/include/stb_image.h
-        lib/stb_image-2.22/src/stb_image.cpp
-
         ${STORYTIME_SRC_DIR}/storytime_app.cpp
         ${STORYTIME_SRC_DIR}/storytime_app.h
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
-
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.h
         ${STORYTIME_SRC_DIR}/graphics/Framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.h
@@ -47,56 +42,48 @@ add_library(${PROJECT_NAME}
         ${STORYTIME_SRC_DIR}/graphics/VertexAttribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.h
         ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.cpp
-
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
-        ${STORYTIME_SRC_DIR}/system/Core.h
+        ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
         ${STORYTIME_SRC_DIR}/system/error_signal.h
         ${STORYTIME_SRC_DIR}/system/error_signal.cpp
-        ${STORYTIME_SRC_DIR}/system/FileSystem.h
-        ${STORYTIME_SRC_DIR}/system/FileSystem.cpp
-        ${STORYTIME_SRC_DIR}/system/Log.h
-        ${STORYTIME_SRC_DIR}/system/Log.cpp
-        ${STORYTIME_SRC_DIR}/system/Random.h
-        ${STORYTIME_SRC_DIR}/system/Random.cpp
-        ${STORYTIME_SRC_DIR}/system/ResourceLoader.h
-        ${STORYTIME_SRC_DIR}/system/ResourceLoader.cpp
+        ${STORYTIME_SRC_DIR}/system/file_system.h
+        ${STORYTIME_SRC_DIR}/system/file_system.cpp
+        ${STORYTIME_SRC_DIR}/system/log.h
+        ${STORYTIME_SRC_DIR}/system/log.cpp
+        ${STORYTIME_SRC_DIR}/system/pointers.h
+        ${STORYTIME_SRC_DIR}/system/random.h
+        ${STORYTIME_SRC_DIR}/system/random.cpp
+        ${STORYTIME_SRC_DIR}/system/resource_loader.h
+        ${STORYTIME_SRC_DIR}/system/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/system/system_module.h
         ${STORYTIME_SRC_DIR}/system/system_module.cpp
-        ${STORYTIME_SRC_DIR}/system/Tag.h
-        ${STORYTIME_SRC_DIR}/system/Tag.cpp
-        ${STORYTIME_SRC_DIR}/system/Timer.h
-        ${STORYTIME_SRC_DIR}/system/Timer.cpp
-        ${STORYTIME_SRC_DIR}/system/Timestep.h
-        ${STORYTIME_SRC_DIR}/system/Timestep.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
-
+        ${STORYTIME_SRC_DIR}/window/Event.h
+        ${STORYTIME_SRC_DIR}/window/Event.cpp
+        ${STORYTIME_SRC_DIR}/window/event_manager.h
+        ${STORYTIME_SRC_DIR}/window/event_manager.cpp
+        ${STORYTIME_SRC_DIR}/graphics/camera.cpp
+        ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/window/Input.h
         ${STORYTIME_SRC_DIR}/window/Input.cpp
+        ${STORYTIME_SRC_DIR}/window/KeyEvent.h
+        ${STORYTIME_SRC_DIR}/window/KeyEvent.cpp
         ${STORYTIME_SRC_DIR}/window/Layer.h
         ${STORYTIME_SRC_DIR}/window/Layer.cpp
         ${STORYTIME_SRC_DIR}/window/LayerStack.h
         ${STORYTIME_SRC_DIR}/window/LayerStack.cpp
+        ${STORYTIME_SRC_DIR}/window/MouseEvent.h
+        ${STORYTIME_SRC_DIR}/window/MouseEvent.cpp
         ${STORYTIME_SRC_DIR}/window/window.h
         ${STORYTIME_SRC_DIR}/window/window.cpp
+        ${STORYTIME_SRC_DIR}/window/WindowEvent.h
+        ${STORYTIME_SRC_DIR}/window/WindowEvent.cpp
         ${STORYTIME_SRC_DIR}/window/window_module.h
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
-
-        ${STORYTIME_SRC_DIR}/window/event_manager.h
-        ${STORYTIME_SRC_DIR}/window/event_manager.cpp
-        ${STORYTIME_SRC_DIR}/window/events/Event.h
-        ${STORYTIME_SRC_DIR}/window/events/Event.cpp
-        ${STORYTIME_SRC_DIR}/window/events/KeyEvent.h
-        ${STORYTIME_SRC_DIR}/window/events/KeyEvent.cpp
-        ${STORYTIME_SRC_DIR}/window/events/WindowEvent.h
-        ${STORYTIME_SRC_DIR}/window/events/WindowEvent.cpp
-        ${STORYTIME_SRC_DIR}/window/events/MouseEvent.h
-        ${STORYTIME_SRC_DIR}/window/events/MouseEvent.cpp
-        src/graphics/camera.cpp
-        src/graphics/camera.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})

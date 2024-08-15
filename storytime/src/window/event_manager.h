@@ -1,6 +1,6 @@
 #pragma once
 
-#include "window/events/Event.h"
+#include "Event.h"
 
 namespace Storytime {
     //typedef uint64_t EventType;

@@ -1,6 +1,6 @@
 #include "OrthographicCameraController.h"
-#include "window/events/WindowEvent.h"
-#include "window/events/MouseEvent.h"
+#include "window/WindowEvent.h"
+#include "window/MouseEvent.h"
 #include "system/log.h"
 #include <cmath>
 
@@ -17,12 +17,6 @@ namespace Storytime
               rotationEnabled(true)
     {
         SetCameraProjection();
-        ST_LOG_TRACE(ST_TAG, "Created");
-    }
-
-    OrthographicCameraController::~OrthographicCameraController()
-    {
-        ST_LOG_TRACE(ST_TAG, "Destroyed");
     }
 
     OrthographicCamera* OrthographicCameraController::GetCamera() const
@@ -36,7 +30,7 @@ namespace Storytime
         SetCameraProjection();
     }
 
-    void OrthographicCameraController::OnUpdate(Timestep timestep, Input* input)
+    void OrthographicCameraController::OnUpdate(f32 timestep, Input* input)
     {
         if (input->IsKeyPressed(KeyCode::KEY_A))
         {
