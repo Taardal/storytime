@@ -4,7 +4,7 @@
 #include "storytime_app.h"
 
 #include "system/random.h"
-#include "graphics/Framebuffer.h"
+#include "graphics/framebuffer.h"
 #include "window/event.h"
 #include "window/key_event.h"
 #include "window/mouse_event.h"

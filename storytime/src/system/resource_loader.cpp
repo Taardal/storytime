@@ -31,8 +31,8 @@ namespace Storytime {
     }
 
     void ResourceLoader::free_image(const Image& image) const {
-        if (image.Pixels) {
-            stbi_image_free(image.Pixels);
+        if (image.pixels) {
+            stbi_image_free(image.pixels);
         }
     }
 }

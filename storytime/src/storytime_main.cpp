@@ -1,17 +1,10 @@
 #include "storytime_main.h"
-#include "system/error_signal.h"
-#include "graphics/GraphicsLog.h"
 
 extern Storytime::StorytimeApp* create_app(const Storytime::AppConfig&);
 
-void Storytime::run(int argc, char *argv[], const AppConfig& config) {
+void Storytime::run(const AppConfig& config) {
     initialize_error_signal_handlers();
     set_log_level(config.log_level);
-    GraphicsLog::Init({
-        .VersionMajor = config.open_gl_version_major,
-        .VersionMinor = config.open_gl_version_minor,
-        .GlslVersion = config.glsl_version,
-    });
     StorytimeApp* app = nullptr;
     try {
         ST_LOG_INFO("Initializing app...");

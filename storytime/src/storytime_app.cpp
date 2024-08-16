@@ -7,6 +7,7 @@ namespace Storytime {
         : config(config),
           system_module(),
           window_module({
+              .system_module = &system_module,
               .window_config = {
                   .title = config.window_title,
                   .width = config.window_width,
@@ -20,19 +21,13 @@ namespace Storytime {
           graphics_module({
               .system_module = &system_module,
               .window_module = &window_module,
-              .context_config = {
-                  .VersionMajor = config.open_gl_version_major,
-                  .VersionMinor = config.open_gl_version_minor,
-                  .GlslVersion = config.glsl_version,
+              .open_gl_config = {
+                  .major_version = config.open_gl_version_major,
+                  .minor_version = config.open_gl_version_minor,
+                  .glsl_version = config.glsl_version,
               },
           })
     {
-        system_module.service_locator.set<EventManager>(&window_module.event_manager);
-        system_module.service_locator.set<Window>(&window_module.window);
-        system_module.service_locator.set<Renderer>(&graphics_module.renderer);
-        system_module.service_locator.set<OrthographicCamera>(&graphics_module.camera);
-        system_module.service_locator.set<Input>(&window_module.input);
-
         window_module.event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
             stop();
         });
@@ -61,15 +56,15 @@ namespace Storytime {
                 timestep = 0;
             }
 
-            graphics_module.renderer.BeginScene(graphics_module.camera.GetViewProjection());
+            graphics_module.renderer.begin_frame(graphics_module.camera.GetViewProjection());
             on_render();
-            graphics_module.renderer.EndScene();
+            graphics_module.renderer.end_frame();
 
             auto [window_width, window_height] = window_module.window.get_size_in_pixels();
 
-            graphics_module.imgui_renderer.Begin();
+            graphics_module.imgui_renderer.begin_frame();
             on_imgui_render();
-            graphics_module.imgui_renderer.End(window_width, window_height);
+            graphics_module.imgui_renderer.end_frame(window_width, window_height);
         }
     }
 

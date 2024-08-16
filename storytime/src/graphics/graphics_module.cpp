@@ -2,10 +2,16 @@
 
 namespace Storytime {
     GraphicsModule::GraphicsModule(const GraphicsModuleConfig& config)
-        : graphics_context(config.context_config),
-          imgui_renderer(&graphics_context, &config.window_module->window),
+        : open_gl(config.open_gl_config),
           renderer(&config.system_module->resource_loader),
-          camera(),
-          camera_controller(&camera, 16.0f / 9.0f) {
+          imgui_renderer({
+              .window = &config.window_module->window,
+              .glsl_version = config.open_gl_config.glsl_version,
+          }),
+          camera()
+    {
+        config.system_module->service_locator.set<Renderer>(&renderer);
+        config.system_module->service_locator.set<ImGuiRenderer>(&imgui_renderer);
+        config.system_module->service_locator.set<OrthographicCamera>(&camera);
     }
 }

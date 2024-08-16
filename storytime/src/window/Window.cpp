@@ -10,7 +10,10 @@ namespace Storytime {
         : config(config), event_manager(event_manager)
     {
         ST_LOG_TRACE("Initializing GLFW");
-        ST_ASSERT_THROW(glfwInit());
+        int glfw_initialized = glfwInit();
+        if (!glfw_initialized) {
+            ST_THROW("Could not initialize GLFW");
+        }
         ST_LOG_DEBUG("Initialized GLFW");
 
         glfwSetErrorCallback(on_glfw_error);
@@ -28,9 +31,10 @@ namespace Storytime {
         ST_LOG_TRACE("Creating GLFW window");
         GLFWmonitor* fullscreenMonitor = nullptr;
         GLFWwindow* sharedWindow = nullptr;
-        glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor,
-                                      sharedWindow);
-        ST_ASSERT_THROW(glfw_window != nullptr);
+        glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor, sharedWindow);
+        if (glfw_window == nullptr) {
+            ST_THROW("Could not create GLFW window");
+        }
         ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
 
         glfwMakeContextCurrent(glfw_window);
@@ -42,6 +46,15 @@ namespace Storytime {
         glfwSetScrollCallback(glfw_window, on_mouse_scroll_change);
         glfwSetWindowCloseCallback(glfw_window, on_window_close_change);
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
+
+        ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, config.width, config.height);
+    }
+
+    Window::~Window() {
+        glfwDestroyWindow(glfw_window);
+        ST_LOG_DEBUG("Destroyed GLFW window");
+        glfwTerminate();
+        ST_LOG_DEBUG("Terminated GLFW");
     }
 
     Window::operator GLFWwindow*() const {

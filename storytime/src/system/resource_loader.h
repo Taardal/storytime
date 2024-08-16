@@ -1,8 +1,8 @@
 #pragma once
 
 #include "file_system.h"
-#include "graphics/Shader.h"
-#include "graphics/Texture.h"
+#include "graphics/shader.h"
+#include "graphics/texture.h"
 
 namespace Storytime {
     class ResourceLoader {

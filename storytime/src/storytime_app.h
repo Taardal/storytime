@@ -15,7 +15,7 @@ namespace Storytime {
         bool window_resizable = true;
         u32 open_gl_version_major = 4;
         u32 open_gl_version_minor = 1;
-        const char* glsl_version = "#version 410";
+        std::string glsl_version = "#version 410";
     };
 
     class StorytimeApp {

@@ -35,7 +35,11 @@ namespace Storytime {
         std::shared_ptr<Error> previous_error = nullptr;
 
     public:
-        Error(const std::string& message, const std::string& tag = "", const std::shared_ptr<Error>& previous_error = nullptr);
+        Error(
+            const std::string& message,
+            const std::string& tag = "",
+            const std::shared_ptr<Error>& previous_error = nullptr
+        );
 
         const char* what() const noexcept override;
 

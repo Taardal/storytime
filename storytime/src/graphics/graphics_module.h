@@ -2,25 +2,23 @@
 
 #include "system/system_module.h"
 #include "window/window_module.h"
-#include "graphics/GraphicsContext.h"
-#include "graphics/ImGuiRenderer.h"
-#include "graphics/Renderer.h"
-#include "graphics/OrthographicCamera.h"
-#include "graphics/OrthographicCameraController.h"
+#include "graphics/open_gl.h"
+#include "graphics/imgui_renderer.h"
+#include "graphics/renderer.h"
+#include "graphics/orthographic_camera.h"
 
 namespace Storytime {
     struct GraphicsModuleConfig {
         SystemModule* system_module = nullptr;
         WindowModule* window_module = nullptr;
-        GraphicsContext::Config context_config;
+        OpenGLConfig open_gl_config;
     };
 
     struct GraphicsModule {
-        GraphicsContext graphics_context;
-        ImGuiRenderer imgui_renderer;
+        OpenGL open_gl;
         Renderer renderer;
+        ImGuiRenderer imgui_renderer;
         OrthographicCamera camera;
-        OrthographicCameraController camera_controller;
 
         explicit GraphicsModule(const GraphicsModuleConfig& config);
     };

@@ -5,6 +5,10 @@ namespace Storytime {
         : config(config),
           event_manager(),
           window(config.window_config, &event_manager),
-          input() {
+          user_input()
+    {
+        config.system_module->service_locator.set<EventManager>(&event_manager);
+        config.system_module->service_locator.set<Window>(&window);
+        config.system_module->service_locator.set<UserInput>(&user_input);
     }
 }

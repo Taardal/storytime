@@ -29,6 +29,8 @@ namespace Storytime {
     public:
         explicit Window(const WindowConfig& config, EventManager* event_manager);
 
+        ~Window();
+
         operator GLFWwindow*() const;
 
         void update() const;

@@ -2,10 +2,8 @@
 
 #include <glm/glm.hpp>
 
-namespace Storytime
-{
-    class OrthographicCamera
-    {
+namespace Storytime {
+    class OrthographicCamera {
     private:
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
@@ -39,7 +37,4 @@ namespace Storytime
 
         [[nodiscard]] glm::mat4 GetRotationMatrix() const;
     };
-
 }
-
-

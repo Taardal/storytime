@@ -1,45 +1,36 @@
 #include "system/log.h"
 #include "system/environment.h"
-#include "GraphicsLog.h"
+#include "open_gl_log.h"
 
-namespace Storytime
-{
-    void GraphicsLog::Init(const GraphicsContext::Config& graphicsConfig)
-    {
+namespace Storytime {
+    void OpenGLLog::initialize(const OpenGLLogConfig& config) {
 #ifdef ST_DEBUG
-        if (graphicsConfig.VersionMajor >= 4 && graphicsConfig.VersionMinor >= 3)
-        {
-            const void* userParam = nullptr;
-            ST_GL_CALL(glDebugMessageCallback(OnDebugMessage, userParam));
+        if (config.version_major >= 4 && config.version_minor >= 3) {
+            ST_GL_CALL(glDebugMessageCallback(on_debug_message, (void*) &config.log_level));
             ST_GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
         }
 #endif
     }
 
-    void GraphicsLog::ClearErrors()
-    {
+    void OpenGLLog::clear_errors() {
         while (glGetError() != GL_NO_ERROR);
     }
 
-    void GraphicsLog::LogErrors(std::string_view tag, std::string_view functionSignature)
-    {
-        uint32_t errorCode;
-        uint32_t errorCount = 0;
-        while ((errorCode = glGetError()) != GL_NO_ERROR)
-        {
+    void OpenGLLog::log_errors(const std::string& tag, const std::string& function_signature) {
+        uint32_t error_code;
+        uint32_t error_count = 0;
+        while ((error_code = glGetError()) != GL_NO_ERROR) {
             std::stringstream ss;
             ss << tag << " OpenGL error on function [{0}] - {1}";
             std::string error_message = ss.str();
-            spdlog::error(error_message, functionSignature, GetErrorMessage(errorCode));
-            errorCount++;
+            spdlog::error(error_message, function_signature, get_error_message(error_code));
+            error_count++;
         }
-        ST_ASSERT(errorCount == 0);
+        ST_ASSERT(error_count == 0);
     }
 
-    const char* GraphicsLog::GetErrorMessage(uint32_t errorCode)
-    {
-        switch (errorCode)
-        {
+    const char* OpenGLLog::get_error_message(uint32_t errorCode) {
+        switch (errorCode) {
             case GL_INVALID_ENUM:
                 return "INVALID_ENUM";
             case GL_INVALID_VALUE:
@@ -59,36 +50,35 @@ namespace Storytime
         }
     }
 
-    void GraphicsLog::OnDebugMessage(uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int32_t length, const char* message, const void* userParam)
-    {
-        const char* logMessage = "OpenGL message [id = {0}, type = {1}, severity = {2}, source = {3}, length = {4}] - {5}";
-        const char* messageType = GetDebugMessageType(type);
-        const char* messageSource = GetDebugMessageSource(source);
-        const char* messageSeverity = GetDebugMessageSeverity(severity);
-        switch (severity)
-        {
-            case GL_DEBUG_SEVERITY_HIGH:
-                ST_LOG_ERROR(logMessage, id, messageType, messageSeverity, messageSource, length, message);
-                break;
-            case GL_DEBUG_SEVERITY_MEDIUM:
-                ST_LOG_WARNING(logMessage, id, messageType, messageSeverity, messageSource, length, message);
-                break;
-            case GL_DEBUG_SEVERITY_LOW:
-                ST_LOG_INFO(logMessage, id, messageType, messageSeverity, messageSource, length, message);
-                break;
-            case GL_DEBUG_SEVERITY_NOTIFICATION:
-                ST_LOG_DEBUG(logMessage, id, messageType, messageSeverity, messageSource, length, message);
-                break;
-            default:
-                ST_LOG_TRACE(logMessage, id, messageType, messageSeverity, messageSource, length, message);
-                break;
+    void OpenGLLog::on_debug_message(
+        uint32_t source,
+        uint32_t type,
+        uint32_t id,
+        uint32_t severity,
+        int32_t length,
+        const char* message,
+        const void* user_param
+    ) {
+        std::string log_message = "OpenGL message [id = {}, type = {}, severity = {}, source = {}, length = {}] - {}";
+        std::string message_type = get_debug_message_type(type);
+        std::string message_source = get_debug_message_source(source);
+        std::string message_severity = get_debug_message_severity(severity);
+        LogLevel log_level = *(LogLevel*) user_param;
+        if (severity == GL_DEBUG_SEVERITY_HIGH && log_level >= LogLevel::err) {
+            ST_LOG_ERROR(log_message, id, message_type, message_severity, message_source, length, message);
+        } else if (severity == GL_DEBUG_SEVERITY_MEDIUM && log_level >= LogLevel::warn) {
+            ST_LOG_WARNING(log_message, id, message_type, message_severity, message_source, length, message);
+        } else if (severity == GL_DEBUG_SEVERITY_LOW && log_level >= LogLevel::info) {
+            ST_LOG_INFO(log_message, id, message_type, message_severity, message_source, length, message);
+        } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION && log_level >= LogLevel::debug) {
+            ST_LOG_DEBUG(log_message, id, message_type, message_severity, message_source, length, message);
+        } else {
+            ST_LOG_TRACE(log_message, id, message_type, message_severity, message_source, length, message);
         }
     }
 
-    const char* GraphicsLog::GetDebugMessageType(uint32_t type)
-    {
-        switch (type)
-        {
+    std::string OpenGLLog::get_debug_message_type(uint32_t type) {
+        switch (type) {
             case GL_DEBUG_TYPE_ERROR:
                 return "ERROR";
             case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
@@ -108,10 +98,8 @@ namespace Storytime
         }
     }
 
-    const char* GraphicsLog::GetDebugMessageSource(uint32_t source)
-    {
-        switch (source)
-        {
+    std::string OpenGLLog::get_debug_message_source(uint32_t source) {
+        switch (source) {
             case GL_DEBUG_SOURCE_API:
                 return "API";
             case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
@@ -129,10 +117,8 @@ namespace Storytime
         }
     }
 
-    const char* GraphicsLog::GetDebugMessageSeverity(uint32_t severity)
-    {
-        switch (severity)
-        {
+    std::string OpenGLLog::get_debug_message_severity(uint32_t severity) {
+        switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
                 return "HIGH";
             case GL_DEBUG_SEVERITY_MEDIUM:

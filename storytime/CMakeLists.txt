@@ -17,36 +17,32 @@ add_library(
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
-        ${STORYTIME_SRC_DIR}/graphics/camera.cpp
-        ${STORYTIME_SRC_DIR}/graphics/camera.h
-        ${STORYTIME_SRC_DIR}/graphics/Framebuffer.h
-        ${STORYTIME_SRC_DIR}/graphics/Framebuffer.cpp
-        ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.h
-        ${STORYTIME_SRC_DIR}/graphics/GraphicsContext.cpp
-        ${STORYTIME_SRC_DIR}/graphics/GraphicsLog.h
-        ${STORYTIME_SRC_DIR}/graphics/GraphicsLog.cpp
+        ${STORYTIME_SRC_DIR}/graphics/framebuffer.h
+        ${STORYTIME_SRC_DIR}/graphics/framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/graphics_module.h
         ${STORYTIME_SRC_DIR}/graphics/graphics_module.cpp
-        ${STORYTIME_SRC_DIR}/graphics/OrthographicCamera.h
-        ${STORYTIME_SRC_DIR}/graphics/OrthographicCamera.cpp
-        ${STORYTIME_SRC_DIR}/graphics/IndexBuffer.h
-        ${STORYTIME_SRC_DIR}/graphics/IndexBuffer.cpp
-        ${STORYTIME_SRC_DIR}/graphics/ImGuiRenderer.h
-        ${STORYTIME_SRC_DIR}/graphics/ImGuiRenderer.cpp
-        ${STORYTIME_SRC_DIR}/graphics/OrthographicCameraController.h
-        ${STORYTIME_SRC_DIR}/graphics/OrthographicCameraController.cpp
-        ${STORYTIME_SRC_DIR}/graphics/Renderer.h
-        ${STORYTIME_SRC_DIR}/graphics/Renderer.cpp
-        ${STORYTIME_SRC_DIR}/graphics/Shader.h
-        ${STORYTIME_SRC_DIR}/graphics/Shader.cpp
-        ${STORYTIME_SRC_DIR}/graphics/Texture.h
-        ${STORYTIME_SRC_DIR}/graphics/Texture.cpp
-        ${STORYTIME_SRC_DIR}/graphics/VertexArray.h
-        ${STORYTIME_SRC_DIR}/graphics/VertexArray.cpp
-        ${STORYTIME_SRC_DIR}/graphics/VertexAttribute.h
-        ${STORYTIME_SRC_DIR}/graphics/VertexAttribute.cpp
-        ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.h
-        ${STORYTIME_SRC_DIR}/graphics/VertexBuffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.h
+        ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/index_buffer.h
+        ${STORYTIME_SRC_DIR}/graphics/index_buffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/open_gl.h
+        ${STORYTIME_SRC_DIR}/graphics/open_gl.cpp
+        ${STORYTIME_SRC_DIR}/graphics/open_gl_log.h
+        ${STORYTIME_SRC_DIR}/graphics/open_gl_log.cpp
+        ${STORYTIME_SRC_DIR}/graphics/orthographic_camera.h
+        ${STORYTIME_SRC_DIR}/graphics/orthographic_camera.cpp
+        ${STORYTIME_SRC_DIR}/graphics/renderer.h
+        ${STORYTIME_SRC_DIR}/graphics/renderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/shader.h
+        ${STORYTIME_SRC_DIR}/graphics/shader.cpp
+        ${STORYTIME_SRC_DIR}/graphics/texture.h
+        ${STORYTIME_SRC_DIR}/graphics/texture.cpp
+        ${STORYTIME_SRC_DIR}/graphics/vertex_array.h
+        ${STORYTIME_SRC_DIR}/graphics/vertex_array.cpp
+        ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.h
+        ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
+        ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
+        ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
@@ -67,23 +63,26 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/system_module.h
         ${STORYTIME_SRC_DIR}/system/system_module.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
-
         ${STORYTIME_SRC_DIR}/window/event.h
         ${STORYTIME_SRC_DIR}/window/event.cpp
         ${STORYTIME_SRC_DIR}/window/event_manager.h
         ${STORYTIME_SRC_DIR}/window/event_manager.cpp
-        ${STORYTIME_SRC_DIR}/window/Input.h
-        ${STORYTIME_SRC_DIR}/window/Input.cpp
         ${STORYTIME_SRC_DIR}/window/key_event.h
         ${STORYTIME_SRC_DIR}/window/key_event.cpp
         ${STORYTIME_SRC_DIR}/window/mouse_event.h
         ${STORYTIME_SRC_DIR}/window/mouse_event.cpp
+        ${STORYTIME_SRC_DIR}/window/user_input.h
+        ${STORYTIME_SRC_DIR}/window/user_input.cpp
         ${STORYTIME_SRC_DIR}/window/window.h
         ${STORYTIME_SRC_DIR}/window/window.cpp
         ${STORYTIME_SRC_DIR}/window/window_event.h
         ${STORYTIME_SRC_DIR}/window/window_event.cpp
         ${STORYTIME_SRC_DIR}/window/window_module.h
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
+        src/window/key.cpp
+        src/window/key.h
+        src/window/mouse_button.cpp
+        src/window/mouse_button.h
 )
 
 # Precompiled header
@@ -102,10 +101,7 @@ if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
             COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
             COMMENT "Copying resources"
     )
-    add_dependencies(
-            ${PROJECT_NAME}
-            CopyResources
-    )
+    add_dependencies(${PROJECT_NAME} CopyResources)
 endif()
 
 # --------------------------------------------------------------------------------------------------------------
@@ -144,7 +140,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 target_link_libraries(${PROJECT_NAME} glfw)
 
-# IMGUI
+# ImGui
 set(IMGUI_NAME imgui)
 set(IMGUI_DIR ${STORYTIME_LIB_DIR}/imgui-docking-1.77)
 add_library(
@@ -169,7 +165,7 @@ target_link_libraries(${IMGUI_NAME} glfw)
 target_include_directories(${PROJECT_NAME} PUBLIC ${IMGUI_DIR})
 target_link_libraries(${PROJECT_NAME} ${IMGUI_NAME})
 
-# STB IMAGE
+# STB image
 set(STB_IMAGE_NAME stb_image)
 set(STB_IMAGE_DIR ${STORYTIME_LIB_DIR}/stb_image-2.22)
 add_library(
