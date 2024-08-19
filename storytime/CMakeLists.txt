@@ -83,6 +83,8 @@ add_library(
         src/window/key.h
         src/window/mouse_button.cpp
         src/window/mouse_button.h
+        src/system/memory.cpp
+        src/system/memory.h
 )
 
 # Precompiled header

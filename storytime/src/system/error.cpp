@@ -32,7 +32,7 @@ namespace Storytime {
         std::string& error_message = stack[0].message;
 
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
-        fprintf(stderr, "[%s] %s\n", ST_TO_STRING(Storytime::Error), error_message.c_str());
+        fprintf(stderr, "[Storytime::Error] %s\n", error_message.c_str());
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
 
         uint32_t longest_tag_length = 0;
@@ -65,7 +65,7 @@ namespace Storytime {
         std::string& error_message = stack[0].message;
 
         os << "--------------------------------------------------------------------------------------------------------------\n";
-        os << "[" << ST_TO_STRING(Storytime::Error) << "] " << error_message.c_str() << "\n";
+        os << "[Storytime::Error] " << error_message.c_str() << "\n";
         os << "--------------------------------------------------------------------------------------------------------------\n";
 
         uint32_t longest_tag_length = 0;

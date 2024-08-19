@@ -1,8 +1,12 @@
 #include "storytime_main.h"
+#include "system/memory.h"
 
 extern Storytime::StorytimeApp* create_app(const Storytime::AppConfig&);
 
 void Storytime::run(const AppConfig& config) {
+#ifdef ST_TRACK_MEMORY
+    std::atexit(MemoryTracker::terminate);
+#endif
     initialize_error_signal_handlers();
     set_log_level(config.log_level);
     StorytimeApp* app = nullptr;
