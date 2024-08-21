@@ -8,7 +8,7 @@ namespace Storytime {
     class ServiceLocator {
     private:
         typedef std::type_index Type;
-    
+
     private:
         std::map<Type, void*> services;
 

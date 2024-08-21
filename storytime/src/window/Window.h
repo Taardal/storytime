@@ -11,6 +11,7 @@ namespace Storytime {
     };
 
     struct WindowConfig {
+        EventManager* event_manager = nullptr;
         std::string title;
         i32 width;
         i32 height;
@@ -23,17 +24,18 @@ namespace Storytime {
     class Window {
     private:
         WindowConfig config;
-        EventManager* event_manager;
         GLFWwindow* glfw_window = nullptr;
 
     public:
-        explicit Window(const WindowConfig& config, EventManager* event_manager);
+        explicit Window(const WindowConfig& config);
 
         ~Window();
 
         operator GLFWwindow*() const;
 
         void update() const;
+
+        void set_title(const char* title) const;
 
         WindowSize get_size_in_pixels() const;
 

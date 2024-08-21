@@ -12,11 +12,15 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
-        ${STORYTIME_SRC_DIR}/storytime_app.cpp
         ${STORYTIME_SRC_DIR}/storytime_app.h
+        ${STORYTIME_SRC_DIR}/storytime_config.h
+        ${STORYTIME_SRC_DIR}/storytime_engine.cpp
+        ${STORYTIME_SRC_DIR}/storytime_engine.h
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
+        ${STORYTIME_SRC_DIR}/graphics/camera.h
+        ${STORYTIME_SRC_DIR}/graphics/camera.cpp
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.h
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/graphics_module.h
@@ -29,8 +33,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/open_gl.cpp
         ${STORYTIME_SRC_DIR}/graphics/open_gl_log.h
         ${STORYTIME_SRC_DIR}/graphics/open_gl_log.cpp
-        ${STORYTIME_SRC_DIR}/graphics/orthographic_camera.h
-        ${STORYTIME_SRC_DIR}/graphics/orthographic_camera.cpp
         ${STORYTIME_SRC_DIR}/graphics/renderer.h
         ${STORYTIME_SRC_DIR}/graphics/renderer.cpp
         ${STORYTIME_SRC_DIR}/graphics/shader.h
@@ -55,6 +57,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/file_system.cpp
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp
+        ${STORYTIME_SRC_DIR}/system/memory.h
+        ${STORYTIME_SRC_DIR}/system/memory.cpp
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
@@ -67,8 +71,12 @@ add_library(
         ${STORYTIME_SRC_DIR}/window/event.cpp
         ${STORYTIME_SRC_DIR}/window/event_manager.h
         ${STORYTIME_SRC_DIR}/window/event_manager.cpp
+        ${STORYTIME_SRC_DIR}/window/key.cpp
+        ${STORYTIME_SRC_DIR}/window/key.h
         ${STORYTIME_SRC_DIR}/window/key_event.h
         ${STORYTIME_SRC_DIR}/window/key_event.cpp
+        ${STORYTIME_SRC_DIR}/window/mouse_button.h
+        ${STORYTIME_SRC_DIR}/window/mouse_button.cpp
         ${STORYTIME_SRC_DIR}/window/mouse_event.h
         ${STORYTIME_SRC_DIR}/window/mouse_event.cpp
         ${STORYTIME_SRC_DIR}/window/user_input.h
@@ -79,12 +87,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/window/window_event.cpp
         ${STORYTIME_SRC_DIR}/window/window_module.h
         ${STORYTIME_SRC_DIR}/window/window_module.cpp
-        src/window/key.cpp
-        src/window/key.h
-        src/window/mouse_button.cpp
-        src/window/mouse_button.h
-        src/system/memory.cpp
-        src/system/memory.h
 )
 
 # Precompiled header

@@ -6,9 +6,7 @@
 #include "window/window_event.h"
 
 namespace Storytime {
-    Window::Window(const WindowConfig& config, EventManager* event_manager)
-        : config(config), event_manager(event_manager)
-    {
+    Window::Window(const WindowConfig& config) : config(config) {
         ST_LOG_TRACE("Initializing GLFW");
         int glfw_initialized = glfwInit();
         if (!glfw_initialized) {
@@ -65,6 +63,10 @@ namespace Storytime {
     void Window::update() const {
         glfwPollEvents();
         glfwSwapBuffers(glfw_window);
+    }
+
+    void Window::set_title(const char* title) const {
+        glfwSetWindowTitle(glfw_window, title);
     }
 
     WindowSize Window::get_size_in_pixels() const  {
@@ -136,7 +138,7 @@ namespace Storytime {
         ST_LOG_TRACE(event.to_string());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr);
-        auto event_manager = window->event_manager;
+        auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr);
         event_manager->trigger_event(event_type, event);
     }

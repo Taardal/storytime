@@ -6,10 +6,22 @@
 namespace Storytime {
     class UserInput {
     public:
-        bool is_key_pressed(KeyCode key_code) const;
+        static bool is_key_pressed(KeyCode key_code);
 
-        bool is_mouse_button_pressed(MouseButtonCode mouse_button_code) const;
+        static bool is_mouse_button_pressed(MouseButtonCode mouse_button_code);
 
-        std::pair<float, float> get_mouse_position() const;
+        static std::pair<f32, f32> get_mouse_position();
+    };
+
+    class Keyboard {
+    public:
+        static bool is_pressed(KeyCode key_code);
+    };
+
+    class Mouse {
+    public:
+        static bool is_pressed(MouseButtonCode mouse_button_code);
+
+        static std::pair<f32, f32> get_position();
     };
 }
