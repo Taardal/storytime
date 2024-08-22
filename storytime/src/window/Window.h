@@ -23,10 +23,15 @@ namespace Storytime {
 
     class Window {
     private:
+        static bool glfw_initialized;
         WindowConfig config;
         GLFWwindow* glfw_window = nullptr;
 
     public:
+        static void initialize();
+
+        static void terminate();
+
         explicit Window(const WindowConfig& config);
 
         ~Window();

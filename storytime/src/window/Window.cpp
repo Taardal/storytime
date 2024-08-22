@@ -6,15 +6,28 @@
 #include "window/window_event.h"
 
 namespace Storytime {
-    Window::Window(const WindowConfig& config) : config(config) {
+    bool Window::glfw_initialized = false;
+
+    void Window::initialize() {
         ST_LOG_TRACE("Initializing GLFW");
-        int glfw_initialized = glfwInit();
+        glfw_initialized = glfwInit();
         if (!glfw_initialized) {
             ST_THROW("Could not initialize GLFW");
         }
         ST_LOG_DEBUG("Initialized GLFW");
-
         glfwSetErrorCallback(on_glfw_error);
+    }
+
+    void Window::terminate() {
+        glfwTerminate();
+        glfw_initialized = false;
+        ST_LOG_DEBUG("Terminated GLFW");
+    }
+}
+
+namespace Storytime {
+    Window::Window(const WindowConfig& config) : config(config) {
+        ST_ASSERT_THROW(glfw_initialized)
 
         ST_LOG_TRACE("Setting GLFW window hints");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
@@ -51,8 +64,6 @@ namespace Storytime {
     Window::~Window() {
         glfwDestroyWindow(glfw_window);
         ST_LOG_DEBUG("Destroyed GLFW window");
-        glfwTerminate();
-        ST_LOG_DEBUG("Terminated GLFW");
     }
 
     Window::operator GLFWwindow*() const {

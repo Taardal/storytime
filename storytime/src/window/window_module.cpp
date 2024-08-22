@@ -2,8 +2,7 @@
 
 namespace Storytime {
     WindowModule::WindowModule(const Config& config, SystemModule* system_module)
-        : event_manager(),
-          window({
+        : window({
               .event_manager = &event_manager,
               .title = config.window_title,
               .width = config.window_width,
@@ -13,10 +12,17 @@ namespace Storytime {
               .context_version_major = config.open_gl_version_major,
               .context_version_minor = config.open_gl_version_minor,
           }),
-          user_input()
+          event_manager()
     {
-        system_module->service_locator.set<EventManager>(&event_manager);
         system_module->service_locator.set<Window>(&window);
-        system_module->service_locator.set<UserInput>(&user_input);
+        system_module->service_locator.set<EventManager>(&event_manager);
+    }
+
+    void WindowModule::initialize() {
+        Window::initialize();
+    }
+
+    void WindowModule::terminate() {
+        Window::terminate();
     }
 }

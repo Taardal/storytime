@@ -1,7 +1,7 @@
 #include "system/log.h"
 #include "system/environment.h"
 #include "shader.h"
-#include "open_gl_log.h"
+#include "open_gl.h"
 
 #include <glm/gtc/type_ptr.hpp>
 

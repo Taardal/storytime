@@ -6,7 +6,7 @@
 #include "window/event_manager.h"
 
 namespace Storytime {
-    struct Storytime {
+    class Storytime {
     public:
         Config config{};
 

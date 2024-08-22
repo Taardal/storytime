@@ -31,8 +31,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/open_gl.h
         ${STORYTIME_SRC_DIR}/graphics/open_gl.cpp
-        ${STORYTIME_SRC_DIR}/graphics/open_gl_log.h
-        ${STORYTIME_SRC_DIR}/graphics/open_gl_log.cpp
         ${STORYTIME_SRC_DIR}/graphics/renderer.h
         ${STORYTIME_SRC_DIR}/graphics/renderer.cpp
         ${STORYTIME_SRC_DIR}/graphics/shader.h

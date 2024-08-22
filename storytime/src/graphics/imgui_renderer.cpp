@@ -32,8 +32,10 @@ namespace Storytime {
         ImGui::NewFrame();
     }
 
-    void ImGuiRenderer::end_frame(f32 window_width, f32 window_height) const {
+    void ImGuiRenderer::end_frame() const {
         ImGuiIO& io = ImGui::GetIO();
+
+        auto [window_width, window_height] = config.window->get_size_in_pixels();
         io.DisplaySize = ImVec2(window_width, window_height);
 
         ImGui::Render();

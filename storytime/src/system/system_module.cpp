@@ -9,4 +9,15 @@ namespace Storytime {
         service_locator.set<FileSystem>(&file_system);
         service_locator.set<ResourceLoader>(&resource_loader);
     }
+
+    void SystemModule::initialize(const Config& config) {
+        set_log_level(config.log_level);
+        initialize_error_signal_handlers();
+#ifdef ST_TRACK_MEMORY
+        std::atexit(MemoryTracker::terminate);
+#endif
+    }
+
+    void SystemModule::terminate() {
+    }
 }

@@ -1,6 +1,5 @@
 #include "framebuffer.h"
-#include "system/environment.h"
-#include "graphics/open_gl_log.h"
+#include "graphics/open_gl.h"
 
 namespace Storytime {
     Framebuffer::Framebuffer(FramebufferConfig config) : config(std::move(config)) {

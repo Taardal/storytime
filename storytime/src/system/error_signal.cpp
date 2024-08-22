@@ -120,11 +120,10 @@ namespace Storytime {
 
 #include <cxxabi.h>
 #include <execinfo.h>
-#include <unistd.h>
 
     void print_unix_stacktrace() {
         // Number of stacktrace lines to be printed
-        constexpr int maxStackSize = 20;
+        constexpr int max_stack_size = 25;
 
         // Linux man page: backtrace, backtrace_symbols, backtrace_symbols_fd
         // https://linux.die.net/man/3/backtrace_symbols
@@ -132,12 +131,12 @@ namespace Storytime {
         // backtrace() returns a backtrace for the calling program.
         // A backtrace is the series of currently active function calls for the program.
         // Each item is of type void*, and is the return address from the corresponding stack frame
-        void* stack[maxStackSize];
-        int stackSize = backtrace(stack, maxStackSize);
+        void* stack[max_stack_size];
+        int stack_size = backtrace(stack, max_stack_size);
 
         // Given the set of addresses returned by backtrace() in buffer,
         // backtrace_symbols() translates the addresses into an array of strings that describe the addresses symbolically
-        char** stacktrace = backtrace_symbols(stack, stackSize);
+        char** stacktrace = backtrace_symbols(stack, stack_size);
         if (stacktrace == nullptr) {
             fprintf(stderr, "Could not resolve stacktrace\n");
             return;
@@ -145,28 +144,12 @@ namespace Storytime {
 
         // Iterate over the backtrace and...
         // 1. Convert the line to a std::string
-        // 2. Demangle the line
+        // 2. Demangle the line (see "mangling" explanation below)
         // 3. Print the line
-        //
-        // At this point, the top of the stack will look something like this
-        // 0 [...] printUnixStacktrace()
-        // 1 [...] printStacktrace(int)
-        // 2 [...] handleErrorSignal(int)
-        // 3 [...] _sigtramp
-        // 4 [...] functionThatCausedTheSignal()
-        //
-        // The "_sigtramp" line means that the application has received a Unix signal. We are only interested in what
-        // happened _before_ the signal occurred, so we want to ignore that line and any lines above it on the stack.
-        //
-        bool sigtrampLineFound = false;
-        for (int i = 0; i < stackSize; i++) {
-            ::std::string stacktraceLine(stacktrace[i]);
-            demangle_unix_stacktrace_line(&stacktraceLine);
-            if (sigtrampLineFound) {
-                fprintf(stderr, "%s\n", stacktraceLine.c_str());
-            } else if (stacktraceLine.find("_sigtramp") != ::std::string::npos) {
-                sigtrampLineFound = true;
-            }
+        for (int i = 0; i < stack_size; i++) {
+            ::std::string stacktrace_line(stacktrace[i]);
+            demangle_unix_stacktrace_line(&stacktrace_line);
+            fprintf(stderr, "%s\n", stacktrace_line.c_str());
         }
 
         // This array is malloced by backtrace_symbols(), and must be freed by the caller
@@ -185,46 +168,51 @@ namespace Storytime {
     //
     // Segments:
     //   [stack index]  [binary name]  [return address (in hexadecimal)]  [function name] + [offset into the function (in hexadecimal)]
-    void demangle_unix_stacktrace_line(::std::string* stacktraceLine) {
+    void demangle_unix_stacktrace_line(::std::string* stacktrace_line) {
 
         // Find segment before the mangled function name
-        size_t returnAddressStartIndex = stacktraceLine->find("0x");
-        size_t returnAddressEndIndex = returnAddressStartIndex + 18; // 18 = return address length
+        size_t return_address_start_index = stacktrace_line->find("0x");
+        size_t return_address_end_index = return_address_start_index + 18; // 18 = return address length
 
         // Find function name start and end
-        size_t functionNameStartIndex = returnAddressEndIndex + 1; // 1 = space
-        size_t functionNameEndIndex = stacktraceLine->find(" + ");
-        size_t functionNameLength = functionNameEndIndex - functionNameStartIndex;
+        size_t function_name_start_index = return_address_end_index + 1; // 1 = space
+        size_t function_name_end_index = stacktrace_line->find(" + ");
+        size_t function_name_length = function_name_end_index - function_name_start_index;
 
         // Extract the mangled function name
-        ::std::string functionName = stacktraceLine->substr(functionNameStartIndex, functionNameLength);
+        ::std::string function_name = stacktrace_line->substr(function_name_start_index, function_name_length);
 
         // Demangling status:
         // [0] The demangling operation succeeded
         // [-1] A memory allocation failiure occurred
         // [-2] mangled_name is not a valid name under the C++ ABI mangling rules
         // [-3] One of the arguments is invalid
-        int demanglingStatus = -1;
+        int demangling_status = -1;
 
         // A region of memory, allocated with malloc, of *length bytes, into which the demangled name is stored.
         // May be NULL; in that case, the demangled name is placed in a region of memory allocated with malloc.
-        char* outputBuffer = nullptr;
+        char* output_buffer = nullptr;
 
         // If length is non-NULL, the length of the buffer containing the demangled name is placed in *length.
         size_t* length = nullptr;
 
         // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
-        char* demangledFunctionName = abi::__cxa_demangle(functionName.c_str(), outputBuffer, length, &demanglingStatus);
+        char* demangled_function_name = abi::__cxa_demangle(
+            function_name.c_str(),
+            output_buffer,
+            length,
+            &demangling_status
+        );
 
         // Replace the mangled function name with the demangled one in the stacktrace line
-        bool successfullyDemangled = demanglingStatus == 0 && demangledFunctionName != nullptr;
-        if (successfullyDemangled) {
-            stacktraceLine->replace(functionNameStartIndex, functionNameLength, demangledFunctionName);
+        bool successfully_demangled = demangling_status == 0 && demangled_function_name != nullptr;
+        if (successfully_demangled) {
+            stacktrace_line->replace(function_name_start_index, function_name_length, demangled_function_name);
         }
 
         // If the output buffer is NULL, the demangled name is placed in a region of memory allocated with malloc.
         // The caller is responsible for deallocating this memory using free.
-        free(demangledFunctionName);
+        free(demangled_function_name);
     }
 #endif
 }

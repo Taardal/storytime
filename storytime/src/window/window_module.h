@@ -2,15 +2,18 @@
 
 #include "storytime_config.h"
 #include "system/system_module.h"
-#include "window/user_input.h"
 #include "window/window.h"
+#include "window/event_manager.h"
 
 namespace Storytime {
     struct WindowModule {
-        EventManager event_manager;
         Window window;
-        UserInput user_input;
+        EventManager event_manager;
 
         WindowModule(const Config& config, SystemModule* system_module);
+
+        static void initialize();
+
+        static void terminate();
     };
 }

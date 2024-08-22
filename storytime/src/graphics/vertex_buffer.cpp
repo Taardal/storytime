@@ -1,5 +1,5 @@
 #include "vertex_buffer.h"
-#include "graphics/open_gl_log.h"
+#include "graphics/open_gl.h"
 
 namespace Storytime {
     VertexBuffer::AttributeLayout::AttributeLayout(const std::initializer_list<VertexAttribute>& attributes)

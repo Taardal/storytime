@@ -23,6 +23,6 @@ namespace Storytime {
 #ifdef ST_PRINT_UNIX_STACKTRACE
     void print_unix_stacktrace();
 
-    void demangle_unix_stacktrace_line(std::string* stacktraceLine);
+    void demangle_unix_stacktrace_line(std::string* stacktrace_line);
 #endif
 }

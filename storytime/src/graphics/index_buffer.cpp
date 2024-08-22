@@ -1,5 +1,5 @@
 #include "index_buffer.h"
-#include "graphics/open_gl_log.h"
+#include "graphics/open_gl.h"
 
 namespace Storytime {
     IndexBuffer::IndexBuffer(const u32* indices, u32 count) : id(0), count(count) {

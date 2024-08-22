@@ -1,5 +1,5 @@
 #include "vertex_array.h"
-#include "graphics/open_gl_log.h"
+#include "graphics/open_gl.h"
 
 namespace Storytime {
     VertexArray::VertexArray() {

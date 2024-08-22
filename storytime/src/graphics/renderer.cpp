@@ -1,7 +1,7 @@
 #include "renderer.h"
 #include "system/log.h"
 #include "system/environment.h"
-#include "graphics/open_gl_log.h"
+#include "graphics/open_gl.h"
 
 namespace Storytime {
     constexpr u32 Renderer::VERTICES_PER_QUAD = 4;

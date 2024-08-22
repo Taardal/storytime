@@ -19,6 +19,6 @@ namespace Storytime {
 
         void begin_frame() const;
 
-        void end_frame(float window_width, float window_height) const;
+        void end_frame() const;
     };
 }
