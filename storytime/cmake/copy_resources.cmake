@@ -1,7 +1,3 @@
-#######################################
-# Pre-flight checks                   #
-#######################################
-
 if ("${RESOURCES_SOURCE_DIR}" STREQUAL "")
     message(FATAL_ERROR "Missing required variable RESOURCES_SOURCE_DIR")
 endif ()
@@ -13,10 +9,6 @@ endif ()
 if ("${RESOURCES_OUTPUT_DIR}" STREQUAL "")
     message(FATAL_ERROR "Missing required variable RESOURCES_OUTPUT_DIR")
 endif ()
-
-#######################################
-# Copy skybox files                   #
-#######################################
 
 file(REMOVE_RECURSE ${RESOURCES_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${RESOURCES_OUTPUT_DIR})

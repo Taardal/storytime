@@ -17,7 +17,4 @@ namespace Storytime {
         std::atexit(MemoryTracker::terminate);
 #endif
     }
-
-    void SystemModule::terminate() {
-    }
 }

@@ -16,7 +16,5 @@ namespace Storytime {
         GraphicsModule(const Config& config, SystemModule* system_module, WindowModule* window_module);
 
         static void initialize(const Config& config);
-
-        static void terminate();
     };
 }

@@ -24,7 +24,4 @@ namespace Storytime {
             .glsl_version = config.glsl_version,
         });
     }
-
-    void GraphicsModule::terminate() {
-    }
 }

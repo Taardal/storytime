@@ -8,6 +8,10 @@ namespace Storytime {
     public:
         virtual ~App() = default;
 
+        virtual void on_initialize() {}
+
+        virtual void on_terminate() {}
+
         virtual void on_update(Camera* camera, f64 timestep) = 0;
 
         virtual void on_render(Renderer* renderer) = 0;

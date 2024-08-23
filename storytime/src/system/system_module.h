@@ -14,7 +14,5 @@ namespace Storytime {
         SystemModule();
 
         static void initialize(const Config& config);
-
-        static void terminate();
     };
 }
