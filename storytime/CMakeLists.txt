@@ -19,12 +19,10 @@ add_library(
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
-        ${STORYTIME_SRC_DIR}/audio/audio.cpp
-        ${STORYTIME_SRC_DIR}/audio/audio.h
-        ${STORYTIME_SRC_DIR}/audio/audio_engine.cpp
-        ${STORYTIME_SRC_DIR}/audio/audio_engine.h
         ${STORYTIME_SRC_DIR}/audio/audio_module.cpp
         ${STORYTIME_SRC_DIR}/audio/audio_module.h
+        ${STORYTIME_SRC_DIR}/audio/audio_player.cpp
+        ${STORYTIME_SRC_DIR}/audio/audio_player.h
         ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/graphics/camera.cpp
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.h
@@ -49,10 +47,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_module.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_module.h
-        ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
@@ -70,6 +64,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
+        ${STORYTIME_SRC_DIR}/system/resource_loader.h
+        ${STORYTIME_SRC_DIR}/system/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/system/system_module.h
         ${STORYTIME_SRC_DIR}/system/system_module.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
@@ -104,8 +100,8 @@ target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_
 # --------------------------------------------------------------------------------------------------------------
 
 if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
-    set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
-    set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+    set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res/shaders)
+    set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res/shaders)
     add_custom_target(
             Storytime_CopyResources
             COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake

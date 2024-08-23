@@ -1,12 +1,12 @@
 #pragma once
 
-#include "audio/audio_engine.h"
+#include "audio/audio_player.h"
 #include "system/system_module.h"
 
 namespace Storytime {
     struct AudioModule {
-        AudioEngine audio_engine;
+        AudioPlayer audio_player;
 
-        explicit AudioModule(SystemModule* system_module);
+        AudioModule(SystemModule* system_module);
     };
 }
