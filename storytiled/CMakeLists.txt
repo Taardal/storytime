@@ -14,9 +14,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR})
 set(JSON_DIR ${LIB_DIR}/nlohmann/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${JSON_DIR})
 
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        ${BIN_DIR}/${PROJECT_NAME}
-)
+#add_custom_command(
+#        TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy
+#        $<TARGET_FILE:${PROJECT_NAME}>
+#        ${BIN_DIR}/${PROJECT_NAME}
+#)

@@ -1,6 +1,52 @@
-.idea
-cmake-build-debug
-cmake-build-release
+# Dependencies & 3rd-party
+lib/
 
-*.iml
+# Build & intermediates
+bin/
+build/
+dist/
+install/
+Debug/
+Release/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts
+CMakeDoxyfile.in
+CMakeDoxygenDefaults.cmake
+cmake_install.cmake
+cmake_uninstall.cmake
+
+# Makefile generator
+Makefile
+
+# CLion
+.idea/
+cmake-build-debug/
+cmake-build-release/
+
+# Visual Studio Code
+.vscode
+
+# Visual Studio
+*.sln
+*.vcxproj*
+*.dir
+.vs
+Win32
+x64
+CMakeSettings.json
+
+# Clangd
+.cache/
+compile_commands.json
+
+# Xcode
+*.build
+*.xcodeproj
+
+# macOS
 .DS_Store
+
+

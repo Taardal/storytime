@@ -1,78 +1,69 @@
 #pragma once
 
-#include "graphics/GraphicsContext.h"
-#include "graphics/ImGuiRenderer.h"
-#include "events/Event.h"
+#include "window/event_manager.h"
+
 #include <GLFW/glfw3.h>
-#include <functional>
 
-namespace storytime
-{
-    class Window
-    {
-    public:
-        struct Config
-        {
-            const char* Title;
-            int32_t Width;
-            int32_t Height;
-            bool Maximized;
+namespace Storytime {
+    struct WindowSize {
+        i32 width;
+        i32 height;
+    };
 
-            [[nodiscard]] float GetAspectRatio() const;
-        };
+    struct WindowConfig {
+        EventManager* event_manager = nullptr;
+        std::string title;
+        i32 width;
+        i32 height;
+        bool maximized;
+        bool resizable;
+        u32 context_version_major;
+        u32 context_version_minor;
+    };
 
-        struct Size
-        {
-            int32_t Width;
-            int32_t Height;
-        };
-
+    class Window {
     private:
-        struct GlfwCallbackData
-        {
-            std::function<void(Event&)> OnEvent;
-        };
-
-    private:
-        const Config& config;
-        GlfwCallbackData glfwCallbackData;
-        GLFWwindow* glfwWindow;
+        static bool glfw_initialized;
+        WindowConfig config;
+        GLFWwindow* glfw_window = nullptr;
 
     public:
-        Window(const Config& config, GraphicsContext* graphicsContext, ImGuiRenderer* imGuiRenderer);
+        static void initialize();
+
+        static void terminate();
+
+        explicit Window(const WindowConfig& config);
 
         ~Window();
 
-        [[nodiscard]] Size GetSize() const;
+        operator GLFWwindow*() const;
 
-        [[nodiscard]] float GetTime() const;
+        void update() const;
 
-        void SetOnEventListener(const std::function<void(Event&)>& onEvent);
+        void set_title(const char* title) const;
 
-        void OnUpdate() const;
+        WindowSize get_size_in_pixels() const;
+
+        void get_size_in_pixels(i32* width, i32* height) const;
+
+        f32 get_aspect_ratio() const;
 
     private:
-        void InitGlfw() const;
+        static void on_glfw_error(i32 error, const char* description);
 
-        static void OnGlfwError(int32_t error, const char* description);
+        static void on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height);
 
-        void SetGlfwWindowHints(GraphicsContext* graphicsContext) const;
+        static void on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods);
 
-        [[nodiscard]] GLFWwindow* CreateGlfwWindow() const;
+        static void on_mouse_button_change(GLFWwindow* glfw_window, i32 button, i32 action, i32 mods);
 
-        void SetGlfwCallbacks();
+        static void on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset);
 
-        void SetGlfwWindowCallbacks() const;
+        static void on_window_close_change(GLFWwindow* glfw_window);
 
-        void SetGlfwKeyCallbacks() const;
+        static void on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified);
 
-        void SetGlfwMouseCallbacks() const;
-
-        void DestroyGlfwWindow() const;
-
-        void TerminateGlfw() const;
+        static void on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event);
 
     };
-
 }
-
