@@ -23,10 +23,13 @@ namespace Storytime {
         );
 
         static void initialize(const Config& config);
+<<<<<<< HEAD
 
         template<typename T>
         T* get() {
             return system_module->service_locator.get<T>();
         }
+=======
+>>>>>>> ebb4fc9 (Hello audio)
     };
 }
