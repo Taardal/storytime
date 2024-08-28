@@ -1,10 +1,10 @@
-#include "audio_player.h"
+#include "audio_engine.h"
 
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
 namespace Storytime {
-    AudioPlayer::AudioPlayer() {
+    AudioEngine::AudioEngine() {
         ST_LOG_TRACE("Initializing miniaudio");
         ma_engine_config* ma_config = nullptr;
         if (ma_engine_init(ma_config, &engine) != MA_SUCCESS) {
@@ -13,22 +13,33 @@ namespace Storytime {
         ST_LOG_INFO("Initialized miniaudio");
     }
 
-    AudioPlayer::~AudioPlayer() {
+    AudioEngine::~AudioEngine() {
         ma_engine_uninit(&engine);
         ST_LOG_INFO("Terminated miniaudio");
     }
 
-    void AudioPlayer::play(const char* path) {
-        ST_LOG_TRACE("Playing sound [{}]", path);
+    AudioEngine::operator ma_engine*() {
+        return &engine;
+    }
+
+    void AudioEngine::play(const char* path) {
         ma_sound_group* sound_group = nullptr;
         ma_engine_play_sound(&engine, path, sound_group);
     }
 
-    void AudioPlayer::play(const std::string& path) {
+    void AudioEngine::play(const std::string& path) {
         play(path.c_str());
     }
 
-    void AudioPlayer::stop() {
+    void AudioEngine::stop() {
         ma_engine_stop(&engine);
+    }
+
+    u32 AudioEngine::get_volume() {
+        return static_cast<u32>(ma_engine_get_volume(&engine));
+    }
+
+    void AudioEngine::set_volume(u32 volume_percent) {
+        ma_engine_set_volume(&engine, static_cast<f32>(volume_percent) / 100.0f);
     }
 }

@@ -6,7 +6,7 @@ template<typename T>
 using Shared = std::shared_ptr<T>;
 
 template<typename T, typename ...Args>
-Shared<T> make_shared(Args&& ...args) {
+Shared<T> shared(Args&& ...args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
@@ -14,12 +14,12 @@ template<typename T>
 using Unique = std::unique_ptr<T>;
 
 template<typename T, typename ...Args>
-Unique<T> make_unique(Args&& ...args) {
+Unique<T> unique(Args&& ...args) {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 template<typename T>
-Unique<T> make_unique(size_t size) {
+Unique<T> unique(size_t size) {
     return std::make_unique<T>(size);
 }
 
