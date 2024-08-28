@@ -8,10 +8,16 @@ namespace Storytime {
         SystemModule* system_module,
         WindowModule* window_module,
         ResourceModule* resource_module
+<<<<<<< HEAD
     ) : system_module(system_module),
         renderer(resource_module->get<ResourceLoader>()),
         imgui_renderer({
             .window = window_module->get<Window>(),
+=======
+    ) : renderer(&resource_module->resource_loader),
+        imgui_renderer({
+            .window = &window_module->window,
+>>>>>>> 3071683 (Audio module)
             .glsl_version = config.glsl_version,
         }),
         camera()

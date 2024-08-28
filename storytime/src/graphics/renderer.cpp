@@ -42,11 +42,11 @@ namespace Storytime {
     }
 
     Renderer::Renderer(const ResourceLoader* resource_loader)
-        : vertex_array(make_shared<VertexArray>()),
-          vertex_buffer(make_shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+        : vertex_array(shared<VertexArray>()),
+          vertex_buffer(shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
           shader(resource_loader->load_shader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
           textures(new Shared<Texture>[MAX_TEXTURE_SLOTS]),
-          white_texture(make_shared<Texture>(1, 1)),
+          white_texture(shared<Texture>(1, 1)),
           vertices(new Vertex[VERTICES_PER_BATCH]),
           indices(new u32[INDICES_PER_BATCH]),
           vertex_count(0),
@@ -77,7 +77,7 @@ namespace Storytime {
             indices[i + 5] = offset + 0;
             offset += VERTICES_PER_QUAD;
         }
-        auto index_buffer = make_shared<IndexBuffer>(indices, INDICES_PER_BATCH);
+        auto index_buffer = shared<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertex_array->add_vertex_buffer(vertex_buffer);
         vertex_array->set_index_buffer(index_buffer);
@@ -85,7 +85,6 @@ namespace Storytime {
 
         u32 white_texture_pixels = 0xffffffff;
         white_texture->set_pixels(&white_texture_pixels);
-        white_texture = resource_loader->load_texture("res/textures/kitten.png");
         textures[0] = white_texture;
         texture_count++;
         reserved_textures_count++;
@@ -184,65 +183,6 @@ namespace Storytime {
         vertices[vertex_count].position = transform * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
         vertices[vertex_count].color = quad.color;
         vertices[vertex_count].texture_coordinate = {0.0f, 1.0f};
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        index_count += INDICES_PER_QUAD;
-        statistics.quad_count++;
-    }
-
-    void Renderer::submit_quad(Quad& quad, const std::vector<glm::vec2>& texture_coordinates) {
-        if (index_count >= INDICES_PER_BATCH) {
-            flush();
-            reset();
-        }
-
-        if (!quad.texture) {
-            quad.texture = white_texture;
-        }
-        f32 texture_index = -1.0f;
-        for (u32 i = 0; i < texture_count; i++) {
-            if (textures[i] == quad.texture) {
-                texture_index = (f32) i;
-                break;
-            }
-        }
-        if (texture_index == -1.0f) {
-            texture_index = (f32) texture_count;
-            textures[texture_count] = quad.texture;
-            texture_count++;
-        }
-
-        const auto& translation = glm::translate(glm::mat4(1.0f), quad.position);
-        const auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.rotation_in_degrees), {0.0f, 0.0f, 1.0f});
-        const auto& scale = glm::scale(glm::mat4(1.0f), {quad.size.x, quad.size.y, 1.0f});
-        glm::mat4 transform = translation * rotation * scale;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[0];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[1];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[2];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[3];
         vertices[vertex_count].texture_index = texture_index;
         vertices[vertex_count].tiling_factor = quad.tiling_factor;
         vertex_count++;
