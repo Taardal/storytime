@@ -21,8 +21,10 @@
 
 // Graphics module
 #include "graphics/graphics_module.h"
+#include "graphics/bitmap_font.h"
 
 // Audio module
 #include "audio/audio_module.h"
 
+// Namespaces
 namespace st = Storytime;

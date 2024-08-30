@@ -81,6 +81,8 @@ namespace Storytime {
 
         void submit_quad(Quad& quad);
 
+        void submit_quad(Quad& quad, const std::vector<glm::vec2>& texture_coordinates);
+
         void end_frame();
 
     private:

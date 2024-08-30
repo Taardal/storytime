@@ -39,6 +39,12 @@ namespace Storytime {
 
         ~Texture();
 
+        std::pair<u32, u32> get_size() const;
+
+        u32 get_width() const;
+
+        u32 get_height() const;
+
         u32 get_id() const;
 
         i32 get_level_of_detail() const;

@@ -25,6 +25,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/audio/audio_engine.h
         ${STORYTIME_SRC_DIR}/audio/audio_module.cpp
         ${STORYTIME_SRC_DIR}/audio/audio_module.h
+        ${STORYTIME_SRC_DIR}/graphics/bitmap_font.h
+        ${STORYTIME_SRC_DIR}/graphics/bitmap_font.cpp
         ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/graphics/camera.cpp
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.h

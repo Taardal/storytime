@@ -47,6 +47,18 @@ namespace Storytime {
         ST_GL_CALL(glDeleteTextures(1, &id));
     }
 
+    std::pair<u32, u32> Texture::get_size() const {
+        return { width, height };
+    }
+
+    u32 Texture::get_width() const {
+        return width;
+    }
+
+    u32 Texture::get_height() const {
+        return height;
+    }
+
     u32 Texture::get_id() const {
         return id;
     }

@@ -8,9 +8,10 @@ namespace Storytime {
         SystemModule* system_module,
         WindowModule* window_module,
         ResourceModule* resource_module
-    ) : renderer(&resource_module->resource_loader),
+    ) : system_module(system_module),
+        renderer(resource_module->get<ResourceLoader>()),
         imgui_renderer({
-            .window = &window_module->window,
+            .window = window_module->get<Window>(),
             .glsl_version = config.glsl_version,
         }),
         camera()

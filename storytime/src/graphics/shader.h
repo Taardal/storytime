@@ -20,7 +20,7 @@ namespace Storytime {
 
         void set_float4(const char* key, glm::vec4 value) const;
 
-        void set_int_array(const char* key, const int32_t* values, u32 count) const;
+        void set_int_array(const char* key, const i32* values, u32 count) const;
 
     private:
         u32 create_shader(const char* source, u32 type) const;
