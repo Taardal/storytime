@@ -1,30 +1,21 @@
 #include "graphics_module.h"
-
 #include "open_gl.h"
 
 namespace Storytime {
     GraphicsModule::GraphicsModule(
         const Config& config,
-        SystemModule* system_module,
         WindowModule* window_module,
         ResourceModule* resource_module
-<<<<<<< HEAD
-    ) : system_module(system_module),
-        renderer(resource_module->get<ResourceLoader>()),
+    ) : renderer(resource_module->get<ResourceLoader>()),
         imgui_renderer({
             .window = window_module->get<Window>(),
-=======
-    ) : renderer(&resource_module->resource_loader),
-        imgui_renderer({
-            .window = &window_module->window,
->>>>>>> 3071683 (Audio module)
             .glsl_version = config.glsl_version,
         }),
         camera()
     {
-        system_module->service_locator.set<Renderer>(&renderer);
-        system_module->service_locator.set<ImGuiRenderer>(&imgui_renderer);
-        system_module->service_locator.set<Camera>(&camera);
+        service_locator.set<Renderer>(&renderer);
+        service_locator.set<ImGuiRenderer>(&imgui_renderer);
+        service_locator.set<Camera>(&camera);
     }
 
     void GraphicsModule::initialize(const Config& config) {
@@ -34,5 +25,8 @@ namespace Storytime {
             .minor_version = config.open_gl_version_minor,
             .glsl_version = config.glsl_version,
         });
+    }
+
+    void GraphicsModule::terminate() {
     }
 }

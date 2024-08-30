@@ -8,18 +8,15 @@
 namespace Storytime {
     Engine::Engine(
         const Config& config,
-        Window* window,
-        EventManager* event_manager,
-        Camera* camera,
-        Renderer* renderer,
-        ImGuiRenderer* imgui_renderer
+        WindowModule* window_module,
+        GraphicsModule* graphics_module
     ) : config(config),
-        window(window),
-        camera(camera),
-        renderer(renderer),
-        imgui_renderer(imgui_renderer)
+        window(window_module->get<Window>()),
+        camera(graphics_module->get<Camera>()),
+        renderer(graphics_module->get<Renderer>()),
+        imgui_renderer(graphics_module->get<ImGuiRenderer>())
     {
-        event_manager->subscribe(EventType::WindowClose, [&](const Event& event) {
+        window_module->get<EventManager>()->subscribe(EventType::WindowClose, [&](const Event& event) {
             stop();
         });
     }

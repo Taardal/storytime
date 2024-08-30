@@ -4,9 +4,13 @@
 #include "system/system_module.h"
 
 namespace Storytime {
-    struct AudioModule {
+    class AudioModule : public SystemModule {
+    private:
         AudioEngine audio_engine;
 
-        explicit AudioModule(SystemModule* system_module);
+    public:
+        explicit AudioModule();
+
+        static void initialize();
     };
 }

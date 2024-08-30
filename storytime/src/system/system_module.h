@@ -1,23 +1,20 @@
 #pragma once
 
 #include "storytime_config.h"
-#include "service_locator.h"
 #include "file_system.h"
 
 #include "module.h"
 
 namespace Storytime {
-    struct SystemModule : public Module {
-        ServiceLocator service_locator;
+    class SystemModule : public Module {
+    private:
         FileSystem file_system;
 
+    public:
         SystemModule();
 
         static void initialize(const Config& config);
 
-        template<typename T>
-        T* get() {
-            return service_locator.get<T>();
-        }
+        static void terminate();
     };
 }

@@ -2,8 +2,7 @@
 
 namespace Storytime {
     SystemModule::SystemModule()
-        : service_locator(),
-          file_system()
+        : file_system()
     {
         service_locator.set<ServiceLocator>(&service_locator);
         service_locator.set<FileSystem>(&file_system);
@@ -15,5 +14,8 @@ namespace Storytime {
 #ifdef ST_TRACK_MEMORY
         std::atexit(MemoryTracker::terminate);
 #endif
+    }
+
+    void SystemModule::terminate() {
     }
 }

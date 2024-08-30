@@ -4,7 +4,7 @@
     #define ST_GL_CALL(function) \
     ::Storytime::OpenGL::clear_errors(); \
     function; \
-    ::Storytime::OpenGL::log_errors(ST_TAG(), #function)
+    ::Storytime::OpenGL::log_errors(ST_TAG, #function)
 #else
     #define ST_GL_CALL(tag, function) function;
 #endif

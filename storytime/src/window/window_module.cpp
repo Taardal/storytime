@@ -1,9 +1,8 @@
 #include "window_module.h"
 
 namespace Storytime {
-    WindowModule::WindowModule(const Config& config, SystemModule* system_module)
-        : system_module(system_module),
-          event_manager(),
+    WindowModule::WindowModule(const Config& config)
+        : event_manager(),
           window({
               .event_manager = &event_manager,
               .title = config.window_title,
@@ -15,8 +14,8 @@ namespace Storytime {
               .context_version_minor = config.open_gl_version_minor,
           })
     {
-        system_module->service_locator.set<Window>(&window);
-        system_module->service_locator.set<EventManager>(&event_manager);
+        service_locator.set<Window>(&window);
+        service_locator.set<EventManager>(&event_manager);
     }
 
     void WindowModule::initialize() {

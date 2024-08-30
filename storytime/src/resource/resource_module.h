@@ -5,21 +5,15 @@
 #include "system/system_module.h"
 
 namespace Storytime {
-    struct ResourceModule {
-<<<<<<< HEAD
-        SystemModule* system_module;
+    class ResourceModule : public Module {
+    private:
         ResourceLoader resource_loader;
 
+    public:
         explicit ResourceModule(SystemModule* system_module, AudioModule* audio_module);
 
-        template<typename T>
-        T* get() {
-            return system_module->service_locator.get<T>();
-        }
-=======
-        ResourceLoader resource_loader;
+        static void initialize();
 
-        explicit ResourceModule(SystemModule* system_module, AudioModule* audio_module);
->>>>>>> 3071683 (Audio module)
+        static void terminate();
     };
 }

@@ -2,36 +2,64 @@
 
 #include "storytime_config.h"
 #include "storytime_app.h"
-#include "system/service_locator.h"
-#include "window/event_manager.h"
+#include "audio/audio_module.h"
+#include "graphics/graphics_module.h"
+#include "resource/resource_module.h"
+#include "system/system_module.h"
+#include "window/window_module.h"
 
 namespace Storytime {
     class Storytime {
-    public:
-        Config config{};
-
     private:
-        ServiceLocator* service_locator = nullptr;
-        EventManager* event_manager = nullptr;
+        Config config{};
+        SystemModule* system_module;
+        WindowModule* window_module;
+        AudioModule* audio_module;
+        ResourceModule* resource_module;
+        GraphicsModule* graphics_module;
 
     public:
-        Storytime(const Config& config, ServiceLocator* service_locator, EventManager* event_manager)
-            : config(config), service_locator(service_locator), event_manager(event_manager) {
+        Storytime(
+            const Config& config,
+            SystemModule* system_module,
+            WindowModule* window_module,
+            AudioModule* audio_module,
+            ResourceModule* resource_module,
+            GraphicsModule* graphics_module
+        ) : config(config),
+            system_module(system_module),
+            window_module(window_module),
+            audio_module(audio_module),
+            resource_module(resource_module),
+            graphics_module(graphics_module) {
         }
 
-        CommandLineArguments args() const {
+        const Config& cfg() const {
+            return config;
+        }
+
+        const CommandLineArguments& args() const {
             return config.command_line_arguments;
         }
 
         template<class T>
         T* get() const {
-            ST_ASSERT(service_locator != nullptr);
-            return service_locator->get<T>();
-        }
-
-        SubscriptionID subscribe(EventType event_type, const Subscription& subscription) const {
-            ST_ASSERT(event_manager != nullptr);
-            return event_manager->subscribe(event_type, subscription);
+            if (T* pointer = system_module->get<T>(); pointer != nullptr) {
+                return pointer;
+            }
+            if (T* pointer = window_module->get<T>(); pointer != nullptr) {
+                return pointer;
+            }
+            if (T* pointer = audio_module->get<T>(); pointer != nullptr) {
+                return pointer;
+            }
+            if (T* pointer = resource_module->get<T>(); pointer != nullptr) {
+                return pointer;
+            }
+            if (T* pointer = graphics_module->get<T>(); pointer != nullptr) {
+                return pointer;
+            }
+            return nullptr;
         }
     };
 
