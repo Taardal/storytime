@@ -23,10 +23,10 @@ namespace Storytime {
     }
 
     Image ResourceLoader::load_image(const char* path) const {
-        i32 width = 0;
-        i32 height = 0;
-        i32 channels = 0;
-        i32 desiredChannels = STBI_default;
+        int32_t width = 0;
+        int32_t height = 0;
+        int32_t channels = 0;
+        int32_t desiredChannels = STBI_default;
         unsigned char* pixels = stbi_load(path, &width, &height, &channels, desiredChannels);
         return {pixels, width, height, channels};
     }

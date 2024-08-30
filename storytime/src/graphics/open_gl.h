@@ -1,16 +1,19 @@
 #pragma once
 
+#include "window/window.h"
+
 #ifdef ST_DEBUG
     #define ST_GL_CALL(function) \
     ::Storytime::OpenGL::clear_errors(); \
     function; \
-    ::Storytime::OpenGL::log_errors(ST_TAG(), #function)
+    ::Storytime::OpenGL::log_errors(ST_TAG, #function)
 #else
     #define ST_GL_CALL(tag, function) function;
 #endif
 
 namespace Storytime {
     struct OpenGLConfig {
+        Window* window = nullptr;
         LogLevel log_level;
         u32 major_version;
         u32 minor_version;
@@ -19,7 +22,7 @@ namespace Storytime {
 
     class OpenGL {
     public:
-        static void initialize(const OpenGLConfig& config);
+        explicit OpenGL(const OpenGLConfig& config);
 
         static void clear_errors();
 

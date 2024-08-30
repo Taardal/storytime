@@ -6,7 +6,7 @@
 #define ST_FUNCTION_NAME __func__
 #define ST_LINE_NUMBER __LINE__
 
-#define ST_TAG() ::Storytime::tag(ST_FILE_NAME, ST_FUNCTION_NAME, ST_LINE_NUMBER)
+#define ST_TAG ::Storytime::tag(ST_FILE_NAME, ST_FUNCTION_NAME, ST_LINE_NUMBER)
 #define ST_TAG_MESSAGE(message) ::Storytime::tag_message(ST_FILE_NAME, ST_FUNCTION_NAME, ST_LINE_NUMBER, message)
 
 #define ST_LOG_TRACE(message, ...) spdlog::trace(ST_TAG_MESSAGE(message), ##__VA_ARGS__)

@@ -85,7 +85,6 @@ namespace Storytime {
 
         u32 white_texture_pixels = 0xffffffff;
         white_texture->set_pixels(&white_texture_pixels);
-        white_texture = resource_loader->load_texture("res/textures/kitten.png");
         textures[0] = white_texture;
         texture_count++;
         reserved_textures_count++;
