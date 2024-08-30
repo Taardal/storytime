@@ -5,6 +5,7 @@ namespace Storytime {
         : service_locator(),
           file_system()
     {
+        service_locator.set<ServiceLocator>(&service_locator);
         service_locator.set<FileSystem>(&file_system);
     }
 

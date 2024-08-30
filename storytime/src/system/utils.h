@@ -4,7 +4,7 @@
 
 namespace Storytime {
     template<typename T>
-    T* as(void* pointer) {
-        return (T*) pointer;
+    T as(void* pointer) {
+        return reinterpret_cast<T>(pointer);
     }
 }

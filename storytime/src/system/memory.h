@@ -2,8 +2,8 @@
 
 #ifdef ST_DEBUG
     #define ST_TRACK_MEMORY
-    #define ST_NEW new(__FILE_NAME__, __LINE__)
-    #define ST_NEW_POINTER(pointer) new(__FILE_NAME__, __LINE__, pointer)
+    #define ST_NEW new(ST_FILE_NAME, ST_LINE_NUMBER)
+    #define ST_NEW_POINTER(pointer) new(ST_FILE_NAME, ST_LINE_NUMBER, pointer)
 #else
     #define ST_NEW new
     #define ST_NEW_POINTER(pointer) new(pointer)
@@ -14,13 +14,19 @@ void* operator new(size_t size, const char* file_name, int line_number);
 
 void* operator new(size_t size, const char* file_name, int line_number, void* pointer);
 
+void* operator new[](size_t size, const char* file_name, int line_number);
+
+void* operator new[](size_t size, const char* file_name, int line_number, void* pointer);
+
 void operator delete(void* pointer) noexcept;
+
+void operator delete[](void* pointer) noexcept;
 
 namespace Storytime {
     struct MemoryAllocation {
-        size_t byte_size;
-        std::string file_name;
-        int line_number;
+        size_t byte_size = 0;
+        std::string file_name = "";
+        int line_number = 0;
 
         std::string to_string() const;
     };

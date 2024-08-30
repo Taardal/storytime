@@ -2,7 +2,9 @@
 
 namespace Storytime {
     WindowModule::WindowModule(const Config& config, SystemModule* system_module)
-        : window({
+        : system_module(system_module),
+          event_manager(),
+          window({
               .event_manager = &event_manager,
               .title = config.window_title,
               .width = config.window_width,
@@ -11,8 +13,7 @@ namespace Storytime {
               .resizable = config.window_resizable,
               .context_version_major = config.open_gl_version_major,
               .context_version_minor = config.open_gl_version_minor,
-          }),
-          event_manager()
+          })
     {
         system_module->service_locator.set<Window>(&window);
         system_module->service_locator.set<EventManager>(&event_manager);
