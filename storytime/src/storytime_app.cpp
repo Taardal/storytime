@@ -11,7 +11,9 @@ namespace Storytime {
         : config(config),
           service_locator(),
           file_system(),
-          event_manager(),
+          event_manager({
+              .queue_count = 1,
+          }),
           window({
               .event_manager = &event_manager,
               .title = config.window_title,
@@ -97,6 +99,7 @@ namespace Storytime {
             timestep += uptime_delta;
             if (timestep >= target_frame_sec) {
                 on_update(&camera, timestep);
+                event_manager.process_event_queue();
                 timestep = 0;
                 ups++;
             }
