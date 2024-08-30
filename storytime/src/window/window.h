@@ -23,15 +23,10 @@ namespace Storytime {
 
     class Window {
     private:
-        static bool glfw_initialized;
         WindowConfig config;
         GLFWwindow* glfw_window = nullptr;
 
     public:
-        static void initialize();
-
-        static void terminate();
-
         explicit Window(const WindowConfig& config);
 
         ~Window();
@@ -47,6 +42,10 @@ namespace Storytime {
         void get_size_in_pixels(i32* width, i32* height) const;
 
         f32 get_aspect_ratio() const;
+
+        static void initialize();
+
+        static void terminate();
 
     private:
         static void on_glfw_error(i32 error, const char* description);

@@ -6,19 +6,23 @@
 #include "storytime_app.h"
 #include "storytime_engine.h"
 
-// Modules
+// System module
 #include "system/system_module.h"
-#include "window/window_module.h"
-#include "graphics/graphics_module.h"
+#include "system/random.h"
 
-// Events
+// Window module
+#include "window/window_module.h"
+#include "window/user_input.h"
+#include "window/key.h"
+#include "window/mouse_button.h"
 #include "window/key_event.h"
 #include "window/mouse_event.h"
 #include "window/window_event.h"
 
-// User input
-#include "window/key.h"
-#include "window/mouse_button.h"
-#include "window/user_input.h"
+// Graphics module
+#include "graphics/graphics_module.h"
+
+// Audio module
+#include "audio/audio_module.h"
 
 namespace st = Storytime;

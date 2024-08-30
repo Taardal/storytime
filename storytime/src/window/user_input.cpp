@@ -29,4 +29,12 @@ namespace Storytime {
     std::pair<f32, f32> Mouse::get_position() {
         return UserInput::get_mouse_position();
     }
+
+    bool is_key_pressed(KeyCode key_code) {
+        return Keyboard::is_pressed(key_code);
+    }
+
+    bool is_mouse_button_pressed(MouseButtonCode mouse_button_code) {
+        return Mouse::is_pressed(mouse_button_code);
+    }
 }

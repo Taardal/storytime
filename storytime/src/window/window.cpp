@@ -6,29 +6,7 @@
 #include "window/window_event.h"
 
 namespace Storytime {
-    bool Window::glfw_initialized = false;
-
-    void Window::initialize() {
-        ST_LOG_TRACE("Initializing GLFW");
-        glfw_initialized = glfwInit();
-        if (!glfw_initialized) {
-            ST_THROW("Could not initialize GLFW");
-        }
-        ST_LOG_DEBUG("Initialized GLFW");
-        glfwSetErrorCallback(on_glfw_error);
-    }
-
-    void Window::terminate() {
-        glfwTerminate();
-        glfw_initialized = false;
-        ST_LOG_DEBUG("Terminated GLFW");
-    }
-}
-
-namespace Storytime {
     Window::Window(const WindowConfig& config) : config(config) {
-        ST_ASSERT_THROW(glfw_initialized)
-
         ST_LOG_TRACE("Setting GLFW window hints");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.context_version_minor);
@@ -94,6 +72,20 @@ namespace Storytime {
     f32 Window::get_aspect_ratio() const {
         auto [width, height] = get_size_in_pixels();
         return static_cast<f32>(width) / static_cast<f32>(height);
+    }
+
+    void Window::initialize() {
+        ST_LOG_TRACE("Initializing GLFW");
+        if (!glfwInit()) {
+            ST_THROW("Could not initialize GLFW");
+        }
+        ST_LOG_DEBUG("Initialized GLFW");
+        glfwSetErrorCallback(on_glfw_error);
+    }
+
+    void Window::terminate() {
+        glfwTerminate();
+        ST_LOG_DEBUG("Terminated GLFW");
     }
 
     void Window::on_glfw_error(i32 error, const char* description) {

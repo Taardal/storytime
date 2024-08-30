@@ -3,6 +3,8 @@
 #include "system/system_module.h"
 #include "window/window_module.h"
 #include "graphics/graphics_module.h"
+#include "audio/audio_module.h"
+#include "resource/resource_module.h"
 
 void Storytime::run(const Config& config, const std::function<App*(const Storytime&)>& create_app) {
     App* app = nullptr;
@@ -13,8 +15,12 @@ void Storytime::run(const Config& config, const std::function<App*(const Storyti
         WindowModule::initialize();
         WindowModule window_module(config, &system_module);
 
+        AudioModule audio_module(&system_module);
+
+        ResourceModule resource_module(&system_module, &audio_module);
+
         GraphicsModule::initialize(config);
-        GraphicsModule graphics_module(config, &system_module, &window_module);
+        GraphicsModule graphics_module(config, &system_module, &window_module, &resource_module);
 
         Engine engine(
             config,
@@ -42,9 +48,6 @@ void Storytime::run(const Config& config, const std::function<App*(const Storyti
         ST_LOG_CRITICAL("Fatal error: {}", e.what());
     }
 
-    GraphicsModule::terminate();
     WindowModule::terminate();
-    SystemModule::terminate();
-
     delete app;
 }

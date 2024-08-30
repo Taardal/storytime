@@ -3,7 +3,7 @@
 #include "vertex_array.h"
 #include "shader.h"
 #include "texture.h"
-#include "system/resource_loader.h"
+#include "resource/resource_loader.h"
 
 namespace Storytime {
     struct Quad {
