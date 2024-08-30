@@ -30,9 +30,9 @@ namespace Storytime {
 
         virtual ~App() = default;
 
-        const Config& cfg() const;
+        const Config& get_config() const;
 
-        const CommandLineArguments& args() const;
+        const CommandLineArguments& get_args() const;
 
         void run();
 

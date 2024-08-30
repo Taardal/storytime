@@ -41,12 +41,9 @@ namespace Storytime {
           }),
           camera()
     {
-        // Subscribe to events
         event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
             stop();
         });
-
-        // Make certain objects accessible by client
         service_locator.set<Window>(&window);
         service_locator.set<EventManager>(&event_manager);
         service_locator.set<AudioEngine>(&audio_engine);
@@ -56,11 +53,11 @@ namespace Storytime {
         service_locator.set<Camera>(&camera);
     }
 
-    const Config& App::cfg() const {
+    const Config& App::get_config() const {
         return config;
     }
 
-    const CommandLineArguments& App::args() const {
+    const CommandLineArguments& App::get_args() const {
         return config.command_line_arguments;
     }
 

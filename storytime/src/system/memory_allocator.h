@@ -63,7 +63,7 @@ namespace Storytime {
         Chunk* memory_block_head;
 
     public:
-        explicit PoolAllocator(PoolAllocatorConfig config);
+        explicit PoolAllocator(const PoolAllocatorConfig& config);
 
         ~PoolAllocator() override;
 

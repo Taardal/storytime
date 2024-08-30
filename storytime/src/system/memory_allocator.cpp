@@ -6,47 +6,63 @@
 
 namespace Storytime {
     StackAllocator::StackAllocator(const StackAllocatorConfig& config)
-        : memory_block((char*) malloc(config.bytes)),
+        : memory_block(as<char*>(malloc(config.bytes))),
           memory_block_head(memory_block),
           memory_block_tail(memory_block + config.bytes) {
-        ST_ASSERT_THROW(config.bytes > 0);
     }
 
     StackAllocator::~StackAllocator() {
         free(memory_block);
     }
 
+    //
+    // Problem:
+    // We need to track the size of each allocation for use during deallocation.
+    //
+    // Solution:
+    // We store the size of the allocation just before the allocated memory in the memory block.
+    //
+    // | ----------------------------------------------------------------------------- |
+    // |                               Memory block                                    |
+    // | ----------------------------------------------------------------------------- |
+    // | [  size  ] [ allocation ] [  size  ] [ allocation ] [  size  ] [ allocation ] |
+    // | ----------------------------------------------------------------------------- |
+    //
     void* StackAllocator::allocate(size_t bytes) {
         if (memory_block_head + bytes > memory_block_tail) {
             ST_THROW("Could not allocate [" << bytes << "] bytes: Not enough memory");
         }
 
-        // Store the size just before the actual memory block
-        *(size_t*) memory_block_head = bytes;
+        // Store the allocation size just before the allocated memory.
+        auto size_pointer = as<size_t*>(memory_block_head);
+        *size_pointer = bytes;
 
-        // Calculate the pointer to return (just after the size metadata)
+        // The location of the allocated memory is right after the allocation size in the memory block
         void* pointer = memory_block_head + sizeof(size_t);
 
-        // Move the memory_block_head pointer forward by the size of the allocation and the metadata
+        // Move the head forward to right after the allocated memory for the next allocation
         memory_block_head += bytes + sizeof(size_t);
 
-        ST_LOG_TRACE("Allocated memory: {} -> {} bytes", pointer, bytes);
+        ST_LOG_TRACE("Allocated memory: {}, {} bytes", pointer, bytes);
         return pointer;
     }
 
     void StackAllocator::deallocate(void* pointer) {
-        // Retrieve the size stored just before the pointer
-        size_t size = *((size_t*) pointer - 1);
+        // Retrieve the allocation size stored just before the allocated memory.
+        // Subtract 1 from the pointer to the allocated memory to move it back by sizeof(size_t) bytes.
+        size_t bytes = *(as<size_t*>(pointer) - 1);
 
-        // Only deallocate if this is the most recent allocation
-        if (pointer != memory_block_head - size) {
+        if (pointer != memory_block_head - bytes) {
             ST_THROW(
-                "Could not delete pointer [" << pointer << "] of [" << size << "] bytes: " <<
+                "Could not delete pointer [" << pointer << "] of [" << bytes << "] bytes: " <<
                 "Deallocation is out of sequence"
             );
         }
-        ST_LOG_TRACE("Deleted memory: {} -> {} bytes", pointer, size);
-        memory_block_head -= size + sizeof(size_t);
+
+        // Move the head backwards to just before the allocation size to "clear" the memory for the next allocation
+        memory_block_head -= sizeof(size_t) + bytes;
+
+        ST_LOG_TRACE("Deleted memory: {}, {} bytes", pointer, bytes);
     }
 }
 
@@ -55,8 +71,8 @@ namespace Storytime {
 // --------------------------------------------------------------------------------------------------------------
 
 namespace Storytime {
-    PoolAllocator::PoolAllocator(PoolAllocatorConfig config)
-        : config(std::move(config)),
+    PoolAllocator::PoolAllocator(const PoolAllocatorConfig& config)
+        : config(config),
           memory_blocks{allocate_memory_block()},
           memory_block_head(memory_blocks[0]) {
     }
@@ -85,27 +101,27 @@ namespace Storytime {
             }
         }
 
-        // The return value is the current position of the allocation pointer
+        // The allocated memory is the chunk at the current head in the memory block
         Chunk* chunk = memory_block_head;
 
-        // Advance (bump) the allocation pointer to the next chunk. When no chunks left, the head will be set
-        // to `nullptr`, and this will cause allocation of a new block on the next request.
+        // Move the head forward to the next chunk. When there are no chunks left the next chunk will be `nullptr`.
         memory_block_head = memory_block_head->next;
 
-        ST_LOG_TRACE("Allocated memory: {} -> {} bytes", as<void*>(chunk), bytes);
+        ST_LOG_TRACE("Allocated memory: {}, {} bytes", as<void*>(chunk), bytes);
         return chunk;
     }
 
     void PoolAllocator::deallocate(void* pointer) {
+        // The deallocated chunk will be first in line to be used for the next allocation.
         auto chunk = as<Chunk*>(pointer);
 
-        // The freed chunk's next pointer points to the current allocation pointer
+        // Move the current chunk one place down the line after the deallocated chunk
         chunk->next = memory_block_head;
 
-        // And the allocation pointer is now set to the returned (free) chunk
+        // Move the head to the deallocated chunk to make it first in line for the next allocation
         memory_block_head = chunk;
 
-        ST_LOG_TRACE("Deleted memory: {} -> {} bytes", pointer, config.chunk_bytes);
+        ST_LOG_TRACE("Deleted memory: {}, {} bytes", pointer, config.chunk_bytes);
     }
 
     Chunk* PoolAllocator::allocate_memory_block() const {
@@ -116,13 +132,12 @@ namespace Storytime {
         // Chain all the chunks in the block
         Chunk* chunk = memory_block_head;
         for (int i = 0; i < config.chunk_count - 1; ++i) {
-            auto next_chunk_head = as<char*>(chunk) + config.chunk_bytes;
-            chunk->next = as<Chunk*>(next_chunk_head);
+            chunk->next = as<Chunk*>(as<char*>(chunk) + config.chunk_bytes);
             chunk = chunk->next;
         }
         chunk->next = nullptr;
 
-        // Return the first chunk (start) of the memory block
+        // Return the head (first chunk) of the memory block
         return memory_block_head;
     }
 }
