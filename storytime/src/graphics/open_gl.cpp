@@ -1,7 +1,12 @@
 #include "open_gl.h"
 
 namespace Storytime {
-    void OpenGL::initialize(const OpenGLConfig& config) {
+    OpenGL::OpenGL(const OpenGLConfig& config) {
+        // GLFW must have a current context before initializing GLAD
+        ST_ASSERT_THROW(config.window != nullptr);
+        glfwMakeContextCurrent(*config.window);
+
+        // Initialize GLAD
         ST_LOG_TRACE("Initializing GLAD");
         bool glad_initialized = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress) != 0;
         if (!glad_initialized) {
@@ -15,7 +20,6 @@ namespace Storytime {
             ST_GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
         }
 #endif
-
         ST_LOG_INFO("Using renderer [{}, {}]", glGetString(GL_RENDERER), glGetString(GL_VERSION));
     }
 

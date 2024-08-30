@@ -3,7 +3,6 @@
 #include "event.h"
 
 namespace Storytime {
-    //typedef uint64_t EventType;
     typedef u32 SubscriptionID;
     typedef std::function<void(const Event&)> Subscription;
 

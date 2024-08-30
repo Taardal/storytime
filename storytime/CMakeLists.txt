@@ -12,10 +12,9 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
+        ${STORYTIME_SRC_DIR}/storytime_app.cpp
         ${STORYTIME_SRC_DIR}/storytime_app.h
         ${STORYTIME_SRC_DIR}/storytime_config.h
-        ${STORYTIME_SRC_DIR}/storytime_engine.cpp
-        ${STORYTIME_SRC_DIR}/storytime_engine.h
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
@@ -23,14 +22,12 @@ add_library(
         ${STORYTIME_SRC_DIR}/audio/audio.h
         ${STORYTIME_SRC_DIR}/audio/audio_engine.cpp
         ${STORYTIME_SRC_DIR}/audio/audio_engine.h
-        ${STORYTIME_SRC_DIR}/audio/audio_module.cpp
-        ${STORYTIME_SRC_DIR}/audio/audio_module.h
+        ${STORYTIME_SRC_DIR}/graphics/bitmap_font.h
+        ${STORYTIME_SRC_DIR}/graphics/bitmap_font.cpp
         ${STORYTIME_SRC_DIR}/graphics/camera.h
         ${STORYTIME_SRC_DIR}/graphics/camera.cpp
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.h
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.cpp
-        ${STORYTIME_SRC_DIR}/graphics/graphics_module.h
-        ${STORYTIME_SRC_DIR}/graphics/graphics_module.cpp
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.h
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.cpp
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.h
@@ -49,8 +46,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_module.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_module.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/system/assert.h
@@ -70,8 +65,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
-        ${STORYTIME_SRC_DIR}/system/system_module.h
-        ${STORYTIME_SRC_DIR}/system/system_module.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
         ${STORYTIME_SRC_DIR}/window/event.h
         ${STORYTIME_SRC_DIR}/window/event.cpp
@@ -91,8 +84,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/window/window.cpp
         ${STORYTIME_SRC_DIR}/window/window_event.h
         ${STORYTIME_SRC_DIR}/window/window_event.cpp
-        ${STORYTIME_SRC_DIR}/window/window_module.h
-        ${STORYTIME_SRC_DIR}/window/window_module.cpp
 )
 
 # Precompiled header
