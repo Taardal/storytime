@@ -10,6 +10,7 @@
 
 namespace Storytime {
     struct GraphicsModule {
+        SystemModule* system_module;
         Renderer renderer;
         ImGuiRenderer imgui_renderer;
         Camera camera;
@@ -22,5 +23,10 @@ namespace Storytime {
         );
 
         static void initialize(const Config& config);
+
+        template<typename T>
+        T* get() {
+            return system_module->service_locator.get<T>();
+        }
     };
 }

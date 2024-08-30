@@ -6,8 +6,14 @@
 
 namespace Storytime {
     struct ResourceModule {
+        SystemModule* system_module;
         ResourceLoader resource_loader;
 
         explicit ResourceModule(SystemModule* system_module, AudioModule* audio_module);
+
+        template<typename T>
+        T* get() {
+            return system_module->service_locator.get<T>();
+        }
     };
 }

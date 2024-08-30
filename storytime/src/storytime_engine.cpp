@@ -25,8 +25,6 @@ namespace Storytime {
     }
 
     void Engine::run(App* app) {
-        app->on_initialize();
-
         f64 timestep = 0.0;
         f64 last_uptime_sec = 0.0;
         f64 target_frame_sec = 1.0 / config.target_fps;
@@ -37,6 +35,8 @@ namespace Storytime {
         u32 ups = 0;
         u32 fps = 0;
 #endif
+
+        app->on_initialize();
 
         Clock clock;
         clock.start();

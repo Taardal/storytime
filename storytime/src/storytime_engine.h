@@ -14,9 +14,9 @@ namespace Storytime {
         bool running = false;
         Config config;
         Window* window;
+        Camera* camera;
         Renderer* renderer;
         ImGuiRenderer* imgui_renderer;
-        Camera* camera;
 
     public:
         Engine(

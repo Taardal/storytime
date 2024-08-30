@@ -56,11 +56,10 @@ namespace Storytime {
         if (compiled) {
             ST_LOG_DEBUG("Shader created successfully");
             return shader_id;
-        } else {
-            ST_LOG_TRACE("Deleting shader with id [{0}]", shader_id);
-            ST_GL_CALL(glDeleteShader(shader_id));
-            return 0;
         }
+        ST_LOG_TRACE("Deleting shader with id [{0}]", shader_id);
+        ST_GL_CALL(glDeleteShader(shader_id));
+        return 0;
     }
 
     void Shader::set_shader_source(const char* source, u32 shader_id) const {
