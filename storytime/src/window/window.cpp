@@ -83,6 +83,10 @@ namespace Storytime {
         return static_cast<f32>(width) / static_cast<f32>(height);
     }
 
+    f64 Window::get_time() const {
+        return glfwGetTime(); // Seconds since initialization
+    }
+
     void Window::on_glfw_error(i32 error, const char* description) {
         ST_LOG_ERROR("GLFW error [{0}: {1}]", error, description);
     }

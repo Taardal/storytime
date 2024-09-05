@@ -43,6 +43,8 @@ namespace Storytime {
 
         f32 get_aspect_ratio() const;
 
+        f64 get_time() const;
+
     private:
         static void on_glfw_error(i32 error, const char* description);
 

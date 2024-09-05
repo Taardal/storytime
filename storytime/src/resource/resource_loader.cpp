@@ -22,6 +22,15 @@ namespace Storytime {
         return make_shared<Audio>(config.audio_engine, path);
     }
 
+    Shared<Spritesheet> ResourceLoader::load_spritesheet(const char* path, const SpritesheetConfig& config) const {
+        SpritesheetConfig spritesheet_config = {
+            .texture = load_texture(path),
+            .sprite_width = config.sprite_width,
+            .sprite_height = config.sprite_height,
+        };
+        return make_shared<Spritesheet>(spritesheet_config);
+    }
+
     Image ResourceLoader::load_image(const char* path) const {
         int32_t width = 0;
         int32_t height = 0;

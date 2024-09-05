@@ -2,10 +2,6 @@
 #include "system/clock.h"
 #include "graphics/open_gl.h"
 
-#ifdef ST_DEBUG
-#define SHOW_FRAME_STATS
-#endif
-
 namespace Storytime {
     App::App(const Config& config)
         : config(config),
@@ -43,9 +39,6 @@ namespace Storytime {
           }),
           camera()
     {
-        event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
-            stop();
-        });
         service_locator.set<Window>(&window);
         service_locator.set<EventManager>(&event_manager);
         service_locator.set<AudioEngine>(&audio_engine);
@@ -53,6 +46,10 @@ namespace Storytime {
         service_locator.set<Renderer>(&renderer);
         service_locator.set<ImGuiRenderer>(&imgui_renderer);
         service_locator.set<Camera>(&camera);
+
+        event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
+            stop();
+        });
     }
 
     const Config& App::get_config() const {
@@ -75,16 +72,8 @@ namespace Storytime {
     }
 
     void App::game_loop() {
-        f64 timestep = 0.0;
         f64 last_uptime_sec = 0.0;
-        f64 target_frame_sec = 1.0 / config.target_fps;
-        f64 target_stats_sec = 1.0;
-
-#ifdef SHOW_FRAME_STATS
-        f64 frame_stats_timestep = 0.0;
-        u32 ups = 0;
-        u32 fps = 0;
-#endif
+        f64 frame_statistics_timestep = 0.0;
 
         Clock clock;
         clock.start();
@@ -93,38 +82,31 @@ namespace Storytime {
             window.update();
 
             f64 uptime_sec = clock.get_time<ms>() / 1000;
-            f64 uptime_delta = std::min(uptime_sec - last_uptime_sec, 1.0);
+            f64 timestep = std::min(uptime_sec - last_uptime_sec, 1.0);
             last_uptime_sec = uptime_sec;
 
-            timestep += uptime_delta;
-            if (timestep >= target_frame_sec) {
-                on_update(&camera, timestep);
-                event_manager.process_event_queue();
-                timestep = 0;
-                ups++;
-            }
+            on_update(&camera, timestep);
+            event_manager.process_event_queue();
+            statistics.ups++;
 
             renderer.begin_frame(camera.get_view_projection());
             on_render(&renderer);
-            fps++;
             renderer.end_frame();
+            statistics.fps++;
 
+#ifdef ST_DEBUG
             imgui_renderer.begin_frame();
             on_imgui_render();
             imgui_renderer.end_frame();
-
-#ifdef SHOW_FRAME_STATS
-            frame_stats_timestep += uptime_delta;
-            if (frame_stats_timestep >= target_stats_sec) {
-                std::stringstream ss;
-                ss << "FPS: " << fps << ", UPS: " << ups;
-                std::string title = ss.str();
-                window.set_title(title.c_str());
-                ups = 0;
-                fps = 0;
-                frame_stats_timestep = 0;
-            }
 #endif
+
+            frame_statistics_timestep += timestep;
+            if (frame_statistics_timestep >= 1.0) {
+                frame_statistics_timestep = 0;
+                on_statistics(statistics);
+                statistics.ups = 0;
+                statistics.fps = 0;
+            }
         }
     }
 }

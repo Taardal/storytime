@@ -1,8 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include "system/file_system.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
+#include "graphics/spritesheet.h"
 #include "audio/audio_engine.h"
 #include "audio/audio.h"
 
@@ -24,6 +27,8 @@ namespace Storytime {
         Shared<Texture> load_texture(const char* path) const;
 
         Shared<Audio> load_audio(const char* path) const;
+
+        Shared<Spritesheet> load_spritesheet(const char* path, const SpritesheetConfig& config = {}) const;
 
     private:
         Image load_image(const char* path) const;

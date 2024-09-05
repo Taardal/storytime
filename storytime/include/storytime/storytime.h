@@ -18,6 +18,7 @@
 
 // Graphics
 #include "graphics/bitmap_font.h"
+#include "graphics/spritesheet.h"
 
 // Namespaces
 namespace st = Storytime;

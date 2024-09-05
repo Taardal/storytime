@@ -2,8 +2,11 @@
 
 #include "storytime_config.h"
 #include "system/service_locator.h"
+#include "system/file_system.h"
 #include "window/event_manager.h"
 #include "window/window.h"
+#include "audio/audio_engine.h"
+#include "resource/resource_loader.h"
 #include "graphics/open_gl.h"
 #include "graphics/renderer.h"
 #include "graphics/imgui_renderer.h"
@@ -11,8 +14,13 @@
 
 namespace Storytime {
     class App {
-    private:
-        bool running = false;
+    protected:
+        struct Statistics {
+            u32 ups = 0;
+            u32 fps = 0;
+        };
+
+    protected:
         Config config;
         ServiceLocator service_locator;
         FileSystem file_system;
@@ -24,6 +32,10 @@ namespace Storytime {
         Renderer renderer;
         ImGuiRenderer imgui_renderer;
         Camera camera;
+
+    private:
+        bool running = false;
+        Statistics statistics{};
 
     public:
         explicit App(const Config& config);
@@ -53,6 +65,8 @@ namespace Storytime {
         virtual void on_render(Renderer* renderer) = 0;
 
         virtual void on_imgui_render() {}
+
+        virtual void on_statistics(const Statistics& frame_statistics) {}
 
     private:
         void game_loop();
