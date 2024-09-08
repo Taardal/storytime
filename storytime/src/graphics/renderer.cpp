@@ -2,6 +2,7 @@
 #include "system/log.h"
 #include "system/environment.h"
 #include "graphics/open_gl.h"
+#include "resource/resource_loader.h"
 
 namespace Storytime {
     constexpr u32 Renderer::VERTICES_PER_QUAD = 4;
@@ -10,36 +11,6 @@ namespace Storytime {
     constexpr u32 Renderer::VERTICES_PER_BATCH = QUADS_PER_BATCH * VERTICES_PER_QUAD;
     constexpr u32 Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
     constexpr u32 Renderer::MAX_TEXTURE_SLOTS = 16;
-
-    Quad::Quad()
-        : texture(nullptr),
-          position(0.0f, 0.0f, 0.0f),
-          size(0.0f, 0.0f),
-          color(1.0f, 1.0f, 1.0f, 1.0f),
-          rotation_in_degrees(0.0f),
-          tiling_factor(1.0f) {
-    }
-
-    Renderer::Statistics::Statistics()
-        : draw_calls(0),
-          quad_count(0) {
-    }
-
-    u32 Renderer::Statistics::get_vertex_count() const {
-        return quad_count * VERTICES_PER_QUAD;
-    }
-
-    u32 Renderer::Statistics::get_index_count() const {
-        return quad_count * INDICES_PER_QUAD;
-    }
-
-    Renderer::Vertex::Vertex()
-        : position(0.0f, 0.0f, 0.0f),
-          color(1.0f, 1.0f, 1.0f, 1.0f),
-          texture_coordinate(0.0f, 0.0f),
-          texture_index(0.0f),
-          tiling_factor(1.0f) {
-    }
 
     Renderer::Renderer(const ResourceLoader* resource_loader)
         : vertex_array(make_shared<VertexArray>()),
@@ -105,7 +76,7 @@ namespace Storytime {
         delete[] vertices;
     }
 
-    Renderer::Statistics Renderer::get_statistics() const {
+    RendererStatistics Renderer::get_statistics() const {
         return statistics;
     }
 
@@ -130,27 +101,29 @@ namespace Storytime {
 
     void Renderer::end_frame() {
         flush();
+        statistics.vertex_count = statistics.quad_count * VERTICES_PER_QUAD;
+        statistics.index_count = statistics.quad_count * INDICES_PER_QUAD;
     }
 
-    void Renderer::submit_quad(Quad& quad) {
+    void Renderer::submit_quad(const Quad& quad) {
         if (index_count >= INDICES_PER_BATCH) {
             flush();
             reset();
         }
 
-        if (!quad.texture) {
-            quad.texture = white_texture;
-        }
+        Shared<Texture> texture = quad.texture ? quad.texture : white_texture;
+
         f32 texture_index = -1.0f;
         for (u32 i = 0; i < texture_count; i++) {
-            if (textures[i] == quad.texture) {
+            if (textures[i] == texture) {
                 texture_index = (f32) i;
                 break;
             }
         }
-        if (texture_index == -1.0f) {
+        bool texture_already_submitted = texture_index != -1.0f;
+        if (!texture_already_submitted) {
             texture_index = (f32) texture_count;
-            textures[texture_count] = quad.texture;
+            textures[texture_count] = texture;
             texture_count++;
         }
 
@@ -191,15 +164,14 @@ namespace Storytime {
         statistics.quad_count++;
     }
 
-    void Renderer::submit_quad(Quad& quad, const std::vector<glm::vec2>& texture_coordinates) {
+    void Renderer::submit_quad(const Quad& quad, const std::vector<glm::vec2>& texture_coordinates) {
         if (index_count >= INDICES_PER_BATCH) {
             flush();
             reset();
         }
 
-        if (!quad.texture) {
-            quad.texture = white_texture;
-        }
+        Shared<Texture> texture = quad.texture ? quad.texture : white_texture;
+
         f32 texture_index = -1.0f;
         for (u32 i = 0; i < texture_count; i++) {
             if (textures[i] == quad.texture) {
@@ -254,7 +226,7 @@ namespace Storytime {
         vertex_count = 0;
         index_count = 0;
         texture_count = reserved_textures_count;
-        memset(&statistics, 0, sizeof(Statistics));
+        memset(&statistics, 0, sizeof(RendererStatistics));
     }
 
     void Renderer::flush() {

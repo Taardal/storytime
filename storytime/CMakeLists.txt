@@ -38,6 +38,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/renderer.cpp
         ${STORYTIME_SRC_DIR}/graphics/shader.h
         ${STORYTIME_SRC_DIR}/graphics/shader.cpp
+        ${STORYTIME_SRC_DIR}/graphics/spritesheet.h
+        ${STORYTIME_SRC_DIR}/graphics/spritesheet.cpp
         ${STORYTIME_SRC_DIR}/graphics/texture.h
         ${STORYTIME_SRC_DIR}/graphics/texture.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_array.h

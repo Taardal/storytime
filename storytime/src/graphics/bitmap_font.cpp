@@ -10,13 +10,16 @@ namespace Storytime {
         float gh = 12.0f * factor;
         float ts = config.texture->get_width() * factor;
 
+        f32 size_x = text_config.font_size * (gw / gh);
+        f32 size_y = text_config.font_size;
+
         glm::vec3 position = text_config.position;
 
         for (int i = 0; i < text.size(); ++i) {
             const char value = text[i];
 
             if (value == '\n') {
-                position.y += gh;
+                position.y += size_y;
                 position.x = text_config.position.x;
                 continue;
             }
@@ -48,12 +51,11 @@ namespace Storytime {
 
             Quad quad;
             quad.texture = config.texture;
-            quad.size = {gw, gh};
-            quad.color = {1.0f, 0.0f, 0.0f, 1.0f};
+            quad.size = {size_x, size_y};
             quad.position = position;
             config.renderer->submit_quad(quad, c);
 
-            position.x += gw;
+            position.x += size_x;
         }
     }
 }

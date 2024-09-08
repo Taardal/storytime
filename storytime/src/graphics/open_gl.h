@@ -8,7 +8,7 @@
     function; \
     ::Storytime::OpenGL::log_errors(ST_TAG, #function)
 #else
-    #define ST_GL_CALL(tag, function) function;
+    #define ST_GL_CALL(function) function;
 #endif
 
 namespace Storytime {

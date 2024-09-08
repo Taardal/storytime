@@ -3,42 +3,36 @@
 #include "vertex_array.h"
 #include "shader.h"
 #include "texture.h"
-#include "resource/resource_loader.h"
 
 namespace Storytime {
-    struct Quad {
-        Shared<Texture> texture;
-        glm::vec3 position;
-        glm::vec2 size;
-        glm::vec4 color;
-        f32 rotation_in_degrees;
-        f32 tiling_factor;
 
-        Quad();
+    // Forward declaration
+    class ResourceLoader;
+
+    struct Quad {
+        Shared<Texture> texture = nullptr;
+        glm::vec3 position = {0.0f, 0.0f, 0.0f};
+        glm::vec2 size = {0.0f, 0.0f};
+        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+        f32 rotation_in_degrees = 0.0f;
+        f32 tiling_factor = 1.0f;
+    };
+
+    struct RendererStatistics {
+        u32 draw_calls = 0;
+        u32 quad_count = 0;
+        u32 vertex_count = 0;
+        u32 index_count = 0;
     };
 
     class Renderer {
-    public:
-        struct Statistics {
-            u32 draw_calls;
-            u32 quad_count;
-
-            Statistics();
-
-            u32 get_vertex_count() const;
-
-            u32 get_index_count() const;
-        };
-
     private:
         struct Vertex {
-            glm::vec3 position;
-            glm::vec4 color;
-            glm::vec2 texture_coordinate;
-            f32 texture_index;
-            f32 tiling_factor;
-
-            Vertex();
+            glm::vec3 position = {0.0f, 0.0f, 0.0f};
+            glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+            glm::vec2 texture_coordinate = {0.0f, 0.0f};
+            f32 texture_index = 0.0f;
+            f32 tiling_factor = 1.0f;
         };
 
     private:
@@ -62,14 +56,14 @@ namespace Storytime {
         u32 index_count;
         u32 texture_count;
         u32 reserved_textures_count;
-        Statistics statistics;
+        RendererStatistics statistics;
 
     public:
         explicit Renderer(const ResourceLoader* resource_loader);
 
         ~Renderer();
 
-        Statistics get_statistics() const;
+        RendererStatistics get_statistics() const;
 
         void set_clear_color(const glm::vec3& color);
 
@@ -79,9 +73,9 @@ namespace Storytime {
 
         void begin_frame(const glm::mat4& view_projection);
 
-        void submit_quad(Quad& quad);
+        void submit_quad(const Quad& quad);
 
-        void submit_quad(Quad& quad, const std::vector<glm::vec2>& texture_coordinates);
+        void submit_quad(const Quad& quad, const std::vector<glm::vec2>& texture_coordinates);
 
         void end_frame();
 
