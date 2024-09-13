@@ -1,15 +1,26 @@
 #pragma once
 
-#define ST_TO_STRING(value) #value
+#define ST_COUT(message)\
+    std::cout << message << std::endl;
 
-#define ST_STRING(message)\
+#define ST_CERR(message)\
+    std::cerr << message << std::endl;
+
+#define ST_STRING(value)\
+    #value
+
+#define ST_STRING_CONCAT(string_variable, string_content)\
     std::stringstream ss;\
-    ss << message;\
-    std::string message_string = ss.str()
+    ss << string_content;\
+    string_variable = ss.str()
 
 namespace Storytime {
     template<typename T>
     T as(void* pointer) {
         return reinterpret_cast<T>(pointer);
     }
+
+    bool string_ends_with(const std::string& str, const std::string& suffix);
+
+    std::vector<std::string> string_split(const std::string& str, char delimiter);
 }

@@ -7,22 +7,31 @@
     std::stringstream ss;\
     ss << message;\
     std::string message_string = ss.str();\
-    throw Error(message_string, ST_TAG)
+    throw Storytime::Error(message_string, ST_TAG)
 
 #define ST_ASSERT_THROW(expression)\
     if (expression) {\
         /* Continue */\
     } else {\
-        throw Error(std::string("Assertion failed: ") + #expression, ST_TAG);\
+        throw Storytime::Error(std::string("Assertion failed: ") + #expression, ST_TAG);\
     }
 
 #define ST_EXECUTE_THROW(expression)\
     try {\
         expression;\
     } catch (const Error& e) {\
-        throw Error(#expression, ST_TAG, std::make_shared<Error>(e));\
+        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e));\
     } catch (const std::exception& e) {\
-        throw Error(#expression, ST_TAG, std::make_shared<Error>(e.what()));\
+        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e.what()));\
+    }
+
+#define ST_TRY(expression)\
+    try {\
+        expression;\
+    } catch (const Error& e) {\
+        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e));\
+    } catch (const std::exception& e) {\
+        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e.what()));\
     }
 
 namespace Storytime {

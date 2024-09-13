@@ -8,7 +8,7 @@
 #include "graphics/spritesheet.h"
 #include "audio/audio_engine.h"
 #include "audio/audio.h"
-#include "tiled/world.h"
+#include "tiled/map.h"
 
 namespace Storytime {
     struct ResourceLoaderConfig {
@@ -31,7 +31,7 @@ namespace Storytime {
 
         Shared<Spritesheet> load_spritesheet(const char* path, const SpritesheetConfig& config = {}) const;
 
-        Shared<World> load_world(const char* path) const;
+        Shared<TiledMap> load_tiled_map(const char* path) const;
 
     private:
         Image load_image(const char* path) const;

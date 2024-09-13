@@ -2,9 +2,9 @@
 #include <nlohmann/json.hpp>
 
 namespace Storytime {
-    extern void from_json(const nlohmann::json& json, Property& property);
+    extern void from_json(const nlohmann::json& json, TiledProperty& property);
 
-    void from_json(const nlohmann::json& json, Object& object) {
+    void from_json(const nlohmann::json& json, TiledObject& object) {
         object.name = json.at("name").get<std::string>();
         object.type = json.at("type").get<std::string>();
         object.rotation = json.at("rotation").get<float>();
@@ -15,7 +15,7 @@ namespace Storytime {
         object.height = json.at("height").get<int>();
         object.visible = json.at("visible").get<bool>();
         if (json.contains("properties")) {
-            object.properties = json.at("properties").get<std::vector<Property>>();
+            object.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
     }
 }

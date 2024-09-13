@@ -21,7 +21,7 @@
 #include "graphics/spritesheet.h"
 
 // Tiled
-#include "tiled/world.h"
+#include "tiled/map.h"
 
 // Namespaces
 namespace st = Storytime;

@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Storytime {
-    struct Property {
+    struct TiledProperty {
         std::string name;
         std::string type;
         std::string value;

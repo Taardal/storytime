@@ -3,10 +3,10 @@
 #include "object.h"
 
 namespace Storytime {
-    struct Layer {
-        std::vector<Property> properties;
-        std::vector<Layer> layers;
-        std::vector<Object> objects;
+    struct TiledLayer {
+        std::vector<TiledProperty> properties;
+        std::vector<TiledLayer> layers;
+        std::vector<TiledObject> objects;
         std::vector<int> data;
         std::string name;
         std::string type;

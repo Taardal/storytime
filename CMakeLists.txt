@@ -70,16 +70,17 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
-        ${STORYTIME_SRC_DIR}/tiled/world.cpp
-        ${STORYTIME_SRC_DIR}/tiled/world.h
-        ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
-        ${STORYTIME_SRC_DIR}/tiled/tileset.h
+        ${STORYTIME_SRC_DIR}/system/utils.cpp
         ${STORYTIME_SRC_DIR}/tiled/layer.cpp
         ${STORYTIME_SRC_DIR}/tiled/layer.h
+        ${STORYTIME_SRC_DIR}/tiled/map.cpp
+        ${STORYTIME_SRC_DIR}/tiled/map.h
         ${STORYTIME_SRC_DIR}/tiled/object.cpp
         ${STORYTIME_SRC_DIR}/tiled/object.h
         ${STORYTIME_SRC_DIR}/tiled/property.cpp
         ${STORYTIME_SRC_DIR}/tiled/property.h
+        ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tileset.h
         ${STORYTIME_SRC_DIR}/window/event.h
         ${STORYTIME_SRC_DIR}/window/event.cpp
         ${STORYTIME_SRC_DIR}/window/event_manager.h

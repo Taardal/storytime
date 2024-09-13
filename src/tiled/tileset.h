@@ -1,17 +1,26 @@
 #pragma once
 
 namespace Storytime {
-    struct Tileset {
-        std::string name;
-        std::string image;
-        int first_global_id;
-        int image_width;
-        int image_height;
-        int tile_width;
-        int tile_height;
-        int tile_count;
+    struct TiledTileset {
         int columns;
+        int firstgid;
+        std::string image;
+        int image_height;
+        int image_width;
         int margin;
+        std::string name;
         int spacing;
+        int tile_count;
+        int tile_height;
+        int tile_width;
+
+        static TiledTileset create(const std::string& json);
+    };
+
+    struct TiledTilesetRef {
+        int firstgid;
+        std::string source;
+
+        static TiledTilesetRef create(const std::string& json);
     };
 }

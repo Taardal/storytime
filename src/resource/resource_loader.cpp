@@ -1,5 +1,7 @@
 #include "resource_loader.h"
+
 #include <stb_image.h>
+#include <nlohmann/json.hpp>
 
 namespace Storytime {
     ResourceLoader::ResourceLoader(ResourceLoaderConfig config) : config(std::move(config)) {
@@ -31,9 +33,36 @@ namespace Storytime {
         return make_shared<Spritesheet>(spritesheet_config);
     }
 
-    Shared<World> ResourceLoader::load_world(const char* path) const {
+    Shared<TiledMap> ResourceLoader::load_tiled_map(const char* path) const {
         std::string json = config.file_system->read_file(path);
-        return make_shared<World>(World::create(json));
+        ST_ASSERT_THROW(!json.empty());
+
+        TiledMap tiled_map;
+        ST_EXECUTE_THROW(tiled_map = TiledMap::create(json));
+
+        std::filesystem::path tiled_map_path(path);
+        ST_ASSERT_THROW(!tiled_map_path.empty());
+
+        std::string tiled_maps_directory_path = tiled_map_path.parent_path().string();
+        ST_ASSERT_THROW(!tiled_maps_directory_path.empty());
+
+        for (const TiledTilesetRef& tileset_ref : tiled_map.tileset_refs) {
+            const std::string& tileset_file_relative_path = tileset_ref.source;
+            ST_ASSERT_THROW(!tileset_file_relative_path.empty());
+
+            std::stringstream ss;
+            ss << tiled_maps_directory_path << "/" << tileset_file_relative_path;
+            std::string tileset_path = ss.str();
+
+            std::string tileset_json = config.file_system->read_file(tileset_path.c_str());
+            ST_ASSERT_THROW(!tileset_json.empty());
+
+            TiledTileset tileset = TiledTileset::create(tileset_json);
+            tileset.firstgid = tileset_ref.firstgid;
+            tiled_map.tilesets.push_back(tileset);
+        }
+
+        return make_shared<TiledMap>(tiled_map);
     }
 
     Image ResourceLoader::load_image(const char* path) const {

@@ -3,8 +3,8 @@
 #include "property.h"
 
 namespace Storytime {
-    struct Object {
-        std::vector<Property> properties;
+    struct TiledObject {
+        std::vector<TiledProperty> properties;
         std::string name;
         std::string type;
         float rotation;

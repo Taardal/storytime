@@ -2,11 +2,11 @@
 #include <nlohmann/json.hpp>
 
 namespace Storytime {
-    extern void from_json(const nlohmann::json& json, Property& property);
+    extern void from_json(const nlohmann::json& json, TiledProperty& property);
 
-    extern void from_json(const nlohmann::json&, Object& object);
+    extern void from_json(const nlohmann::json&, TiledObject& object);
 
-    void from_json(const nlohmann::json& json, Layer& layer) {
+    void from_json(const nlohmann::json& json, TiledLayer& layer) {
         layer.name = json.at("name").get<std::string>();
         layer.type = json.at("type").get<std::string>();
         layer.id = json.at("id").get<int>();
@@ -15,7 +15,7 @@ namespace Storytime {
         layer.opacity = json.at("opacity").get<int>();
         layer.visible = json.at("visible").get<bool>();
         if (layer.type == "objectgroup") {
-            layer.objects = json.at("objects").get<std::vector<Object>>();
+            layer.objects = json.at("objects").get<std::vector<TiledObject>>();
             layer.draw_order = json.at("draworder").get<std::string>();
         } else if (layer.type == "tilelayer") {
             layer.data = json.at("data").get<std::vector<int>>();
@@ -24,10 +24,10 @@ namespace Storytime {
         } else if (layer.type == "image") {
             layer.image = json.at("image").get<std::string>();
         } else if (layer.type == "group") {
-            layer.layers = json.at("layers").get<std::vector<Layer>>();
+            layer.layers = json.at("layers").get<std::vector<TiledLayer>>();
         }
         if (json.contains("properties")) {
-            layer.properties = json.at("properties").get<std::vector<Property>>();
+            layer.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
     }
 }

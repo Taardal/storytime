@@ -21,25 +21,25 @@ namespace Storytime {
     std::string Event::get_name(EventType event_type) {
         switch (event_type) {
             case EventType::WindowClose:
-                return ST_TO_STRING(WindowClose);
+                return ST_STRING(WindowClose);
             case EventType::WindowResize:
-                return ST_TO_STRING(WindowResize);
+                return ST_STRING(WindowResize);
             case EventType::KeyPressed:
-                return ST_TO_STRING(KeyPressed);
+                return ST_STRING(KeyPressed);
             case EventType::KeyReleased:
-                return ST_TO_STRING(KeyReleased);
+                return ST_STRING(KeyReleased);
             case EventType::KeyRepeated:
-                return ST_TO_STRING(KeyRepeated);
+                return ST_STRING(KeyRepeated);
             case EventType::KeyTyped:
-                return ST_TO_STRING(KeyTyped);
+                return ST_STRING(KeyTyped);
             case EventType::MouseMoved:
-                return ST_TO_STRING(MouseMoved);
+                return ST_STRING(MouseMoved);
             case EventType::MouseScroll:
-                return ST_TO_STRING(MouseScrolled);
+                return ST_STRING(MouseScrolled);
             case EventType::MouseButtonPressed:
-                return ST_TO_STRING(MouseButtonPressed);
+                return ST_STRING(MouseButtonPressed);
             case EventType::MouseButtonReleased:
-                return ST_TO_STRING(MouseButtonReleased);
+                return ST_STRING(MouseButtonReleased);
             default:
                 return "";
         }
