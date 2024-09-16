@@ -6,6 +6,8 @@
 
 namespace Storytime {
 
+    typedef glm::vec2 TextureCoordinate;
+
     // Forward declaration
     class ResourceLoader;
 
@@ -30,7 +32,7 @@ namespace Storytime {
         struct Vertex {
             glm::vec3 position = {0.0f, 0.0f, 0.0f};
             glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-            glm::vec2 texture_coordinate = {0.0f, 0.0f};
+            TextureCoordinate texture_coordinate = {0.0f, 0.0f};
             f32 texture_index = 0.0f;
             f32 tiling_factor = 1.0f;
         };
@@ -57,6 +59,7 @@ namespace Storytime {
         u32 texture_count;
         u32 reserved_textures_count;
         RendererStatistics statistics;
+        std::array<TextureCoordinate, 4> default_texture_coordinates;
 
     public:
         explicit Renderer(const ResourceLoader* resource_loader);
@@ -73,11 +76,9 @@ namespace Storytime {
 
         void begin_frame(const glm::mat4& view_projection);
 
-        void submit_quad(const Quad& quad);
+        void render_quad(const Quad& quad);
 
-        void submit_quad(const Quad& quad, const std::vector<glm::vec2>& texture_coordinates);
-
-        void submit_quad(const Quad& quad, const std::array<glm::vec2, 4>& texture_coordinates);
+        void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates);
 
         void end_frame();
 

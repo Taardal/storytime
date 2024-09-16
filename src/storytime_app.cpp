@@ -50,6 +50,15 @@ namespace Storytime {
         event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
             stop();
         });
+
+        renderer.set_clear_color({0.1f, 0.1f, 0.1f});
+
+        camera.set_projection({
+            .left = 0,
+            .right = static_cast<float>(config.window_width),
+            .top = 0,
+            .bottom = static_cast<float>(config.window_height),
+        });
     }
 
     const Config& App::get_config() const {
@@ -62,9 +71,9 @@ namespace Storytime {
 
     void App::run() {
         running = true;
-        on_initialize();
-        game_loop();
-        on_terminate();
+        ST_EXECUTE_THROW(on_initialize());
+        ST_EXECUTE_THROW(game_loop());
+        ST_EXECUTE_THROW(on_terminate());
     }
 
     void App::stop() {

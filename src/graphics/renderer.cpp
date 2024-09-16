@@ -66,6 +66,11 @@ namespace Storytime {
         }
         shader->bind();
         shader->set_int_array("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
+
+        default_texture_coordinates[0] = {0.0f, 0.0f};
+        default_texture_coordinates[1] = {1.0f, 0.0f};
+        default_texture_coordinates[2] = {1.0f, 1.0f};
+        default_texture_coordinates[3] = {0.0f, 1.0f};
     }
 
     Renderer::~Renderer() {
@@ -105,124 +110,11 @@ namespace Storytime {
         statistics.index_count = statistics.quad_count * INDICES_PER_QUAD;
     }
 
-    void Renderer::submit_quad(const Quad& quad) {
-        if (index_count >= INDICES_PER_BATCH) {
-            flush();
-            reset();
-        }
-
-        Shared<Texture> texture = quad.texture ? quad.texture : white_texture;
-
-        f32 texture_index = -1.0f;
-        for (u32 i = 0; i < texture_count; i++) {
-            if (textures[i] == texture) {
-                texture_index = (f32) i;
-                break;
-            }
-        }
-        bool texture_already_submitted = texture_index != -1.0f;
-        if (!texture_already_submitted) {
-            texture_index = (f32) texture_count;
-            textures[texture_count] = texture;
-            texture_count++;
-        }
-
-        const auto& translation = glm::translate(glm::mat4(1.0f), quad.position);
-        const auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.rotation_in_degrees), {0.0f, 0.0f, 1.0f});
-        const auto& scale = glm::scale(glm::mat4(1.0f), {quad.size.x, quad.size.y, 1.0f});
-        glm::mat4 transform = translation * rotation * scale;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = {0.0f, 0.0f};
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = {1.0f, 0.0f};
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = {1.0f, 1.0f};
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = {0.0f, 1.0f};
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        index_count += INDICES_PER_QUAD;
-        statistics.quad_count++;
+    void Renderer::render_quad(const Quad& quad) {
+        render_quad(quad, default_texture_coordinates);
     }
 
-    void Renderer::submit_quad(const Quad& quad, const std::vector<glm::vec2>& texture_coordinates) {
-        if (index_count >= INDICES_PER_BATCH) {
-            flush();
-            reset();
-        }
-
-        Shared<Texture> texture = quad.texture ? quad.texture : white_texture;
-
-        f32 texture_index = -1.0f;
-        for (u32 i = 0; i < texture_count; i++) {
-            if (textures[i] == quad.texture) {
-                texture_index = (f32) i;
-                break;
-            }
-        }
-        if (texture_index == -1.0f) {
-            texture_index = (f32) texture_count;
-            textures[texture_count] = quad.texture;
-            texture_count++;
-        }
-
-        const auto& translation = glm::translate(glm::mat4(1.0f), quad.position);
-        const auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.rotation_in_degrees), {0.0f, 0.0f, 1.0f});
-        const auto& scale = glm::scale(glm::mat4(1.0f), {quad.size.x, quad.size.y, 1.0f});
-        glm::mat4 transform = translation * rotation * scale;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[0];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[1];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[2];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[3];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        index_count += INDICES_PER_QUAD;
-        statistics.quad_count++;
-    }
-
-    void Renderer::submit_quad(const Quad& quad, const std::array<glm::vec2, 4>& texture_coordinates) {
+    void Renderer::render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates) {
         if (index_count >= INDICES_PER_BATCH) {
             flush();
             reset();

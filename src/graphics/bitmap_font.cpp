@@ -42,18 +42,17 @@ namespace Storytime {
             float yat = ya / ts;
             float ybt = yb / ts;
 
-            std::vector<glm::vec2> c = {
-                {xat, yat},
-                {xbt, yat},
-                {xbt, ybt},
-                {xat, ybt},
-            };
+            std::array<glm::vec2, 4> c;
+            c[0] = {xat, yat};
+            c[1] = {xbt, yat};
+            c[2] = {xbt, ybt};
+            c[3] = {xat, ybt};
 
             Quad quad;
             quad.texture = config.texture;
             quad.size = {size_x, size_y};
             quad.position = position;
-            config.renderer->submit_quad(quad, c);
+            config.renderer->render_quad(quad, c);
 
             position.x += size_x;
         }

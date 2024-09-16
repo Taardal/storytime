@@ -5,23 +5,35 @@
 
 namespace Storytime {
     struct SpriteConfig {
-        Shared<Texture> texture = nullptr;
+        Shared<Texture> spritesheet_texture = nullptr;
         u32 width = 0;
         u32 height = 0;
+        u32 row = 0;
+        u32 column = 0;
+        u32 start_row = 0;
+        u32 end_row = 0;
+        u32 start_column = 0;
+        u32 end_column = 0;
     };
-
     class Sprite {
     private:
         SpriteConfig config;
+        std::vector<std::array<TextureCoordinate, 4>> texture_coordinate_list;
 
     public:
-        explicit Sprite(SpriteConfig config);
+        explicit Sprite(const SpriteConfig& config);
+
+        struct RenderConfig {
+            glm::vec2 position = { 0.0f, 0.0f };
+            f32 scale = 1.0f;
+            bool debug = false;
+        };
+
+        void render(Renderer& renderer, const RenderConfig& render_config) const;
     };
 
     struct SpritesheetConfig {
         Shared<Texture> texture = nullptr;
-        u32 sprite_width = 0;
-        u32 sprite_height = 0;
     };
 
     class Spritesheet {
@@ -31,16 +43,6 @@ namespace Storytime {
     public:
         explicit Spritesheet(SpritesheetConfig config);
 
-        const SpritesheetConfig& get_config() const;
-
-        Sprite get_sprite() const;
-
-        void set_sprite_width(u32 sprite_width);
-
-        void set_sprite_height(u32 sprite_height);
-
-        void set_sprite_size(u32 sprite_size);
-
-        void render(Renderer* renderer, const glm::vec3& position, const glm::vec2& frame, const glm::vec2& size) const;
+        Sprite get_sprite(SpriteConfig& sprite_config) const;
     };
 }

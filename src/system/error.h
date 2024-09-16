@@ -25,15 +25,6 @@
         throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e.what()));\
     }
 
-#define ST_TRY(expression)\
-    try {\
-        expression;\
-    } catch (const Error& e) {\
-        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e));\
-    } catch (const std::exception& e) {\
-        throw Storytime::Error(#expression, ST_TAG, std::make_shared<Error>(e.what()));\
-    }
-
 namespace Storytime {
     struct StacktraceEntry {
         std::string message;

@@ -29,7 +29,7 @@ namespace Storytime {
 
         Shared<Audio> load_audio(const char* path) const;
 
-        Shared<Spritesheet> load_spritesheet(const char* path, const SpritesheetConfig& config = {}) const;
+        Shared<Spritesheet> load_spritesheet(const char* path) const;
 
         Shared<TiledMap> load_tiled_map(const char* path) const;
 

@@ -24,16 +24,17 @@ namespace Storytime {
         return make_shared<Audio>(config.audio_engine, path);
     }
 
-    Shared<Spritesheet> ResourceLoader::load_spritesheet(const char* path, const SpritesheetConfig& config) const {
+    Shared<Spritesheet> ResourceLoader::load_spritesheet(const char* path) const {
         SpritesheetConfig spritesheet_config = {
             .texture = load_texture(path),
-            .sprite_width = config.sprite_width,
-            .sprite_height = config.sprite_height,
         };
         return make_shared<Spritesheet>(spritesheet_config);
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const char* path) const {
+        ST_ASSERT_THROW(path != nullptr);
+        ST_ASSERT_THROW(strlen(path) > 0);
+
         std::string json = config.file_system->read_file(path);
         ST_ASSERT_THROW(!json.empty());
 
