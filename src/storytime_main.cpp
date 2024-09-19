@@ -6,7 +6,7 @@ namespace Storytime {
 #ifdef ST_TRACK_MEMORY
         std::atexit(MemoryTracker::terminate);
 #endif
-        initialize_error_signal_handlers();
+        // initialize_error_signal_handlers();
         set_log_level(config.log_level);
         App* app = nullptr;
         try {

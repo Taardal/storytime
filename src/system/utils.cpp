@@ -22,4 +22,31 @@ namespace Storytime {
         }
         return tokens;
     }
+
+    void string_replace(std::string& haystack, const char* needle) {
+        size_t start = haystack.find(needle);
+        if (start == std::string::npos) {
+            return;
+        }
+        size_t end = start + strlen(needle);
+        haystack.replace(start, end, needle);
+    }
+
+    void string_replace(std::string& haystack, std::string_view needle) {
+        size_t start = haystack.find(needle);
+        if (start == std::string::npos) {
+            return;
+        }
+        size_t end = start + needle.length();
+        haystack.replace(start, end, needle);
+    }
+
+    void string_replace(std::string& haystack, const std::string& needle) {
+        size_t start = haystack.find(needle);
+        if (start == std::string::npos) {
+            return;
+        }
+        size_t end = start + needle.length();
+        haystack.replace(start, end, needle);
+    }
 }

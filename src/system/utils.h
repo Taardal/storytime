@@ -1,10 +1,10 @@
 #pragma once
 
 #define ST_COUT(message)\
-    std::cout << message << std::endl;
+    std::cout << message << std::endl
 
 #define ST_CERR(message)\
-    std::cerr << message << std::endl;
+    std::cerr << message << std::endl
 
 #define ST_STRING(value)\
     #value
@@ -23,4 +23,10 @@ namespace Storytime {
     bool string_ends_with(const std::string& str, const std::string& suffix);
 
     std::vector<std::string> string_split(const std::string& str, char delimiter);
+
+    void string_replace(std::string& haystack, const char* needle);
+
+    void string_replace(std::string& haystack, std::string_view needle);
+
+    void string_replace(std::string& haystack, const std::string& needle);
 }

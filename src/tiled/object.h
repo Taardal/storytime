@@ -4,15 +4,16 @@
 
 namespace Storytime {
     struct TiledObject {
-        std::vector<TiledProperty> properties;
-        std::string name;
-        std::string type;
-        float rotation;
-        int id;
-        int x;
-        int y;
-        int width;
         int height;
+        int id;
+        std::string name;
+        bool point;
+        std::vector<TiledProperty> properties;
+        float rotation;
+        std::string type;
         bool visible;
+        int width;
+        float x;
+        float y;
     };
 }

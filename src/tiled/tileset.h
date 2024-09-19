@@ -1,18 +1,21 @@
 #pragma once
 
+#include "tile.h"
+
 namespace Storytime {
     struct TiledTileset {
         int columns;
         int firstgid;
         std::string image;
-        int image_height;
-        int image_width;
+        int imageheight;
+        int imagewidth;
         int margin;
         std::string name;
         int spacing;
-        int tile_count;
-        int tile_height;
-        int tile_width;
+        std::vector<TiledTile> tiles;
+        int tilecount;
+        int tileheight;
+        int tilewidth;
 
         static TiledTileset create(const std::string& json);
     };

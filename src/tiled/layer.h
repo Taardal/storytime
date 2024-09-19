@@ -10,7 +10,7 @@ namespace Storytime {
         std::vector<int> data;
         std::string name;
         std::string type;
-        std::string draw_order;
+        std::string draworder;
         std::string image;
         int id;
         int x;

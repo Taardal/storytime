@@ -23,5 +23,8 @@
 // Tiled
 #include "tiled/map.h"
 
+// Scene
+#include "scene/tiled_scene.h"
+
 // Namespaces
 namespace st = Storytime;

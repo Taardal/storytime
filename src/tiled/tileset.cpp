@@ -2,20 +2,25 @@
 #include <nlohmann/json.hpp>
 
 namespace Storytime {
+    extern void from_json(const nlohmann::json& json, TiledTile& tile);
+
     void from_json(const nlohmann::json& json, TiledTileset& tileset) {
         tileset.columns = json.at("columns").get<int>();
         if (json.contains("firstgid")) {
             tileset.firstgid = json.at("firstgid").get<int>();
         }
         tileset.image = json.at("image").get<std::string>();
-        tileset.image_height = json.at("imageheight").get<int>();
-        tileset.image_width = json.at("imagewidth").get<int>();
+        tileset.imageheight = json.at("imageheight").get<int>();
+        tileset.imagewidth = json.at("imagewidth").get<int>();
         tileset.margin = json.at("margin").get<int>();
         tileset.name = json.at("name").get<std::string>();
         tileset.spacing = json.at("spacing").get<int>();
-        tileset.tile_count = json.at("tilecount").get<int>();
-        tileset.tile_height = json.at("tileheight").get<int>();
-        tileset.tile_width = json.at("tilewidth").get<int>();
+        if (json.contains("tiles")) {
+            tileset.tiles = json.at("tiles").get<std::vector<TiledTile>>();
+        }
+        tileset.tilecount = json.at("tilecount").get<int>();
+        tileset.tileheight = json.at("tileheight").get<int>();
+        tileset.tilewidth = json.at("tilewidth").get<int>();
     }
 
     TiledTileset TiledTileset::create(const std::string& json) {

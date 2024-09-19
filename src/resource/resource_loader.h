@@ -31,7 +31,7 @@ namespace Storytime {
 
         Shared<Spritesheet> load_spritesheet(const char* path) const;
 
-        Shared<TiledMap> load_tiled_map(const char* path) const;
+        Shared<TiledMap> load_tiled_map(const std::filesystem::path& path) const;
 
     private:
         Image load_image(const char* path) const;

@@ -38,6 +38,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/renderer.cpp
         ${STORYTIME_SRC_DIR}/graphics/shader.h
         ${STORYTIME_SRC_DIR}/graphics/shader.cpp
+        ${STORYTIME_SRC_DIR}/graphics/sprite.h
+        ${STORYTIME_SRC_DIR}/graphics/sprite.cpp
         ${STORYTIME_SRC_DIR}/graphics/spritesheet.h
         ${STORYTIME_SRC_DIR}/graphics/spritesheet.cpp
         ${STORYTIME_SRC_DIR}/graphics/texture.h
@@ -48,16 +50,18 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
-        ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
+        ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
+        ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
+        ${STORYTIME_SRC_DIR}/scene/tiled_scene.cpp
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
         ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
-        ${STORYTIME_SRC_DIR}/system/error_signal.h
-        ${STORYTIME_SRC_DIR}/system/error_signal.cpp
+#        ${STORYTIME_SRC_DIR}/system/error_signal.h
+#        ${STORYTIME_SRC_DIR}/system/error_signal.cpp
         ${STORYTIME_SRC_DIR}/system/file_system.h
         ${STORYTIME_SRC_DIR}/system/file_system.cpp
         ${STORYTIME_SRC_DIR}/system/log.h
@@ -79,6 +83,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/tiled/object.h
         ${STORYTIME_SRC_DIR}/tiled/property.cpp
         ${STORYTIME_SRC_DIR}/tiled/property.h
+        ${STORYTIME_SRC_DIR}/tiled/tile.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tile.h
         ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
         ${STORYTIME_SRC_DIR}/tiled/tileset.h
         ${STORYTIME_SRC_DIR}/window/event.h

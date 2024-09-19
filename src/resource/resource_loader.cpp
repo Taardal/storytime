@@ -31,37 +31,37 @@ namespace Storytime {
         return make_shared<Spritesheet>(spritesheet_config);
     }
 
-    Shared<TiledMap> ResourceLoader::load_tiled_map(const char* path) const {
-        ST_ASSERT_THROW(path != nullptr);
-        ST_ASSERT_THROW(strlen(path) > 0);
+    Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
+        std::string path_string = path.string();
+        ST_LOG_TRACE("Loading tiled map [{}]", path_string);
 
-        std::string json = config.file_system->read_file(path);
+        std::string json = config.file_system->read_file(path.c_str());
         ST_ASSERT_THROW(!json.empty());
 
         TiledMap tiled_map;
         ST_EXECUTE_THROW(tiled_map = TiledMap::create(json));
 
-        std::filesystem::path tiled_map_path(path);
-        ST_ASSERT_THROW(!tiled_map_path.empty());
-
-        std::string tiled_maps_directory_path = tiled_map_path.parent_path().string();
-        ST_ASSERT_THROW(!tiled_maps_directory_path.empty());
-
-        for (const TiledTilesetRef& tileset_ref : tiled_map.tileset_refs) {
-            const std::string& tileset_file_relative_path = tileset_ref.source;
-            ST_ASSERT_THROW(!tileset_file_relative_path.empty());
-
-            std::stringstream ss;
-            ss << tiled_maps_directory_path << "/" << tileset_file_relative_path;
-            std::string tileset_path = ss.str();
-
-            std::string tileset_json = config.file_system->read_file(tileset_path.c_str());
-            ST_ASSERT_THROW(!tileset_json.empty());
-
-            TiledTileset tileset = TiledTileset::create(tileset_json);
-            tileset.firstgid = tileset_ref.firstgid;
-            tiled_map.tilesets.push_back(tileset);
-        }
+        // std::filesystem::path tiled_map_path(path);
+        // ST_ASSERT_THROW(!tiled_map_path.empty());
+        //
+        // std::string tiled_maps_directory_path = tiled_map_path.parent_path().string();
+        // ST_ASSERT_THROW(!tiled_maps_directory_path.empty());
+        //
+        // for (const TiledTilesetRef& tileset_ref : tiled_map.tilesetrefs) {
+        //     const std::string& tileset_file_relative_path = tileset_ref.source;
+        //     ST_ASSERT_THROW(!tileset_file_relative_path.empty());
+        //
+        //     std::stringstream ss;
+        //     ss << tiled_maps_directory_path << "/" << tileset_file_relative_path;
+        //     std::string tileset_path = ss.str();
+        //
+        //     std::string tileset_json = config.file_system->read_file(tileset_path.c_str());
+        //     ST_ASSERT_THROW(!tileset_json.empty());
+        //
+        //     TiledTileset tileset = TiledTileset::create(tileset_json);
+        //     tileset.firstgid = tileset_ref.firstgid;
+        //     tiled_map.tilesets.push_back(tileset);
+        // }
 
         return make_shared<TiledMap>(tiled_map);
     }

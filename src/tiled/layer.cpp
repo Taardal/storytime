@@ -16,7 +16,7 @@ namespace Storytime {
         layer.visible = json.at("visible").get<bool>();
         if (layer.type == "objectgroup") {
             layer.objects = json.at("objects").get<std::vector<TiledObject>>();
-            layer.draw_order = json.at("draworder").get<std::string>();
+            layer.draworder = json.at("draworder").get<std::string>();
         } else if (layer.type == "tilelayer") {
             layer.data = json.at("data").get<std::vector<int>>();
             layer.width = json.at("width").get<int>();
