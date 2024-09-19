@@ -7,20 +7,22 @@ namespace Storytime {
     struct SpritesheetCoordinate {
         u32 row = 0;
         u32 column = 0;
+        u32 frame_duration_ms = 0; // Animated sprite
     };
 
     struct SpriteConfig {
         Shared<Texture> spritesheet_texture = nullptr;
         u32 width = 0;
         u32 height = 0;
-        std::vector<SpritesheetCoordinate> spritesheet_coordinates;
-        std::vector<u32> animation_frame_durations_ms;
+        SpritesheetCoordinate spritesheet_coordinate; // Static sprite (mutually exclusive with animated sprite coordinates)
+        std::vector<SpritesheetCoordinate> spritesheet_coordinates; // Animated sprite (mutually exclusive with static sprite coordinate)
     };
 
     class Sprite {
     private:
         SpriteConfig config;
-        std::vector<std::array<TextureCoordinate, 4>> texture_coordinate_list;
+        std::vector<SpritesheetCoordinate> spritesheet_coordinates;
+        std::vector<std::array<TextureCoordinate, 4>> spritesheet_texture_coordinates;
         u32 frame = 0;
         f64 frame_time_sec = 0.0;
 
@@ -32,8 +34,6 @@ namespace Storytime {
         const SpritesheetCoordinate& get_spritesheet_coordinate(u32 frame = 0) const;
 
         void set_spritesheet_coordinates(const std::vector<SpritesheetCoordinate>& spritesheet_coordinates);
-
-        void set_animation_frame_durations_ms(const std::vector<u32>& animation_frame_durations_ms);
 
         bool is_animated() const;
 

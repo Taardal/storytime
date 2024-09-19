@@ -2,7 +2,11 @@
 
 namespace Storytime {
     Sprite::Sprite(const SpriteConfig& config) : config(config) {
-        set_spritesheet_coordinates(config.spritesheet_coordinates);
+        if (config.spritesheet_coordinates.size() > 0) {
+            set_spritesheet_coordinates(config.spritesheet_coordinates);
+        } else {
+            set_spritesheet_coordinates({ config.spritesheet_coordinate });
+        }
     }
 
     const SpriteConfig& Sprite::get_config() const {
@@ -10,17 +14,23 @@ namespace Storytime {
     }
 
     const SpritesheetCoordinate& Sprite::get_spritesheet_coordinate(u32 frame) const {
-        ST_ASSERT(frame < config.spritesheet_coordinates.size());
-        return config.spritesheet_coordinates[frame];
+        ST_ASSERT_MSG(
+            frame < spritesheet_coordinates.size(),
+            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
+        );
+        return spritesheet_coordinates[frame];
     }
 
     void Sprite::set_spritesheet_coordinates(const std::vector<SpritesheetCoordinate>& spritesheet_coordinates) {
-        ST_ASSERT_THROW(spritesheet_coordinates.size() > 0);
-        this->config.spritesheet_coordinates = spritesheet_coordinates;
+        ST_ASSERT_MSG(
+            spritesheet_coordinates.size() > 0,
+            "Sprite must have at least one spritesheet coordinate (frame) to be rendered"
+        );
+        this->spritesheet_coordinates = spritesheet_coordinates;
 
         // Clear textures coordinates if they have already been set
-        if (texture_coordinate_list.size() > 0) {
-            texture_coordinate_list = std::vector<std::array<TextureCoordinate, 4>>();
+        if (spritesheet_texture_coordinates.size() > 0) {
+            spritesheet_texture_coordinates = std::vector<std::array<TextureCoordinate, 4>>();
         }
 
         f32 sprite_width = (f32) config.width;
@@ -45,32 +55,28 @@ namespace Storytime {
             texture_coordinates[2] = {x_right, y_bottom}; // Bottom right
             texture_coordinates[3] = {x_left, y_bottom};  // Bottom left
 
-            texture_coordinate_list.push_back(texture_coordinates);
+            spritesheet_texture_coordinates.push_back(texture_coordinates);
         }
     }
 
     bool Sprite::is_animated() const {
-        return config.spritesheet_coordinates.size() > 1;
+        return spritesheet_coordinates.size() > 1;
     }
 
     void Sprite::update(f64 timestep) {
-        if (!is_animated()) {
-            return;
-        }
-
-        ST_ASSERT(frame < config.animation_frame_durations_ms.size());
-        u32 frame_duration_ms = config.animation_frame_durations_ms[frame];
+        ST_ASSERT_MSG(
+            frame < spritesheet_coordinates.size(),
+            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
+        );
+        u32 frame_duration_ms = spritesheet_coordinates[frame].frame_duration_ms;
 
         frame_time_sec += timestep;
         if (frame_time_sec * 1000 < frame_duration_ms) {
             return;
         }
-        frame = (frame + 1) % config.spritesheet_coordinates.size();
-        frame_time_sec = 0.0;
-    }
 
-    void Sprite::set_animation_frame_durations_ms(const std::vector<u32>& animation_frame_durations_ms) {
-        config.animation_frame_durations_ms = animation_frame_durations_ms;
+        frame = (frame + 1) % spritesheet_coordinates.size();
+        frame_time_sec = 0.0;
     }
 
     void Sprite::render(Renderer& renderer, const RenderConfig& render_config) const {
@@ -100,6 +106,6 @@ namespace Storytime {
         quad.texture = config.spritesheet_texture;
         quad.size = { quad_width, quad_height };
         quad.position = { quad_x, quad_y, 0.0f };
-        renderer.render_quad(quad, texture_coordinate_list[frame]);
+        renderer.render_quad(quad, spritesheet_texture_coordinates[frame]);
     }
 }

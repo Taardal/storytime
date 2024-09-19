@@ -2,7 +2,7 @@
 
 namespace Storytime {
     constexpr f32 TiledScene::SCALE = 2.0f;
-    bool TiledScene::DEBUG = false;
+    constexpr bool TiledScene::DEBUG = false;
 
     TiledScene::TiledScene(const TiledSceneConfig& config)
         : config(config), tiled_map(config.resource_loader->load_tiled_map(config.tiled_map_path.string().c_str())) {
@@ -11,6 +11,9 @@ namespace Storytime {
 
     void TiledScene::update(f64 timestep) {
         for (auto& [global_tile_id, tile] : tiles) {
+            if (!tile.is_animated()) {
+                continue;
+            }
             tile.update(timestep);
         }
     }
@@ -59,65 +62,70 @@ namespace Storytime {
         const TiledTileset& tileset,
         const std::filesystem::path& tileset_image_path
     ) {
+        // Load the tileset image
         Shared<Texture> tileset_image_texture = config.resource_loader->load_texture(tileset_image_path.c_str());
 
+        // Iterate through the tiles of the tileset as a grid
         u32 rows = tileset.imageheight / tileset.tileheight;
         u32 columns = tileset.imagewidth / tileset.tilewidth;
         u32 first_global_tile_id_in_tileset = tileset.firstgid;
 
+        // Create all tiles in tileset as static sprites (single image) and associate it to its global tile ID
         for (u32 row = 0; row < rows; ++row) {
             for (u32 column = 0; column < columns; ++column) {
                 u32 tile_index = row * columns + column;
                 u32 global_tile_id = first_global_tile_id_in_tileset + tile_index;
 
-                TileConfig tile_config;
+                SpriteConfig tile_config;
                 tile_config.spritesheet_texture = tileset_image_texture;
                 tile_config.width = tileset.tilewidth;
                 tile_config.height = tileset.tileheight;
-                tile_config.spritesheet_coordinates = {
-                    SpritesheetCoordinate{
-                        .column = column,
-                        .row = row
-                    },
+                tile_config.spritesheet_coordinate = SpritesheetCoordinate{
+                    .column = column,
+                    .row = row
                 };
 
                 tiles.emplace(global_tile_id, tile_config);
             }
         }
 
-        // Animated tiles
+        // Go through all animated tiles in tileset and update previously created static sprites to be animated
+        // sprites. This must be done after all tiles has been created because we need to be able to look up all static
+        // sprites needed for the animation sequence.
         for (const TiledTile& tiled_tile : tileset.tiles) {
             std::vector<TiledAnimationFrame> animation_frames = tiled_tile.animation;
             if (animation_frames.size() == 0) {
                 continue;
             }
 
+            // Find static sprite that will be updated to be animated
             u32 global_tile_id = first_global_tile_id_in_tileset + tiled_tile.id;
             auto tile_iterator = tiles.find(global_tile_id);
             ST_ASSERT_THROW(tile_iterator != tiles.end());
-            Tile& tile = tile_iterator->second;
+            Sprite& tile = tile_iterator->second;
 
+            // Get spritesheet coordinates for all sprites in animation
             std::vector<SpritesheetCoordinate> animation_spritesheet_coordinates;
-            std::vector<u32> animation_frame_durations;
             for (auto& animation_frame : animation_frames) {
-                u32 animation_frame_global_tile_id = first_global_tile_id_in_tileset + animation_frame.tileid;
 
-                auto animation_frame_tile_iterator = tiles.find(animation_frame_global_tile_id);
+                // Find static sprite for the current frame of the animation
+                u32 animation_frame_tile_global_tile_id = first_global_tile_id_in_tileset + animation_frame.tileid;
+                auto animation_frame_tile_iterator = tiles.find(animation_frame_tile_global_tile_id);
                 ST_ASSERT_THROW(animation_frame_tile_iterator != tiles.end());
-                Tile& animation_frame_tile = animation_frame_tile_iterator->second;
+                Sprite& animation_frame_tile = animation_frame_tile_iterator->second;
 
-                auto [row, column] = animation_frame_tile.get_spritesheet_coordinate();
+                // Get the spritesheet coordinate of the static sprite and add it to the list of spritesheet
+                // coordinates that makes the animation sequence.
+                auto [row, column, _] = animation_frame_tile.get_spritesheet_coordinate();
                 animation_spritesheet_coordinates.push_back(SpritesheetCoordinate{
                     .row = row,
                     .column = column,
+                    .frame_duration_ms = (u32) animation_frame.duration,
                 });
-
-                animation_frame_durations.push_back(animation_frame.duration);
             }
-            ST_ASSERT_THROW(animation_spritesheet_coordinates.size() > 1);
 
+            // Set the animation spritesheet coordinates on the tile to change it from static to animated
             tile.set_spritesheet_coordinates(animation_spritesheet_coordinates);
-            tile.set_animation_frame_durations_ms(animation_frame_durations);
         }
     }
 
@@ -139,12 +147,12 @@ namespace Storytime {
                 if (it == tiles.end()) {
                     continue;
                 }
-                const Tile& tile = it->second;
+                const Sprite& tile = it->second;
 
                 f32 tile_x = (f32) column * (f32) tile_width;
                 f32 tile_y = (f32) row * (f32) tile_height;
 
-                Tile::RenderConfig tile_render_config;
+                Sprite::RenderConfig tile_render_config;
                 tile_render_config.position = {tile_x, tile_y};
                 tile_render_config.scale = SCALE;
                 tile_render_config.debug = DEBUG;

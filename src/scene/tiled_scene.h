@@ -5,8 +5,6 @@
 
 namespace Storytime {
     typedef u32 TileID;
-    typedef Sprite Tile;
-    typedef SpriteConfig TileConfig;
 
     struct TiledSceneConfig {
         FileSystem* file_system = nullptr;
@@ -17,11 +15,12 @@ namespace Storytime {
     class TiledScene {
     private:
         static const f32 SCALE;
-        static bool DEBUG;
+        static const bool DEBUG;
+
     private:
         TiledSceneConfig config;
         Shared<TiledMap> tiled_map;
-        std::map<TileID, Tile> tiles;
+        std::map<TileID, Sprite> tiles;
 
     public:
         explicit TiledScene(const TiledSceneConfig& config);

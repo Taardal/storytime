@@ -22,12 +22,24 @@
 
 #ifdef ST_ENABLE_ASSERT
     #define ST_ASSERT(expression) \
-    if (expression) {\
-        /* Continue */\
-    } else {\
-        ST_LOG_CRITICAL("Assertion failed: [{}]", #expression); \
-        ST_BREAK(); \
-    }
+        if (expression) {\
+            /* Continue */\
+        } else {\
+            ST_LOG_CRITICAL("Assertion failed: [{}]", #expression); \
+            ST_BREAK(); \
+        }
+
+    #define ST_ASSERT_MSG(expression, message) \
+        if (expression) {\
+            /* Continue */\
+        } else {\
+            std::stringstream ss;\
+            ss << message;\
+            std::string message_string = ss.str();\
+            ST_LOG_CRITICAL("Assertion failed: {}, {}", #expression, message_string); \
+            ST_BREAK(); \
+        }
 #else
     #define ST_ASSERT(expression)
+    #define ST_ASSERT_MSG(expression, message)
 #endif
