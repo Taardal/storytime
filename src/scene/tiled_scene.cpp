@@ -47,18 +47,18 @@ namespace Storytime {
             tileset.firstgid = tileset_ref.firstgid;
 
             auto tileset_image_path = std::filesystem::path(tileset_path.parent_path()).append(tileset.image);
-            initialize_tiles_from_tileset(tileset, tileset_image_path);
+            initialize_tiles(tileset, tileset_image_path);
         }
 
         // Tilesets
         for (const TiledTileset& tileset : tiled_map->tilesets) {
             // Get the path to the tileset image file relative to the map
             auto tileset_image_path = std::filesystem::path(tiled_map_directory_path).append(tileset.image);
-            initialize_tiles_from_tileset(tileset, tileset_image_path);
+            initialize_tiles(tileset, tileset_image_path);
         }
     }
 
-    void TiledScene::initialize_tiles_from_tileset(
+    void TiledScene::initialize_tiles(
         const TiledTileset& tileset,
         const std::filesystem::path& tileset_image_path
     ) {
@@ -89,44 +89,54 @@ namespace Storytime {
             }
         }
 
-        // Go through all animated tiles in tileset and update previously created static sprites to be animated
-        // sprites. This must be done after all tiles has been created because we need to be able to look up all static
-        // sprites needed for the animation sequence.
+        // Go through all tiles in tileset and initialize both animated tiles and collidable tiles
         for (const TiledTile& tiled_tile : tileset.tiles) {
-            std::vector<TiledAnimationFrame> animation_frames = tiled_tile.animation;
-            if (animation_frames.size() == 0) {
-                continue;
+            const std::vector<TiledAnimationFrame>& animation_frames = tiled_tile.animation;
+            if (animation_frames.size() > 0) {
+                initialize_tile_animation(tiled_tile, first_global_tile_id_in_tileset);
             }
-
-            // Find static sprite that will be updated to be animated
-            u32 global_tile_id = first_global_tile_id_in_tileset + tiled_tile.id;
-            auto tile_iterator = tiles.find(global_tile_id);
-            ST_ASSERT_THROW(tile_iterator != tiles.end());
-            Sprite& tile = tile_iterator->second;
-
-            // Get spritesheet coordinates for all sprites in animation
-            std::vector<SpritesheetCoordinate> animation_spritesheet_coordinates;
-            for (auto& animation_frame : animation_frames) {
-
-                // Find static sprite for the current frame of the animation
-                u32 animation_frame_tile_global_tile_id = first_global_tile_id_in_tileset + animation_frame.tileid;
-                auto animation_frame_tile_iterator = tiles.find(animation_frame_tile_global_tile_id);
-                ST_ASSERT_THROW(animation_frame_tile_iterator != tiles.end());
-                Sprite& animation_frame_tile = animation_frame_tile_iterator->second;
-
-                // Get the spritesheet coordinate of the static sprite and add it to the list of spritesheet
-                // coordinates that makes the animation sequence.
-                auto [row, column, _] = animation_frame_tile.get_spritesheet_coordinate();
-                animation_spritesheet_coordinates.push_back(SpritesheetCoordinate{
-                    .row = row,
-                    .column = column,
-                    .frame_duration_ms = (u32) animation_frame.duration,
-                });
+            if (tiled_tile.objectgroup.objects.size() > 0) {
+                initialize_tile_collision(tiled_tile, first_global_tile_id_in_tileset);
             }
-
-            // Set the animation spritesheet coordinates on the tile to change it from static to animated
-            tile.set_spritesheet_coordinates(animation_spritesheet_coordinates);
         }
+    }
+
+    // Update static sprite to be animated sprite by updating its spritesheet coordinates to form an animation sequence.
+    // This must be done after all tiles has been created because we need to be able to look up all static sprites
+    // needed for the animation sequence.
+    void TiledScene::initialize_tile_animation(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset) {
+        // Find static sprite that will be updated to be animated
+        u32 global_tile_id = first_global_tile_id_in_tileset + tiled_tile.id;
+        auto tile_iterator = tiles.find(global_tile_id);
+        ST_ASSERT_THROW(tile_iterator != tiles.end());
+        Sprite& tile = tile_iterator->second;
+
+        // Get spritesheet coordinates for all sprites in animation
+        std::vector<SpritesheetCoordinate> animation_spritesheet_coordinates;
+        for (auto& animation_frame : tiled_tile.animation) {
+
+            // Find static sprite for the current frame of the animation
+            u32 animation_frame_tile_global_tile_id = first_global_tile_id_in_tileset + animation_frame.tileid;
+            auto animation_frame_tile_iterator = tiles.find(animation_frame_tile_global_tile_id);
+            ST_ASSERT_THROW(animation_frame_tile_iterator != tiles.end());
+            Sprite& animation_frame_tile = animation_frame_tile_iterator->second;
+
+            // Get the spritesheet coordinate of the static sprite and add it to the list of spritesheet
+            // coordinates that makes the animation sequence.
+            auto [row, column, _] = animation_frame_tile.get_spritesheet_coordinate();
+            animation_spritesheet_coordinates.push_back(SpritesheetCoordinate{
+                .row = row,
+                .column = column,
+                .frame_duration_ms = (u32) animation_frame.duration,
+            });
+        }
+
+        // Set the animation spritesheet coordinates on the tile to change it from static to animated
+        tile.set_spritesheet_coordinates(animation_spritesheet_coordinates);
+    }
+
+    void TiledScene::initialize_tile_collision(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset) {
+        
     }
 
     void TiledScene::render_tile_layer(Renderer& renderer, const TiledLayer& layer) const {

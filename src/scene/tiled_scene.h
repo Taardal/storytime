@@ -32,7 +32,11 @@ namespace Storytime {
     private:
         void initialize_tiles();
 
-        void initialize_tiles_from_tileset(const TiledTileset& tileset, const std::filesystem::path& tileset_image_path);
+        void initialize_tiles(const TiledTileset& tileset, const std::filesystem::path& tileset_image_path);
+
+        void initialize_tile_animation(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset);
+
+        void initialize_tile_collision(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset);
 
         void render_tile_layer(Renderer& renderer, const TiledLayer& layer) const;
 
