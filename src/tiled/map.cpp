@@ -9,6 +9,7 @@ namespace Storytime {
     extern void from_json(const nlohmann::json& json, TiledLayer& layer);
 
     void from_json(const nlohmann::json& json, TiledMap& tiled_map) {
+        ST_LOG_DEBUG("Parsing Tiled map from JSON");
         tiled_map.height = json.at("height").get<int>();
         tiled_map.infinite = json.at("infinite").get<bool>();
         tiled_map.layers = json.at("layers").get<std::vector<TiledLayer>>();

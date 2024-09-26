@@ -24,6 +24,8 @@
 #include "tiled/map.h"
 
 // Scene
+#include "scene/components.h"
+#include "scene/scene.h"
 #include "scene/tiled_scene.h"
 
 // Namespaces

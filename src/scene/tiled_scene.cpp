@@ -1,24 +1,32 @@
 #include "tiled_scene.h"
+#include "components.h"
 
 namespace Storytime {
-    constexpr f32 TiledScene::SCALE = 2.0f;
+    constexpr f32 TiledScene::SCALE = 1.0f;
     constexpr bool TiledScene::DEBUG = false;
 
     TiledScene::TiledScene(const TiledSceneConfig& config)
-        : config(config), tiled_map(config.resource_loader->load_tiled_map(config.tiled_map_path.string().c_str())) {
-        initialize_tiles();
+        : config(config), tiled_map(config.resource_loader->load_tiled_map(config.tiled_map_path.c_str())) {
     }
 
-    void TiledScene::update(f64 timestep) {
+    void TiledScene::on_initialize() {
+        initialize_tiles();
+        initialize_objects();
+    }
+
+    void TiledScene::on_update(f64 timestep) {
         for (auto& [global_tile_id, tile] : tiles) {
             if (!tile.is_animated()) {
                 continue;
             }
             tile.update(timestep);
         }
+        for (entt::entity entity : entity_registry.view<TransformComponent>()) {
+
+        }
     }
 
-    void TiledScene::render(Renderer& renderer) const {
+    void TiledScene::on_render(Renderer& renderer) {
         for (const TiledLayer& layer : tiled_map->layers) {
             if (!layer.visible) {
                 continue;
@@ -29,6 +37,45 @@ namespace Storytime {
                 render_object_layer(renderer, layer);
             }
         }
+        for (entt::entity entity : entity_registry.view<TransformComponent, SpriteComponent>()) {
+            auto& transform_component = entity_registry.get<TransformComponent>(entity);
+            auto& sprite_component = entity_registry.get<SpriteComponent>(entity);
+
+            Sprite::RenderConfig render_config{
+                .position = transform_component.position,
+                .debug = true,
+            };
+
+            sprite_component.sprite.render(renderer, render_config);
+        }
+    }
+
+    void TiledScene::on_create_entities() {
+        std::filesystem::path tiled_map_directory_path = config.tiled_map_path.parent_path();
+
+        for (const TiledLayer& layer : tiled_map->layers) {
+            if (!layer.visible || layer.type != "objectgroup") {
+                continue;
+            }
+            for (const TiledObject& tiled_object : layer.objects) {
+                entt::entity entity = entity_registry.create();
+
+                TagComponent tag_component{};
+                tag_component.tag = tiled_object.name.size() > 0 ? tiled_object.name : "Tiled Object";
+                entity_registry.emplace<TagComponent>(entity, tag_component);
+
+                TransformComponent transform_component{};
+                transform_component.position = glm::vec3(tiled_object.x, tiled_object.y, 0.0f);
+                transform_component.size = glm::vec3((f32) tiled_object.width, (f32) tiled_object.height, 1.0f);
+                entity_registry.emplace<TransformComponent>(entity, transform_component);
+
+                on_add_entity_components(entity, tiled_object, tiled_map_directory_path);
+            }
+        }
+    }
+
+    void TiledScene::initialize_objects() {
+        on_create_entities();
     }
 
     void TiledScene::initialize_tiles() {
@@ -136,7 +183,7 @@ namespace Storytime {
     }
 
     void TiledScene::initialize_tile_collision(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset) {
-        
+
     }
 
     void TiledScene::render_tile_layer(Renderer& renderer, const TiledLayer& layer) const {
@@ -173,30 +220,6 @@ namespace Storytime {
     }
 
     void TiledScene::render_object_layer(Renderer& renderer, const TiledLayer& layer) const {
-        for (const TiledObject& object : layer.objects) {
-            if (!object.visible) {
-                continue;
-            }
 
-            f32 x = object.x;
-            f32 y = object.y;
-
-            f32 scale = SCALE;
-
-            f32 quad_x = x * scale;
-            f32 quad_y = y * scale;
-
-            u32 sprite_width = 16.0f; // (f32) object.width;
-            u32 sprite_height = 16.0f; // (f32) object.height;
-
-            f32 quad_width = sprite_width * scale;
-            f32 quad_height = sprite_height * scale;
-
-            Quad quad;
-            quad.color = {0.0f, 1.0f, 0.0f, 1.0f};
-            quad.position = {quad_x, quad_y, 0.0f};
-            quad.size = {quad_width, quad_height};
-            renderer.render_quad(quad);
-        }
     }
 }

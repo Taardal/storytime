@@ -1,19 +1,16 @@
 #include "random.h"
 
 namespace Storytime {
-    Random::Random()
-        : generator(std::mt19937(std::random_device()())),
-          distribution(std::uniform_int_distribution<std::mt19937::result_type>()) {
-    }
+    std::mt19937 Random::generator = std::mt19937(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> Random::distribution = std::uniform_int_distribution<std::mt19937::result_type>();
 
-    Random& Random::get() {
-        static Random random;
-        return random;
-    }
-
-    float Random::get_float(float min, float max) {
-        Random& random = get();
-        float x = static_cast<float>(random.distribution(random.generator)) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    f32 Random::get_float(f32 min, f32 max) {
+        f32 x = (f32) distribution(generator) / (f32) std::numeric_limits<uint32_t>::max();
         return x * (max - min) + min;
+    }
+
+    i32 Random::get_int(i32 min, i32 max) {
+        std::uniform_int_distribution distribution(min, max);
+        return distribution(generator);
     }
 }

@@ -52,6 +52,9 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
+        ${STORYTIME_SRC_DIR}/scene/components.h
+        ${STORYTIME_SRC_DIR}/scene/scene.h
+        ${STORYTIME_SRC_DIR}/scene/scene.cpp
         ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
         ${STORYTIME_SRC_DIR}/scene/tiled_scene.cpp
         ${STORYTIME_SRC_DIR}/system/assert.h
@@ -73,6 +76,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
+        ${STORYTIME_SRC_DIR}/system/uuid.h
+        ${STORYTIME_SRC_DIR}/system/uuid.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
         ${STORYTIME_SRC_DIR}/system/utils.cpp
         ${STORYTIME_SRC_DIR}/tiled/layer.cpp
@@ -83,6 +88,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/tiled/object.h
         ${STORYTIME_SRC_DIR}/tiled/property.cpp
         ${STORYTIME_SRC_DIR}/tiled/property.h
+        ${STORYTIME_SRC_DIR}/tiled/template.cpp
+        ${STORYTIME_SRC_DIR}/tiled/template.h
         ${STORYTIME_SRC_DIR}/tiled/tile.cpp
         ${STORYTIME_SRC_DIR}/tiled/tile.h
         ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
@@ -134,6 +141,15 @@ endif()
 # --------------------------------------------------------------------------------------------------------------
 
 include(FetchContent)
+
+# EnTT
+FetchContent_Declare(
+        entt
+        GIT_REPOSITORY https://github.com/skypjack/entt
+        GIT_TAG v3.13.1
+)
+FetchContent_MakeAvailable(entt)
+target_link_libraries(${PROJECT_NAME} EnTT::EnTT)
 
 # GLM
 FetchContent_Declare(

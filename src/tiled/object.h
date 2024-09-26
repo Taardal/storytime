@@ -4,6 +4,7 @@
 
 namespace Storytime {
     struct TiledObject {
+        int gid;
         int height;
         int id;
         std::string name;

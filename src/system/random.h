@@ -5,18 +5,12 @@
 namespace Storytime {
     class Random {
     private:
-        std::mt19937 generator;
-        std::uniform_int_distribution<std::mt19937::result_type> distribution;
-
-        Random();
-
-        static Random& get();
+        static std::mt19937 generator;
+        static std::uniform_int_distribution<std::mt19937::result_type> distribution;
 
     public:
-        Random(Random const&) = delete;
+        static f32 get_float(f32 min = 0.0f, f32 max = 1.0f);
 
-        void operator=(Random const&) = delete;
-
-        static float get_float(float min = 0, float max = 1);
+        static i32 get_int(i32 min = 0, i32 max = 1);
     };
 }

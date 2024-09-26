@@ -5,10 +5,15 @@ namespace Storytime {
     extern void from_json(const nlohmann::json& json, TiledProperty& property);
 
     void from_json(const nlohmann::json& json, TiledObject& object) {
+        if (json.contains("gid")) {
+            object.gid = json.at("gid").get<int>();
+        }
         object.height = json.at("height").get<int>();
         object.id = json.at("id").get<int>();
         object.name = json.at("name").get<std::string>();
-        object.point = json.at("point").get<bool>();
+        if (json.contains("point")) {
+            object.point = json.at("point").get<bool>();
+        }
         if (json.contains("properties")) {
             object.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
