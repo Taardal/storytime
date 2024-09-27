@@ -53,6 +53,7 @@ add_library(
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/scene/components.h
+        ${STORYTIME_SRC_DIR}/scene/direction.h
         ${STORYTIME_SRC_DIR}/scene/scene.h
         ${STORYTIME_SRC_DIR}/scene/scene.cpp
         ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
@@ -63,8 +64,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
-#        ${STORYTIME_SRC_DIR}/system/error_signal.h
-#        ${STORYTIME_SRC_DIR}/system/error_signal.cpp
+        ${STORYTIME_SRC_DIR}/system/error_signal.h
+        ${STORYTIME_SRC_DIR}/system/error_signal.cpp
         ${STORYTIME_SRC_DIR}/system/file_system.h
         ${STORYTIME_SRC_DIR}/system/file_system.cpp
         ${STORYTIME_SRC_DIR}/system/log.h

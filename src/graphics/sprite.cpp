@@ -96,7 +96,7 @@ namespace Storytime {
 
         if (render_config.debug) {
             Quad debug_quad;
-            debug_quad.color = { 1.0f, 0.0f, 0.0f, 1.0f };
+            debug_quad.color = render_config.debug_color;
             debug_quad.size = { quad_width, quad_height };
             debug_quad.position = { quad_x, quad_y, 0.0f };
             renderer.render_quad(debug_quad);

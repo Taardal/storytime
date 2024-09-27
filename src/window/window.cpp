@@ -19,6 +19,7 @@ namespace Storytime {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.context_version_minor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_MAXIMIZED, config.maximized);
+        glfwWindowHint(GLFW_RESIZABLE, config.resizable);
 #ifdef ST_PLATFORM_MACOS
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 #endif

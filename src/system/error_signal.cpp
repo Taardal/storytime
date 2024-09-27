@@ -118,9 +118,6 @@ namespace Storytime {
 
 #ifdef ST_PRINT_UNIX_STACKTRACE
 
-#include <cxxabi.h>
-#include <execinfo.h>
-
     void print_unix_stacktrace() {
         // Number of stacktrace lines to be printed
         constexpr int max_stack_size = 25;

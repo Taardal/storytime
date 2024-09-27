@@ -4,21 +4,21 @@
 #include "template.h"
 
 namespace Storytime {
-    extern void from_json(const nlohmann::json& json, TiledProperty& property);
+    extern void from_json(const nlohmann::json&, TiledProperty&);
 
-    extern void from_json(const nlohmann::json&, TiledObject& object);
+    extern void from_json(const nlohmann::json&, TiledObject&);
 
-    extern void from_json(const nlohmann::json&, TiledObjectTemplateRef& object_template_ref);
+    extern void from_json(const nlohmann::json&, TiledObjectTemplateRef&);
 
-    void from_json(const nlohmann::json& json, TiledLayer& layer) {
-        layer.name = json.at("name").get<std::string>();
-        layer.type = json.at("type").get<std::string>();
-        layer.id = json.at("id").get<int>();
-        layer.x = json.at("x").get<int>();
-        layer.y = json.at("y").get<int>();
-        layer.opacity = json.at("opacity").get<int>();
-        layer.visible = json.at("visible").get<bool>();
-        if (layer.type == "objectgroup") {
+    void from_json(const nlohmann::json& json, TiledLayer& data) {
+        data.name = json.at("name").get<std::string>();
+        data.type = json.at("type").get<std::string>();
+        data.id = json.at("id").get<int>();
+        data.x = json.at("x").get<int>();
+        data.y = json.at("y").get<int>();
+        data.opacity = json.at("opacity").get<int>();
+        data.visible = json.at("visible").get<bool>();
+        if (data.type == "objectgroup") {
 
 
             // layer.objects = json.at("objects").get<std::vector<TiledObject>>();
@@ -26,26 +26,26 @@ namespace Storytime {
                 for (const nlohmann::json& object_json : json.at("objects")) {
                     bool is_object_template_ref = object_json.contains("template");
                     if (is_object_template_ref) {
-                        layer.object_template_refs.push_back(object_json.get<TiledObjectTemplateRef>());
+                        data.object_template_refs.push_back(object_json.get<TiledObjectTemplateRef>());
                     } else {
-                        layer.objects.push_back(object_json.get<TiledObject>());
+                        data.objects.push_back(object_json.get<TiledObject>());
                     }
                 }
             }
 
 
-            layer.draworder = json.at("draworder").get<std::string>();
-        } else if (layer.type == "tilelayer") {
-            layer.data = json.at("data").get<std::vector<int>>();
-            layer.width = json.at("width").get<int>();
-            layer.height = json.at("height").get<int>();
-        } else if (layer.type == "image") {
-            layer.image = json.at("image").get<std::string>();
-        } else if (layer.type == "group") {
-            layer.layers = json.at("layers").get<std::vector<TiledLayer>>();
+            data.draworder = json.at("draworder").get<std::string>();
+        } else if (data.type == "tilelayer") {
+            data.data = json.at("data").get<std::vector<int>>();
+            data.width = json.at("width").get<int>();
+            data.height = json.at("height").get<int>();
+        } else if (data.type == "image") {
+            data.image = json.at("image").get<std::string>();
+        } else if (data.type == "group") {
+            data.layers = json.at("layers").get<std::vector<TiledLayer>>();
         }
         if (json.contains("properties")) {
-            layer.properties = json.at("properties").get<std::vector<TiledProperty>>();
+            data.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
     }
 }

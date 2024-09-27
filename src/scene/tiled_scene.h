@@ -19,11 +19,11 @@ namespace Storytime {
         static const f32 SCALE;
         static const bool DEBUG;
 
-    private:
+    protected:
         TiledSceneConfig config;
         Shared<TiledMap> tiled_map;
         std::map<GlobalTileID, Sprite> tiles;
-        std::map<GlobalTiledID, TiledObjectTemplate> object_templates;
+        std::map<GlobalTiledID, TiledObject> tile_colliders;
 
     public:
         explicit TiledScene(const TiledSceneConfig& config);
@@ -42,6 +42,8 @@ namespace Storytime {
             const TiledObject& tiled_object,
             const std::filesystem::path& tiled_map_directory_path
         ) {}
+
+        void move_entity1(f64 timestep, entt::entity entity);
 
     private:
         void initialize_tiles();

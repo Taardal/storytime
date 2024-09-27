@@ -17,4 +17,16 @@ namespace Storytime {
         float x;
         float y;
     };
+
+    struct TiledObjectGroup {
+        std::string draworder;
+        int id;
+        std::string name;
+        std::vector<TiledObject> objects;
+        float opacity;
+        std::string type;
+        bool visible;
+        int x;
+        int y;
+    };
 }

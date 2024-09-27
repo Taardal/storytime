@@ -43,6 +43,7 @@ namespace Storytime {
             glm::vec2 position = { 0.0f, 0.0f };
             f32 scale = 1.0f;
             bool debug = false;
+            glm::vec4 debug_color = { 1.0f, 0.0f, 0.0f, 1.0f };
         };
 
         void render(Renderer& renderer, const RenderConfig& render_config) const;

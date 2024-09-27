@@ -5,6 +5,8 @@
 
 #if defined(ST_PLATFORM_MACOS) || defined(ST_PLATFORM_LINUX)
     #define ST_PRINT_UNIX_STACKTRACE
+    #include <cxxabi.h>
+    #include <execinfo.h>
 #elif defined(ST_PLATFORM_WINDOWS)
     #define ST_PRINT_WINDOWS_STACKTRACE
 #endif

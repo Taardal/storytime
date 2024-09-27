@@ -25,6 +25,7 @@
 
 // Scene
 #include "scene/components.h"
+#include "scene/direction.h"
 #include "scene/scene.h"
 #include "scene/tiled_scene.h"
 
