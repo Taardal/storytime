@@ -27,14 +27,4 @@ namespace Storytime {
     bool Entity::operator!=(const Entity& other) const {
         return !(*this == other);
     }
-
-    // const std::string& Entity::get_uuid() {
-    //     ST_ASSERT(has_component<IDComponent>());
-    //     return get_component<IDComponent>().uuid;
-    // }
-    //
-    // const std::string& Entity::get_name() {
-    //     ST_ASSERT(has_component<TagComponent>());
-    //     return get_component<TagComponent>().tag;
-    // }
 }
