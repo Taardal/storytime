@@ -52,9 +52,5 @@ namespace Storytime {
             ST_ASSERT(has_component<T>());
             entity_registry->remove<T>(entity);
         }
-
-        // const std::string& get_uuid();
-        //
-        // const std::string& get_name();
     };
 }
