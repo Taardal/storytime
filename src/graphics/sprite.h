@@ -27,6 +27,8 @@ namespace Storytime {
         f64 frame_time_sec = 0.0;
 
     public:
+        Sprite() = default;
+
         explicit Sprite(const SpriteConfig& config);
 
         const SpriteConfig& get_config() const;

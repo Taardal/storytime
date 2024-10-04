@@ -1,6 +1,8 @@
 #pragma once
 
 #include "graphics/renderer.h"
+#include "scene/entity.h"
+
 #include <entt/entt.hpp>
 
 namespace Storytime {
@@ -19,5 +21,8 @@ namespace Storytime {
 
     protected:
         virtual void on_create_entities() = 0;
+
+    protected:
+        Entity create_entity();
     };
 }
