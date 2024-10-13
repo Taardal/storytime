@@ -52,8 +52,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
-        ${STORYTIME_SRC_DIR}/scene/components.h
-        ${STORYTIME_SRC_DIR}/scene/direction.h
         ${STORYTIME_SRC_DIR}/scene/entity.h
         ${STORYTIME_SRC_DIR}/scene/entity.cpp
         ${STORYTIME_SRC_DIR}/scene/scene.h

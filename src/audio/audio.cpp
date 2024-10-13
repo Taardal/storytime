@@ -2,7 +2,8 @@
 
 namespace Storytime {
     Audio::Audio(AudioEngine* engine, const std::string& path) {
-        ST_ASSERT_THROW(engine != nullptr);
+        ST_ASSERT(engine != nullptr, "Invalid engine");
+
         ma_uint32 flags = 0;
         ma_sound_group* sound_group = nullptr;
         ma_fence* done_fence = nullptr;

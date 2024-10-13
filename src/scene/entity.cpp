@@ -1,11 +1,10 @@
 #include "entity.h"
-#include "scene/components.h"
 
 namespace Storytime {
     Entity::Entity(entt::entity entity, entt::registry* entity_registry)
         : entity(entity), entity_registry(entity_registry) {
-        ST_ASSERT(entity != entt::null);
-        ST_ASSERT(entity_registry != nullptr);
+        ST_ASSERT(entity != entt::null, "Invalid event");
+        ST_ASSERT(entity_registry != nullptr, "Invalid event registry");
     }
 
     Entity::operator entt::entity() const {

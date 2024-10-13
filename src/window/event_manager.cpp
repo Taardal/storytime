@@ -4,7 +4,7 @@ namespace Storytime {
     u32 EventManager::subscription_counter = 0;
 
     EventManager::EventManager(EventManagerConfig config) : config(std::move(config)) {
-        ST_ASSERT_THROW(config.queue_count > 0);
+        ST_ASSERT(config.queue_count > 0, "Event manager must have at least one queue");
         queues.resize(config.queue_count);
     }
 
@@ -41,8 +41,9 @@ namespace Storytime {
     }
 
     void EventManager::queue_event(EventType event_type, const Shared<Event>& event) {
-        ST_ASSERT(queue_index > 0);
-        ST_ASSERT(queue_index < queues.size());
+        ST_ASSERT(event != nullptr, "Event to be queued cannot be null");
+        ST_ASSERT(queue_index >= 0, "Queue index [" << queue_index << "] cannot be negative");
+        ST_ASSERT(queue_index < queues.size(), "Queue index [" << queue_index << "] must be less than queue count [" << queues.size() << "]");
         EventQueue& queue = queues[queue_index];
         queue[event_type].emplace_back(event);
         ST_LOG_TRACE("Queued event {}", event->to_string());
@@ -60,7 +61,7 @@ namespace Storytime {
             for (auto& event : events) {
                 if (auto it = subscriptions.find(event_type); it != subscriptions.end()) {
                     for (auto& [listener_id, listener] : it->second) {
-                        ST_ASSERT_THROW(event != nullptr);
+                        ST_ASSERT(event != nullptr, "Cannot process event that is null: Event queue should never contain any null events");
                         listener(*event);
                         processed_event_count++;
                         processed_event_count_for_type++;

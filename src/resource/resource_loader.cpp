@@ -32,16 +32,18 @@ namespace Storytime {
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
-        std::string path_string = path.string();
-        ST_LOG_TRACE("Loading tiled map [{}]", path_string);
+        ST_LOG_TRACE("Loading tiled map [{}]", path.c_str());
+        ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
 
         std::string json = config.file_system->read_file(path.c_str());
-        ST_ASSERT_THROW(!json.empty());
+        if (json.empty()) {
+            ST_THROW("Could not read JSON for tiled map [" << path.c_str() << "]");
+        }
 
-        TiledMap tiled_map;
-        ST_EXECUTE_THROW(tiled_map = TiledMap::create(json));
-
-        return make_shared<TiledMap>(tiled_map);
+        ST_TRY_THROW({
+            TiledMap tiled_map = TiledMap::create(json);
+            return make_shared<TiledMap>(tiled_map);
+        }, "Could not load tiled map");
     }
 
     Image ResourceLoader::load_image(const char* path) const {

@@ -71,9 +71,9 @@ namespace Storytime {
 
     void App::run() {
         running = true;
-        ST_EXECUTE_THROW(on_initialize());
-        ST_EXECUTE_THROW(game_loop());
-        ST_EXECUTE_THROW(on_terminate());
+        on_initialize();
+        game_loop();
+        on_terminate();
     }
 
     void App::stop() {

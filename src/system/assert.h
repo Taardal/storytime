@@ -21,15 +21,7 @@
 #endif
 
 #ifdef ST_ENABLE_ASSERT
-    #define ST_ASSERT(expression) \
-        if (expression) {\
-            /* Continue */\
-        } else {\
-            ST_LOG_CRITICAL("Assertion failed: [{}]", #expression); \
-            ST_BREAK(); \
-        }
-
-    #define ST_ASSERT_MSG(expression, message) \
+    #define ST_ASSERT(expression, message) \
         if (expression) {\
             /* Continue */\
         } else {\
@@ -40,6 +32,5 @@
             ST_BREAK(); \
         }
 #else
-    #define ST_ASSERT(expression)
-    #define ST_ASSERT_MSG(expression, message)
+    #define ST_ASSERT(expression, message)
 #endif

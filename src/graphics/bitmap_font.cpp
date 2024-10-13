@@ -25,7 +25,6 @@ namespace Storytime {
             }
 
             auto it = config.coordinates.find(value);
-            ST_ASSERT_THROW(it != config.coordinates.end());
 
             u32 col = it->second.first;
             u32 row = it->second.second;

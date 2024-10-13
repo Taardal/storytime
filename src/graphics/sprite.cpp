@@ -14,18 +14,12 @@ namespace Storytime {
     }
 
     const SpritesheetCoordinate& Sprite::get_spritesheet_coordinate(u32 frame) const {
-        ST_ASSERT_MSG(
-            frame < spritesheet_coordinates.size(),
-            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
-        );
+        ST_ASSERT(frame < spritesheet_coordinates.size(), "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]");
         return spritesheet_coordinates[frame];
     }
 
     void Sprite::set_spritesheet_coordinates(const std::vector<SpritesheetCoordinate>& spritesheet_coordinates) {
-        ST_ASSERT_MSG(
-            spritesheet_coordinates.size() > 0,
-            "Sprite must have at least one spritesheet coordinate (frame) to be rendered"
-        );
+        ST_ASSERT(spritesheet_coordinates.size() > 0, "Sprite must have at least one spritesheet coordinate (frame) to be rendered");
         this->spritesheet_coordinates = spritesheet_coordinates;
 
         // Clear textures coordinates if they have already been set
@@ -64,10 +58,7 @@ namespace Storytime {
     }
 
     void Sprite::update(f64 timestep) {
-        ST_ASSERT_MSG(
-            frame < spritesheet_coordinates.size(),
-            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
-        );
+        ST_ASSERT(frame < spritesheet_coordinates.size(), "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]");
         u32 frame_duration_ms = spritesheet_coordinates[frame].frame_duration_ms;
 
         frame_time_sec += timestep;
