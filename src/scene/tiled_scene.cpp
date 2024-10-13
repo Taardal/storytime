@@ -1,26 +1,21 @@
 #include "tiled_scene.h"
-#include "scene/components.h"
 
 namespace Storytime {
-    constexpr f32 TiledScene::SCALE = 1.0f;
-    constexpr bool TiledScene::DEBUG = false;
-
-    TiledScene::TiledScene(const TiledSceneConfig& config)
-        : config(config), tiled_map(config.resource_loader->load_tiled_map(config.tiled_map_path.c_str())) {
+    TiledScene::TiledScene(const TiledSceneConfig& config) : config(config) {
+        ST_ASSERT(config.file_system != nullptr, "Invalid file system");
+        ST_ASSERT(config.resource_loader != nullptr, "Invalid resource loader");
+        ST_ASSERT(!config.tiled_map_path.empty(), "Invalid tiled map path");
     }
 
     void TiledScene::on_initialize() {
+        tiled_map = config.resource_loader->load_tiled_map(config.tiled_map_path.c_str());
+        ST_ASSERT(tiled_map != nullptr, "Tiled map was not loaded");
+
         initialize_tiles();
-        initialize_objects();
     }
 
     void TiledScene::on_update(f64 timestep) {
-        for (auto& [global_tile_id, tile] : tiles) {
-            if (!tile.is_animated()) {
-                continue;
-            }
-            tile.update(timestep);
-        }
+        update_tiles(timestep);
     }
 
     void TiledScene::on_render(Renderer& renderer) {
@@ -28,40 +23,11 @@ namespace Storytime {
             if (!layer.visible) {
                 continue;
             }
-            if (layer.type == "tilelayer") {
-                render_tile_layer(renderer, layer);
-            } else if (layer.type == "objectgroup") {
-                render_object_layer(renderer, layer);
-            }
-        }
-    }
-
-    void TiledScene::on_create_entities() {
-        std::filesystem::path tiled_map_directory_path = config.tiled_map_path.parent_path();
-
-        for (const TiledLayer& layer : tiled_map->layers) {
-            if (!layer.visible || layer.type != "objectgroup") {
+            if (layer.type != "tilelayer") {
                 continue;
             }
-            for (const TiledObject& tiled_object : layer.objects) {
-                entt::entity entity = entity_registry.create();
-
-                TagComponent tag_component{};
-                tag_component.tag = tiled_object.name.size() > 0 ? tiled_object.name : "Tiled Object";
-                entity_registry.emplace<TagComponent>(entity, tag_component);
-
-                TransformComponent transform_component{};
-                transform_component.position = glm::vec3(tiled_object.x, tiled_object.y, 0.0f);
-                transform_component.size = glm::vec3((f32) tiled_object.width, (f32) tiled_object.height, 1.0f);
-                entity_registry.emplace<TransformComponent>(entity, transform_component);
-
-                on_add_entity_components(entity, tiled_object, tiled_map_directory_path);
-            }
+            render_tile_layer(renderer, layer);
         }
-    }
-
-    void TiledScene::initialize_objects() {
-        on_create_entities();
     }
 
     void TiledScene::initialize_tiles() {
@@ -74,7 +40,9 @@ namespace Storytime {
             auto tileset_path = std::filesystem::path(tiled_map_directory_path).append(tileset_ref.source);
 
             std::string tileset_json = config.file_system->read_file(tileset_path.c_str());
-            ST_ASSERT_THROW(!tileset_json.empty());
+            if (tileset_json.empty()) {
+                ST_THROW("Could not read JSON for tileset [" << tileset_path.c_str() << "]");
+            }
 
             auto tileset = TiledTileset::create(tileset_json);
             tileset.firstgid = tileset_ref.firstgid;
@@ -141,7 +109,7 @@ namespace Storytime {
         // Find static sprite that will be updated to be animated
         u32 global_tile_id = first_global_tile_id_in_tileset + tiled_tile.id;
         auto tile_iterator = tiles.find(global_tile_id);
-        ST_ASSERT_THROW(tile_iterator != tiles.end());
+        ST_ASSERT(tile_iterator != tiles.end(), "Cannot initialize animation for tile that does not exist");
         Sprite& tile = tile_iterator->second;
 
         // Get spritesheet coordinates for all sprites in animation
@@ -151,7 +119,7 @@ namespace Storytime {
             // Find static sprite for the current frame of the animation
             u32 animation_frame_tile_global_tile_id = first_global_tile_id_in_tileset + animation_frame.tileid;
             auto animation_frame_tile_iterator = tiles.find(animation_frame_tile_global_tile_id);
-            ST_ASSERT_THROW(animation_frame_tile_iterator != tiles.end());
+            ST_ASSERT(animation_frame_tile_iterator != tiles.end(), "Cannot use tile that does not exist for animation sequence");
             Sprite& animation_frame_tile = animation_frame_tile_iterator->second;
 
             // Get the spritesheet coordinate of the static sprite and add it to the list of spritesheet
@@ -171,6 +139,15 @@ namespace Storytime {
     void TiledScene::initialize_tile_collision(const TiledTile& tiled_tile, u32 first_global_tile_id_in_tileset) {
         u32 global_tile_id = first_global_tile_id_in_tileset + tiled_tile.id;
         tile_colliders.emplace(global_tile_id, tiled_tile.objectgroup.objects[0]);
+    }
+
+    void TiledScene::update_tiles(f64 timestep) {
+        for (auto& [global_tile_id, tile] : tiles) {
+            if (!tile.is_animated()) {
+                continue;
+            }
+            tile.update(timestep);
+        }
     }
 
     void TiledScene::render_tile_layer(Renderer& renderer, const TiledLayer& layer) const {
@@ -198,8 +175,8 @@ namespace Storytime {
 
                 Sprite::RenderConfig tile_render_config;
                 tile_render_config.position = {tile_x, tile_y};
-                tile_render_config.scale = SCALE;
-                tile_render_config.debug = DEBUG;
+                tile_render_config.scale = config.scale;
+                tile_render_config.debug = config.debug;
 
                 tile.render(renderer, tile_render_config);
 
@@ -216,9 +193,5 @@ namespace Storytime {
                 renderer.render_quad(q);
             }
         }
-    }
-
-    void TiledScene::render_object_layer(Renderer& renderer, const TiledLayer& layer) const {
-
     }
 }

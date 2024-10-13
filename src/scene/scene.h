@@ -20,9 +20,6 @@ namespace Storytime {
         virtual void on_render(Renderer& renderer) = 0;
 
     protected:
-        virtual void on_create_entities() = 0;
-
-    protected:
         Entity create_entity();
     };
 }

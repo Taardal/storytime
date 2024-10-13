@@ -55,7 +55,7 @@ namespace Storytime {
     }
 
     Window::operator GLFWwindow*() const {
-        ST_ASSERT(glfw_window != nullptr);
+        ST_ASSERT(glfw_window != nullptr, "Cannot access GLFW window object that has not been created or is already destroyed");
         return glfw_window;
     }
 
@@ -140,9 +140,9 @@ namespace Storytime {
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
         ST_LOG_TRACE(event.to_string());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
-        ST_ASSERT(window != nullptr);
+        ST_ASSERT(window != nullptr, "Invalid GLFW user pointer: Window object must exist when sending events");
         auto event_manager = window->config.event_manager;
-        ST_ASSERT(event_manager != nullptr);
+        ST_ASSERT(event_manager != nullptr, "Invalid GLFW user pointer: Event manager object must exist when sending events");
         event_manager->trigger_event(event_type, event);
     }
 }

@@ -40,7 +40,8 @@ namespace Storytime {
 
     void Framebuffer::initialize() {
         ST_GL_CALL(glGenFramebuffers(1, &id));
-        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, id)); {
+        ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, id));
+        {
             TextureConfig textureConfig;
             textureConfig.width = config.width;
             textureConfig.height = config.height;
@@ -48,7 +49,8 @@ namespace Storytime {
             textureConfig.internal_format = GL_RGBA8;
             color_attachment_texture = new Texture(textureConfig);
             attach_texture(GL_COLOR_ATTACHMENT0, color_attachment_texture);
-        } {
+        }
+        {
             TextureConfig textureConfig;
             textureConfig.width = config.width;
             textureConfig.height = config.height;
@@ -57,7 +59,10 @@ namespace Storytime {
             depth_attachment_texture = new Texture(textureConfig);
             attach_texture(GL_DEPTH_ATTACHMENT, depth_attachment_texture);
         }
-        ST_GL_CALL(ST_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE));
+        ST_GL_CALL(GLenum framebuffer_status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        if (framebuffer_status != GL_FRAMEBUFFER_COMPLETE) {
+            ST_THROW("Could not initialize framebuffer: initialization was incomplete");
+        }
         ST_GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 

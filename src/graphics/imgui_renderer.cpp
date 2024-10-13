@@ -5,6 +5,8 @@
 
 namespace Storytime {
     ImGuiRenderer::ImGuiRenderer(const ImGuiRendererConfig& config) : config(config) {
+        ST_ASSERT(config.window != nullptr, "Invalid window");
+
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
@@ -14,7 +16,6 @@ namespace Storytime {
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-        ST_ASSERT(config.window != nullptr);
         bool glfw_callbacks_enabled = true;
         ImGui_ImplGlfw_InitForOpenGL(*config.window, glfw_callbacks_enabled);
         ImGui_ImplOpenGL3_Init(config.glsl_version.c_str());

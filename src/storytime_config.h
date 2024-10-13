@@ -6,7 +6,8 @@ namespace Storytime {
         char** args = nullptr;
 
         const char* operator[](int index) const {
-            ST_ASSERT(index < count);
+            ST_ASSERT(index > 0, "Index [" << index << "] must be greater than zero");
+            ST_ASSERT(index < count, "Index [" << index << "] must be less than argument count [" << count << "]");
             return args[index];
         }
     };
