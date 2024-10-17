@@ -1,6 +1,6 @@
 #pragma once
 
-#include "window/event_manager.h"
+#include "system/event_manager.h"
 
 #include <GLFW/glfw3.h>
 

@@ -94,47 +94,47 @@ namespace Storytime {
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
         WindowResizeEvent event(width, height);
-        on_event(glfw_window, EventType::WindowResize, event);
+        on_event(glfw_window, WindowResizeEvent::type, event);
     }
 
     void Window::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             KeyPressedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyPressed, event);
+            on_event(glfw_window, KeyPressedEvent::type, event);
         } else if (action == GLFW_RELEASE) {
             KeyReleasedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyReleased, event);
+            on_event(glfw_window, KeyReleasedEvent::type, event);
         } else if (action == GLFW_REPEAT) {
             KeyRepeatedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyRepeated, event);
+            on_event(glfw_window, KeyRepeatedEvent::type, event);
         }
     }
 
     void Window::on_mouse_button_change(GLFWwindow* glfw_window, i32 button, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             MouseButtonPressedEvent event(button);
-            on_event(glfw_window, EventType::MouseButtonPressed, event);
+            on_event(glfw_window, MouseButtonPressedEvent::type, event);
         }
         if (action == GLFW_RELEASE) {
             MouseButtonReleasedEvent event(button);
-            on_event(glfw_window, EventType::MouseButtonReleased, event);
+            on_event(glfw_window, MouseButtonReleasedEvent::type, event);
         }
     }
 
     void Window::on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset) {
         MouseScrollEvent event(xoffset, yoffset);
-        on_event(glfw_window, EventType::MouseScroll, event);
+        on_event(glfw_window, MouseScrollEvent::type, event);
     }
 
     void Window::on_window_close_change(GLFWwindow* glfw_window) {
         WindowCloseEvent event{};
-        on_event(glfw_window, EventType::WindowClose, event);
+        on_event(glfw_window, WindowCloseEvent::type, event);
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
         bool minimized = iconified == 1;
         WindowMinimizeEvent event(minimized);
-        on_event(glfw_window, EventType::WindowMinimize, event);
+        on_event(glfw_window, WindowMinimizeEvent::type, event);
     }
 
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {

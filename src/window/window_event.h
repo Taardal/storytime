@@ -1,13 +1,17 @@
 #pragma once
 
-#include "event.h"
+#include "system/event.h"
 
 namespace Storytime {
     struct WindowCloseEvent : Event {
+        static const EventType type;
+        static const std::string name;
         WindowCloseEvent();
     };
 
     struct WindowResizeEvent : Event {
+        static const EventType type;
+        static const std::string name;
         i32 width;
         i32 height;
 
@@ -17,6 +21,8 @@ namespace Storytime {
     };
 
     struct WindowMinimizeEvent final : Event {
+        static const EventType type;
+        static const std::string name;
         bool minimized;
 
         explicit WindowMinimizeEvent(bool minimized);

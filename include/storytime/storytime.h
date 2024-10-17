@@ -4,6 +4,7 @@
 #include "storytime_main.h"
 
 // System
+#include "system/event_manager.h"
 #include "system/defer.h"
 #include "system/random.h"
 

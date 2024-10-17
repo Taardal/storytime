@@ -11,7 +11,7 @@ namespace Storytime {
     SubscriptionID EventManager::subscribe(const EventType event_type, const Subscription& subscription) {
         SubscriptionID subscription_id = ++subscription_counter;
         subscriptions[event_type].emplace_back(subscription_id, subscription);
-        ST_LOG_TRACE("Added subscription with ID [{}] for event type [{}]", subscription_id, Event::get_name(event_type));
+        ST_LOG_TRACE("Added subscription with ID [{}] for event type [{}]", subscription_id, event_type);
         return subscription_id;
     }
 
@@ -21,7 +21,7 @@ namespace Storytime {
             for (int i = 0; i < event_subscriptions.size(); ++i) {
                 if (event_subscriptions[i].first == subscription_id) {
                     event_subscriptions.erase(event_subscriptions.begin() + i);
-                    ST_LOG_TRACE("Removed subscription with ID [{}] for event type [{}]", subscription_id, Event::get_name(event_type));
+                    ST_LOG_TRACE("Removed subscription with ID [{}] for event type [{}]", subscription_id, event_type);
                     return true;
                 }
             }
@@ -70,9 +70,9 @@ namespace Storytime {
                 }
             }
             if (processed_event_count_for_type > 0) {
-                ST_LOG_TRACE("Processed [{}] events of type [{}]", processed_event_count_for_type, Event::get_name(event_type));
+                ST_LOG_TRACE("Processed [{}] events of type [{}]", processed_event_count_for_type, event_type);
                 if (processed_event_count_for_type < events.size()) {
-                    ST_LOG_WARNING("Processed only [{}] of [{}] events of type [{}]", processed_event_count_for_type, events.size(), Event::get_name(event_type));
+                    ST_LOG_WARNING("Processed only [{}] of [{}] events of type [{}]", processed_event_count_for_type, events.size(), event_type);
                 }
             }
         }

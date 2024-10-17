@@ -65,6 +65,10 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/error.cpp
         ${STORYTIME_SRC_DIR}/system/error_signal.h
         ${STORYTIME_SRC_DIR}/system/error_signal.cpp
+        ${STORYTIME_SRC_DIR}/system/event.h
+        ${STORYTIME_SRC_DIR}/system/event.cpp
+        ${STORYTIME_SRC_DIR}/system/event_manager.h
+        ${STORYTIME_SRC_DIR}/system/event_manager.cpp
         ${STORYTIME_SRC_DIR}/system/file_system.h
         ${STORYTIME_SRC_DIR}/system/file_system.cpp
         ${STORYTIME_SRC_DIR}/system/log.h
@@ -94,10 +98,6 @@ add_library(
         ${STORYTIME_SRC_DIR}/tiled/tile.h
         ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
         ${STORYTIME_SRC_DIR}/tiled/tileset.h
-        ${STORYTIME_SRC_DIR}/window/event.h
-        ${STORYTIME_SRC_DIR}/window/event.cpp
-        ${STORYTIME_SRC_DIR}/window/event_manager.h
-        ${STORYTIME_SRC_DIR}/window/event_manager.cpp
         ${STORYTIME_SRC_DIR}/window/key.cpp
         ${STORYTIME_SRC_DIR}/window/key.h
         ${STORYTIME_SRC_DIR}/window/key_event.h

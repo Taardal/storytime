@@ -1,7 +1,7 @@
 #include "storytime_main.h"
 #include "system/service_locator.h"
 #include "system/file_system.h"
-#include "window/event_manager.h"
+#include "system/event_manager.h"
 #include "window/window.h"
 #include "audio/audio_engine.h"
 #include "resource/resource_loader.h"
@@ -10,6 +10,7 @@
 #include "graphics/imgui_renderer.h"
 #include "graphics/camera.h"
 #include "system/clock.h"
+#include "window/window_event.h"
 
 extern "C" void on_create();
 
@@ -40,7 +41,7 @@ namespace Storytime {
             EventManager event_manager({
                 .queue_count = 1,
             });
-            event_manager.subscribe(EventType::WindowClose, [&](const Event&) {
+            event_manager.subscribe(WindowCloseEvent::type, [&](const Event&) {
                 exit();
             });
 
