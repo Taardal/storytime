@@ -47,4 +47,6 @@ namespace Storytime {
     void start(const Config& config);
 
     void stop();
+
+    void run(const Config& config);
 }

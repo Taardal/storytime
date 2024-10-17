@@ -22,17 +22,41 @@ extern "C" void on_destroy();
 namespace Storytime {
     bool running = false;
 
+    void start(const Config& config) {
+#ifdef ST_TRACK_MEMORY
+        std::atexit(MemoryTracker::terminate);
+#endif
+        initialize_error_signal_handlers();
+        set_log_level(config.log_level);
+        try {
+            running = true;
+            run(config);
+        } catch (const Error& e) {
+            ST_LOG_CRITICAL("Fatal error");
+            e.print_stacktrace();
+        } catch (const std::exception& e) {
+            ST_LOG_CRITICAL("Fatal error: {}", e.what());
+        }
+    }
+
+    void stop() {
+        running = false;
+    }
+
     void run(const Config& config) {
-
         // -------------------------------------------------------------------------------------
-        // Create
+        // Initialize engine
         // -------------------------------------------------------------------------------------
 
-        ServiceLocator service_locator;
         FileSystem file_system;
+
         EventManager event_manager({
             .queue_count = 1,
         });
+        event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
+            stop();
+        });
+
         Window window({
             .event_manager = &event_manager,
             .title = config.window_title,
@@ -43,11 +67,14 @@ namespace Storytime {
             .context_version_major = config.open_gl_version_major,
             .context_version_minor = config.open_gl_version_minor,
         });
+
         AudioEngine audio_engine;
+
         ResourceLoader resource_loader({
             .file_system = &file_system,
             .audio_engine = &audio_engine
         });
+
         OpenGL open_gl({
             .window = &window,
             .log_level = config.log_level,
@@ -55,17 +82,24 @@ namespace Storytime {
             .minor_version = config.open_gl_version_minor,
             .glsl_version = config.glsl_version,
         });
+
         Renderer renderer(&resource_loader);
+        renderer.set_clear_color({0.1f, 0.1f, 0.1f});
+
         ImGuiRenderer imgui_renderer({
             .window = &window,
             .glsl_version = config.glsl_version,
         });
+
         Camera camera;
+        camera.set_projection({
+            .left = 0,
+            .right = static_cast<float>(config.window_width),
+            .top = 0,
+            .bottom = static_cast<float>(config.window_height),
+        });
 
-        // -------------------------------------------------------------------------------------
-        // Initialize
-        // -------------------------------------------------------------------------------------
-
+        ServiceLocator service_locator;
         service_locator.set<Window>(&window);
         service_locator.set<EventManager>(&event_manager);
         service_locator.set<AudioEngine>(&audio_engine);
@@ -74,21 +108,8 @@ namespace Storytime {
         service_locator.set<ImGuiRenderer>(&imgui_renderer);
         service_locator.set<Camera>(&camera);
 
-        event_manager.subscribe(EventType::WindowClose, [&](const Event& event) {
-            stop();
-        });
-
-        renderer.set_clear_color({0.1f, 0.1f, 0.1f});
-
-        camera.set_projection({
-            .left = 0,
-            .right = static_cast<float>(config.window_width),
-            .top = 0,
-            .bottom = static_cast<float>(config.window_height),
-        });
-
         // -------------------------------------------------------------------------------------
-        // Game loop
+        // Prepare game loop
         // -------------------------------------------------------------------------------------
 
         auto game_loop = [&] {
@@ -136,7 +157,7 @@ namespace Storytime {
         };
 
         // -------------------------------------------------------------------------------------
-        // Run
+        // Run game
         // -------------------------------------------------------------------------------------
 
         Shared<Error> error = nullptr;
@@ -162,7 +183,7 @@ namespace Storytime {
         }
 
         // Destroy the client, even if an error occurred during client creation or game loop, to allow the client
-        // to do cleanup like closing file or network connections or flushing logs or save game states before the
+        // to do cleanup, like closing file or network connections or flushing logs or save game states, before the
         // program exits.
         on_destroy();
 
@@ -170,26 +191,5 @@ namespace Storytime {
         if (error != nullptr) {
             throw *error;
         }
-    }
-
-    void start(const Config& config) {
-#ifdef ST_TRACK_MEMORY
-        std::atexit(MemoryTracker::terminate);
-#endif
-        initialize_error_signal_handlers();
-        set_log_level(config.log_level);
-        try {
-            running = true;
-            run(config);
-        } catch (const Error& e) {
-            ST_LOG_CRITICAL("Fatal error");
-            e.print_stacktrace();
-        } catch (const std::exception& e) {
-            ST_LOG_CRITICAL("Fatal error: {}", e.what());
-        }
-    }
-
-    void stop() {
-        running = false;
     }
 }
