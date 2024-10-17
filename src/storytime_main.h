@@ -2,7 +2,6 @@
 
 #include "system/command_line_arguments.h"
 #include "system/service_locator.h"
-#include "window/event_manager.h"
 
 namespace Storytime {
     struct Config {

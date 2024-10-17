@@ -30,8 +30,12 @@ namespace Storytime {
 
         template<typename T>
         void set(void* service) {
-            ST_ASSERT(service != nullptr, "Invalid service object: Cannot store nullptr");
             Type type = get_type<T>();
+            set(type, service);
+        }
+
+        void set(Type type, void* service) {
+            ST_ASSERT(service != nullptr, "Invalid service object: Cannot store nullptr");
             services.emplace(type, service);
         }
 
