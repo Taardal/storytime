@@ -17,6 +17,8 @@ extern "C" void on_update(f64 timestep);
 
 extern "C" void on_render();
 
+extern "C" void on_imgui_render();
+
 extern "C" void on_destroy();
 
 namespace Storytime {
@@ -113,16 +115,10 @@ namespace Storytime {
         // -------------------------------------------------------------------------------------
 
         auto game_loop = [&] {
-            struct Statistics {
-                u32 ups = 0;
-                u32 fps = 0;
-            } statistics;
-
-            f64 last_uptime_sec = 0.0;
-            f64 frame_statistics_timestep = 0.0;
-
             Clock clock;
             clock.start();
+
+            f64 last_uptime_sec = 0.0;
 
             while (running) {
                 window.update();
@@ -133,26 +129,16 @@ namespace Storytime {
 
                 on_update(timestep);
                 event_manager.process_event_queue();
-                statistics.ups++;
 
                 renderer.begin_frame(camera.get_view_projection());
                 on_render();
                 renderer.end_frame();
-                statistics.fps++;
 
 #ifdef ST_DEBUG
                 imgui_renderer.begin_frame();
-                // on_imgui_render();
+                on_imgui_render();
                 imgui_renderer.end_frame();
 #endif
-
-                frame_statistics_timestep += timestep;
-                if (frame_statistics_timestep >= 1.0) {
-                    frame_statistics_timestep = 0;
-                    // on_statistics(statistics);
-                    statistics.ups = 0;
-                    statistics.fps = 0;
-                }
             }
         };
 
