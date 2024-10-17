@@ -16,12 +16,16 @@ namespace Storytime {
         template<typename T>
         T* get() const {
             Type type = get_type<T>();
+            return static_cast<T*>(get(type));
+        }
+
+        void* get(Type type) const {
             auto it = services.find(type);
             if (it == services.end()) {
                 ST_LOG_WARNING("Could not find service of type [{}]", type.name());
                 return nullptr;
             }
-            return static_cast<T*>(it->second);
+            return it->second;
         }
 
         template<typename T>

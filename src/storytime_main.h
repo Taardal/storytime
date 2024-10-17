@@ -19,34 +19,14 @@ namespace Storytime {
         std::string glsl_version = "#version 410";
     };
 
-    class Storytime {
-    private:
-        Config config;
-        ServiceLocator* service_locator = nullptr;
+    void main(const Config& config);
 
-    public:
-        Storytime(const Config& config, ServiceLocator* service_locator)
-            : config(config), service_locator(service_locator) {
-        }
+    void exit();
 
-        const Config& cfg() const {
-            return config;
-        }
+    void* get_service(std::type_index type);
 
-        const CommandLineArguments& args() const {
-            return config.command_line_arguments;
-        }
-
-        template<class T>
-        T* get() const {
-            ST_ASSERT(service_locator != nullptr);
-            return service_locator->get<T>();
-        }
-    };
-
-    void start(const Config& config);
-
-    void stop();
-
-    void run(const Config& config);
+    template<class T>
+    T* get() {
+        return static_cast<T*>(get_service(typeid(T)));
+    }
 }

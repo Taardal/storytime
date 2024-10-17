@@ -59,7 +59,7 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
         ${STORYTIME_SRC_DIR}/system/command_line_arguments.h
-        ${STORYTIME_SRC_DIR}/system/command_line_arguments.cpp
+        ${STORYTIME_SRC_DIR}/system/defer.h
         ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
@@ -69,10 +69,10 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/file_system.cpp
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp
+        ${STORYTIME_SRC_DIR}/system/memory.h
+        ${STORYTIME_SRC_DIR}/system/memory.cpp
         ${STORYTIME_SRC_DIR}/system/memory_allocator.h
         ${STORYTIME_SRC_DIR}/system/memory_allocator.cpp
-        ${STORYTIME_SRC_DIR}/system/memory_tracker.h
-        ${STORYTIME_SRC_DIR}/system/memory_tracker.cpp
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp

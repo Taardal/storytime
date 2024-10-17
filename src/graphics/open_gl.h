@@ -22,7 +22,7 @@ namespace Storytime {
 
     class OpenGL {
     public:
-        explicit OpenGL(const OpenGLConfig& config);
+        static void initialize(const OpenGLConfig& config);
 
         static void clear_errors();
 

@@ -50,7 +50,7 @@ namespace Storytime {
     }
 
     void EventManager::queue_event(EventType event_type, const Event& event) {
-        queue_event(event_type, make_shared<Event>(event));
+        queue_event(event_type, shared<Event>(event));
     }
 
     void EventManager::process_event_queue() {

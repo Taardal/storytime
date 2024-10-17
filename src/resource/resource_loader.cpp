@@ -8,31 +8,42 @@ namespace Storytime {
     }
 
     Shared<Shader> ResourceLoader::load_shader(const char* vertex_shader_path, const char* fragment_shader_path) const {
+        ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path, fragment_shader_path);
         const std::string& vertex_shader_source = config.file_system->read_file(vertex_shader_path);
         const std::string& fragment_shader_source = config.file_system->read_file(fragment_shader_path);
-        return make_shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
+        auto shader = shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
+        ST_LOG_DEBUG("Loaded shader [{}, {}]", vertex_shader_path, fragment_shader_path);
+        return shader;
     }
 
     Shared<Texture> ResourceLoader::load_texture(const char* path) const {
+        ST_LOG_TRACE("Loading texture [{}]", path);
         Image image = load_image(path);
-        Shared<Texture> texture = make_shared<Texture>(image);
+        Shared<Texture> texture = shared<Texture>(image);
         free_image(image);
+        ST_LOG_DEBUG("Loaded texture [{}]", path);
         return texture;
     }
 
     Shared<Audio> ResourceLoader::load_audio(const char* path) const {
-        return make_shared<Audio>(config.audio_engine, path);
+        ST_LOG_TRACE("Loading audio [{}]", path);
+        auto audio = shared<Audio>(config.audio_engine, path);
+        ST_LOG_DEBUG("Loaded audio [{}]", path);
+        return audio;
     }
 
     Shared<Spritesheet> ResourceLoader::load_spritesheet(const char* path) const {
+        ST_LOG_TRACE("Loading spritesheet [{}]", path);
         SpritesheetConfig spritesheet_config = {
             .texture = load_texture(path),
         };
-        return make_shared<Spritesheet>(spritesheet_config);
+        auto spritesheet = shared<Spritesheet>(spritesheet_config);
+        ST_LOG_DEBUG("Loaded spritesheet [{}]", path);
+        return spritesheet;
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
-        ST_LOG_TRACE("Loading tiled map [{}]", path.c_str());
+        ST_LOG_TRACE("Loading Tiled map [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
 
         std::string json = config.file_system->read_file(path.c_str());

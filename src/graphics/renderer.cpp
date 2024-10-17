@@ -13,11 +13,11 @@ namespace Storytime {
     constexpr u32 Renderer::MAX_TEXTURE_SLOTS = 16;
 
     Renderer::Renderer(const ResourceLoader* resource_loader)
-        : vertex_array(make_shared<VertexArray>()),
-          vertex_buffer(make_shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+        : vertex_array(shared<VertexArray>()),
+          vertex_buffer(shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
           shader(resource_loader->load_shader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
           textures(new Shared<Texture>[MAX_TEXTURE_SLOTS]),
-          white_texture(make_shared<Texture>(1, 1)),
+          white_texture(shared<Texture>(1, 1)),
           vertices(new Vertex[VERTICES_PER_BATCH]),
           indices(new u32[INDICES_PER_BATCH]),
           vertex_count(0),
@@ -48,7 +48,7 @@ namespace Storytime {
             indices[i + 5] = offset + 0;
             offset += VERTICES_PER_QUAD;
         }
-        auto index_buffer = make_shared<IndexBuffer>(indices, INDICES_PER_BATCH);
+        auto index_buffer = shared<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertex_array->add_vertex_buffer(vertex_buffer);
         vertex_array->set_index_buffer(index_buffer);

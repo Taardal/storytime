@@ -30,21 +30,13 @@ namespace Storytime {
 
         std::string to_string() const;
     };
-}
 
-namespace Storytime {
-    typedef std::map<void*, MemoryAllocation> MemoryAllocationMap;
+    void initialize_memory_tracking();
 
-    class MemoryTracker {
-    private:
-        static MemoryAllocationMap* allocations;
+    void terminate_memory_tracking();
 
-    public:
-        static void terminate();
+    void track_memory(void* pointer, const MemoryAllocation& allocation);
 
-        static void track(void* pointer, const MemoryAllocation& allocation);
-
-        static void untrack(void* pointer);
-    };
+    void untrack_memory(void* pointer);
 }
 #endif

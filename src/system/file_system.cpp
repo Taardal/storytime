@@ -21,6 +21,7 @@ namespace Storytime {
         input_stream.seekg(0, std::ios::beg);
         input_stream.read(&result[0], length);
         input_stream.close();
+        ST_LOG_TRACE("Read file [{}]", path);
         return result;
     }
 }

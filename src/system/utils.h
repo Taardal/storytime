@@ -15,11 +15,6 @@
     string_variable = ss.str()
 
 namespace Storytime {
-    template<typename T>
-    T as(void* pointer) {
-        return reinterpret_cast<T>(pointer);
-    }
-
     bool string_ends_with(const std::string& str, const std::string& suffix);
 
     std::vector<std::string> string_split(const std::string& str, char delimiter);

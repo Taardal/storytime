@@ -10,12 +10,12 @@ namespace Storytime {
         if (ma_engine_init(ma_config, &engine) != MA_SUCCESS) {
             ST_THROW("Could not initialize miniaudio");
         }
-        ST_LOG_INFO("Initialized miniaudio");
+        ST_LOG_DEBUG("Initialized miniaudio");
     }
 
     AudioEngine::~AudioEngine() {
         ma_engine_uninit(&engine);
-        ST_LOG_INFO("Terminated miniaudio");
+        ST_LOG_DEBUG("Terminated miniaudio");
     }
 
     AudioEngine::operator ma_engine*() {

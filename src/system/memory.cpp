@@ -1,4 +1,4 @@
-#include "memory_tracker.h"
+#include "memory.h"
 
 #ifdef ST_TRACK_MEMORY
 void* operator new(const size_t size, const char* file_name, const int line_number) {
@@ -8,7 +8,7 @@ void* operator new(const size_t size, const char* file_name, const int line_numb
         .file_name = file_name,
         .line_number = line_number,
     };
-    Storytime::MemoryTracker::track(pointer, allocation);
+    Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
@@ -18,7 +18,7 @@ void* operator new(size_t size, const char* file_name, int line_number, void* po
         .file_name = file_name,
         .line_number = line_number,
     };
-    Storytime::MemoryTracker::track(pointer, allocation);
+    Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
@@ -29,7 +29,7 @@ void* operator new[](const size_t size, const char* file_name, const int line_nu
         .file_name = file_name,
         .line_number = line_number,
     };
-    Storytime::MemoryTracker::track(pointer, allocation);
+    Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
@@ -39,18 +39,63 @@ void* operator new[](size_t size, const char* file_name, int line_number, void* 
         .file_name = file_name,
         .line_number = line_number,
     };
-    Storytime::MemoryTracker::track(pointer, allocation);
+    Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
 void operator delete(void* pointer) noexcept {
-    Storytime::MemoryTracker::untrack(pointer);
+    Storytime::untrack_memory(pointer);
     free(pointer);
 }
 
 void operator delete[](void* pointer) noexcept {
-    Storytime::MemoryTracker::untrack(pointer);
+    Storytime::untrack_memory(pointer);
     free(pointer);
+}
+
+namespace Storytime {
+    std::map<void*, MemoryAllocation>* allocations = nullptr;
+
+    void initialize_memory_tracking() {
+        allocations = new std::map<void*, MemoryAllocation>();
+    }
+
+    void terminate_memory_tracking() {
+        ST_ASSERT(allocations != nullptr);
+        if (!allocations->empty()) {
+            std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
+            std::cerr << "[Storytime] Memory leaks" << std::endl;
+            std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
+            for (auto& [pointer, allocation] : *allocations) {
+                std::string allocation_string = allocation.to_string();
+                std::cerr << "- " << pointer << ", " << allocation_string << std::endl;
+            }
+        }
+        free(allocations);
+        allocations = nullptr;
+    }
+
+    void track_memory(void* pointer, const MemoryAllocation& allocation) {
+        if (allocations == nullptr) {
+            return;
+        }
+        allocations->emplace(pointer, allocation);
+        std::string allocation_string = allocation.to_string();
+        ST_LOG_TRACE("Allocated memory: {}, {}", pointer, allocation_string);
+    }
+
+    void untrack_memory(void* pointer) {
+        if (allocations == nullptr) {
+            return;
+        }
+        auto it = allocations->find(pointer);
+        if (it == allocations->end()) {
+            return;
+        }
+        std::string allocation_string = it->second.to_string();
+        allocations->erase(it);
+        ST_LOG_TRACE("Deleted memory: {}, {}", pointer, allocation_string);
+    }
 }
 
 namespace Storytime {
@@ -74,49 +119,6 @@ namespace Storytime {
             ss << ")";
         }
         return ss.str();
-    }
-}
-
-namespace Storytime {
-    MemoryAllocationMap* MemoryTracker::allocations = new MemoryAllocationMap();
-
-    void MemoryTracker::terminate() {
-        if (allocations == nullptr) {
-            return;
-        }
-        if (!allocations->empty()) {
-            std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
-            std::cerr << "[Storytime] Memory leaks" << std::endl;
-            std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
-            for (auto& [pointer, allocation] : *allocations) {
-                std::string allocation_string = allocation.to_string();
-                std::cerr << "- " << pointer << ", " << allocation_string << std::endl;
-            }
-        }
-        free(allocations);
-        allocations = nullptr;
-    }
-
-    void MemoryTracker::track(void* pointer, const MemoryAllocation& allocation) {
-        if (allocations == nullptr) {
-            return;
-        }
-        allocations->emplace(pointer, allocation);
-        std::string allocation_string = allocation.to_string();
-        ST_LOG_TRACE("Allocated memory: {}, {}", pointer, allocation_string);
-    }
-
-    void MemoryTracker::untrack(void* pointer) {
-        if (allocations == nullptr) {
-            return;
-        }
-        auto it = allocations->find(pointer);
-        if (it == allocations->end()) {
-            return;
-        }
-        std::string allocation_string = it->second.to_string();
-        allocations->erase(it);
-        ST_LOG_TRACE("Deleted memory: {}, {}", pointer, allocation_string);
     }
 }
 #endif
