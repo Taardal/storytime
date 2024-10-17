@@ -2,8 +2,6 @@
 
 // Entrypoint
 #include "storytime_main.h"
-#include "storytime_config.h"
-#include "storytime_app.h"
 
 // System
 #include "system/random.h"

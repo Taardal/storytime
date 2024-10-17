@@ -14,7 +14,7 @@ namespace Storytime {
 
     public:
         template<typename T>
-        T* get() {
+        T* get() const {
             Type type = get_type<T>();
             auto it = services.find(type);
             if (it == services.end()) {

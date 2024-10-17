@@ -12,9 +12,6 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
-        ${STORYTIME_SRC_DIR}/storytime_app.cpp
-        ${STORYTIME_SRC_DIR}/storytime_app.h
-        ${STORYTIME_SRC_DIR}/storytime_config.h
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
@@ -61,6 +58,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
+        ${STORYTIME_SRC_DIR}/system/command_line_arguments.h
+        ${STORYTIME_SRC_DIR}/system/command_line_arguments.cpp
         ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
