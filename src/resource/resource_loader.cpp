@@ -47,13 +47,11 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
 
         std::string json = config.file_system->read_file(path.c_str());
-        if (json.empty()) {
-            ST_THROW("Could not read JSON for tiled map [" << path.c_str() << "]");
-        }
+        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
             TiledMap tiled_map = TiledMap::create(json);
-            return make_shared<TiledMap>(tiled_map);
+            return shared<TiledMap>(tiled_map);
         }, "Could not load tiled map");
     }
 

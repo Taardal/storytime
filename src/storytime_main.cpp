@@ -150,9 +150,9 @@ namespace Storytime {
     }
 
     void* get_service(std::type_index type) {
-        ST_ASSERT(service_locator != nullptr);
+        ST_ASSERT(service_locator != nullptr, "Service locator must exist");
         auto service = service_locator->get(type);
-        ST_ASSERT(service != nullptr);
+        ST_ASSERT(service != nullptr, "Service must exist");
         return service;
     }
 }

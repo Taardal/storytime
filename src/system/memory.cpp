@@ -61,7 +61,7 @@ namespace Storytime {
     }
 
     void terminate_memory_tracking() {
-        ST_ASSERT(allocations != nullptr);
+        ST_ASSERT(allocations != nullptr, "Allocations map has already been terminated or was never initialized");
         if (!allocations->empty()) {
             std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cerr << "[Storytime] Memory leaks" << std::endl;
