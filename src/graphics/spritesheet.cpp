@@ -8,4 +8,8 @@ namespace Storytime {
         sprite_config.spritesheet_texture = config.texture;
         return Sprite(sprite_config);
     }
+
+    Shared<Texture> Spritesheet::get_texture() const {
+        return config.texture;
+    }
 }
