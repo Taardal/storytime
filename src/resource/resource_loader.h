@@ -23,18 +23,18 @@ namespace Storytime {
     public:
         explicit ResourceLoader(ResourceLoaderConfig config);
 
-        Shared<Shader> load_shader(const char* vertex_shader_path, const char* fragment_shader_path) const;
+        Shared<Shader> load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const;
 
-        Shared<Texture> load_texture(const char* path) const;
+        Shared<Texture> load_texture(const std::filesystem::path& path) const;
 
-        Shared<Audio> load_audio(const char* path) const;
+        Shared<Audio> load_audio(const std::filesystem::path& path) const;
 
-        Shared<Spritesheet> load_spritesheet(const char* path) const;
+        Shared<Spritesheet> load_spritesheet(const std::filesystem::path& path) const;
 
         Shared<TiledMap> load_tiled_map(const std::filesystem::path& path) const;
 
     private:
-        Image load_image(const char* path) const;
+        Image load_image(const std::filesystem::path& path) const;
 
         void free_image(const Image& image) const;
     };

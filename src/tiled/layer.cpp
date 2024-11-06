@@ -1,7 +1,7 @@
 #include "layer.h"
-#include <nlohmann/json.hpp>
-
 #include "template.h"
+
+#include <nlohmann/json.hpp>
 
 namespace Storytime {
     extern void from_json(const nlohmann::json&, TiledProperty&);
@@ -19,9 +19,6 @@ namespace Storytime {
         data.opacity = json.at("opacity").get<int>();
         data.visible = json.at("visible").get<bool>();
         if (data.type == "objectgroup") {
-
-
-            // layer.objects = json.at("objects").get<std::vector<TiledObject>>();
             if (json.contains("objects")) {
                 for (const nlohmann::json& object_json : json.at("objects")) {
                     bool is_object_template_ref = object_json.contains("template");
@@ -32,8 +29,6 @@ namespace Storytime {
                     }
                 }
             }
-
-
             data.draworder = json.at("draworder").get<std::string>();
         } else if (data.type == "tilelayer") {
             data.data = json.at("data").get<std::vector<int>>();

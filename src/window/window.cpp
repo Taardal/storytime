@@ -71,17 +71,20 @@ namespace Storytime {
     WindowSize Window::get_size_in_pixels() const  {
         i32 width = 0;
         i32 height = 0;
-        get_size_in_pixels(&width, &height);
+        glfwGetFramebufferSize(glfw_window, &width, &height);
         return { width, height };
     }
 
-    void Window::get_size_in_pixels(i32* width, i32* height) const {
-        glfwGetFramebufferSize(glfw_window, width, height);
+    WindowSize Window::get_size_in_screen_coordinates() const {
+        i32 width = 0;
+        i32 height = 0;
+        glfwGetWindowSize(glfw_window, &width, &height);
+        return { width, height };
     }
 
     f32 Window::get_aspect_ratio() const {
-        auto [width, height] = get_size_in_pixels();
-        return static_cast<f32>(width) / static_cast<f32>(height);
+        auto [width, height] = get_size_in_screen_coordinates();
+        return (f32) width / (f32) height;
     }
 
     f64 Window::get_time() const {

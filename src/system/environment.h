@@ -13,11 +13,20 @@
         #error "Unsupported platform: Windows x86"
     #endif
 #elif defined(__APPLE__) || defined(__MACH__)
-    #define ST_PLATFORM_MACOS
-#elif defined(__linux__) || defined(__unix__)
+    #include <TargetConditionals.h>
+    #if TARGET_OS_MAC
+        #define ST_PLATFORM_MACOS
+    #else
+        #error "Unsupported Apple platform"
+    #endif
+#elif defined(__linux__)
     #define ST_PLATFORM_LINUX
 #else
-    #error "Unknown platform"
+    #error "Unsupported platform"
+#endif
+
+#if defined(ST_PLATFORM_MACOS) || defined(ST_PLATFORM_LINUX)
+    #define ST_PLATFORM_UNIX
 #endif
 
 #if defined(_MSC_VER)

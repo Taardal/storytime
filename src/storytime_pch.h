@@ -28,16 +28,27 @@
 #include <GLFW/glfw3.h>
 
 // GLM
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 // ImGui
 #include <imgui.h>
+
+// Lua
+#include <lua.hpp>
 
 // --------------------------------------------------------------------------------------------------------------
 // App
 // --------------------------------------------------------------------------------------------------------------
 
+// System
 #include "system/assert.h"
 #include "system/environment.h"
 #include "system/error.h"
@@ -47,4 +58,10 @@
 #include "system/numbers.h"
 #include "system/pointers.h"
 #include "system/utils.h"
+
+// Script
+#include "script/lua_error.h"
+#include "script/lua_push_parse.h"
+#include "script/lua_ref.h"
+#include "script/lua_utils.h"
 

@@ -12,6 +12,7 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
+        SHARED
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
@@ -41,12 +42,16 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/spritesheet.cpp
         ${STORYTIME_SRC_DIR}/graphics/texture.h
         ${STORYTIME_SRC_DIR}/graphics/texture.cpp
+        ${STORYTIME_SRC_DIR}/graphics/texture_coordinate.h
+        ${STORYTIME_SRC_DIR}/graphics/texture_coordinate.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_array.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_array.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/view_projection.h
+        ${STORYTIME_SRC_DIR}/graphics/view_projection.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
         ${STORYTIME_SRC_DIR}/scene/entity.h
@@ -55,6 +60,28 @@ add_library(
         ${STORYTIME_SRC_DIR}/scene/scene.cpp
         ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
         ${STORYTIME_SRC_DIR}/scene/tiled_scene.cpp
+        ${STORYTIME_SRC_DIR}/script/glm_lua_binding.cpp
+        ${STORYTIME_SRC_DIR}/script/glm_lua_binding.h
+        ${STORYTIME_SRC_DIR}/script/keyboard_lua_binding.cpp
+        ${STORYTIME_SRC_DIR}/script/keyboard_lua_binding.h
+        ${STORYTIME_SRC_DIR}/script/lua_error.h
+        ${STORYTIME_SRC_DIR}/script/lua_error.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_function.h
+        ${STORYTIME_SRC_DIR}/script/lua_function.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_log.h
+        ${STORYTIME_SRC_DIR}/script/lua_log.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_ref.h
+        ${STORYTIME_SRC_DIR}/script/lua_ref.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_state.h
+        ${STORYTIME_SRC_DIR}/script/lua_state.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_state.h
+        ${STORYTIME_SRC_DIR}/script/lua_state.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_table.h
+        ${STORYTIME_SRC_DIR}/script/lua_table.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_utils.h
+        ${STORYTIME_SRC_DIR}/script/lua_utils.cpp
+        ${STORYTIME_SRC_DIR}/script/mouse_lua_binding.cpp
+        ${STORYTIME_SRC_DIR}/script/mouse_lua_binding.h
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
@@ -114,6 +141,16 @@ add_library(
         ${STORYTIME_SRC_DIR}/window/window_event.cpp
 )
 
+set_target_properties(
+        ${PROJECT_NAME}
+        PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_NAME ${PROJECT_NAME}
+        LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR}/debug
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}/release
+)
+
 # Public include header
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
@@ -121,20 +158,27 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
 
+# On macOS, exported symbols from other binaries aren’t available to shared libraries during linking,
+# so instruct the linker to defer the resolution of symbols until runtime.
+if (APPLE)
+    target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-undefined,dynamic_lookup")
+endif ()
+
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
 
-if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
-    set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
-    set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-    add_custom_target(
-            Storytime_CopyResources
-            COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
-            COMMENT "Copying resources"
-    )
-    add_dependencies(${PROJECT_NAME} Storytime_CopyResources)
-endif()
+if ("${STORYTIME_OUTPUT_DIR}" STREQUAL "")
+    message(FATAL_ERROR "Required variable STORYTIME_OUTPUT_DIR is not set")
+endif ()
+set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
+set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+add_custom_target(
+        Storytime_CopyResources
+        COMMENT "Copying resources"
+        COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
+)
+add_dependencies(${PROJECT_NAME} Storytime_CopyResources)
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
@@ -211,10 +255,14 @@ FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json
         GIT_TAG v3.11.3
-#        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
 )
 FetchContent_MakeAvailable(json)
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+
+# Lua
+find_package(Lua REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 
 # Miniaudio
 FetchContent_Declare(

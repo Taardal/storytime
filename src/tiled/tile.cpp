@@ -4,6 +4,8 @@
 namespace Storytime {
     extern void from_json(const nlohmann::json&, TiledObjectGroup&);
 
+    extern void from_json(const nlohmann::json&, TiledProperty&);
+
     void from_json(const nlohmann::json& json, TiledAnimationFrame& data) {
         data.duration = json.at("duration").get<int>();
         data.tileid = json.at("tileid").get<int>();
@@ -16,6 +18,9 @@ namespace Storytime {
         data.id = json.at("id").get<int>();
         if (json.contains("objectgroup")) {
             data.objectgroup = json.at("objectgroup").get<TiledObjectGroup>();
+        }
+        if (json.contains("properties")) {
+            data.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
     }
 

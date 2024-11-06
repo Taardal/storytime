@@ -1,6 +1,7 @@
 #pragma once
 
 #include "object.h"
+#include "property.h"
 
 namespace Storytime {
     struct TiledAnimationFrame {
@@ -12,6 +13,7 @@ namespace Storytime {
         std::vector<TiledAnimationFrame> animation;
         int id;
         TiledObjectGroup objectgroup;
+        std::vector<TiledProperty> properties;
 
         static TiledTile create(const std::string& json);
     };

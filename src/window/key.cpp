@@ -1,6 +1,7 @@
 #include "key.h"
 
 namespace Storytime {
+    constexpr KeyCode Key::NONE = -1;
     constexpr KeyCode Key::KEY_SPACE = GLFW_KEY_SPACE;
     constexpr KeyCode Key::KEY_APOSTROPHE = GLFW_KEY_APOSTROPHE;
     constexpr KeyCode Key::KEY_COMMA = GLFW_KEY_COMMA;
@@ -121,4 +122,163 @@ namespace Storytime {
     constexpr KeyCode Key::KEY_RIGHT_ALT = GLFW_KEY_RIGHT_ALT;
     constexpr KeyCode Key::KEY_RIGHT_SUPER = GLFW_KEY_RIGHT_SUPER;
     constexpr KeyCode Key::KEY_MENU = GLFW_KEY_MENU;
+
+    const std::unordered_map<std::string, KeyCode> Key::keys_by_name = {
+            { "SPACE", KEY_SPACE },
+            { "APOSTROPHE", KEY_APOSTROPHE },
+            { "COMMA", KEY_COMMA },
+            { "MINUS", KEY_MINUS },
+            { "PERIOD", KEY_PERIOD },
+            { "SLASH", KEY_SLASH },
+            { "0", KEY_0 },
+            { "1", KEY_1 },
+            { "2", KEY_2 },
+            { "3", KEY_3 },
+            { "4", KEY_4 },
+            { "5", KEY_5 },
+            { "6", KEY_6 },
+            { "7", KEY_7 },
+            { "8", KEY_8 },
+            { "9", KEY_9 },
+            { "SEMICOLON", KEY_SEMICOLON },
+            { "EQUAL", KEY_EQUAL },
+            { "A", KEY_A },
+            { "B", KEY_B },
+            { "C", KEY_C },
+            { "D", KEY_D },
+            { "E", KEY_E },
+            { "F", KEY_F },
+            { "G", KEY_G },
+            { "H", KEY_H },
+            { "I", KEY_I },
+            { "J", KEY_J },
+            { "K", KEY_K },
+            { "L", KEY_L },
+            { "M", KEY_M },
+            { "N", KEY_N },
+            { "O", KEY_O },
+            { "P", KEY_P },
+            { "Q", KEY_Q },
+            { "R", KEY_R },
+            { "S", KEY_S },
+            { "T", KEY_T },
+            { "U", KEY_U },
+            { "V", KEY_V },
+            { "W", KEY_W },
+            { "X", KEY_X },
+            { "Y", KEY_Y },
+            { "Z", KEY_Z },
+            { "LEFT_BRACKET", KEY_LEFT_BRACKET },
+            { "BACKSLASH", KEY_BACKSLASH },
+            { "RIGHT_BRACKET", KEY_RIGHT_BRACKET },
+            { "GRAVE_ACCENT", KEY_GRAVE_ACCENT },
+            { "WORLD_1", KEY_WORLD_1 },
+            { "WORLD_2", KEY_WORLD_2 },
+            { "ESCAPE", KEY_ESCAPE },
+            { "ENTER", KEY_ENTER },
+            { "TAB", KEY_TAB },
+            { "BACKSPACE", KEY_BACKSPACE },
+            { "INSERT", KEY_INSERT },
+            { "DELETE", KEY_DELETE },
+            { "RIGHT", KEY_RIGHT },
+            { "LEFT", KEY_LEFT },
+            { "DOWN", KEY_DOWN },
+            { "UP", KEY_UP },
+            { "PAGE_UP", KEY_PAGE_UP },
+            { "PAGE_DOWN", KEY_PAGE_DOWN },
+            { "HOME", KEY_HOME },
+            { "END", KEY_END },
+            { "CAPS_LOCK", KEY_CAPS_LOCK },
+            { "SCROLL_LOCK", KEY_SCROLL_LOCK },
+            { "NUM_LOCK", KEY_NUM_LOCK },
+    };
+
+    const std::unordered_map<KeyCode, std::string> Key::names_by_key = {
+            { KEY_SPACE, "SPACE" },
+            { KEY_APOSTROPHE, "APOSTROPHE" },
+            { KEY_COMMA, "COMMA" },
+            { KEY_MINUS, "MINUS" },
+            { KEY_PERIOD, "PERIOD" },
+            { KEY_SLASH, "SLASH" },
+            { KEY_0, "0" },
+            { KEY_1, "1" },
+            { KEY_2, "2" },
+            { KEY_3, "3" },
+            { KEY_4, "4" },
+            { KEY_5, "5" },
+            { KEY_6, "6" },
+            { KEY_7, "7" },
+            { KEY_8, "8" },
+            { KEY_9, "9" },
+            { KEY_SEMICOLON, "SEMICOLON" },
+            { KEY_EQUAL, "EQUAL" },
+            { KEY_A, "A" },
+            { KEY_B, "B" },
+            { KEY_C, "C" },
+            { KEY_D, "D" },
+            { KEY_E, "E" },
+            { KEY_F, "F" },
+            { KEY_G, "G" },
+            { KEY_H, "H" },
+            { KEY_I, "I" },
+            { KEY_J, "J" },
+            { KEY_K, "K" },
+            { KEY_L, "L" },
+            { KEY_M, "M" },
+            { KEY_N, "N" },
+            { KEY_O, "O" },
+            { KEY_P, "P" },
+            { KEY_Q, "Q" },
+            { KEY_R, "R" },
+            { KEY_S, "S" },
+            { KEY_T, "T" },
+            { KEY_U, "U" },
+            { KEY_V, "V" },
+            { KEY_W, "W" },
+            { KEY_X, "X" },
+            { KEY_Y, "Y" },
+            { KEY_Z, "Z" },
+            { KEY_LEFT_BRACKET, "LEFT_BRACKET" },
+            { KEY_BACKSLASH, "BACKSLASH" },
+            { KEY_RIGHT_BRACKET, "RIGHT_BRACKET" },
+            { KEY_GRAVE_ACCENT, "GRAVE_ACCENT" },
+            { KEY_WORLD_1, "WORLD_1" },
+            { KEY_WORLD_2, "WORLD_2" },
+            { KEY_ESCAPE, "ESCAPE" },
+            { KEY_ENTER, "ENTER" },
+            { KEY_TAB, "TAB" },
+            { KEY_BACKSPACE, "BACKSPACE" },
+            { KEY_INSERT, "INSERT" },
+            { KEY_DELETE, "DELETE" },
+            { KEY_RIGHT, "RIGHT" },
+            { KEY_LEFT, "LEFT" },
+            { KEY_DOWN, "DOWN" },
+            { KEY_UP, "UP" },
+            { KEY_PAGE_UP, "PAGE_UP" },
+            { KEY_PAGE_DOWN, "PAGE_DOWN" },
+            { KEY_HOME, "HOME" },
+            { KEY_END, "END" },
+            { KEY_CAPS_LOCK, "CAPS_LOCK" },
+            { KEY_SCROLL_LOCK, "SCROLL_LOCK" },
+            { KEY_NUM_LOCK, "NUM_LOCK" },
+    };
+
+    KeyCode Key::from_name(const std::string& name) {
+        std::string needle = name;
+        string_to_upper(needle);
+        string_replace_all(needle, " ", "_");
+        auto it = keys_by_name.find(needle);
+        if (it == keys_by_name.end()) {
+            return NONE;
+        }
+        return it->second;
+    }
+
+    std::string Key::to_name(KeyCode key_code) {
+        auto it = names_by_key.find(key_code);
+        if (it == names_by_key.end()) {
+            return "";
+        }
+        return it->second;
+    }
 }

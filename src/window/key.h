@@ -2,8 +2,9 @@
 
 namespace Storytime {
     typedef i32 KeyCode;
-    
+
     struct Key {
+        static const KeyCode NONE;
         static const KeyCode KEY_SPACE;
         static const KeyCode KEY_APOSTROPHE;
         static const KeyCode KEY_COMMA;
@@ -124,5 +125,13 @@ namespace Storytime {
         static const KeyCode KEY_RIGHT_ALT;
         static const KeyCode KEY_RIGHT_SUPER;
         static const KeyCode KEY_MENU;
+
+        static const std::unordered_map<std::string, KeyCode> keys_by_name;
+
+        static const std::unordered_map<KeyCode, std::string> names_by_key;
+
+        static KeyCode from_name(const std::string& name);
+
+        static std::string to_name(KeyCode key_code);
     };
 }

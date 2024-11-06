@@ -41,7 +41,7 @@ namespace Storytime {
             float yat = ya / ts;
             float ybt = yb / ts;
 
-            std::array<glm::vec2, 4> c;
+            std::array<TextureCoordinate, 4> c;
             c[0] = {xat, yat};
             c[1] = {xbt, yat};
             c[2] = {xbt, ybt};

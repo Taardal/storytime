@@ -1,6 +1,5 @@
 #pragma once
 
-#include "graphics/renderer.h"
 #include "scene/entity.h"
 
 #include <entt/entt.hpp>
@@ -17,7 +16,7 @@ namespace Storytime {
 
         virtual void on_update(f64 timestep) = 0;
 
-        virtual void on_render(Renderer& renderer) = 0;
+        virtual void on_render() = 0;
 
     protected:
         Entity create_entity();

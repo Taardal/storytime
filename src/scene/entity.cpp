@@ -3,8 +3,7 @@
 namespace Storytime {
     Entity::Entity(entt::entity entity, entt::registry* entity_registry)
         : entity(entity), entity_registry(entity_registry) {
-        ST_ASSERT(entity != entt::null, "Invalid event");
-        ST_ASSERT(entity_registry != nullptr, "Invalid event registry");
+        ST_ASSERT_VALID_ENTITY();
     }
 
     Entity::operator entt::entity() const {

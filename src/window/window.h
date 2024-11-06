@@ -8,6 +8,10 @@ namespace Storytime {
     struct WindowSize {
         i32 width;
         i32 height;
+
+        f32 get_aspect_ratio() const {
+            return (f32) width / (f32) height;
+        }
     };
 
     struct WindowConfig {
@@ -39,7 +43,7 @@ namespace Storytime {
 
         WindowSize get_size_in_pixels() const;
 
-        void get_size_in_pixels(i32* width, i32* height) const;
+        WindowSize get_size_in_screen_coordinates() const;
 
         f32 get_aspect_ratio() const;
 

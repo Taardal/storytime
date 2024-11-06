@@ -8,8 +8,8 @@
 #include "graphics/open_gl.h"
 #include "graphics/renderer.h"
 #include "graphics/imgui_renderer.h"
-#include "graphics/camera.h"
 #include "system/clock.h"
+#include "window/mouse_event.h"
 #include "window/window_event.h"
 
 extern "C" void on_create();
@@ -23,10 +23,11 @@ extern "C" void on_imgui_render();
 extern "C" void on_destroy();
 
 namespace Storytime {
-    static std::unique_ptr<ServiceLocator> service_locator = nullptr;
+    static ServiceLocator* service_locator_ptr = nullptr;
+    static EventManager* event_manager_ptr = nullptr;
     static bool running = false;
 
-    void main(const Config& config) {
+    void run(const Config& config) {
         initialize_error_signal_handlers();
         set_log_level(config.log_level);
 
@@ -42,8 +43,9 @@ namespace Storytime {
                 .queue_count = 1,
             });
             event_manager.subscribe(WindowCloseEvent::type, [&](const Event&) {
-                exit();
+                stop();
             });
+            event_manager_ptr = &event_manager; // Application lifetime is encapsulated in this scope
 
             Window window({
                 .event_manager = &event_manager,
@@ -73,31 +75,36 @@ namespace Storytime {
                 .audio_engine = &audio_engine
             });
 
-            Renderer renderer(&resource_loader);
-            renderer.set_clear_color({0.1f, 0.1f, 0.1f});
+            WindowSize window_size_px = window.get_size_in_pixels();
+            Renderer renderer({
+                .resource_loader = &resource_loader,
+                .viewport = {
+                    .width = window_size_px.width,
+                    .height = window_size_px.height,
+                },
+            });
+            event_manager.subscribe(WindowResizeEvent::type, [&renderer](const Event& event) {
+                auto& window_resize_event = (WindowResizeEvent&) event;
+                renderer.set_viewport({
+                    .width = window_resize_event.width,
+                    .height = window_resize_event.height,
+                });
+            });
 
             ImGuiRenderer imgui_renderer({
                 .window = &window,
                 .glsl_version = config.glsl_version,
             });
 
-            Camera camera;
-            camera.set_projection({
-                .left = 0,
-                .right = static_cast<float>(config.window_width),
-                .top = 0,
-                .bottom = static_cast<float>(config.window_height),
-            });
-
-            service_locator = std::make_unique<ServiceLocator>();
-            service_locator->set<EventManager>(&event_manager);
-            service_locator->set<Window>(&window);
-            service_locator->set<FileSystem>(&file_system);
-            service_locator->set<AudioEngine>(&audio_engine);
-            service_locator->set<ResourceLoader>(&resource_loader);
-            service_locator->set<Renderer>(&renderer);
-            service_locator->set<ImGuiRenderer>(&imgui_renderer);
-            service_locator->set<Camera>(&camera);
+            ServiceLocator service_locator;
+            service_locator.set<EventManager>(&event_manager);
+            service_locator.set<Window>(&window);
+            service_locator.set<FileSystem>(&file_system);
+            service_locator.set<AudioEngine>(&audio_engine);
+            service_locator.set<ResourceLoader>(&resource_loader);
+            service_locator.set<Renderer>(&renderer);
+            service_locator.set<ImGuiRenderer>(&imgui_renderer);
+            service_locator_ptr = &service_locator; // Application lifetime is encapsulated in this scope
 
             on_create();
             ST_LOG_INFO("Created client");
@@ -120,7 +127,7 @@ namespace Storytime {
                 on_update(timestep);
                 event_manager.process_event_queue();
 
-                renderer.begin_frame(camera.get_view_projection());
+                renderer.begin_frame();
                 on_render();
                 renderer.end_frame();
 
@@ -145,14 +152,19 @@ namespace Storytime {
 
     }
 
-    void exit() {
+    void stop() {
         running = false;
     }
 
     void* get_service(std::type_index type) {
-        ST_ASSERT(service_locator != nullptr, "Service locator must exist");
-        auto service = service_locator->get(type);
+        ST_ASSERT(service_locator_ptr != nullptr, "Invalid service locator pointer");
+        auto service = service_locator_ptr->get(type);
         ST_ASSERT(service != nullptr, "Service must exist");
         return service;
+    }
+
+    u32 subscribe(const EventType event_type, const Subscription& subscription) {
+        ST_ASSERT(event_manager_ptr != nullptr, "Invalid event manager pointer");
+        return event_manager_ptr->subscribe(event_type, subscription);
     }
 }

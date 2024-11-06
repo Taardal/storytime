@@ -3,7 +3,7 @@
 #ifdef ST_DEBUG
     #define ST_TRACK_MEMORY
     #define ST_NEW new(ST_FILE_NAME, ST_LINE_NUMBER)
-    #define ST_NEW_POINTER(pointer) new(ST_FILE_NAME, ST_LINE_NUMBER, pointer)
+    #define ST_NEW_PTR(pointer) new(ST_FILE_NAME, ST_LINE_NUMBER, pointer)
 #else
     #define ST_NEW new
     #define ST_NEW_POINTER(pointer) new(pointer)

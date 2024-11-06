@@ -16,6 +16,13 @@
 #define ST_LOG_ERROR(message, ...) spdlog::error(ST_TAG_MESSAGE(message), ##__VA_ARGS__)
 #define ST_LOG_CRITICAL(message, ...) spdlog::critical(ST_TAG_MESSAGE(message), ##__VA_ARGS__)
 
+#define ST_LOG_T(message, ...) ST_LOG_TRACE(message, ##__VA_ARGS__)
+#define ST_LOG_D(message, ...) ST_LOG_DEBUG(message, ##__VA_ARGS__)
+#define ST_LOG_I(message, ...) ST_LOG_INFO(message, ##__VA_ARGS__)
+#define ST_LOG_W(message, ...) ST_LOG_WARNING(message, ##__VA_ARGS__)
+#define ST_LOG_E(message, ...) ST_LOG_ERROR(message, ##__VA_ARGS__)
+#define ST_LOG_C(message, ...) ST_LOG_CRITICAL(message, ##__VA_ARGS__)
+
 namespace Storytime {
     typedef spdlog::level::level_enum LogLevel;
 

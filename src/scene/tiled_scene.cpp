@@ -2,15 +2,15 @@
 
 namespace Storytime {
     TiledScene::TiledScene(const TiledSceneConfig& config) : config(config) {
-        ST_ASSERT(config.file_system != nullptr, "Invalid file system");
-        ST_ASSERT(config.resource_loader != nullptr, "Invalid resource loader");
-        ST_ASSERT(!config.tiled_map_path.empty(), "Invalid tiled map path");
+        ST_ASSERT(config.file_system != nullptr, "Invalid file_system");
+        ST_ASSERT(config.resource_loader != nullptr, "Invalid resource_loader");
+        ST_ASSERT(config.renderer != nullptr, "Invalid renderer");
+        ST_ASSERT(!config.map_path.empty(), "Invalid tiled_map_path");
     }
 
     void TiledScene::on_initialize() {
-        tiled_map = config.resource_loader->load_tiled_map(config.tiled_map_path.c_str());
+        tiled_map = config.resource_loader->load_tiled_map(config.map_path.c_str());
         ST_ASSERT(tiled_map != nullptr, "Tiled map was not loaded");
-
         initialize_tiles();
     }
 
@@ -18,7 +18,7 @@ namespace Storytime {
         update_tiles(timestep);
     }
 
-    void TiledScene::on_render(Renderer& renderer) {
+    void TiledScene::on_render() {
         for (const TiledLayer& layer : tiled_map->layers) {
             if (!layer.visible) {
                 continue;
@@ -26,13 +26,13 @@ namespace Storytime {
             if (layer.type != "tilelayer") {
                 continue;
             }
-            render_tile_layer(renderer, layer);
+            render_tile_layer(layer);
         }
     }
 
     void TiledScene::initialize_tiles() {
         // Tileset paths are relative to the map that is using them
-        auto tiled_map_directory_path = config.tiled_map_path.parent_path();
+        auto tiled_map_directory_path = config.map_path.parent_path();
 
         // Tileset refs
         for (const TiledTilesetRef& tileset_ref : tiled_map->tilesetrefs) {
@@ -150,9 +150,9 @@ namespace Storytime {
         }
     }
 
-    void TiledScene::render_tile_layer(Renderer& renderer, const TiledLayer& layer) const {
-        u32 tile_width = tiled_map->tilewidth;
-        u32 tile_height = tiled_map->tileheight;
+    void TiledScene::render_tile_layer(const TiledLayer& layer) const {
+        f32 tile_width = (f32) tiled_map->tilewidth;
+        f32 tile_height = (f32) tiled_map->tileheight;
 
         u32 rows = layer.height;
         u32 columns = layer.width;
@@ -170,15 +170,27 @@ namespace Storytime {
                 }
                 const Sprite& tile = it->second;
 
-                f32 tile_x = (f32) column * (f32) tile_width;
-                f32 tile_y = (f32) row * (f32) tile_height;
+                f32 tile_x = (f32) column * tile_width;
+                f32 tile_y = (f32) row * tile_height;
+
+                //
+                // Problem:
+                // The renderer will offset each quad left and up by half its size to put its origin in the center,
+                // but this will make each quad appear slightly off-position compared to Tiled Editor.
+                //
+                // Solution:
+                // Offset the position of each sprite right and down by half its size so that the quad offsets done by
+                // the renderer will make them appear at the correct position
+                //
+                tile_x += tile_width / 2;
+                tile_y += tile_height / 2;
 
                 Sprite::RenderConfig tile_render_config;
                 tile_render_config.position = {tile_x, tile_y};
                 tile_render_config.scale = config.scale;
                 tile_render_config.debug = config.debug;
 
-                tile.render(renderer, tile_render_config);
+                ((Sprite&) tile).render(config.renderer, tile_render_config);
 
                 auto cit = tile_colliders.find(global_tile_id);
                 if (cit == tile_colliders.end()) {
@@ -186,11 +198,17 @@ namespace Storytime {
                 }
                 const TiledObject& tc = cit->second;
 
+                f32 tile_collider_width = (f32) tc.width;
+                f32 tile_collider_height = (f32) tc.height;
+
+                f32 tile_collider_x = tile_x + tc.x;
+                f32 tile_collider_y = tile_y + tc.y;
+
                 Quad q;
-                q.position = {tile_x + tc.x, tile_y + tc.y, 0.0f};
-                q.size = { (f32) tc.width, (f32) tc.height };
+                q.position = {tile_collider_x, tile_collider_y, 0.0f};
+                q.size = { tile_collider_width, tile_collider_height };
                 q.color = {1.0f, 0.0f, 1.0f, 1.0f};
-                renderer.render_quad(q);
+                config.renderer->render_quad(q);
             }
         }
     }

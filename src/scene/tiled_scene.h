@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/scene.h"
+#include "graphics/renderer.h"
 #include "graphics/spritesheet.h"
 #include "resource/resource_loader.h"
 
@@ -11,7 +12,8 @@ namespace Storytime {
     struct TiledSceneConfig {
         FileSystem* file_system = nullptr;
         ResourceLoader* resource_loader = nullptr;
-        std::filesystem::path tiled_map_path;
+        Renderer* renderer = nullptr;
+        std::filesystem::path map_path;
         f32 scale = 1.0f;
         bool debug = false;
     };
@@ -30,7 +32,7 @@ namespace Storytime {
 
         void on_update(f64 timestep) override;
 
-        void on_render(Renderer& renderer) override;
+        void on_render() override;
 
     private:
         void initialize_tiles();
@@ -43,6 +45,6 @@ namespace Storytime {
 
         void update_tiles(f64 timestep);
 
-        void render_tile_layer(Renderer& renderer, const TiledLayer& layer) const;
+        void render_tile_layer(const TiledLayer& layer) const;
     };
 }

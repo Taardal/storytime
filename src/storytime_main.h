@@ -2,6 +2,7 @@
 
 #include "system/command_line_arguments.h"
 #include "system/service_locator.h"
+#include "system/event_manager.h"
 
 namespace Storytime {
     struct Config {
@@ -18,9 +19,9 @@ namespace Storytime {
         std::string glsl_version = "#version 410";
     };
 
-    void main(const Config& config);
+    void run(const Config& config);
 
-    void exit();
+    void stop();
 
     void* get_service(std::type_index type);
 
@@ -28,4 +29,12 @@ namespace Storytime {
     T* get() {
         return static_cast<T*>(get_service(typeid(T)));
     }
+
+    u32 subscribe(EventType event_type, const Subscription& subscription);
 }
+
+#define ST_SUBSCRIBE(E, captures, on_event)\
+    Storytime::subscribe(E::type, captures(const st::Event& e) {\
+        auto& event = (E&) event;\
+        on_event\
+    })

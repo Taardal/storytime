@@ -49,7 +49,7 @@ namespace Storytime {
             texture_coordinates[2] = {x_right, y_bottom}; // Bottom right
             texture_coordinates[3] = {x_left, y_bottom};  // Bottom left
 
-            spritesheet_texture_coordinates.push_back(texture_coordinates);
+            spritesheet_texture_coordinates.emplace_back(texture_coordinates);
         }
     }
 
@@ -58,7 +58,10 @@ namespace Storytime {
     }
 
     void Sprite::update(f64 timestep) {
-        ST_ASSERT(frame < spritesheet_coordinates.size(), "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]");
+        ST_ASSERT(
+            frame < spritesheet_coordinates.size(),
+            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
+        );
         u32 frame_duration_ms = spritesheet_coordinates[frame].frame_duration_ms;
 
         frame_time_sec += timestep;
@@ -70,33 +73,83 @@ namespace Storytime {
         frame_time_sec = 0.0;
     }
 
-    void Sprite::render(Renderer& renderer, const RenderConfig& render_config) const {
-        f32 x = render_config.position.x;
-        f32 y = render_config.position.y;
+    void Sprite::render(Renderer* renderer, const RenderConfig& render_config) {
+        f32 sprite_width = (f32) config.width;
+        f32 sprite_height = (f32) config.height;
 
-        f32 scale = render_config.scale;
-
-        f32 quad_x = x * scale;
-        f32 quad_y = y * scale;
-
-        u32 sprite_width = config.width;
-        u32 sprite_height = config.height;
-
-        f32 quad_width = sprite_width * scale;
-        f32 quad_height = sprite_height * scale;
+        f32 sprite_x = render_config.position.x;
+        f32 sprite_y = render_config.position.y;
 
         if (render_config.debug) {
-            Quad debug_quad;
-            debug_quad.color = render_config.debug_color;
-            debug_quad.size = { quad_width, quad_height };
-            debug_quad.position = { quad_x, quad_y, 0.0f };
-            renderer.render_quad(debug_quad);
+            Quad sprite_debug_quad = {
+                .color = render_config.debug_color,
+                .size = { sprite_width, sprite_height },
+                .position = { sprite_x, sprite_y, 0.0f },
+            };
+            renderer->render_quad(sprite_debug_quad);
+
+            f32 collider_x = render_config.collider.x;
+            f32 collider_y = render_config.collider.y;
+
+            f32 collider_width = render_config.collider.width;
+            f32 collider_height = render_config.collider.height;
+
+            f32 collider_quad_x = sprite_x - sprite_width / 2 + collider_width / 2;
+            f32 collider_quad_y = sprite_y - sprite_height / 2 + collider_height / 2;
+
+            if (render_config.flip_horizontally) {
+                collider_quad_x += sprite_width - (collider_x + collider_width);
+            } else {
+                collider_quad_x += collider_x;
+            }
+            if (render_config.flip_vertically) {
+                collider_quad_y += sprite_height - (collider_y + collider_height);
+            } else {
+                collider_quad_y += collider_y;
+            }
+
+            Quad collider_debug_quad = {
+                .color = render_config.debug_collider_color,
+                .size = { collider_width, collider_height },
+                .position = { collider_quad_x, collider_quad_y, 0.0f },
+                .rotation_in_degrees = render_config.rotation_deg,
+            };
+            renderer->render_quad(collider_debug_quad);
         }
 
-        Quad quad;
-        quad.texture = config.spritesheet_texture;
-        quad.size = { quad_width, quad_height };
-        quad.position = { quad_x, quad_y, 0.0f };
-        renderer.render_quad(quad, spritesheet_texture_coordinates[frame]);
+        Quad quad = {
+            .texture = config.spritesheet_texture,
+            .size = { sprite_width, sprite_height },
+            .position = { sprite_x, sprite_y, 0.0f },
+            .rotation_in_degrees = render_config.rotation_deg,
+        };
+
+        if (!render_config.flip_horizontally && !render_config.flip_vertically) {
+            renderer->render_quad(quad, spritesheet_texture_coordinates[frame]);
+            return;
+        }
+
+        auto texture_coordinates = spritesheet_texture_coordinates[frame];
+        if (render_config.flip_horizontally) {
+            f32 x_left = texture_coordinates[0].x;   // Top left
+            f32 x_right = texture_coordinates[1].x;  // Top right
+
+            // Switch left and right X-coordinates
+            texture_coordinates[0].x = x_right;      // Left --> Right
+            texture_coordinates[1].x = x_left;       // Right --> Left
+            texture_coordinates[2].x = x_left;       // Right --> Left
+            texture_coordinates[3].x = x_right;      // Left --> Right
+        }
+        if (render_config.flip_vertically) {
+            f32 y_top = texture_coordinates[1].y;    // Top right
+            f32 y_bottom = texture_coordinates[2].y; // Bottom right
+
+            // Switch top and bottom Y-coordinates
+            texture_coordinates[0].y = y_bottom;     // Top --> Bottom
+            texture_coordinates[1].y = y_bottom;     // Top --> Bottom
+            texture_coordinates[2].y = y_top;        // Bottom --> Top
+            texture_coordinates[3].y = y_top;        // Bottom --> Top
+        }
+        renderer->render_quad(quad, texture_coordinates);
     }
 }
