@@ -53,6 +53,7 @@
 #include "system/environment.h"
 #include "system/error.h"
 #include "system/error_signal.h"
+#include "system/json_serialize_deserialize.h"
 #include "system/log.h"
 #include "system/memory.h"
 #include "system/numbers.h"

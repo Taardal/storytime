@@ -21,8 +21,7 @@ namespace Storytime {
         Shared<Texture> spritesheet_texture = nullptr;
         u32 width = 0;
         u32 height = 0;
-        SpritesheetCoordinate spritesheet_coordinate; // Static sprite (mutually exclusive with animated sprite coordinates)
-        std::vector<SpritesheetCoordinate> spritesheet_coordinates; // Animated sprite (mutually exclusive with static sprite coordinate)
+        std::vector<SpritesheetCoordinate> spritesheet_coordinates;
     };
 
     class Sprite {
@@ -61,7 +60,7 @@ namespace Storytime {
             SpriteCollider collider;
         };
 
-        void render(Renderer* renderer, const RenderConfig& render_config);
+        void render(Renderer* renderer, const RenderConfig& render_config) const;
     };
 
     struct SpritesheetConfig {

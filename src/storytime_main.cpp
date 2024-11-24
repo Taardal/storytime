@@ -1,6 +1,6 @@
 #include "storytime_main.h"
 #include "system/service_locator.h"
-#include "system/file_system.h"
+#include "system/file_reader.h"
 #include "system/event_manager.h"
 #include "window/window.h"
 #include "audio/audio_engine.h"
@@ -18,7 +18,7 @@ extern "C" void on_update(f64 timestep);
 
 extern "C" void on_render();
 
-extern "C" void on_imgui_render();
+extern "C" void on_render_imgui();
 
 extern "C" void on_destroy();
 
@@ -52,6 +52,7 @@ namespace Storytime {
                 .title = config.window_title,
                 .width = config.window_width,
                 .height = config.window_height,
+                .aspect_ratio = config.window_aspect_ratio,
                 .maximized = config.window_maximized,
                 .resizable = config.window_resizable,
                 .context_version_major = config.open_gl_version_major,
@@ -66,12 +67,12 @@ namespace Storytime {
                 .glsl_version = config.glsl_version,
             });
 
-            FileSystem file_system;
+            FileReader file_reader;
 
             AudioEngine audio_engine;
 
             ResourceLoader resource_loader({
-                .file_system = &file_system,
+                .file_reader = &file_reader,
                 .audio_engine = &audio_engine
             });
 
@@ -99,7 +100,7 @@ namespace Storytime {
             ServiceLocator service_locator;
             service_locator.set<EventManager>(&event_manager);
             service_locator.set<Window>(&window);
-            service_locator.set<FileSystem>(&file_system);
+            service_locator.set<FileReader>(&file_reader);
             service_locator.set<AudioEngine>(&audio_engine);
             service_locator.set<ResourceLoader>(&resource_loader);
             service_locator.set<Renderer>(&renderer);
@@ -133,7 +134,7 @@ namespace Storytime {
 
 #ifdef ST_DEBUG
                 imgui_renderer.begin_frame();
-                on_imgui_render();
+                on_render_imgui();
                 imgui_renderer.end_frame();
 #endif
             }

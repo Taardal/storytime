@@ -6,6 +6,7 @@
 // System
 #include "system/defer.h"
 #include "system/event_manager.h"
+#include "system/file_reader.h"
 #include "system/random.h"
 
 // Window
@@ -23,21 +24,25 @@
 #include "graphics/spritesheet.h"
 #include "graphics/view_projection.h"
 
-// Tiled
-#include "tiled/map.h"
+// Resource
+#include "resource/resource_loader.h"
 
 // Scene
 #include "scene/scene.h"
-#include "scene/tiled_scene.h"
 
 // Script
-#include "script/glm_lua_binding.h"
-#include "script/keyboard_lua_binding.h"
 #include "script/lua_function.h"
+#include "script/lua_glm.h"
+#include "script/lua_keyboard.h"
 #include "script/lua_log.h"
+#include "script/lua_mouse.h"
 #include "script/lua_state.h"
 #include "script/lua_table.h"
-#include "script/mouse_lua_binding.h"
+#include "script/lua_usertype.h"
+
+// Tiled
+#include "tiled/tiled_project.h"
+#include "tiled/tiled_map.h"
 
 // Namespaces
 namespace st = Storytime;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "object.h"
-#include "tileset.h"
+#include "tiled_object.h"
+#include "tiled_tileset.h"
 
 namespace Storytime {
     struct TiledObjectTemplate {

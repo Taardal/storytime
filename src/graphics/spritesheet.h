@@ -8,7 +8,7 @@ namespace Storytime {
         SpritesheetConfig config;
 
     public:
-        explicit Spritesheet(SpritesheetConfig config);
+        explicit Spritesheet(const SpritesheetConfig& config);
 
         Sprite get_sprite(SpriteConfig& sprite_config) const;
 

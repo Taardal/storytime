@@ -33,11 +33,6 @@ T lua_to(lua_State* L, int index) {
     return 0;
 }
 
-template<class T>
-void lua_to(lua_State* L, int index, T* value) {
-    static_assert(sizeof(T) == 0, "Cannot parse Lua value: Unknown type");
-}
-
 template<>
 inline int lua_to(lua_State* L, int index) {
     ST_ASSERT(lua_isinteger(L, index), "Item at index [" << index << "] on Lua stack must be of type integer");
@@ -63,12 +58,6 @@ inline const char* lua_to(lua_State* L, int index) {
 }
 
 template<>
-inline std::string lua_to(lua_State* L, int index) {
-    ST_ASSERT(lua_isstring(L, index), "Item at index [" << index << "] on Lua stack must be of type string");
-    return lua_tostring(L, index);
-}
-
-template<>
 inline bool lua_to(lua_State* L, int index) {
     ST_ASSERT(lua_isboolean(L, index), "Item at index [" << index << "] on Lua stack must be of type boolean");
     return lua_toboolean(L, index);
@@ -86,17 +75,7 @@ void lua_push(lua_State* L, T value) {
 // An integer value may be either a normal integer number or a Lua reference number to data stored in the registry
 template<>
 inline void lua_push(lua_State* L, int value) {
-    if (value == LUA_NOREF) {
-        lua_pushinteger(L, value); // Value is invalid ref, assume normal integer
-        return;
-    }
-    int type = lua_rawgeti(L, LUA_REGISTRYINDEX, value);
-    if (type > LUA_TNIL) {
-        // Found data in registry, assume ref and leave the data from the registry on the stack
-        return;
-    }
-    lua_pop(L, 1); // Pop the nil from the stack
-    lua_pushinteger(L, value); // No data exists in registry for value, assume normal integer
+    lua_pushinteger(L, value);
 }
 
 template<>
@@ -117,25 +96,6 @@ inline void lua_push(lua_State* L, bool value) {
 template<>
 inline void lua_push(lua_State* L, const char* value) {
     lua_pushstring(L, value);
-}
-
-template<>
-inline void lua_push(lua_State* L, std::string value) {
-    lua_pushstring(L, value.c_str());
-}
-
-template<>
-inline void lua_push(lua_State* L, std::string* value) {
-    if (value) {
-        lua_pushstring(L, value->c_str());
-    } else {
-        lua_pushnil(L);
-    }
-}
-
-template<>
-inline void lua_push(lua_State* L, const std::string& value) {
-    lua_pushstring(L, value.c_str());
 }
 
 template<>

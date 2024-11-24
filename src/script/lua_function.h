@@ -59,7 +59,6 @@ namespace Storytime {
                 std::string error_code_name = get_result_code_name(result);
                 std::string error_message = lua_tostring(L, -1);
                 ST_LOG_ERROR("[{}] {}", error_code_name, error_message);
-                ST_THROW("Could not invoke Lua function");
             }
         }
 

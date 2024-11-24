@@ -11,7 +11,8 @@ namespace Storytime {
         u32 target_fps = 60;
         std::string window_title = "Storytime";
         i32 window_width = 1280;
-        i32 window_height = 760;
+        i32 window_height = 768;
+        f32 window_aspect_ratio = 16.0f / 9.0f;
         bool window_maximized = false;
         bool window_resizable = true;
         u32 open_gl_version_major = 4;
@@ -35,6 +36,6 @@ namespace Storytime {
 
 #define ST_SUBSCRIBE(E, captures, on_event)\
     Storytime::subscribe(E::type, captures(const st::Event& e) {\
-        auto& event = (E&) event;\
+        const auto& event = static_cast<const E&>(e);\
         on_event\
     })

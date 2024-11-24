@@ -77,4 +77,23 @@ namespace Storytime {
         assert(stacktrace.size() == stacktrace_depth);
         return stacktrace[1];
     }
+
+    const std::string LuaLog::table_name = "log";
+
+    int LuaLog::create(lua_State* L) {
+        lua_newtable(L);
+        lua_pushcfunction(L, lua_log_trace);
+        lua_setfield(L, -2, "t");
+        lua_pushcfunction(L, lua_log_debug);
+        lua_setfield(L, -2, "d");
+        lua_pushcfunction(L, lua_log_info);
+        lua_setfield(L, -2, "i");
+        lua_pushcfunction(L, lua_log_warning);
+        lua_setfield(L, -2, "w");
+        lua_pushcfunction(L, lua_log_error);
+        lua_setfield(L, -2, "e");
+        lua_pushcfunction(L, lua_log_critical);
+        lua_setfield(L, -2, "c");
+        return 1;
+    }
 }

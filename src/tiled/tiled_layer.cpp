@@ -1,5 +1,5 @@
-#include "layer.h"
-#include "template.h"
+#include "tiled_layer.h"
+#include "tiled_template.h"
 
 #include <nlohmann/json.hpp>
 

@@ -12,11 +12,11 @@ namespace Storytime {
     public:
         virtual ~Scene() = default;
 
-        virtual void on_initialize() {}
+        virtual void initialize() {}
 
-        virtual void on_update(f64 timestep) = 0;
+        virtual void update(f64 timestep) = 0;
 
-        virtual void on_render() = 0;
+        virtual void render() = 0;
 
     protected:
         Entity create_entity();

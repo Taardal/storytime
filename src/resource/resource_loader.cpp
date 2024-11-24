@@ -9,8 +9,8 @@ namespace Storytime {
 
     Shared<Shader> ResourceLoader::load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const {
         ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-        const std::string& vertex_shader_source = config.file_system->read_file(vertex_shader_path.c_str());
-        const std::string& fragment_shader_source = config.file_system->read_file(fragment_shader_path.c_str());
+        const std::string& vertex_shader_source = config.file_reader->read_file(vertex_shader_path.c_str());
+        const std::string& fragment_shader_source = config.file_reader->read_file(fragment_shader_path.c_str());
         auto shader = shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
         ST_LOG_DEBUG("Loaded shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
         return shader;
@@ -42,16 +42,39 @@ namespace Storytime {
         return spritesheet;
     }
 
+    Shared<TiledProject> ResourceLoader::load_tiled_project(const std::filesystem::path& path) const {
+        ST_LOG_TRACE("Loading Tiled project [{}]", path.c_str());
+        ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
+
+        std::string json = config.file_reader->read_file(path.c_str());
+        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled project [" << path.c_str() << "]");
+
+        ST_TRY_THROW({
+            return shared<TiledProject>(TiledProject::create(json));
+        }, "Could not load tiled project");
+    }
+
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading Tiled map [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
 
-        std::string json = config.file_system->read_file(path.c_str());
+        std::string json = config.file_reader->read_file(path.c_str());
         ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
-            TiledMap tiled_map = TiledMap::create(json);
-            return shared<TiledMap>(tiled_map);
+            return shared<TiledMap>(TiledMap::create(json));
+        }, "Could not load tiled map");
+    }
+
+    Shared<TiledTileset> ResourceLoader::load_tiled_tileset(const std::filesystem::path& path) const {
+        ST_LOG_TRACE("Loading Tiled tileset [{}]", path.c_str());
+        ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
+
+        std::string json = config.file_reader->read_file(path.c_str());
+        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled tileset [" << path.c_str() << "]");
+
+        ST_TRY_THROW({
+            return shared<TiledTileset>(TiledTileset::create(json));
         }, "Could not load tiled map");
     }
 

@@ -58,18 +58,18 @@ add_library(
         ${STORYTIME_SRC_DIR}/scene/entity.cpp
         ${STORYTIME_SRC_DIR}/scene/scene.h
         ${STORYTIME_SRC_DIR}/scene/scene.cpp
-        ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
-        ${STORYTIME_SRC_DIR}/scene/tiled_scene.cpp
-        ${STORYTIME_SRC_DIR}/script/glm_lua_binding.cpp
-        ${STORYTIME_SRC_DIR}/script/glm_lua_binding.h
-        ${STORYTIME_SRC_DIR}/script/keyboard_lua_binding.cpp
-        ${STORYTIME_SRC_DIR}/script/keyboard_lua_binding.h
         ${STORYTIME_SRC_DIR}/script/lua_error.h
         ${STORYTIME_SRC_DIR}/script/lua_error.cpp
         ${STORYTIME_SRC_DIR}/script/lua_function.h
         ${STORYTIME_SRC_DIR}/script/lua_function.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_glm.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_glm.h
+        ${STORYTIME_SRC_DIR}/script/lua_keyboard.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_keyboard.h
         ${STORYTIME_SRC_DIR}/script/lua_log.h
         ${STORYTIME_SRC_DIR}/script/lua_log.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_mouse.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_mouse.h
         ${STORYTIME_SRC_DIR}/script/lua_ref.h
         ${STORYTIME_SRC_DIR}/script/lua_ref.cpp
         ${STORYTIME_SRC_DIR}/script/lua_state.h
@@ -78,10 +78,10 @@ add_library(
         ${STORYTIME_SRC_DIR}/script/lua_state.cpp
         ${STORYTIME_SRC_DIR}/script/lua_table.h
         ${STORYTIME_SRC_DIR}/script/lua_table.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_usertype.h
+        ${STORYTIME_SRC_DIR}/script/lua_usertype.cpp
         ${STORYTIME_SRC_DIR}/script/lua_utils.h
         ${STORYTIME_SRC_DIR}/script/lua_utils.cpp
-        ${STORYTIME_SRC_DIR}/script/mouse_lua_binding.cpp
-        ${STORYTIME_SRC_DIR}/script/mouse_lua_binding.h
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
@@ -96,8 +96,9 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/event.cpp
         ${STORYTIME_SRC_DIR}/system/event_manager.h
         ${STORYTIME_SRC_DIR}/system/event_manager.cpp
-        ${STORYTIME_SRC_DIR}/system/file_system.h
-        ${STORYTIME_SRC_DIR}/system/file_system.cpp
+        ${STORYTIME_SRC_DIR}/system/file_reader.h
+        ${STORYTIME_SRC_DIR}/system/file_reader.cpp
+        ${STORYTIME_SRC_DIR}/system/json_serialize_deserialize.h
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp
         ${STORYTIME_SRC_DIR}/system/memory.h
@@ -111,20 +112,26 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/uuid.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
         ${STORYTIME_SRC_DIR}/system/utils.cpp
-        ${STORYTIME_SRC_DIR}/tiled/layer.cpp
-        ${STORYTIME_SRC_DIR}/tiled/layer.h
-        ${STORYTIME_SRC_DIR}/tiled/map.cpp
-        ${STORYTIME_SRC_DIR}/tiled/map.h
-        ${STORYTIME_SRC_DIR}/tiled/object.cpp
-        ${STORYTIME_SRC_DIR}/tiled/object.h
-        ${STORYTIME_SRC_DIR}/tiled/property.cpp
-        ${STORYTIME_SRC_DIR}/tiled/property.h
-        ${STORYTIME_SRC_DIR}/tiled/template.cpp
-        ${STORYTIME_SRC_DIR}/tiled/template.h
-        ${STORYTIME_SRC_DIR}/tiled/tile.cpp
-        ${STORYTIME_SRC_DIR}/tiled/tile.h
-        ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
-        ${STORYTIME_SRC_DIR}/tiled/tileset.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_class.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_class.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_enum.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_enum.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_layer.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_layer.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_map.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_map.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_object.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_object.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_project.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_project.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_property.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_property.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_template.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_template.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tile.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tile.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tileset.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tileset.h
         ${STORYTIME_SRC_DIR}/window/key.cpp
         ${STORYTIME_SRC_DIR}/window/key.h
         ${STORYTIME_SRC_DIR}/window/key_event.h

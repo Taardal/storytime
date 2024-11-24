@@ -15,7 +15,22 @@ namespace Storytime {
         return subscription_id;
     }
 
-    bool EventManager::remove_subscription(EventType event_type, SubscriptionID subscription_id) {
+    bool EventManager::unsubscribe(SubscriptionID subscription_id) {
+        for (auto& subscription : subscriptions) {
+            EventType event_type = subscription.first;
+            SubscriptionList& event_subscriptions = subscription.second;
+            for (int i = 0; i < event_subscriptions.size(); ++i) {
+                if (event_subscriptions[i].first == subscription_id) {
+                    event_subscriptions.erase(event_subscriptions.begin() + i);
+                    ST_LOG_TRACE("Removed subscription with ID [{}] for event type [{}]", subscription_id, event_type);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool EventManager::unsubscribe(SubscriptionID subscription_id, EventType event_type) {
         if (auto it = subscriptions.find(event_type); it != subscriptions.end()) {
             SubscriptionList& event_subscriptions = it->second;
             for (int i = 0; i < event_subscriptions.size(); ++i) {

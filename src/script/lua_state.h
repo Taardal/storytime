@@ -27,7 +27,9 @@ namespace Storytime {
 
         void add_c_package_path(const std::string& path) const;
 
-        i32 require(const std::string& name) const;
+        i32 require_package(const std::string& package_name) const;
+
+        void load_package(const std::string& package_name) const;
 
         i32 create_ref() const;
 
@@ -37,29 +39,46 @@ namespace Storytime {
         private:
             lua_State* L;
             std::string key;
-            i32 ref;
+            i32 index_or_ref;
 
         public:
-            GetterSetter(lua_State* L, const std::string& key) : L(L), key(key), ref(LUA_NOREF) {
+            GetterSetter(lua_State* L, const std::string& key) : L(L), key(key), index_or_ref(LUA_NOREF) {
             }
 
-            GetterSetter(lua_State* L, i32 ref) : L(L), key(""), ref(ref) {
+            GetterSetter(lua_State* L, i32 index_or_ref) : L(L), key(""), index_or_ref(index_or_ref) {
             }
 
             template<typename T>
             operator T() const {
+                i32 stack_size_start = lua_gettop(L);
+
+                bool use_global = key.length() > 0;
+                bool use_ref = index_or_ref >= 0;
+
+                i32 index;
                 i32 type = LUA_NOREF;
-                bool use_ref = ref != LUA_NOREF;
-                if (use_ref) {
-                    type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-                } else {
+                if (use_global) {
                     lua_getglobal(L, key.c_str());
-                    type = lua_type(L, -1);
+                    index = -1;
+                    type = lua_type(L, index);
+                } else if (use_ref) {
+                    index = -1;
+                    type = lua_rawgeti(L, LUA_REGISTRYINDEX, index_or_ref);
+                } else {
+                    index = index_or_ref;
+                    ST_ASSERT(index < 0, "Lua stack index must be negative");
+                    type = lua_type(L, index);
                 }
-                ST_ASSERT(type > LUA_TNONE, "Lua " << (use_ref ? "ref" : "global") << " type [" << type << "] must be greater than LUA_TNONE [" << LUA_TNONE << "]");
-                ST_ASSERT(type < LUA_NUMTYPES, "Lua " << (use_ref ? "ref" : "global") << " type [" << type << "] must be lower than LUA_NUMTYPES [" << LUA_NUMTYPES << "]");
-                T value = lua_to<T>(L, -1);
-                lua_pop(L, 1);
+                ST_ASSERT(type > LUA_TNONE, "Lua type [" << type << "] on index [" << index << "] must be greater than LUA_TNONE [" << LUA_TNONE << "]");
+                ST_ASSERT(type < LUA_NUMTYPES, "Lua type [" << type << "] on index [" << index << "] must be less than LUA_NUMTYPES [" << LUA_NUMTYPES << "]");
+
+                T value = lua_to<T>(L, index);
+
+                i32 stack_size_end = lua_gettop(L);
+                if (stack_size_end > stack_size_start) {
+                    lua_pop(L, stack_size_end - stack_size_start);
+                }
+
                 return value;
             }
 
@@ -98,3 +117,4 @@ namespace Storytime {
 }
 
 i32 lua_require(const Storytime::LuaState& L, const std::string& name);
+

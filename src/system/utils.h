@@ -29,3 +29,4 @@ namespace Storytime {
 
     void string_to_lower(std::string& str);
 }
+

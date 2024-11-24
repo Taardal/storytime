@@ -1,7 +1,7 @@
 #include "spritesheet.h"
 
 namespace Storytime {
-    Spritesheet::Spritesheet(SpritesheetConfig config) : config(std::move(config)) {
+    Spritesheet::Spritesheet(const SpritesheetConfig& config) : config(config) {
     }
 
     Sprite Spritesheet::get_sprite(SpriteConfig& sprite_config) const {

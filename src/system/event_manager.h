@@ -33,7 +33,9 @@ namespace Storytime {
 
         SubscriptionID subscribe(EventType event_type, const Subscription& subscription);
 
-        bool remove_subscription(EventType event_type, SubscriptionID subscription_id);
+        bool unsubscribe(SubscriptionID subscription_id);
+
+        bool unsubscribe(SubscriptionID subscription_id, EventType event_type);
 
         bool trigger_event(EventType event_type, const Event& event);
 

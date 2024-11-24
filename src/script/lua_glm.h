@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Storytime {
-    class GLMLuaBinding {
+    class LuaGLM {
     public:
         static const std::string table_name;
         static const std::string metatable_name;
@@ -14,22 +14,24 @@ namespace Storytime {
         static const std::string quat_metatable_name;
 
     public:
-        static i32 create(lua_State* L);
+        static int create_metatable(lua_State* L);
+
+        static int create(lua_State* L);
 
     private:
-        static void createVec2Metatable(lua_State* L);
+        static int createVec2Metatable(lua_State* L);
 
-        static void createVec3Metatable(lua_State* L);
+        static int createVec3Metatable(lua_State* L);
 
-        static void createVec4Metatable(lua_State* L);
+        static int createVec4Metatable(lua_State* L);
 
-        static void createMat2Metatable(lua_State* L);
+        static int createMat2Metatable(lua_State* L);
 
-        static void createMat3Metatable(lua_State* L);
+        static int createMat3Metatable(lua_State* L);
 
-        static void createMat4Metatable(lua_State* L);
+        static int createMat4Metatable(lua_State* L);
 
-        static void createQuatMetatable(lua_State* L);
+        static int createQuatMetatable(lua_State* L);
 
         static int index(lua_State* L);
 

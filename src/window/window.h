@@ -19,6 +19,7 @@ namespace Storytime {
         std::string title;
         i32 width;
         i32 height;
+        f32 aspect_ratio;
         bool maximized;
         bool resizable;
         u32 context_version_major;

@@ -1,5 +1,9 @@
 #include "lua_utils.h"
 
+std::string create_metatable_name(const std::string& prefix) {
+    return prefix + ".meta";
+}
+
 void print_lua_stack(lua_State* L, const std::string& tag) {
     std::cout << "Lua stack";
     if (tag.length() > 0) {

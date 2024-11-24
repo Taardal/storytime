@@ -14,4 +14,11 @@ namespace Storytime {
     int lua_log_critical(lua_State* L);
 
     LuaStacktraceEntry get_stacktrace_entry(lua_State* L);
+
+    class LuaLog {
+    public:
+        static const std::string table_name;
+
+        static int create(lua_State* L);
+    };
 }

@@ -25,10 +25,14 @@ namespace Storytime {
 #endif
         ST_LOG_DEBUG("GLFW context version [{0}.{1}]", config.context_version_major, config.context_version_minor);
 
+        ST_ASSERT(config.width > 0, "Window width must be greater than zero");
+        ST_ASSERT(config.height > 0 || config.aspect_ratio > 0.0f, "Window height or aspect ratio must be greater than zero");
+        i32 height = config.height > 0 ? config.height : static_cast<f32>(config.width) / config.aspect_ratio;
+
         ST_LOG_TRACE("Creating GLFW window");
-        GLFWmonitor* fullscreenMonitor = nullptr;
-        GLFWwindow* sharedWindow = nullptr;
-        glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor, sharedWindow);
+        GLFWmonitor* fullscreen_monitor = nullptr;
+        GLFWwindow* shared_window = nullptr;
+        glfw_window = glfwCreateWindow(config.width, height, config.title.c_str(), fullscreen_monitor, shared_window);
         if (glfw_window == nullptr) {
             ST_THROW("Could not create GLFW window");
         }

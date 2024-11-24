@@ -67,23 +67,29 @@ namespace Storytime {
         script(package_path);
     }
 
-    i32 LuaState::require(const std::string& name) const {
-        ST_ASSERT(!name.empty(), "Lua package name cannot be empty");
+    i32 LuaState::require_package(const std::string& package_name) const {
+        ST_ASSERT(!package_name.empty(), "Lua package name cannot be empty");
 
         std::stringstream ss;
-        ss << "require('" << name << "')";
+        ss << "require('" << package_name << "')";
         std::string require_package_script = ss.str();
         script(require_package_script);
 
         lua_getglobal(L, "package");
         lua_getfield(L, -1, "loaded");
-        lua_getfield(L, -1, name.c_str());
+        lua_getfield(L, -1, package_name.c_str());
         ST_ASSERT(lua_type(L, -1) > LUA_TNIL, "Required Lua package type must be greater than LUA_TNIL");
         ST_ASSERT(lua_type(L, -1) < LUA_NUMTYPES, "Required Lua package type must be lower than LUA_NUMTYPES");
 
         i32 ref = luaL_ref(L, LUA_REGISTRYINDEX);
         ST_ASSERT(ref != LUA_NOREF, "Required Lua package ref is invalid");
         return ref;
+    }
+
+    void LuaState::load_package(const std::string& package_name) const {
+        // Load package by requiring it which adds it to the `package.loaded` global table field
+        i32 package_ref = require_package(package_name);
+        ST_ASSERT(package_ref != LUA_NOREF, "Package [" << package_name << "] was not loaded");
     }
 
     i32 LuaState::create_ref() const {
@@ -100,5 +106,5 @@ namespace Storytime {
 }
 
 i32 lua_require(const Storytime::LuaState& L, const std::string& name) {
-    return L.require(name);
+    return L.require_package(name);
 }

@@ -1,4 +1,4 @@
-#include "object.h"
+#include "tiled_object.h"
 #include <nlohmann/json.hpp>
 
 namespace Storytime {

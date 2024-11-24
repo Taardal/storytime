@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lua_utils.h"
+
 struct LuaRef {
     i32 ref = LUA_NOREF;
 
@@ -11,5 +13,11 @@ struct LuaRef {
 
     bool is_valid() const;
 
-    i32 push_to_stack(lua_State* L) const;
+    LuaType push(lua_State* L) const;
+
+    void destroy(lua_State* L);
+
+    static i32 create(lua_State* L, i32 index = -1);
+
+    static void destroy(lua_State* L, i32 ref);
 };

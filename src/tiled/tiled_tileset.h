@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tile.h"
+#include "tiled_tile.h"
 
 namespace Storytime {
     struct TiledTileset {

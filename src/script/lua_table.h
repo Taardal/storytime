@@ -60,23 +60,24 @@ namespace Storytime {
             lua_setfield(L, -2, key.c_str());
             lua_pop(L, 1);
         }
+
         class GetterSetter {
         private:
-            LuaTable* lua_object;
+            LuaTable* lua_table;
             std::string key;
 
         public:
-            explicit GetterSetter(LuaTable* table, const std::string& key) : lua_object(table), key(key) {
+            explicit GetterSetter(LuaTable* table, const std::string& key) : lua_table(table), key(key) {
             }
 
             template<typename T>
             operator T() const {
-                return lua_object->get_field<T>(key);
+                return lua_table->get_field<T>(key);
             }
 
             template<typename T>
             GetterSetter& operator=(T value) {
-                lua_object->set_field<T>(key, value);
+                lua_table->set_field<T>(key, value);
                 return *this;
             }
         };

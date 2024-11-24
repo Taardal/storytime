@@ -1,12 +1,14 @@
 #pragma once
 
 namespace Storytime {
-    class KeyboardLuaBinding {
+    class LuaKeyboard {
     public:
         static const std::string table_name;
         static const std::string metatable_name;
 
     public:
+        static i32 create_metatable(lua_State* L);
+
         static i32 create(lua_State* L);
 
     private:

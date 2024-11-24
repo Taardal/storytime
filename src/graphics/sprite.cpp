@@ -2,11 +2,9 @@
 
 namespace Storytime {
     Sprite::Sprite(const SpriteConfig& config) : config(config) {
-        if (config.spritesheet_coordinates.size() > 0) {
-            set_spritesheet_coordinates(config.spritesheet_coordinates);
-        } else {
-            set_spritesheet_coordinates({ config.spritesheet_coordinate });
-        }
+        ST_ASSERT(config.spritesheet_texture != nullptr, "Sprite must have a texture");
+        ST_ASSERT(config.spritesheet_coordinates.size() > 0, "Sprite must have at least one texture coordinate");
+        set_spritesheet_coordinates(config.spritesheet_coordinates);
     }
 
     const SpriteConfig& Sprite::get_config() const {
@@ -14,12 +12,18 @@ namespace Storytime {
     }
 
     const SpritesheetCoordinate& Sprite::get_spritesheet_coordinate(u32 frame) const {
-        ST_ASSERT(frame < spritesheet_coordinates.size(), "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]");
+        ST_ASSERT(
+            frame < spritesheet_coordinates.size(),
+            "Sprite frame index out of bounds: [" << frame << "] < [" << spritesheet_coordinates.size() << "]"
+        );
         return spritesheet_coordinates[frame];
     }
 
     void Sprite::set_spritesheet_coordinates(const std::vector<SpritesheetCoordinate>& spritesheet_coordinates) {
-        ST_ASSERT(spritesheet_coordinates.size() > 0, "Sprite must have at least one spritesheet coordinate (frame) to be rendered");
+        ST_ASSERT(
+            spritesheet_coordinates.size() > 0,
+            "Sprite must have at least one spritesheet coordinate (frame) to be rendered"
+        );
         this->spritesheet_coordinates = spritesheet_coordinates;
 
         // Clear textures coordinates if they have already been set
@@ -73,7 +77,9 @@ namespace Storytime {
         frame_time_sec = 0.0;
     }
 
-    void Sprite::render(Renderer* renderer, const RenderConfig& render_config) {
+    void Sprite::render(Renderer* renderer, const RenderConfig& render_config) const {
+        ST_ASSERT(config.spritesheet_texture != nullptr, "Sprite must have a texture to be rendered");
+
         f32 sprite_width = (f32) config.width;
         f32 sprite_height = (f32) config.height;
 
@@ -129,27 +135,31 @@ namespace Storytime {
             return;
         }
 
+        // Sprite should be flipped
+        // Copy the texture coordinates to preserve the normal/unflipped ones
         auto texture_coordinates = spritesheet_texture_coordinates[frame];
+
+        // Switch left and right texture coordinates to flip sprite horizontally
         if (render_config.flip_horizontally) {
             f32 x_left = texture_coordinates[0].x;   // Top left
             f32 x_right = texture_coordinates[1].x;  // Top right
-
-            // Switch left and right X-coordinates
             texture_coordinates[0].x = x_right;      // Left --> Right
             texture_coordinates[1].x = x_left;       // Right --> Left
             texture_coordinates[2].x = x_left;       // Right --> Left
             texture_coordinates[3].x = x_right;      // Left --> Right
         }
+
+        // Switch top and bottom texture coordinates to flip sprite vertically
         if (render_config.flip_vertically) {
             f32 y_top = texture_coordinates[1].y;    // Top right
             f32 y_bottom = texture_coordinates[2].y; // Bottom right
-
-            // Switch top and bottom Y-coordinates
             texture_coordinates[0].y = y_bottom;     // Top --> Bottom
             texture_coordinates[1].y = y_bottom;     // Top --> Bottom
             texture_coordinates[2].y = y_top;        // Bottom --> Top
             texture_coordinates[3].y = y_top;        // Bottom --> Top
         }
+
+        // Render the flipped sprite
         renderer->render_quad(quad, texture_coordinates);
     }
 }

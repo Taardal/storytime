@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tileset.h"
-#include "layer.h"
+#include "tiled_tileset.h"
+#include "tiled_layer.h"
 
 namespace Storytime {
     struct TiledMap {

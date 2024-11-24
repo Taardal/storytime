@@ -1,18 +1,19 @@
 #pragma once
 
-#include <memory>
-
-#include "system/file_system.h"
-#include "graphics/shader.h"
-#include "graphics/texture.h"
-#include "graphics/spritesheet.h"
-#include "audio/audio_engine.h"
 #include "audio/audio.h"
-#include "tiled/map.h"
+#include "audio/audio_engine.h"
+#include "graphics/shader.h"
+#include "graphics/spritesheet.h"
+#include "graphics/texture.h"
+#include "system/file_reader.h"
+#include "tiled/tiled_map.h"
+#include "tiled/tiled_project.h"
+
+#include <memory>
 
 namespace Storytime {
     struct ResourceLoaderConfig {
-        FileSystem* file_system = nullptr;
+        FileReader* file_reader = nullptr;
         AudioEngine* audio_engine = nullptr;
     };
 
@@ -31,7 +32,11 @@ namespace Storytime {
 
         Shared<Spritesheet> load_spritesheet(const std::filesystem::path& path) const;
 
+        Shared<TiledProject> load_tiled_project(const std::filesystem::path& path) const;
+
         Shared<TiledMap> load_tiled_map(const std::filesystem::path& path) const;
+
+        Shared<TiledTileset> load_tiled_tileset(const std::filesystem::path& path) const;
 
     private:
         Image load_image(const std::filesystem::path& path) const;
