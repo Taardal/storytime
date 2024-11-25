@@ -21,6 +21,8 @@ namespace Storytime {
 
     void LuaState::file(const std::string& path) const {
         ST_ASSERT(!path.empty(), "Lua file path cannot be empty");
+        ST_LOG_TRACE("Running file [{}]", path);
+
         lua_pushcfunction(L, print_lua_stacktrace);
         luaL_loadfile(L, path.c_str());
         int error_handler_index = -2;
@@ -31,12 +33,16 @@ namespace Storytime {
             ST_LOG_ERROR("[{}] {}", result, error);
             ST_THROW("Could not load Lua script");
         }
+
         lua_pop(L, lua_gettop(L));
         ST_ASSERT(lua_gettop(L) == 0, "Lua stack must be empty after executing file");
     }
 
     void LuaState::script(const std::string& script) const {
         ST_ASSERT(!script.empty(), "Lua script cannot be empty");
+        ST_LOG_TRACE("Running script");
+        ST_COUTLN(script);
+
         lua_pushcfunction(L, print_lua_stacktrace);
         luaL_loadstring(L, script.c_str());
         int error_handler_index = -2;
@@ -47,6 +53,7 @@ namespace Storytime {
             ST_LOG_ERROR("[{}] {}", result, error);
             ST_THROW("Could not load Lua script");
         }
+
         lua_pop(L, lua_gettop(L));
         ST_ASSERT(lua_gettop(L) == 0, "Lua stack must be empty after executing script");
     }

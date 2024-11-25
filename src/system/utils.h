@@ -28,5 +28,11 @@ namespace Storytime {
     void string_to_upper(std::string& str);
 
     void string_to_lower(std::string& str);
+
+    template<typename T>
+    struct Size {
+        T width;
+        T height;
+    };
 }
 

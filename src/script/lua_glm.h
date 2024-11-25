@@ -19,93 +19,93 @@ namespace Storytime {
         static int create(lua_State* L);
 
     private:
-        static int createVec2Metatable(lua_State* L);
+        static int create_vec2_metatable(lua_State* L);
 
-        static int createVec3Metatable(lua_State* L);
+        static int create_vec3_metatable(lua_State* L);
 
-        static int createVec4Metatable(lua_State* L);
+        static int create_vec4_metatable(lua_State* L);
 
-        static int createMat2Metatable(lua_State* L);
+        static int create_mat2_metatable(lua_State* L);
 
-        static int createMat3Metatable(lua_State* L);
+        static int create_mat3_metatable(lua_State* L);
 
-        static int createMat4Metatable(lua_State* L);
+        static int create_mat4_metatable(lua_State* L);
 
-        static int createQuatMetatable(lua_State* L);
+        static int create_quat_metatable(lua_State* L);
 
         static int index(lua_State* L);
 
-        static int indexMat3(lua_State* L);
+        static int index_mat3(lua_State* L);
 
-        static int indexMat4(lua_State* L);
+        static int index_mat4(lua_State* L);
 
-        static int indexQuat(lua_State* L);
+        static int index_quat(lua_State* L);
 
-        static int indexVec2(lua_State* L);
+        static int index_vec2(lua_State* L);
 
-        static int indexVec3(lua_State* L);
+        static int index_vec3(lua_State* L);
 
-        static int indexVec4(lua_State* L);
+        static int index_vec4(lua_State* L);
 
-        static int addMat2(lua_State* L);
+        static int add_mat2(lua_State* L);
 
-        static int addMat3(lua_State* L);
+        static int add_mat3(lua_State* L);
 
-        static int addMat4(lua_State* L);
+        static int add_mat4(lua_State* L);
 
-        static int addQuat(lua_State* L);
+        static int add_quat(lua_State* L);
 
-        static int addVec2(lua_State* L);
+        static int add_vec2(lua_State* L);
 
-        static int addVec3(lua_State* L);
+        static int add_vec3(lua_State* L);
 
-        static int addVec4(lua_State* L);
+        static int add_vec4(lua_State* L);
 
-        static int angleAxis(lua_State* L);
+        static int angle_axis(lua_State* L);
 
         static int cross(lua_State* L);
 
         static int degrees(lua_State* L);
 
-        static int divideMat2(lua_State* L);
+        static int divide_mat2(lua_State* L);
 
-        static int divideMat3(lua_State* L);
+        static int divide_mat3(lua_State* L);
 
-        static int divideMat4(lua_State* L);
+        static int divide_mat4(lua_State* L);
 
-        static int divideQuat(lua_State* L);
+        static int divide_quat(lua_State* L);
 
-        static int divideVec2(lua_State* L);
+        static int divide_vec2(lua_State* L);
 
-        static int divideVec3(lua_State* L);
+        static int divide_vec3(lua_State* L);
 
-        static int divideVec4(lua_State* L);
+        static int divide_vec4(lua_State* L);
 
-        static int dotVec2(lua_State* L);
+        static int dot_vec2(lua_State* L);
 
-        static int dotVec3(lua_State* L);
+        static int dot_vec3(lua_State* L);
 
-        static int dotVec4(lua_State* L);
+        static int dot_vec4(lua_State* L);
 
-        static int eulerAngles(lua_State* L);
+        static int euler_angles(lua_State* L);
 
-        static int inverseQuat(lua_State* L);
+        static int inverse_mat2(lua_State* L);
 
-        static int inverseMat2(lua_State* L);
+        static int inverse_mat3(lua_State* L);
 
-        static int inverseMat3(lua_State* L);
+        static int inverse_mat4(lua_State* L);
 
-        static int inverseMat4(lua_State* L);
+        static int inverse_quat(lua_State* L);
 
-        static int lengthVec2(lua_State* L);
+        static int length_vec2(lua_State* L);
 
-        static int lengthVec3(lua_State* L);
+        static int length_vec3(lua_State* L);
 
-        static int lengthVec4(lua_State* L);
+        static int length_vec4(lua_State* L);
 
         static int lerp(lua_State* L);
 
-        static int lookAt(lua_State* L);
+        static int look_at(lua_State* L);
 
         static int mat2(lua_State* L);
 
@@ -113,81 +113,81 @@ namespace Storytime {
 
         static int mat4(lua_State* L);
 
-        static int mat3ToQuat(lua_State* L);
+        static int mat3_to_quat(lua_State* L);
 
-        static int mat4ToQuat(lua_State* L);
+        static int mat4_to_quat(lua_State* L);
 
-        static int multiplyMat2(lua_State* L);
+        static int multiply_mat2(lua_State* L);
 
-        static int multiplyMat3(lua_State* L);
+        static int multiply_mat3(lua_State* L);
 
-        static int multiplyMat4(lua_State* L);
+        static int multiply_mat4(lua_State* L);
 
-        static int multiplyQuat(lua_State* L);
+        static int multiply_quat(lua_State* L);
 
-        static int multiplyVec2(lua_State* L);
+        static int multiply_vec2(lua_State* L);
 
-        static int multiplyVec3(lua_State* L);
+        static int multiply_vec3(lua_State* L);
 
-        static int multiplyVec4(lua_State* L);
+        static int multiply_vec4(lua_State* L);
 
-        static int normalizeVec2(lua_State* L);
+        static int normalize_quat(lua_State* L);
 
-        static int normalizeVec3(lua_State* L);
+        static int normalize_vec2(lua_State* L);
 
-        static int normalizeVec4(lua_State* L);
+        static int normalize_vec3(lua_State* L);
 
-        static int normalizeQuat(lua_State* L);
+        static int normalize_vec4(lua_State* L);
 
         static int quat(lua_State* L);
 
-        static int quatLookAt(lua_State* L);
+        static int quat_look_at(lua_State* L);
 
-        static int quatLookAtRH(lua_State* L);
+        static int quat_look_at_rh(lua_State* L);
 
-        static int quatLookAtLH(lua_State* L);
+        static int quat_look_at_lh(lua_State* L);
 
-        static int quatToMat4(lua_State* L);
+        static int quat_to_mat4(lua_State* L);
 
         static int radians(lua_State* L);
 
         static int rotate(lua_State* L);
 
-        static int rotateX(lua_State* L);
+        static int rotate_x(lua_State* L);
 
-        static int rotateY(lua_State* L);
+        static int rotate_y(lua_State* L);
 
-        static int rotateZ(lua_State* L);
+        static int rotate_z(lua_State* L);
 
         static int slerp(lua_State* L);
 
-        static int subtractMat2(lua_State* L);
+        static int subtract_mat2(lua_State* L);
 
-        static int subtractMat3(lua_State* L);
+        static int subtract_mat3(lua_State* L);
 
-        static int subtractMat4(lua_State* L);
+        static int subtract_mat4(lua_State* L);
 
-        static int subtractQuat(lua_State* L);
+        static int subtract_quat(lua_State* L);
 
-        static int subtractVec2(lua_State* L);
+        static int subtract_vec2(lua_State* L);
 
-        static int subtractVec3(lua_State* L);
+        static int subtract_vec3(lua_State* L);
 
-        static int subtractVec4(lua_State* L);
+        static int subtract_vec4(lua_State* L);
 
-        static int toStringVec2(lua_State* L);
+        static int to_string_vec2(lua_State* L);
 
-        static int toStringVec3(lua_State* L);
+        static int to_string_vec3(lua_State* L);
 
-        static int toStringVec4(lua_State* L);
+        static int to_string_vec4(lua_State* L);
 
         static int translate(lua_State* L);
 
-        static int unaryMinusVec2(lua_State* L);
+        static int unary_minus_vec2(lua_State* L);
 
-        static int unaryMinusVec3(lua_State* L);
+        static int unary_minus_vec3(lua_State* L);
 
-        static int unaryMinusVec4(lua_State* L);
+        static int unary_minus_vec4(lua_State* L);
 
         static int vec2(lua_State* L);
 

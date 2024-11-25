@@ -12,7 +12,6 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
-        SHARED
         ${STORYTIME_SRC_DIR}/storytime_pch.h
         ${STORYTIME_SRC_DIR}/storytime_main.cpp
         ${STORYTIME_SRC_DIR}/storytime_main.h
@@ -164,12 +163,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 # Precompiled header
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
-
-# On macOS, exported symbols from other binaries aren’t available to shared libraries during linking,
-# so instruct the linker to defer the resolution of symbols until runtime.
-if (APPLE)
-    target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-undefined,dynamic_lookup")
-endif ()
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
