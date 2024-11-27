@@ -23,6 +23,9 @@ std::string create_metatable_name(const std::string& prefix);
 
 void print_lua_stack(lua_State* L, const std::string& tag = "");
 
+#define lua_print_stack print_lua_stack
+#define lua_dump print_lua_stack
+
 std::string lua_table_to_string(lua_State* L, i32 table_index, i32 max_depth = 10);
 
 std::string get_metatable_name(lua_State* L, i32 index);

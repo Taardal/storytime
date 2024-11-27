@@ -23,7 +23,12 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Lua file path cannot be empty");
         ST_LOG_TRACE("Running file [{}]", path);
 
-        lua_pushcfunction(L, print_lua_stacktrace);
+        // Error handler function
+        lua_pushcfunction(L, [](lua_State* L) {
+            print_lua_stacktrace(L);
+            return 1; // Return the error message
+        });
+
         luaL_loadfile(L, path.c_str());
         int error_handler_index = -2;
         constexpr int argument_count = 0;
@@ -43,7 +48,12 @@ namespace Storytime {
         ST_LOG_TRACE("Running script");
         ST_COUTLN(script);
 
-        lua_pushcfunction(L, print_lua_stacktrace);
+        // Error handler function
+        lua_pushcfunction(L, [](lua_State* L) {
+            print_lua_stacktrace(L);
+            return 1; // Return the error message
+        });
+
         luaL_loadstring(L, script.c_str());
         int error_handler_index = -2;
         constexpr int argument_count = 0;

@@ -63,7 +63,7 @@ namespace Storytime {
         return entries;
     }
 
-    i32 print_lua_stacktrace(lua_State* L) {
+    void print_lua_stacktrace(lua_State* L, LuaStacktracePrintConfig config) {
         std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
         std::cerr << "[Lua error] " << lua_tostring(L, -1) << std::endl;
         std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
@@ -81,6 +81,8 @@ namespace Storytime {
             std::stringstream ss;
             if (file_name.length() > 0) {
                 ss << file_name;
+            } else {
+                ss << entry.source;
             }
             if (entry.current_line > -1) {
                 if (file_name.length() > 0) {
@@ -88,8 +90,16 @@ namespace Storytime {
                 }
                 ss << entry.current_line;
             }
-            std::string tag = ss.str();
-            std::cerr << "[" << i << "]" << " " << tag << std::endl;
+            if (entry.name.length() > 0) {
+                ss << " ";
+                ss << "[" << entry.name << "]";
+            }
+            std::string line = ss.str();
+            std::cerr << "[" << i << "]" << " " << line << std::endl;
+
+            if (!config.verbose) {
+                continue;
+            }
 
             std::cerr << "  Source: " << (entry.source.length() > 0 ? entry.source : "--") << std::endl;
             std::cerr << "  Line: " << entry.current_line << std::endl;
@@ -105,7 +115,5 @@ namespace Storytime {
 
         std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
         std::cerr << std::endl;
-
-        return 1; // Return the error message
     }
 }

@@ -12,9 +12,9 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
-        ${STORYTIME_SRC_DIR}/storytime_pch.h
-        ${STORYTIME_SRC_DIR}/storytime_main.cpp
-        ${STORYTIME_SRC_DIR}/storytime_main.h
+        ${STORYTIME_SRC_DIR}/st_pch.h
+        ${STORYTIME_SRC_DIR}/st_main.cpp
+        ${STORYTIME_SRC_DIR}/st_main.h
         ${STORYTIME_SRC_DIR}/audio/audio.cpp
         ${STORYTIME_SRC_DIR}/audio/audio.h
         ${STORYTIME_SRC_DIR}/audio/audio_engine.cpp
@@ -71,6 +71,7 @@ add_library(
         ${STORYTIME_SRC_DIR}/script/lua_mouse.h
         ${STORYTIME_SRC_DIR}/script/lua_ref.h
         ${STORYTIME_SRC_DIR}/script/lua_ref.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_serialize_deserialize.h
         ${STORYTIME_SRC_DIR}/script/lua_state.h
         ${STORYTIME_SRC_DIR}/script/lua_state.cpp
         ${STORYTIME_SRC_DIR}/script/lua_state.h
@@ -107,10 +108,10 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
-        ${STORYTIME_SRC_DIR}/system/uuid.h
-        ${STORYTIME_SRC_DIR}/system/uuid.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
         ${STORYTIME_SRC_DIR}/system/utils.cpp
+        ${STORYTIME_SRC_DIR}/system/uuid.h
+        ${STORYTIME_SRC_DIR}/system/uuid.cpp
         ${STORYTIME_SRC_DIR}/tiled/tiled_class.cpp
         ${STORYTIME_SRC_DIR}/tiled/tiled_class.h
         ${STORYTIME_SRC_DIR}/tiled/tiled_enum.cpp
@@ -162,7 +163,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # Precompiled header
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets

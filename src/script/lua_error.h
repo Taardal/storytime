@@ -62,5 +62,9 @@ namespace Storytime {
 
     std::vector<LuaStacktraceEntry> get_lua_stacktrace(lua_State* L, i32 max_depth = 10);
 
-    i32 print_lua_stacktrace(lua_State* L);
+    struct LuaStacktracePrintConfig {
+        bool verbose;
+    };
+
+    void print_lua_stacktrace(lua_State* L, LuaStacktracePrintConfig config = { .verbose = false });
 }

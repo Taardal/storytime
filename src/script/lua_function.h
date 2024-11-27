@@ -31,7 +31,10 @@ namespace Storytime {
         template<class... Args>
         void invoke(Args&&... args) {
             // Error handler function
-            lua_pushcfunction(L, print_lua_stacktrace);
+            lua_pushcfunction(L, [](lua_State* L) {
+                print_lua_stacktrace(L);
+                return 1; // Return the error message
+            });
 
             // Lua function to invoke
             if (ref != 0) {
@@ -65,8 +68,8 @@ namespace Storytime {
     private:
         // Use variadic templates to recursively push each argument onto the Lua stack (pushes one argument at a time).
         template<class T, class... Args>
-        void push_args(lua_State* L, T value, Args... args) {
-            lua_push(L, value); // Push the first argument
+        void push_args(lua_State* L, T&& value, Args&&... args) {
+            lua_push<T>(L, value); // Push the first argument
             push_args(L, args...); // Recursively call push_args with the rest of the arguments
         }
 
@@ -81,7 +84,7 @@ namespace Storytime {
 template<>
 inline Storytime::LuaFunction lua_to(lua_State* L, int index) {
     ST_ASSERT(lua_isfunction(L, index), "Item at index [" << index << "] on Lua stack must be of type function");
-    i32 ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    Storytime::LuaRef ref(L);
     Storytime::LuaFunction lua_function(L, ref);
     return lua_function;
 }
