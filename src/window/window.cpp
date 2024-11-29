@@ -63,8 +63,11 @@ namespace Storytime {
         return glfw_window;
     }
 
-    void Window::update() const {
+    void Window::process_events() {
         glfwPollEvents();
+    }
+
+    void Window::next_frame() const {
         glfwSwapBuffers(glfw_window);
     }
 
@@ -91,8 +94,10 @@ namespace Storytime {
         return (f32) width / (f32) height;
     }
 
-    f64 Window::get_time() const {
-        return glfwGetTime(); // Seconds since initialization
+    f64 Window::get_time() {
+        // Returns the time elapsed, in seconds, since GLFW was initialized, or zero if an error occurred.
+        // The resolution is system dependent.
+        return glfwGetTime();
     }
 
     void Window::on_glfw_error(i32 error, const char* description) {

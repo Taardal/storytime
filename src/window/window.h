@@ -38,7 +38,9 @@ namespace Storytime {
 
         operator GLFWwindow*() const;
 
-        void update() const;
+        static void process_events();
+
+        void next_frame() const;
 
         void set_title(const char* title) const;
 
@@ -48,7 +50,7 @@ namespace Storytime {
 
         f32 get_aspect_ratio() const;
 
-        f64 get_time() const;
+        static f64 get_time();
 
     private:
         static void on_glfw_error(i32 error, const char* description);

@@ -6,6 +6,7 @@ namespace Storytime {
 
     typedef std::chrono::seconds sec;
     typedef std::chrono::milliseconds ms;
+    typedef std::chrono::microseconds mc;
     typedef std::chrono::nanoseconds ns;
 
     class Clock {
@@ -16,9 +17,9 @@ namespace Storytime {
         void start();
 
         template<typename T = Duration>
-        f64 get_time() {
+        T elapsed() const {
             Time now = std::chrono::high_resolution_clock::now();
-            return std::chrono::duration_cast<T>(now - start_time).count();
+            return std::chrono::duration_cast<T>(now - start_time);
         }
     };
 }

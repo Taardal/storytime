@@ -24,6 +24,7 @@ namespace Storytime {
     {
         ST_GL_CALL(glEnable(GL_BLEND));
         ST_GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        // ST_GL_CALL(glEnable(GL_DEPTH_TEST));
         ST_GL_CALL(glClearColor(config.clear_color.r, config.clear_color.g, config.clear_color.b, config.clear_color.a));
         ST_GL_CALL(glViewport(config.viewport.x, config.viewport.y, config.viewport.width, config.viewport.height));
 
@@ -103,6 +104,7 @@ namespace Storytime {
     void Renderer::begin_frame() {
         reset();
         ST_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        // ST_GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     }
 
     void Renderer::end_frame() {

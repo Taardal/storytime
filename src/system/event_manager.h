@@ -37,12 +37,14 @@ namespace Storytime {
 
         bool unsubscribe(SubscriptionID subscription_id, EventType event_type);
 
+        bool unsubscribe(const std::vector<SubscriptionID>& subscriptions);
+
+        bool unsubscribe_and_clear(std::vector<SubscriptionID>& subscriptions);
+
         bool trigger_event(EventType event_type, const Event& event);
 
         void queue_event(EventType event_type, const Shared<Event>& event);
 
-        void queue_event(EventType event_type, const Event& event);
-
-        void process_event_queue();
+        void process_events();
     };
 }

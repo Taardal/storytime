@@ -44,6 +44,25 @@ namespace Storytime {
         return false;
     }
 
+    bool EventManager::unsubscribe(const std::vector<SubscriptionID>& subscriptions) {
+        for (u32 subscription_id : subscriptions) {
+            bool unsubscribed = unsubscribe(subscription_id);
+            if (!unsubscribed) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool EventManager::unsubscribe_and_clear(std::vector<SubscriptionID>& subscriptions) {
+        bool unsubscribed = unsubscribe(subscriptions);
+        if (!unsubscribed) {
+            return false;
+        }
+        subscriptions.clear();
+        return true;
+    }
+
     bool EventManager::trigger_event(const EventType event_type, const Event& event) {
         if (auto it = subscriptions.find(event_type); it != subscriptions.end()) {
             for (auto& [subscription_id, subscription] : it->second) {
@@ -57,18 +76,13 @@ namespace Storytime {
 
     void EventManager::queue_event(EventType event_type, const Shared<Event>& event) {
         ST_ASSERT(event != nullptr, "Event to be queued cannot be null");
-        ST_ASSERT(queue_index >= 0, "Queue index [" << queue_index << "] cannot be negative");
         ST_ASSERT(queue_index < queues.size(), "Queue index [" << queue_index << "] must be less than queue count [" << queues.size() << "]");
         EventQueue& queue = queues[queue_index];
-        queue[event_type].emplace_back(event);
+        queue[event_type].push_back(event);
         ST_LOG_TRACE("Queued event {}", event->to_string());
     }
 
-    void EventManager::queue_event(EventType event_type, const Event& event) {
-        queue_event(event_type, shared<Event>(event));
-    }
-
-    void EventManager::process_event_queue() {
+    void EventManager::process_events() {
         u32 processed_event_count = 0;
         auto& queue = queues[queue_index];
         for (auto& [event_type, events] : queue) {

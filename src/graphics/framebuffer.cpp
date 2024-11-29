@@ -2,7 +2,7 @@
 #include "graphics/open_gl.h"
 
 namespace Storytime {
-    Framebuffer::Framebuffer(FramebufferConfig config) : config(std::move(config)) {
+    Framebuffer::Framebuffer(const FramebufferConfig& config) : config(config) {
         initialize();
     }
 

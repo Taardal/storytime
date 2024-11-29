@@ -27,6 +27,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.h
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/imgui_window_event.h
+        ${STORYTIME_SRC_DIR}/graphics/imgui_window_event.cpp
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/open_gl.h
@@ -98,6 +100,7 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/event_manager.cpp
         ${STORYTIME_SRC_DIR}/system/file_reader.h
         ${STORYTIME_SRC_DIR}/system/file_reader.cpp
+        ${STORYTIME_SRC_DIR}/system/frame_info.h
         ${STORYTIME_SRC_DIR}/system/json_serialize_deserialize.h
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp

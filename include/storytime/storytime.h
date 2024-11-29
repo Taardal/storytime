@@ -21,6 +21,8 @@
 // Graphics
 #include "graphics/bitmap_font.h"
 #include "graphics/camera.h"
+#include "graphics/imgui_renderer.h"
+#include "graphics/imgui_window_event.h"
 #include "graphics/spritesheet.h"
 #include "graphics/view_projection.h"
 
