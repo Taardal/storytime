@@ -49,4 +49,8 @@ namespace Storytime {
     void string_to_lower(std::string& str) {
         std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     }
+
+    f64 smooth_average(f64 value, f64 current_average, f64 smoothing_factor) {
+        return smoothing_factor * value + (1.0 - smoothing_factor) * current_average;
+    }
 }

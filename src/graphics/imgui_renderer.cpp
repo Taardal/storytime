@@ -81,7 +81,7 @@ namespace Storytime {
         framebuffer.bind();
     }
 
-    void ImGuiRenderer::render(const GameLoopStats& frame_info) {
+    void ImGuiRenderer::render(const GameLoopStatistics& frame_info) {
         framebuffer.unbind();
         render_root_window();
         render_game_window(framebuffer);
@@ -184,10 +184,10 @@ namespace Storytime {
         ImGui::PopStyleVar();
     }
 
-    void ImGuiRenderer::render_frame_info(const GameLoopStats& frame_info) {
+    void ImGuiRenderer::render_frame_info(const GameLoopStatistics& frame_info) {
         ImGui::Begin("Game loop");
-        ImGui::Text("FPS: %.1lf", frame_info.frames_per_second);
-        ImGui::Text("UPS: %.1lf", frame_info.updates_per_second);
+        ImGui::Text("FPS: %.2lf", frame_info.frames_per_second);
+        ImGui::Text("UPS: %.2lf", frame_info.updates_per_second);
         ImGui::Text("Update timestep: %.2lf ms", frame_info.update_timestep_ms);
         ImGui::Text("Update duration: %.3lf ms", frame_info.update_duration_ms);
         ImGui::Text("Render duration: %.3lf ms", frame_info.render_duration_ms);

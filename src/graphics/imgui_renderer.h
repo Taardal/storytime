@@ -29,7 +29,7 @@ namespace Storytime {
 
         void begin_frame() const;
 
-        void render(const GameLoopStats& frame_info);
+        void render(const GameLoopStatistics& frame_info);
 
         void end_frame() const;
 
@@ -46,6 +46,6 @@ namespace Storytime {
 
         void render_game_window(const Framebuffer& framebuffer);
 
-        static void render_frame_info(const GameLoopStats& frame_info);
+        static void render_frame_info(const GameLoopStatistics& frame_info);
     };
 }

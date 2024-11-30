@@ -34,5 +34,15 @@ namespace Storytime {
         T width;
         T height;
     };
+
+    //
+    // Calculate a running average, that is "smoothed out" to provide a more stable value,
+    // using the _Exponential Moving Average_ formula. Useful for FPS counters.
+    //
+    // The smoothing factor (alpha) determines how quickly the average reacts to changes (0 < alpha ≤ 1):
+    // - A higher value makes it more reactive.
+    // - A lower value makes it more stable.
+    //
+    f64 smooth_average(f64 value, f64 current_average, f64 smoothing_factor = 0.1);
 }
 

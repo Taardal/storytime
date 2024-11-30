@@ -16,10 +16,21 @@ namespace Storytime {
     public:
         void start();
 
+        static Time now();
+
+        template<typename T = Duration>
+        static T duration(Duration duration) {
+            return std::chrono::duration_cast<T>(duration);
+        }
+
+        template<typename T = Duration>
+        static T duration(const Time& from, const Time& to) {
+            return duration<T>(to - from);
+        }
+
         template<typename T = Duration>
         T elapsed() const {
-            Time now = std::chrono::high_resolution_clock::now();
-            return std::chrono::duration_cast<T>(now - start_time);
+            return duration<T>(now() - start_time);
         }
     };
 }

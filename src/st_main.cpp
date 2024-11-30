@@ -125,110 +125,118 @@ namespace Storytime {
             on_create(storytime);
             ST_LOG_INFO("Created client");
 
-            GameLoopStats game_loop_stats{};
+            GameLoopStatistics game_loop_stats{};
 
-            constexpr f64 default_smoothing_factor = 0.1; // Adjust for stability (0 < smoothing_factor ≤ 1)
 
-            auto smooth = [&](f64 time, f64 previous_time, f64 smoothing_factor = default_smoothing_factor) -> f64 {
-                return smoothing_factor * time + (1.0 - smoothing_factor) * previous_time; // Exponential Moving Average
-            };
+            // Use fixed timestep to have game systems always update at a predictable rate
+            constexpr f64 timestep_sec = 1.0 / 60.0;
+            constexpr f64 timestep_ms = timestep_sec * 1000.0;
 
-            static f64 SEC_PER_UPDATE = 1.0 / 60.0;
-            static f64 MS_PER_UPDATE = SEC_PER_UPDATE * 1000.0;
+            Clock clock;
+            clock.start();
 
-            f64 last_cycle_start_ms = 0.0;
-            f64 update_lag_ms = 0.0; // How far the game clock is behind the app clock
-
-            Clock app_clock;
-            app_clock.start();
+            Time last_cycle_start_time = clock.now();
+            f64 game_clock_lag_ms = 0.0; // How far the game clock is behind the app clock
 
             running = true;
             ST_LOG_INFO("Running...");
 
             while (running) {
+                Time cycle_start_time = clock.now();
 
-                // Calculate time since last cycle
-                f64 cycle_start_ms = app_clock.elapsed<ms>().count();
-                f64 ms_since_last_cycle = cycle_start_ms - last_cycle_start_ms;
-
-                // If the time since last cycle is too large, assume that we have resumed from a breakpoint
-                // and force it to the target rate this frame to avoid "extreme spikes" in game systems.
-                if (ms_since_last_cycle > 1000.0) {
-                    ms_since_last_cycle = MS_PER_UPDATE;
+                // If the last cycle lasted too long, assume that we have resumed from a breakpoint
+                // and force it to the target rate for this frame to avoid big spikes in game systems.
+                f64 last_cycle_duration_ms = clock.duration<ns>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
+                if (last_cycle_duration_ms > 1000.0) {
+                    last_cycle_duration_ms = timestep_ms;
                 }
+                last_cycle_start_time = cycle_start_time;
+                game_clock_lag_ms += last_cycle_duration_ms;
 
-                // Update last cycle time for next frame
-                last_cycle_start_ms = cycle_start_ms;
+                //
+                // PROCESS INPUT
+                //
 
-                // Update how far the game clock is behind the app clock
-                update_lag_ms += ms_since_last_cycle;
-
-                // Process platform and/or user input events
                 window.process_events();
 
-                // Update game clock at a fixed timestep to have game systems like physics and AI
-                // always update at a predictable rate.
+                //
+                // UPDATE
+                //
+
                 i32 update_count = 0;
-                f64 update_start_lag_ms = update_lag_ms;
-                f64 update_start_ms = app_clock.elapsed<ms>().count();
-                while (update_lag_ms >= MS_PER_UPDATE) {
-                    on_update(SEC_PER_UPDATE);
-                    update_lag_ms -= MS_PER_UPDATE;
+                f64 update_start_lag_ms = game_clock_lag_ms;
+                Time update_start_time = clock.now();
+
+                // Update game clock at fixed timesteps to have game systems always update at a predictable rate
+                while (game_clock_lag_ms >= timestep_ms) {
+                    on_update(timestep_sec);
+                    game_clock_lag_ms -= timestep_ms;
                     update_count++;
                 }
-                f64 update_end_ms = app_clock.elapsed<ms>().count();
 
-                // Process game events between updating and rendering to have the game state rendered
-                // as accurately as possible. We want to process changes in the game world as soon as
-                // possible so they can be rendered in the same cycle.
+                f64 update_end_lag_ms = game_clock_lag_ms;
+                Time update_end_time = clock.now();
+
+                // Process game events between updating and rendering to have any changes in the game state
+                // be rendered in the same cycle.
                 if (update_count > 0) {
                     event_manager.process_events();
                 }
+
+                //
+                // RENDER
+                //
 
 #ifdef ST_RENDER_IMGUI
                 imgui_renderer.begin_frame();
 #endif
 
-                f64 render_start_ms = app_clock.elapsed<ms>().count();
+                Time render_start_time = clock.now();
                 renderer.begin_frame();
                 on_render();
                 renderer.end_frame();
-                f64 render_end_ms = app_clock.elapsed<ms>().count();
+                Time render_end_time = clock.now();
 
 #ifdef ST_RENDER_IMGUI
-                f64 imgui_render_start_ms = app_clock.elapsed<ms>().count();
+                Time imgui_render_start_time = clock.now();
                 imgui_renderer.render(game_loop_stats);
                 on_render_imgui();
                 imgui_renderer.end_frame();
-                f64 imgui_render_end_ms = app_clock.elapsed<ms>().count();
+                Time imgui_render_end_time = clock.now();
 #endif
 
                 window.next_frame();
-                f64 cycle_end_ms = app_clock.elapsed<ms>().count();
+                Time cycle_end_time = clock.now();
 
-                // Update game loop statistics after cycle is complete for use next frame
+                //
+                // STATISTICS
+                //
+
+                static constexpr f64 low_res_smoothing_factor = 0.1;
+                static constexpr f64 high_res_smoothing_factor = 0.01;
+
+                f64 cycle_duration_ms = clock.duration<ns>(cycle_end_time - cycle_start_time).count() / 1000000.0;
+                game_loop_stats.cycle_duration_ms = smooth_average(cycle_duration_ms, game_loop_stats.cycle_duration_ms, high_res_smoothing_factor);
+
                 if (update_count > 0) {
-                    f64 update_duration_ms = update_end_ms - update_start_ms;
-                    game_loop_stats.update_duration_ms = smooth(update_duration_ms, game_loop_stats.update_duration_ms);
+                    f64 update_duration_ms = clock.duration<ns>(update_end_time - update_start_time).count() / 1000000.0;
+                    game_loop_stats.update_duration_ms = smooth_average(update_duration_ms, game_loop_stats.update_duration_ms, high_res_smoothing_factor);
 
-                    f64 update_timestep_ms = update_start_lag_ms - update_lag_ms;
-                    game_loop_stats.update_timestep_ms = smooth(update_timestep_ms, game_loop_stats.update_timestep_ms);
+                    f64 update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
+                    game_loop_stats.update_timestep_ms = smooth_average(update_timestep_ms, game_loop_stats.update_timestep_ms, low_res_smoothing_factor);
 
                     f64 updates_per_second = update_count / (update_timestep_ms / 1000.0);
-                    game_loop_stats.updates_per_second = smooth(updates_per_second, game_loop_stats.updates_per_second);
+                    game_loop_stats.updates_per_second = smooth_average(updates_per_second, game_loop_stats.updates_per_second, low_res_smoothing_factor);
                 }
 
-                f64 render_duration_ms = render_end_ms - render_start_ms;
-                game_loop_stats.render_duration_ms = smooth(render_duration_ms, game_loop_stats.render_duration_ms);
+                f64 render_duration_ms = clock.duration<ns>(render_end_time - render_start_time).count() / 1000000.0;
+                game_loop_stats.render_duration_ms = smooth_average(render_duration_ms, game_loop_stats.render_duration_ms, high_res_smoothing_factor);
 
                 f64 frames_per_second = 1.0 / (render_duration_ms / 1000.0);
-                game_loop_stats.frames_per_second = smooth(frames_per_second, game_loop_stats.frames_per_second);
+                game_loop_stats.frames_per_second = smooth_average(frames_per_second, game_loop_stats.frames_per_second, low_res_smoothing_factor);
 
-                f64 imgui_render_time_ms = imgui_render_end_ms - imgui_render_start_ms;
-                game_loop_stats.imgui_render_duration_ms = smooth(imgui_render_time_ms, game_loop_stats.imgui_render_duration_ms);
-
-                f64 cycle_duration_ms = cycle_end_ms - cycle_start_ms;
-                game_loop_stats.cycle_duration_ms = smooth(cycle_duration_ms, game_loop_stats.cycle_duration_ms);
+                f64 imgui_render_duration_ms = clock.duration<ns>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
+                game_loop_stats.imgui_render_duration_ms = smooth_average(imgui_render_duration_ms, game_loop_stats.imgui_render_duration_ms, high_res_smoothing_factor);
             }
 
             ST_LOG_INFO("Terminating...");
