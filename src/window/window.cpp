@@ -67,7 +67,7 @@ namespace Storytime {
         glfwPollEvents();
     }
 
-    void Window::next_frame() const {
+    void Window::swap_buffers() const {
         glfwSwapBuffers(glfw_window);
     }
 

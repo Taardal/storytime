@@ -40,7 +40,7 @@ namespace Storytime {
 
         static void process_events();
 
-        void next_frame() const;
+        void swap_buffers() const;
 
         void set_title(const char* title) const;
 

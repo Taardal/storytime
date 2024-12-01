@@ -85,7 +85,7 @@ namespace Storytime {
         framebuffer.unbind();
         render_root_window();
         render_game_window(framebuffer);
-        render_frame_info(frame_info);
+        render_game_loop_statistics(frame_info);
     }
 
     void ImGuiRenderer::end_frame() const {
@@ -184,15 +184,37 @@ namespace Storytime {
         ImGui::PopStyleVar();
     }
 
-    void ImGuiRenderer::render_frame_info(const GameLoopStatistics& frame_info) {
+    void ImGuiRenderer::render_game_loop_statistics(const GameLoopStatistics& statistics) {
+        static f64 average_frames_per_second = 0.0;
+        static f64 average_updates_per_second = 0.0;
+        static f64 average_update_timestep_ms = 0.0;
+        static f64 average_update_duration_ms = 0.0;
+        static f64 average_render_duration_ms = 0.0;
+        static f64 average_imgui_render_duration_ms = 0.0;
+        static f64 average_cycle_duration_ms = 0.0;
+
+        {
+            f64 smoothing_factor = 0.1;
+            average_frames_per_second = smooth_average(statistics.frames_per_second, average_frames_per_second, smoothing_factor);
+            average_updates_per_second = smooth_average(statistics.updates_per_second, average_updates_per_second, smoothing_factor);
+            average_update_timestep_ms = smooth_average(statistics.update_timestep_ms, average_update_timestep_ms, smoothing_factor);
+        }
+        {
+            f64 smoothing_factor = 0.01;
+            average_update_duration_ms = smooth_average(statistics.update_duration_ms, average_update_duration_ms, smoothing_factor);
+            average_render_duration_ms = smooth_average(statistics.render_duration_ms, average_render_duration_ms, smoothing_factor);
+            average_imgui_render_duration_ms = smooth_average(statistics.imgui_render_duration_ms, average_imgui_render_duration_ms, smoothing_factor);
+            average_cycle_duration_ms = smooth_average(statistics.cycle_duration_ms, average_cycle_duration_ms, smoothing_factor);
+        }
+
         ImGui::Begin("Game loop");
-        ImGui::Text("FPS: %.2lf", frame_info.frames_per_second);
-        ImGui::Text("UPS: %.2lf", frame_info.updates_per_second);
-        ImGui::Text("Update timestep: %.2lf ms", frame_info.update_timestep_ms);
-        ImGui::Text("Update duration: %.3lf ms", frame_info.update_duration_ms);
-        ImGui::Text("Render duration: %.3lf ms", frame_info.render_duration_ms);
-        ImGui::Text("ImGui render duration: %.3lf ms", frame_info.imgui_render_duration_ms);
-        ImGui::Text("Cycle duration: %.3lf ms", frame_info.cycle_duration_ms);
+        ImGui::Text("FPS: %.2lf", average_frames_per_second);
+        ImGui::Text("UPS: %.2lf", average_updates_per_second);
+        ImGui::Text("Update timestep: %.2lf ms", average_update_timestep_ms);
+        ImGui::Text("Update duration: %.3lf ms", average_update_duration_ms);
+        ImGui::Text("Render duration: %.3lf ms", average_render_duration_ms);
+        ImGui::Text("ImGui render duration: %.3lf ms", average_imgui_render_duration_ms);
+        ImGui::Text("Cycle duration: %.3lf ms", average_cycle_duration_ms);
         ImGui::End();
     }
 }

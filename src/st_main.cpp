@@ -132,21 +132,18 @@ namespace Storytime {
             constexpr f64 timestep_sec = 1.0 / 60.0;
             constexpr f64 timestep_ms = timestep_sec * 1000.0;
 
-            Clock clock;
-            clock.start();
-
-            Time last_cycle_start_time = clock.now();
+            TimePoint last_cycle_start_time = Time::now();
             f64 game_clock_lag_ms = 0.0; // How far the game clock is behind the app clock
 
             running = true;
             ST_LOG_INFO("Running...");
 
             while (running) {
-                Time cycle_start_time = clock.now();
+                TimePoint cycle_start_time = Time::now();
 
                 // If the last cycle lasted too long, assume that we have resumed from a breakpoint
                 // and force it to the target rate for this frame to avoid big spikes in game systems.
-                f64 last_cycle_duration_ms = clock.duration<ns>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
+                f64 last_cycle_duration_ms = Time::duration<ns>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
                 if (last_cycle_duration_ms > 1000.0) {
                     last_cycle_duration_ms = timestep_ms;
                 }
@@ -165,7 +162,7 @@ namespace Storytime {
 
                 i32 update_count = 0;
                 f64 update_start_lag_ms = game_clock_lag_ms;
-                Time update_start_time = clock.now();
+                TimePoint update_start_time = Time::now();
 
                 // Update game clock at fixed timesteps to have game systems always update at a predictable rate
                 while (game_clock_lag_ms >= timestep_ms) {
@@ -175,7 +172,7 @@ namespace Storytime {
                 }
 
                 f64 update_end_lag_ms = game_clock_lag_ms;
-                Time update_end_time = clock.now();
+                TimePoint update_end_time = Time::now();
 
                 // Process game events between updating and rendering to have any changes in the game state
                 // be rendered in the same cycle.
@@ -191,52 +188,36 @@ namespace Storytime {
                 imgui_renderer.begin_frame();
 #endif
 
-                Time render_start_time = clock.now();
+                TimePoint render_start_time = Time::now();
                 renderer.begin_frame();
                 on_render();
                 renderer.end_frame();
-                Time render_end_time = clock.now();
+                TimePoint render_end_time = Time::now();
 
 #ifdef ST_RENDER_IMGUI
-                Time imgui_render_start_time = clock.now();
+                TimePoint imgui_render_start_time = Time::now();
                 imgui_renderer.render(game_loop_stats);
                 on_render_imgui();
                 imgui_renderer.end_frame();
-                Time imgui_render_end_time = clock.now();
+                TimePoint imgui_render_end_time = Time::now();
 #endif
 
-                window.next_frame();
-                Time cycle_end_time = clock.now();
+                window.swap_buffers();
+                TimePoint cycle_end_time = Time::now();
 
                 //
                 // STATISTICS
                 //
 
-                static constexpr f64 low_res_smoothing_factor = 0.1;
-                static constexpr f64 high_res_smoothing_factor = 0.01;
-
-                f64 cycle_duration_ms = clock.duration<ns>(cycle_end_time - cycle_start_time).count() / 1000000.0;
-                game_loop_stats.cycle_duration_ms = smooth_average(cycle_duration_ms, game_loop_stats.cycle_duration_ms, high_res_smoothing_factor);
-
                 if (update_count > 0) {
-                    f64 update_duration_ms = clock.duration<ns>(update_end_time - update_start_time).count() / 1000000.0;
-                    game_loop_stats.update_duration_ms = smooth_average(update_duration_ms, game_loop_stats.update_duration_ms, high_res_smoothing_factor);
-
-                    f64 update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
-                    game_loop_stats.update_timestep_ms = smooth_average(update_timestep_ms, game_loop_stats.update_timestep_ms, low_res_smoothing_factor);
-
-                    f64 updates_per_second = update_count / (update_timestep_ms / 1000.0);
-                    game_loop_stats.updates_per_second = smooth_average(updates_per_second, game_loop_stats.updates_per_second, low_res_smoothing_factor);
+                    game_loop_stats.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
+                    game_loop_stats.updates_per_second = update_count / (game_loop_stats.update_timestep_ms / 1000.0);
+                    game_loop_stats.update_duration_ms = Time::duration<ns>(update_end_time - update_start_time).count() / 1000000.0;
                 }
-
-                f64 render_duration_ms = clock.duration<ns>(render_end_time - render_start_time).count() / 1000000.0;
-                game_loop_stats.render_duration_ms = smooth_average(render_duration_ms, game_loop_stats.render_duration_ms, high_res_smoothing_factor);
-
-                f64 frames_per_second = 1.0 / (render_duration_ms / 1000.0);
-                game_loop_stats.frames_per_second = smooth_average(frames_per_second, game_loop_stats.frames_per_second, low_res_smoothing_factor);
-
-                f64 imgui_render_duration_ms = clock.duration<ns>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
-                game_loop_stats.imgui_render_duration_ms = smooth_average(imgui_render_duration_ms, game_loop_stats.imgui_render_duration_ms, high_res_smoothing_factor);
+                game_loop_stats.render_duration_ms = Time::duration<ns>(render_end_time - render_start_time).count() / 1000000.0;
+                game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
+                game_loop_stats.imgui_render_duration_ms = Time::duration<ns>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
+                game_loop_stats.cycle_duration_ms = Time::duration<ns>(cycle_end_time - cycle_start_time).count() / 1000000.0;
             }
 
             ST_LOG_INFO("Terminating...");

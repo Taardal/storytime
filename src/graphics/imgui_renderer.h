@@ -46,6 +46,6 @@ namespace Storytime {
 
         void render_game_window(const Framebuffer& framebuffer);
 
-        static void render_frame_info(const GameLoopStatistics& frame_info);
+        static void render_game_loop_statistics(const GameLoopStatistics& statistics);
     };
 }
