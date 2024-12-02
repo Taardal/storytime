@@ -173,7 +173,7 @@ namespace Storytime {
 
                 // Update game clock at fixed timesteps to have game systems update at a
                 // predictable rate. Whenever the game clock lags behind the app clock by
-                // one-or-more 1 timestep(s), tick it forwards until it's caught up.
+                // one-or-more timesteps, tick the game clock forwards until it's caught up.
                 while (game_clock_lag_ms >= timestep_ms) {
                     on_update(timestep_sec);
                     game_clock_lag_ms -= timestep_ms;
