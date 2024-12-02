@@ -184,7 +184,7 @@ namespace Storytime {
         ImGui::PopStyleVar();
     }
 
-    void ImGuiRenderer::render_game_loop_statistics(const GameLoopStatistics& statistics) {
+    void ImGuiRenderer::render_game_loop_statistics(const GameLoopStatistics& game_loop_stats) {
         static f64 average_frames_per_second = 0.0;
         static f64 average_updates_per_second = 0.0;
         static f64 average_update_timestep_ms = 0.0;
@@ -195,16 +195,16 @@ namespace Storytime {
 
         {
             f64 smoothing_factor = 0.1;
-            average_frames_per_second = smooth_average(statistics.frames_per_second, average_frames_per_second, smoothing_factor);
-            average_updates_per_second = smooth_average(statistics.updates_per_second, average_updates_per_second, smoothing_factor);
-            average_update_timestep_ms = smooth_average(statistics.update_timestep_ms, average_update_timestep_ms, smoothing_factor);
+            average_frames_per_second = smooth_average(game_loop_stats.frames_per_second, average_frames_per_second, smoothing_factor);
+            average_updates_per_second = smooth_average(game_loop_stats.updates_per_second, average_updates_per_second, smoothing_factor);
+            average_update_timestep_ms = smooth_average(game_loop_stats.update_timestep_ms, average_update_timestep_ms, smoothing_factor);
         }
         {
             f64 smoothing_factor = 0.01;
-            average_update_duration_ms = smooth_average(statistics.update_duration_ms, average_update_duration_ms, smoothing_factor);
-            average_render_duration_ms = smooth_average(statistics.render_duration_ms, average_render_duration_ms, smoothing_factor);
-            average_imgui_render_duration_ms = smooth_average(statistics.imgui_render_duration_ms, average_imgui_render_duration_ms, smoothing_factor);
-            average_cycle_duration_ms = smooth_average(statistics.cycle_duration_ms, average_cycle_duration_ms, smoothing_factor);
+            average_update_duration_ms = smooth_average(game_loop_stats.update_duration_ms, average_update_duration_ms, smoothing_factor);
+            average_render_duration_ms = smooth_average(game_loop_stats.render_duration_ms, average_render_duration_ms, smoothing_factor);
+            average_imgui_render_duration_ms = smooth_average(game_loop_stats.imgui_render_duration_ms, average_imgui_render_duration_ms, smoothing_factor);
+            average_cycle_duration_ms = smooth_average(game_loop_stats.cycle_duration_ms, average_cycle_duration_ms, smoothing_factor);
         }
 
         ImGui::Begin("Game loop");

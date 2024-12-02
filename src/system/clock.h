@@ -2,74 +2,61 @@
 
 namespace Storytime {
     typedef std::chrono::high_resolution_clock::time_point TimePoint;
-    typedef std::chrono::high_resolution_clock::duration Duration;
-
-    typedef std::chrono::seconds sec;
-    typedef std::chrono::milliseconds ms;
-    typedef std::chrono::microseconds mc;
-    typedef std::chrono::nanoseconds ns;
 
     class Time {
     public:
         static TimePoint now();
 
-        template<typename T = Duration>
-        static T duration(Duration duration) {
-            return std::chrono::duration_cast<T>(duration);
-        }
-
-        template<typename T = Duration>
-        static T duration(const TimePoint& from, const TimePoint& to) {
-            return duration<T>(to - from);
+        template<typename ToDuration, typename FromDuration>
+        static ToDuration as(FromDuration from_duration) {
+            return std::chrono::duration_cast<ToDuration>(from_duration);
         }
     };
+}
+
+namespace Storytime {
+    typedef std::chrono::duration<i64, std::nano> Nanoseconds;
+    typedef std::chrono::duration<i64, std::micro> Microseconds;
+    typedef std::chrono::duration<i64, std::milli> Milliseconds;
+    typedef std::chrono::duration<f64> Seconds;
+
+    typedef Nanoseconds ns;
+    typedef Microseconds us; typedef Microseconds μs;
+    typedef Milliseconds ms;
+    typedef Seconds sec;
 
     class Clock {
     private:
-        TimePoint start_time = TimePoint::min();
-        std::vector<Duration> intervals;
-        bool running = false;
+        Nanoseconds elapsed_ns;
+        f32 time_scale = 1.0f;
+        bool paused = false;
 
     public:
-        void start();
+        explicit Clock(f64 seconds = 0.0);
 
-        void stop();
+        Nanoseconds elapsed() const;
 
-        void reset();
-
-        void interval();
-
-        template<typename T = Duration>
-        T elapsed() const {
-            return Time::duration<T>(Time::now() - start_time);
+        template<typename Duration>
+        Duration elapsed() const {
+            return Time::as<Duration>(elapsed());
         }
-    };
 
-    class Clock1 {
-    private:
-        static f32 cycles_per_second; // The frequency of the clock
+        Nanoseconds delta(const Clock& other) const;
 
-    private:
-        u64 time_cycles; // The time elapsed since start represented in CPU cycles
-        f32 time_scale; // The scale of time. Can be used to speed up or slow down the passage of time
-        bool paused;
+        template<typename Duration>
+        Duration delta(const Clock& other) const {
+            return Time::as<Duration>(delta(other));
+        }
 
-    public:
-        static void initialize();
+        void tick(f64 timestep);
 
-        explicit Clock1(f32 start_time_seconds = 0.0f);
-
-        // Return the current time in cycles
-        u64 get_time_cycles() const;
-
-        // Determine the difference between this clock's absolute time and that of
-        // another clock, in seconds. We only return time deltas as floating-point
-        // seconds, due to the precision limitations of a 32-bit float.
-        f32 calc_delta_seconds(const Clock1& other) const;
-
-        // This function should be called once per frame, with the real measured frame time
-        // delta in seconds
-        void update(f64 timestep_sec);
+        template<typename Duration = Nanoseconds>
+        void tick(Duration duration) {
+            if (paused) {
+                return;
+            }
+            elapsed_ns += Time::as<Nanoseconds>(duration * time_scale);
+        }
 
         f32 get_time_scale() const;
 
@@ -78,15 +65,5 @@ namespace Storytime {
         bool is_paused() const;
 
         void set_paused(bool paused);
-
-        void single_step();
-
-    private:
-        static u64 get_high_resolution_clock_frequency();
-
-        static u64 seconds_to_cycles(f32 time_seconds);
-
-        // WARNING: Dangerous -- only use to convert small durations into seconds
-        static f32 cycles_to_seconds(u64 time_cycles);
     };
 }

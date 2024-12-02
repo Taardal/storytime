@@ -8,7 +8,7 @@
 #include "system/clock.h"
 #include "system/event_manager.h"
 #include "system/file_reader.h"
-#include "system/frame_info.h"
+#include "system/game_loop_statistics.h"
 #include "system/service_locator.h"
 #include "window/window.h"
 #include "window/window_event.h"
@@ -125,28 +125,35 @@ namespace Storytime {
             on_create(storytime);
             ST_LOG_INFO("Created client");
 
+            //
+            // GAME LOOP
+            //
+
             GameLoopStatistics game_loop_stats{};
 
-
-            // Use fixed timestep to have game systems always update at a predictable rate
+            // Update game at fixed timesteps to have game systems update at a predictable rate
             constexpr f64 timestep_sec = 1.0 / 60.0;
             constexpr f64 timestep_ms = timestep_sec * 1000.0;
 
+            // How far the game clock is behind the app clock
+            f64 game_clock_lag_ms = 0.0;
+
+            // Use the duration of the last game loop cycle to increment game clock lag
             TimePoint last_cycle_start_time = Time::now();
-            f64 game_clock_lag_ms = 0.0; // How far the game clock is behind the app clock
 
             running = true;
             ST_LOG_INFO("Running...");
 
             while (running) {
                 TimePoint cycle_start_time = Time::now();
+                f64 last_cycle_duration_ms = Time::as<Nanoseconds>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
 
                 // If the last cycle lasted too long, assume that we have resumed from a breakpoint
-                // and force it to the target rate for this frame to avoid big spikes in game systems.
-                f64 last_cycle_duration_ms = Time::duration<ns>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
+                // and override the duration to the target timestep to avoid big spikes in game systems.
                 if (last_cycle_duration_ms > 1000.0) {
                     last_cycle_duration_ms = timestep_ms;
                 }
+
                 last_cycle_start_time = cycle_start_time;
                 game_clock_lag_ms += last_cycle_duration_ms;
 
@@ -164,7 +171,9 @@ namespace Storytime {
                 f64 update_start_lag_ms = game_clock_lag_ms;
                 TimePoint update_start_time = Time::now();
 
-                // Update game clock at fixed timesteps to have game systems always update at a predictable rate
+                // Update game clock at fixed timesteps to have game systems update at a
+                // predictable rate. Whenever the game clock lags behind the app clock by
+                // one-or-more 1 timestep(s), tick it forwards until it's caught up.
                 while (game_clock_lag_ms >= timestep_ms) {
                     on_update(timestep_sec);
                     game_clock_lag_ms -= timestep_ms;
@@ -212,12 +221,12 @@ namespace Storytime {
                 if (update_count > 0) {
                     game_loop_stats.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
                     game_loop_stats.updates_per_second = update_count / (game_loop_stats.update_timestep_ms / 1000.0);
-                    game_loop_stats.update_duration_ms = Time::duration<ns>(update_end_time - update_start_time).count() / 1000000.0;
+                    game_loop_stats.update_duration_ms = Time::as<Nanoseconds>(update_end_time - update_start_time).count() / 1000000.0;
                 }
-                game_loop_stats.render_duration_ms = Time::duration<ns>(render_end_time - render_start_time).count() / 1000000.0;
+                game_loop_stats.render_duration_ms = Time::as<Nanoseconds>(render_end_time - render_start_time).count() / 1000000.0;
                 game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
-                game_loop_stats.imgui_render_duration_ms = Time::duration<ns>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
-                game_loop_stats.cycle_duration_ms = Time::duration<ns>(cycle_end_time - cycle_start_time).count() / 1000000.0;
+                game_loop_stats.imgui_render_duration_ms = Time::as<Nanoseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
+                game_loop_stats.cycle_duration_ms = Time::as<Nanoseconds>(cycle_end_time - cycle_start_time).count() / 1000000.0;
             }
 
             ST_LOG_INFO("Terminating...");

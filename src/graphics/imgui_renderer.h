@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/framebuffer.h"
-#include "system/frame_info.h"
+#include "system/game_loop_statistics.h"
 #include "window/window.h"
 
 namespace Storytime {
@@ -29,7 +29,7 @@ namespace Storytime {
 
         void begin_frame() const;
 
-        void render(const GameLoopStatistics& frame_info);
+        void render(const GameLoopStatistics& game_loop_stats);
 
         void end_frame() const;
 
@@ -46,6 +46,6 @@ namespace Storytime {
 
         void render_game_window(const Framebuffer& framebuffer);
 
-        static void render_game_loop_statistics(const GameLoopStatistics& statistics);
+        static void render_game_loop_statistics(const GameLoopStatistics& game_loop_stats);
     };
 }

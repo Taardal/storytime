@@ -100,7 +100,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/event_manager.cpp
         ${STORYTIME_SRC_DIR}/system/file_reader.h
         ${STORYTIME_SRC_DIR}/system/file_reader.cpp
-        ${STORYTIME_SRC_DIR}/system/frame_info.h
+        ${STORYTIME_SRC_DIR}/system/game_loop_statistics.cpp
+        ${STORYTIME_SRC_DIR}/system/game_loop_statistics.h
         ${STORYTIME_SRC_DIR}/system/json_serialize_deserialize.h
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp
