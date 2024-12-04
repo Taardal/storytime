@@ -25,10 +25,14 @@ namespace Storytime {
 #endif
         ST_LOG_DEBUG("GLFW context version [{0}.{1}]", config.context_version_major, config.context_version_minor);
 
+        ST_ASSERT(config.width > 0, "Window width must be greater than zero");
+        ST_ASSERT(config.height > 0 || config.aspect_ratio > 0.0f, "Window height or aspect ratio must be greater than zero");
+        i32 height = config.height > 0 ? config.height : static_cast<f32>(config.width) / config.aspect_ratio;
+
         ST_LOG_TRACE("Creating GLFW window");
-        GLFWmonitor* fullscreenMonitor = nullptr;
-        GLFWwindow* sharedWindow = nullptr;
-        glfw_window = glfwCreateWindow(config.width, config.height, config.title.c_str(), fullscreenMonitor, sharedWindow);
+        GLFWmonitor* fullscreen_monitor = nullptr;
+        GLFWwindow* shared_window = nullptr;
+        glfw_window = glfwCreateWindow(config.width, height, config.title.c_str(), fullscreen_monitor, shared_window);
         if (glfw_window == nullptr) {
             ST_THROW("Could not create GLFW window");
         }
@@ -55,12 +59,15 @@ namespace Storytime {
     }
 
     Window::operator GLFWwindow*() const {
-        ST_ASSERT(glfw_window != nullptr);
+        ST_ASSERT(glfw_window != nullptr, "Cannot access GLFW window object that has not been created or is already destroyed");
         return glfw_window;
     }
 
-    void Window::update() const {
+    void Window::process_events() {
         glfwPollEvents();
+    }
+
+    void Window::swap_buffers() const {
         glfwSwapBuffers(glfw_window);
     }
 
@@ -71,21 +78,26 @@ namespace Storytime {
     WindowSize Window::get_size_in_pixels() const  {
         i32 width = 0;
         i32 height = 0;
-        get_size_in_pixels(&width, &height);
+        glfwGetFramebufferSize(glfw_window, &width, &height);
         return { width, height };
     }
 
-    void Window::get_size_in_pixels(i32* width, i32* height) const {
-        glfwGetFramebufferSize(glfw_window, width, height);
+    WindowSize Window::get_size_in_screen_coordinates() const {
+        i32 width = 0;
+        i32 height = 0;
+        glfwGetWindowSize(glfw_window, &width, &height);
+        return { width, height };
     }
 
     f32 Window::get_aspect_ratio() const {
-        auto [width, height] = get_size_in_pixels();
-        return static_cast<f32>(width) / static_cast<f32>(height);
+        auto [width, height] = get_size_in_screen_coordinates();
+        return (f32) width / (f32) height;
     }
 
-    f64 Window::get_time() const {
-        return glfwGetTime(); // Seconds since initialization
+    f64 Window::get_time() {
+        // Returns the time elapsed, in seconds, since GLFW was initialized, or zero if an error occurred.
+        // The resolution is system dependent.
+        return glfwGetTime();
     }
 
     void Window::on_glfw_error(i32 error, const char* description) {
@@ -94,55 +106,55 @@ namespace Storytime {
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
         WindowResizeEvent event(width, height);
-        on_event(glfw_window, EventType::WindowResize, event);
+        on_event(glfw_window, WindowResizeEvent::type, event);
     }
 
     void Window::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             KeyPressedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyPressed, event);
+            on_event(glfw_window, KeyPressedEvent::type, event);
         } else if (action == GLFW_RELEASE) {
             KeyReleasedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyReleased, event);
+            on_event(glfw_window, KeyReleasedEvent::type, event);
         } else if (action == GLFW_REPEAT) {
             KeyRepeatedEvent event(key, mods, scanCode);
-            on_event(glfw_window, EventType::KeyRepeated, event);
+            on_event(glfw_window, KeyRepeatedEvent::type, event);
         }
     }
 
     void Window::on_mouse_button_change(GLFWwindow* glfw_window, i32 button, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             MouseButtonPressedEvent event(button);
-            on_event(glfw_window, EventType::MouseButtonPressed, event);
+            on_event(glfw_window, MouseButtonPressedEvent::type, event);
         }
         if (action == GLFW_RELEASE) {
             MouseButtonReleasedEvent event(button);
-            on_event(glfw_window, EventType::MouseButtonReleased, event);
+            on_event(glfw_window, MouseButtonReleasedEvent::type, event);
         }
     }
 
     void Window::on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset) {
         MouseScrollEvent event(xoffset, yoffset);
-        on_event(glfw_window, EventType::MouseScroll, event);
+        on_event(glfw_window, MouseScrollEvent::type, event);
     }
 
     void Window::on_window_close_change(GLFWwindow* glfw_window) {
         WindowCloseEvent event{};
-        on_event(glfw_window, EventType::WindowClose, event);
+        on_event(glfw_window, WindowCloseEvent::type, event);
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
         bool minimized = iconified == 1;
         WindowMinimizeEvent event(minimized);
-        on_event(glfw_window, EventType::WindowMinimize, event);
+        on_event(glfw_window, WindowMinimizeEvent::type, event);
     }
 
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
         ST_LOG_TRACE(event.to_string());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
-        ST_ASSERT(window != nullptr);
+        ST_ASSERT(window != nullptr, "Invalid GLFW user pointer: Window object must exist when sending events");
         auto event_manager = window->config.event_manager;
-        ST_ASSERT(event_manager != nullptr);
+        ST_ASSERT(event_manager != nullptr, "Invalid GLFW user pointer: Event manager object must exist when sending events");
         event_manager->trigger_event(event_type, event);
     }
 }

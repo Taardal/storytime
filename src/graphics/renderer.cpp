@@ -5,19 +5,15 @@
 #include "resource/resource_loader.h"
 
 namespace Storytime {
-    constexpr u32 Renderer::VERTICES_PER_QUAD = 4;
-    constexpr u32 Renderer::INDICES_PER_QUAD = 6;
-    constexpr u32 Renderer::QUADS_PER_BATCH = 1000;
     constexpr u32 Renderer::VERTICES_PER_BATCH = QUADS_PER_BATCH * VERTICES_PER_QUAD;
     constexpr u32 Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
-    constexpr u32 Renderer::MAX_TEXTURE_SLOTS = 16;
 
-    Renderer::Renderer(const ResourceLoader* resource_loader)
-        : vertex_array(make_shared<VertexArray>()),
-          vertex_buffer(make_shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
-          shader(resource_loader->load_shader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
+    Renderer::Renderer(const RendererConfig& config)
+        : vertex_array(shared<VertexArray>()),
+          vertex_buffer(shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+          shader(config.resource_loader->load_shader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
           textures(new Shared<Texture>[MAX_TEXTURE_SLOTS]),
-          white_texture(make_shared<Texture>(1, 1)),
+          white_texture(shared<Texture>(1, 1)),
           vertices(new Vertex[VERTICES_PER_BATCH]),
           indices(new u32[INDICES_PER_BATCH]),
           vertex_count(0),
@@ -28,7 +24,8 @@ namespace Storytime {
     {
         ST_GL_CALL(glEnable(GL_BLEND));
         ST_GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        ST_GL_CALL(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
+        ST_GL_CALL(glClearColor(config.clear_color.r, config.clear_color.g, config.clear_color.b, config.clear_color.a));
+        ST_GL_CALL(glViewport(config.viewport.x, config.viewport.y, config.viewport.width, config.viewport.height));
 
         vertex_buffer->set_attribute_layout({
             {GLSLType::Vec3, "position"},
@@ -48,7 +45,7 @@ namespace Storytime {
             indices[i + 5] = offset + 0;
             offset += VERTICES_PER_QUAD;
         }
-        auto index_buffer = make_shared<IndexBuffer>(indices, INDICES_PER_BATCH);
+        auto index_buffer = shared<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertex_array->add_vertex_buffer(vertex_buffer);
         vertex_array->set_index_buffer(index_buffer);
@@ -67,10 +64,16 @@ namespace Storytime {
         shader->bind();
         shader->set_int_array("textureSamplers", samplers, MAX_TEXTURE_SLOTS);
 
-        default_texture_coordinates[0] = {0.0f, 0.0f};
-        default_texture_coordinates[1] = {1.0f, 0.0f};
-        default_texture_coordinates[2] = {1.0f, 1.0f};
-        default_texture_coordinates[3] = {0.0f, 1.0f};
+        default_texture_coordinates[0] = {0.0f, 0.0f}; // Top left
+        default_texture_coordinates[1] = {1.0f, 0.0f}; // Top right
+        default_texture_coordinates[2] = {1.0f, 1.0f}; // Bottom right
+        default_texture_coordinates[3] = {0.0f, 1.0f}; // Bottom left
+
+        // Offset quads left and up by half its size to place the origin in the center
+        origin_quad_offsets[0] = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f); // Top left
+        origin_quad_offsets[1] = glm::vec4(0.5f, -0.5f, 0.0f, 1.0f);  // Top right
+        origin_quad_offsets[2] = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);   // Bottom right
+        origin_quad_offsets[3] = glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f);  // Bottom left
     }
 
     Renderer::~Renderer() {
@@ -85,23 +88,21 @@ namespace Storytime {
         return statistics;
     }
 
-    void Renderer::set_clear_color(const glm::vec3& color) {
-        set_clear_color({color.r, color.g, color.b, 1.0f});
-    }
-
-    void Renderer::set_clear_color(const glm::vec4& color) {
-        this->clear_color = color;
+    void Renderer::set_clear_color(const glm::vec4& clear_color) {
         ST_GL_CALL(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
     }
 
-    void Renderer::set_viewport(u32 width, u32 height, u32 x, u32 y) const {
-        ST_GL_CALL(glViewport(x, y, width, height));
+    void Renderer::set_viewport(const Viewport& viewport) {
+        ST_GL_CALL(glViewport(viewport.x, viewport.y, viewport.width, viewport.height));
     }
 
-    void Renderer::begin_frame(const glm::mat4& view_projection) {
+    void Renderer::set_view_projection(const ViewProjection& view_projection) const {
+        shader->set_mat4("viewProjection", view_projection);
+    }
+
+    void Renderer::begin_frame() {
         reset();
         ST_GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
-        shader->set_mat4("viewProjection", view_projection);
     }
 
     void Renderer::end_frame() {
@@ -120,8 +121,7 @@ namespace Storytime {
             reset();
         }
 
-        Shared<Texture> texture = quad.texture != nullptr ? quad.texture : white_texture;
-
+        const Shared<Texture>& texture = quad.texture != nullptr ? quad.texture : white_texture;
         f32 texture_index = -1.0f;
         for (u32 i = 0; i < texture_count; i++) {
             if (textures[i] == texture) {
@@ -135,39 +135,19 @@ namespace Storytime {
             texture_count++;
         }
 
-        const auto& translation = glm::translate(glm::mat4(1.0f), quad.position);
-        const auto& rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.rotation_in_degrees), {0.0f, 0.0f, 1.0f});
-        const auto& scale = glm::scale(glm::mat4(1.0f), {quad.size.x, quad.size.y, 1.0f});
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), quad.position);
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(quad.rotation_in_degrees), {0.0f, 0.0f, 1.0f});
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), {quad.size.x, quad.size.y, 1.0f});
         glm::mat4 transform = translation * rotation * scale;
 
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[0];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[1];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[2];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
-        vertices[vertex_count].position = transform * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        vertices[vertex_count].color = quad.color;
-        vertices[vertex_count].texture_coordinate = texture_coordinates[3];
-        vertices[vertex_count].texture_index = texture_index;
-        vertices[vertex_count].tiling_factor = quad.tiling_factor;
-        vertex_count++;
-
+        for (int i = 0; i < VERTICES_PER_QUAD; ++i) {
+            vertices[vertex_count].position = transform * origin_quad_offsets[i];
+            vertices[vertex_count].texture_coordinate = texture_coordinates[i];
+            vertices[vertex_count].texture_index = texture_index;
+            vertices[vertex_count].tiling_factor = quad.tiling_factor;
+            vertices[vertex_count].color = quad.color;
+            vertex_count++;
+        }
         index_count += INDICES_PER_QUAD;
         statistics.quad_count++;
     }

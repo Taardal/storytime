@@ -14,20 +14,28 @@ namespace Storytime {
 
     public:
         template<typename T>
-        T* get() {
+        T* get() const {
             Type type = get_type<T>();
+            return static_cast<T*>(get(type));
+        }
+
+        void* get(Type type) const {
             auto it = services.find(type);
             if (it == services.end()) {
                 ST_LOG_WARNING("Could not find service of type [{}]", type.name());
                 return nullptr;
             }
-            return static_cast<T*>(it->second);
+            return it->second;
         }
 
         template<typename T>
         void set(void* service) {
-            ST_ASSERT(service != nullptr);
             Type type = get_type<T>();
+            set(type, service);
+        }
+
+        void set(Type type, void* service) {
+            ST_ASSERT(service != nullptr, "Invalid service object: Cannot store nullptr");
             services.emplace(type, service);
         }
 

@@ -1,3 +1,7 @@
+bool streq(const char* a, const char* b) {
+    return strcmp(a, b) == 0;
+}
+
 namespace Storytime {
     bool string_ends_with(const std::string& str, const std::string& suffix) {
         // Check if the string is at least as long as the suffix
@@ -23,30 +27,30 @@ namespace Storytime {
         return tokens;
     }
 
-    void string_replace(std::string& haystack, const char* needle) {
-        size_t start = haystack.find(needle);
+    void string_replace_first(std::string& str, const std::string& target, const std::string& replacement) {
+        size_t start = str.find(target);
         if (start == std::string::npos) {
             return;
         }
-        size_t end = start + strlen(needle);
-        haystack.replace(start, end, needle);
+        str.replace(start, target.length(), replacement);
     }
 
-    void string_replace(std::string& haystack, std::string_view needle) {
-        size_t start = haystack.find(needle);
-        if (start == std::string::npos) {
-            return;
+    void string_replace_all(std::string& str, const std::string& target, const std::string& replacement) {
+        size_t start = 0;
+        while ((start = str.find(target)) != std::string::npos) {
+            str.replace(start, target.length(), replacement);
         }
-        size_t end = start + needle.length();
-        haystack.replace(start, end, needle);
     }
 
-    void string_replace(std::string& haystack, const std::string& needle) {
-        size_t start = haystack.find(needle);
-        if (start == std::string::npos) {
-            return;
-        }
-        size_t end = start + needle.length();
-        haystack.replace(start, end, needle);
+    void string_to_upper(std::string& str) {
+        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    }
+
+    void string_to_lower(std::string& str) {
+        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    }
+
+    f64 smooth_average(f64 value, f64 current_average, f64 smoothing_factor) {
+        return smoothing_factor * value + (1.0 - smoothing_factor) * current_average;
     }
 }

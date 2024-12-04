@@ -25,7 +25,6 @@ namespace Storytime {
             }
 
             auto it = config.coordinates.find(value);
-            ST_ASSERT_THROW(it != config.coordinates.end());
 
             u32 col = it->second.first;
             u32 row = it->second.second;
@@ -42,7 +41,7 @@ namespace Storytime {
             float yat = ya / ts;
             float ybt = yb / ts;
 
-            std::array<glm::vec2, 4> c;
+            std::array<TextureCoordinate, 4> c;
             c[0] = {xat, yat};
             c[1] = {xbt, yat};
             c[2] = {xbt, ybt};

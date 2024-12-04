@@ -12,12 +12,9 @@ set(STORYTIME_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 add_library(
         ${PROJECT_NAME}
-        ${STORYTIME_SRC_DIR}/storytime_app.cpp
-        ${STORYTIME_SRC_DIR}/storytime_app.h
-        ${STORYTIME_SRC_DIR}/storytime_config.h
-        ${STORYTIME_SRC_DIR}/storytime_pch.h
-        ${STORYTIME_SRC_DIR}/storytime_main.cpp
-        ${STORYTIME_SRC_DIR}/storytime_main.h
+        ${STORYTIME_SRC_DIR}/st_pch.h
+        ${STORYTIME_SRC_DIR}/st_main.cpp
+        ${STORYTIME_SRC_DIR}/st_main.h
         ${STORYTIME_SRC_DIR}/audio/audio.cpp
         ${STORYTIME_SRC_DIR}/audio/audio.h
         ${STORYTIME_SRC_DIR}/audio/audio_engine.cpp
@@ -30,6 +27,8 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/framebuffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.h
         ${STORYTIME_SRC_DIR}/graphics/imgui_renderer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/imgui_window_event.h
+        ${STORYTIME_SRC_DIR}/graphics/imgui_window_event.cpp
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/index_buffer.cpp
         ${STORYTIME_SRC_DIR}/graphics/open_gl.h
@@ -44,63 +43,100 @@ add_library(
         ${STORYTIME_SRC_DIR}/graphics/spritesheet.cpp
         ${STORYTIME_SRC_DIR}/graphics/texture.h
         ${STORYTIME_SRC_DIR}/graphics/texture.cpp
+        ${STORYTIME_SRC_DIR}/graphics/texture_coordinate.h
+        ${STORYTIME_SRC_DIR}/graphics/texture_coordinate.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_array.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_array.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_attribute.cpp
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.h
         ${STORYTIME_SRC_DIR}/graphics/vertex_buffer.cpp
+        ${STORYTIME_SRC_DIR}/graphics/view_projection.h
+        ${STORYTIME_SRC_DIR}/graphics/view_projection.cpp
         ${STORYTIME_SRC_DIR}/resource/resource_loader.h
         ${STORYTIME_SRC_DIR}/resource/resource_loader.cpp
-        ${STORYTIME_SRC_DIR}/scene/components.h
-        ${STORYTIME_SRC_DIR}/scene/direction.h
         ${STORYTIME_SRC_DIR}/scene/entity.h
         ${STORYTIME_SRC_DIR}/scene/entity.cpp
         ${STORYTIME_SRC_DIR}/scene/scene.h
         ${STORYTIME_SRC_DIR}/scene/scene.cpp
-        ${STORYTIME_SRC_DIR}/scene/tiled_scene.h
-        ${STORYTIME_SRC_DIR}/scene/tiled_scene.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_error.h
+        ${STORYTIME_SRC_DIR}/script/lua_error.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_function.h
+        ${STORYTIME_SRC_DIR}/script/lua_function.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_glm.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_glm.h
+        ${STORYTIME_SRC_DIR}/script/lua_keyboard.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_keyboard.h
+        ${STORYTIME_SRC_DIR}/script/lua_log.h
+        ${STORYTIME_SRC_DIR}/script/lua_log.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_mouse.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_mouse.h
+        ${STORYTIME_SRC_DIR}/script/lua_ref.h
+        ${STORYTIME_SRC_DIR}/script/lua_ref.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_serialize_deserialize.h
+        ${STORYTIME_SRC_DIR}/script/lua_state.h
+        ${STORYTIME_SRC_DIR}/script/lua_state.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_state.h
+        ${STORYTIME_SRC_DIR}/script/lua_state.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_table.h
+        ${STORYTIME_SRC_DIR}/script/lua_table.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_usertype.h
+        ${STORYTIME_SRC_DIR}/script/lua_usertype.cpp
+        ${STORYTIME_SRC_DIR}/script/lua_utils.h
+        ${STORYTIME_SRC_DIR}/script/lua_utils.cpp
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
+        ${STORYTIME_SRC_DIR}/system/command_line_arguments.cpp
+        ${STORYTIME_SRC_DIR}/system/command_line_arguments.h
+        ${STORYTIME_SRC_DIR}/system/defer.h
         ${STORYTIME_SRC_DIR}/system/environment.h
         ${STORYTIME_SRC_DIR}/system/error.h
         ${STORYTIME_SRC_DIR}/system/error.cpp
         ${STORYTIME_SRC_DIR}/system/error_signal.h
         ${STORYTIME_SRC_DIR}/system/error_signal.cpp
-        ${STORYTIME_SRC_DIR}/system/file_system.h
-        ${STORYTIME_SRC_DIR}/system/file_system.cpp
+        ${STORYTIME_SRC_DIR}/system/event.h
+        ${STORYTIME_SRC_DIR}/system/event.cpp
+        ${STORYTIME_SRC_DIR}/system/event_manager.h
+        ${STORYTIME_SRC_DIR}/system/event_manager.cpp
+        ${STORYTIME_SRC_DIR}/system/file_reader.h
+        ${STORYTIME_SRC_DIR}/system/file_reader.cpp
+        ${STORYTIME_SRC_DIR}/system/game_loop_statistics.cpp
+        ${STORYTIME_SRC_DIR}/system/game_loop_statistics.h
+        ${STORYTIME_SRC_DIR}/system/json_serialize_deserialize.h
         ${STORYTIME_SRC_DIR}/system/log.h
         ${STORYTIME_SRC_DIR}/system/log.cpp
+        ${STORYTIME_SRC_DIR}/system/memory.h
+        ${STORYTIME_SRC_DIR}/system/memory.cpp
         ${STORYTIME_SRC_DIR}/system/memory_allocator.h
         ${STORYTIME_SRC_DIR}/system/memory_allocator.cpp
-        ${STORYTIME_SRC_DIR}/system/memory_tracker.h
-        ${STORYTIME_SRC_DIR}/system/memory_tracker.cpp
         ${STORYTIME_SRC_DIR}/system/pointers.h
         ${STORYTIME_SRC_DIR}/system/random.h
         ${STORYTIME_SRC_DIR}/system/random.cpp
-        ${STORYTIME_SRC_DIR}/system/uuid.h
-        ${STORYTIME_SRC_DIR}/system/uuid.cpp
         ${STORYTIME_SRC_DIR}/system/utils.h
         ${STORYTIME_SRC_DIR}/system/utils.cpp
-        ${STORYTIME_SRC_DIR}/tiled/layer.cpp
-        ${STORYTIME_SRC_DIR}/tiled/layer.h
-        ${STORYTIME_SRC_DIR}/tiled/map.cpp
-        ${STORYTIME_SRC_DIR}/tiled/map.h
-        ${STORYTIME_SRC_DIR}/tiled/object.cpp
-        ${STORYTIME_SRC_DIR}/tiled/object.h
-        ${STORYTIME_SRC_DIR}/tiled/property.cpp
-        ${STORYTIME_SRC_DIR}/tiled/property.h
-        ${STORYTIME_SRC_DIR}/tiled/template.cpp
-        ${STORYTIME_SRC_DIR}/tiled/template.h
-        ${STORYTIME_SRC_DIR}/tiled/tile.cpp
-        ${STORYTIME_SRC_DIR}/tiled/tile.h
-        ${STORYTIME_SRC_DIR}/tiled/tileset.cpp
-        ${STORYTIME_SRC_DIR}/tiled/tileset.h
-        ${STORYTIME_SRC_DIR}/window/event.h
-        ${STORYTIME_SRC_DIR}/window/event.cpp
-        ${STORYTIME_SRC_DIR}/window/event_manager.h
-        ${STORYTIME_SRC_DIR}/window/event_manager.cpp
+        ${STORYTIME_SRC_DIR}/system/uuid.h
+        ${STORYTIME_SRC_DIR}/system/uuid.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_class.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_class.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_enum.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_enum.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_layer.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_layer.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_map.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_map.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_object.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_object.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_project.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_project.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_property.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_property.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_template.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_template.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tile.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tile.h
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tileset.cpp
+        ${STORYTIME_SRC_DIR}/tiled/tiled_tileset.h
         ${STORYTIME_SRC_DIR}/window/key.cpp
         ${STORYTIME_SRC_DIR}/window/key.h
         ${STORYTIME_SRC_DIR}/window/key_event.h
@@ -117,32 +153,44 @@ add_library(
         ${STORYTIME_SRC_DIR}/window/window_event.cpp
 )
 
+set_target_properties(
+        ${PROJECT_NAME}
+        PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_NAME ${PROJECT_NAME}
+        LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR}/debug
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}/release
+)
+
 # Public include header
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # Precompiled header
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/storytime_pch.h)
+target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
 
-if (NOT "${STORYTIME_OUTPUT_DIR}" STREQUAL "")
-    set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
-    set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-    add_custom_target(
-            Storytime_CopyResources
-            COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
-            COMMENT "Copying resources"
-    )
-    add_dependencies(${PROJECT_NAME} Storytime_CopyResources)
-endif()
+if ("${STORYTIME_OUTPUT_DIR}" STREQUAL "")
+    message(FATAL_ERROR "Required variable STORYTIME_OUTPUT_DIR is not set")
+endif ()
+set(STORYTIME_RESOURCES_OUTPUT_DIR ${STORYTIME_OUTPUT_DIR}/res)
+set(STORYTIME_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+add_custom_target(
+        Storytime_CopyResources
+        COMMENT "Copying resources"
+        COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${STORYTIME_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${STORYTIME_RESOURCES_OUTPUT_DIR} -P ${STORYTIME_CMAKE_DIR}/copy_resources.cmake
+)
+add_dependencies(${PROJECT_NAME} Storytime_CopyResources)
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
 # --------------------------------------------------------------------------------------------------------------
 
+set(FETCHCONTENT_QUIET ON)
 include(FetchContent)
 
 # EnTT
@@ -214,10 +262,14 @@ FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json
         GIT_TAG v3.11.3
-#        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
 )
 FetchContent_MakeAvailable(json)
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+
+# Lua
+find_package(Lua REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 
 # Miniaudio
 FetchContent_Declare(

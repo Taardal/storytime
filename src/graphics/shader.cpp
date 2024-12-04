@@ -47,14 +47,14 @@ namespace Storytime {
     }
 
     u32 Shader::create_shader(const char* source, u32 type) const {
-        const char* type_string = type == GL_VERTEX_SHADER ? ST_STRING(GL_VERTEX_SHADER) : ST_STRING(GL_FRAGMENT_SHADER);
-        ST_LOG_DEBUG("Creating [{0}] shader", type_string);
+        const char* type_string = type == GL_VERTEX_SHADER ? ST_TO_STRING(GL_VERTEX_SHADER) : ST_TO_STRING(GL_FRAGMENT_SHADER);
+        ST_LOG_TRACE("Creating [{0}] shader", type_string);
         ST_GL_CALL(u32 shader_id = glCreateShader(type));
         ST_LOG_TRACE("Created shader with id [{0}]", shader_id);
         set_shader_source(source, shader_id);
         bool compiled = compile_shader(shader_id);
         if (compiled) {
-            ST_LOG_DEBUG("Shader created successfully");
+            ST_LOG_TRACE("Shader created successfully");
             return shader_id;
         }
         ST_LOG_TRACE("Deleting shader with id [{0}]", shader_id);
@@ -107,7 +107,7 @@ namespace Storytime {
             ST_GL_CALL(glDetachShader(program_id, vertex_shader_id));
             ST_LOG_TRACE("Detaching fragment shader with id [{0}]", fragment_shader_id);
             ST_GL_CALL(glDetachShader(program_id, fragment_shader_id));
-            ST_LOG_DEBUG("Shader program created successfully", program_id);
+            ST_LOG_TRACE("Shader program created successfully", program_id);
             return program_id;
         }
         ST_LOG_TRACE("Deleting shader program with id [{0}]", program_id);

@@ -1,9 +1,11 @@
 #pragma once
 
-#include "event.h"
+#include "system/event.h"
 
 namespace Storytime {
     struct MouseMovedEvent : Event {
+        static const EventType type;
+        static const std::string name;
         f32 x;
         f32 y;
 
@@ -13,6 +15,8 @@ namespace Storytime {
     };
 
     struct MouseScrollEvent : Event {
+        static const EventType type;
+        static const std::string name;
         f32 x_offset;
         f32 y_offset;
 
@@ -30,10 +34,14 @@ namespace Storytime {
     };
 
     struct MouseButtonPressedEvent : MouseButtonEvent {
+        static const EventType type;
+        static const std::string name;
         explicit MouseButtonPressedEvent(i32 button);
     };
 
     struct MouseButtonReleasedEvent : MouseButtonEvent {
+        static const EventType type;
+        static const std::string name;
         explicit MouseButtonReleasedEvent(i32 button);
     };
 }

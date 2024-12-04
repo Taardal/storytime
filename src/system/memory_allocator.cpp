@@ -6,7 +6,7 @@
 
 namespace Storytime {
     StackAllocator::StackAllocator(const StackAllocatorConfig& config)
-        : memory_block(as<char*>(malloc(config.bytes))),
+        : memory_block(static_cast<char*>(malloc(config.bytes))),
           memory_block_head(memory_block),
           memory_block_tail(memory_block + config.bytes) {
     }
@@ -34,7 +34,7 @@ namespace Storytime {
         }
 
         // Store the allocation size just before the allocated memory.
-        auto size_pointer = as<size_t*>(memory_block_head);
+        auto size_pointer = reinterpret_cast<size_t*>(memory_block_head);
         *size_pointer = bytes;
 
         // The location of the allocated memory is right after the allocation size in the memory block
@@ -50,7 +50,7 @@ namespace Storytime {
     void StackAllocator::deallocate(void* pointer) {
         // Retrieve the allocation size stored just before the allocated memory.
         // Subtract 1 from the pointer to the allocated memory to move it back by sizeof(size_t) bytes.
-        size_t bytes = *(as<size_t*>(pointer) - 1);
+        size_t bytes = *(static_cast<size_t*>(pointer) - 1);
 
         if (pointer != memory_block_head - bytes) {
             ST_THROW(
@@ -107,13 +107,13 @@ namespace Storytime {
         // Move the head forward to the next chunk. When there are no chunks left the next chunk will be `nullptr`.
         memory_block_head = memory_block_head->next;
 
-        ST_LOG_TRACE("Allocated memory: {}, {} bytes", as<void*>(chunk), bytes);
+        ST_LOG_TRACE("Allocated memory: {}, {} bytes", static_cast<void*>(chunk), bytes);
         return chunk;
     }
 
     void PoolAllocator::deallocate(void* pointer) {
         // The deallocated chunk will be first in line to be used for the next allocation.
-        auto chunk = as<Chunk*>(pointer);
+        auto chunk = static_cast<Chunk*>(pointer);
 
         // Move the current chunk one place down the line after the deallocated chunk
         chunk->next = memory_block_head;
@@ -127,12 +127,12 @@ namespace Storytime {
     Chunk* PoolAllocator::allocate_memory_block() const {
         // Allocate the memory block
         size_t block_size = config.chunk_count * config.chunk_bytes;
-        auto memory_block_head = as<Chunk*>(malloc(block_size));
+        auto memory_block_head = static_cast<Chunk*>(malloc(block_size));
 
         // Chain all the chunks in the block
         Chunk* chunk = memory_block_head;
         for (int i = 0; i < config.chunk_count - 1; ++i) {
-            chunk->next = as<Chunk*>(as<char*>(chunk) + config.chunk_bytes);
+            chunk->next = reinterpret_cast<Chunk*>(reinterpret_cast<char*>(chunk) + config.chunk_bytes);
             chunk = chunk->next;
         }
         chunk->next = nullptr;

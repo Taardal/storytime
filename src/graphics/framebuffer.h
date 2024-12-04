@@ -18,7 +18,7 @@ namespace Storytime {
         Texture* depth_attachment_texture = nullptr;
 
     public:
-        explicit Framebuffer(FramebufferConfig config);
+        explicit Framebuffer(const FramebufferConfig& config);
 
         virtual ~Framebuffer();
 
