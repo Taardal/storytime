@@ -6,7 +6,7 @@ namespace Storytime {
     }
 
     TimePoint Time::zero() {
-        return std::chrono::high_resolution_clock::time_point(std::chrono::high_resolution_clock::duration::zero());
+        return TimePoint(Duration::zero());
     }
 }
 
@@ -19,7 +19,7 @@ namespace Storytime {
     }
 
     Nanoseconds Clock::delta(const Clock& other) const {
-        return Nanoseconds(elapsed_ns.count() - other.elapsed_ns.count());
+        return Nanoseconds(elapsed_ns - other.elapsed_ns);
     }
 
     void Clock::tick(f64 timestep) {
