@@ -4,6 +4,10 @@ namespace Storytime {
     TimePoint Time::now() {
         return std::chrono::high_resolution_clock::now();
     }
+
+    TimePoint Time::zero() {
+        return std::chrono::high_resolution_clock::time_point(std::chrono::high_resolution_clock::duration::zero());
+    }
 }
 
 namespace Storytime {

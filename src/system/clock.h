@@ -1,11 +1,14 @@
 #pragma once
 
 namespace Storytime {
+    typedef std::chrono::high_resolution_clock::duration Duration;
     typedef std::chrono::high_resolution_clock::time_point TimePoint;
 
     class Time {
     public:
         static TimePoint now();
+
+        static TimePoint zero();
 
         template<typename ToDuration, typename FromDuration>
         static ToDuration as(FromDuration from_duration) {

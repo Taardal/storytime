@@ -87,6 +87,7 @@ add_library(
         ${STORYTIME_SRC_DIR}/system/assert.h
         ${STORYTIME_SRC_DIR}/system/clock.h
         ${STORYTIME_SRC_DIR}/system/clock.cpp
+        ${STORYTIME_SRC_DIR}/system/command_line_arguments.cpp
         ${STORYTIME_SRC_DIR}/system/command_line_arguments.h
         ${STORYTIME_SRC_DIR}/system/defer.h
         ${STORYTIME_SRC_DIR}/system/environment.h
@@ -189,6 +190,7 @@ add_dependencies(${PROJECT_NAME} Storytime_CopyResources)
 # Dependencies
 # --------------------------------------------------------------------------------------------------------------
 
+set(FETCHCONTENT_QUIET ON)
 include(FetchContent)
 
 # EnTT

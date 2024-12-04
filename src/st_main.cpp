@@ -93,7 +93,7 @@ namespace Storytime {
             });
             event_subscriptions.push_back(
                 event_manager.subscribe(WindowResizeEvent::type, [&renderer](const Event& event) {
-                    auto& window_resize_event = static_cast<const WindowResizeEvent&>(event);
+                    auto& window_resize_event = (WindowResizeEvent&) event;
                     renderer.set_viewport({
                         .width = window_resize_event.width,
                         .height = window_resize_event.height,
@@ -130,6 +130,14 @@ namespace Storytime {
             //
 
             GameLoopStatistics game_loop_stats{};
+
+            auto ms = [](const Duration& duration) -> f64 {
+                return Time::as<Nanoseconds>(duration).count() / 1000000.0;
+            };
+
+            auto get_duration_ms = [](TimePoint start, TimePoint end) -> f64 {
+                return Time::as<Nanoseconds>(end - start).count() / 1000000.0;
+            };
 
             // Update game at fixed timesteps to have game systems update at a predictable rate
             constexpr f64 timestep_sec = 1.0 / 60.0;
@@ -180,8 +188,8 @@ namespace Storytime {
                     update_count++;
                 }
 
-                f64 update_end_lag_ms = game_clock_lag_ms;
                 TimePoint update_end_time = Time::now();
+                f64 update_end_lag_ms = game_clock_lag_ms;
 
                 // Process game events between updating and rendering to have any changes in the game state
                 // be rendered in the same cycle.
@@ -202,6 +210,7 @@ namespace Storytime {
                 on_render();
                 renderer.end_frame();
                 TimePoint render_end_time = Time::now();
+                game_loop_stats.render_duration_ms = ms(render_end_time - render_start_time);
 
 #ifdef ST_RENDER_IMGUI
                 TimePoint imgui_render_start_time = Time::now();
@@ -243,7 +252,6 @@ namespace Storytime {
         } catch (const std::exception& e) {
             ST_LOG_CRITICAL("Fatal error: {}", e.what());
         }
-
     }
 
     void stop() {
