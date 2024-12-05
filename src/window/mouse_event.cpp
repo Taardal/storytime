@@ -18,8 +18,8 @@ namespace Storytime {
     const EventType MouseScrollEvent::type = 1065579489;
     const std::string MouseScrollEvent::name = "MouseScrollEvent";
 
-    MouseScrollEvent::MouseScrollEvent(f32 xOffset, f32 yOffset)
-        : Event(type, name), x_offset(xOffset), y_offset(yOffset) {
+    MouseScrollEvent::MouseScrollEvent(f32 x_offset, f32 y_offset)
+        : Event(type, name), x_offset(x_offset), y_offset(y_offset) {
     }
 
     std::string MouseScrollEvent::to_string() const {

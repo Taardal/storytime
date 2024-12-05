@@ -22,5 +22,7 @@ namespace Storytime {
         int height;
         int opacity;
         bool visible;
+
+        static TiledLayer create(const std::string& json);
     };
 }

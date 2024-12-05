@@ -13,8 +13,8 @@ namespace Storytime {
 
     class ImGuiRenderer {
     public:
-        static std::string root_window_id;
-        static std::string game_window_id;
+        static std::string root_window_name;
+        static std::string game_window_name;
 
     private:
         ImGuiRendererConfig config;

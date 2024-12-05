@@ -121,7 +121,7 @@ namespace Storytime {
             reset();
         }
 
-        const Shared<Texture>& texture = quad.texture != nullptr ? quad.texture : white_texture;
+        Shared<Texture> texture = quad.texture != nullptr ? quad.texture : white_texture;
         f32 texture_index = -1.0f;
         for (u32 i = 0; i < texture_count; i++) {
             if (textures[i] == texture) {

@@ -40,6 +40,7 @@
 
 // ImGui
 #include <imgui.h>
+#include <imgui_internal.h>
 
 // Lua
 #include <lua.hpp>

@@ -43,4 +43,8 @@ namespace Storytime {
             data.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
     }
+
+    TiledLayer TiledLayer::create(const std::string& json) {
+        return nlohmann::json::parse(json).get<TiledLayer>();
+    }
 }

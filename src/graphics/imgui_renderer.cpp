@@ -7,8 +7,8 @@
 #include <imgui_impl_opengl3.h>
 
 namespace Storytime {
-    std::string ImGuiRenderer::root_window_id = "Root";
-    std::string ImGuiRenderer::game_window_id = "Game";
+    std::string ImGuiRenderer::root_window_name = "Root";
+    std::string ImGuiRenderer::game_window_name = "Game";
 
     ImGuiRenderer::ImGuiRenderer(const ImGuiRendererConfig& config)
     : config(config),
@@ -63,7 +63,7 @@ namespace Storytime {
         event_subscriptions.push_back(
             config.event_manager->subscribe(ImGuiWindowResizeEvent::type, [this](const Event& event) {
                 auto& window_resize_event = (ImGuiWindowResizeEvent&) event;
-                if (window_resize_event.window_id == game_window_id) {
+                if (window_resize_event.window_id == game_window_name) {
                     framebuffer.resize(window_resize_event.width, window_resize_event.height);
                 }
             })
@@ -134,7 +134,7 @@ namespace Storytime {
         static bool* window_close_button = nullptr;
 
         // Begin window
-        ImGui::Begin(root_window_id.c_str(), window_close_button, window_flags);
+        ImGui::Begin(root_window_name.c_str(), window_close_button, window_flags);
 
         // Create a dockspace that allows for windows to be docked into the window
         ST_ASSERT(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable, "ImGui docking must be enabled");
@@ -152,7 +152,7 @@ namespace Storytime {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 
         // Begin window
-        ImGui::Begin(game_window_id.c_str());
+        ImGui::Begin(game_window_name.c_str());
 
         // Retrieve the texture ID from the framebuffer object, which represents the rendered scene
         size_t framebuffer_texture_id = framebuffer.get_color_attachment_texture()->get_id();
@@ -166,7 +166,7 @@ namespace Storytime {
         bool game_window_size_has_changed = game_window_size.x != framebuffer_config.width || game_window_size.y != framebuffer_config.height;
 
         if (game_window_size_is_valid && game_window_size_has_changed) {
-            auto game_window_resize_event = std::make_shared<ImGuiWindowResizeEvent>(game_window_id, game_window_size.x, game_window_size.y);
+            auto game_window_resize_event = std::make_shared<ImGuiWindowResizeEvent>(game_window_name, game_window_size.x, game_window_size.y);
             ST_ASSERT(config.event_manager != nullptr, "Event manager cannot be null");
             config.event_manager->queue_event(ImGuiWindowResizeEvent::type, game_window_resize_event);
         }
@@ -192,6 +192,10 @@ namespace Storytime {
         static f64 average_render_duration_ms = 0.0;
         static f64 average_imgui_render_duration_ms = 0.0;
         static f64 average_cycle_duration_ms = 0.0;
+        static f64 average_window_events_duration_ms = 0.0;
+        static f64 average_game_events_duration_ms = 0.0;
+        static f64 average_swap_buffers_duration_ms = 0.0;
+        static f64 xa = 0.0;
 
         {
             f64 smoothing_factor = 0.1;
@@ -201,10 +205,13 @@ namespace Storytime {
         }
         {
             f64 smoothing_factor = 0.01;
-            average_update_duration_ms = smooth_average(game_loop_stats.update_duration_ms, average_update_duration_ms, smoothing_factor);
-            average_render_duration_ms = smooth_average(game_loop_stats.render_duration_ms, average_render_duration_ms, smoothing_factor);
-            average_imgui_render_duration_ms = smooth_average(game_loop_stats.imgui_render_duration_ms, average_imgui_render_duration_ms, smoothing_factor);
             average_cycle_duration_ms = smooth_average(game_loop_stats.cycle_duration_ms, average_cycle_duration_ms, smoothing_factor);
+            average_imgui_render_duration_ms = smooth_average(game_loop_stats.imgui_render_duration_ms, average_imgui_render_duration_ms, smoothing_factor);
+            average_game_events_duration_ms = smooth_average(game_loop_stats.game_events_duration_ms, average_game_events_duration_ms);
+            average_render_duration_ms = smooth_average(game_loop_stats.render_duration_ms, average_render_duration_ms, smoothing_factor);
+            average_swap_buffers_duration_ms = smooth_average(game_loop_stats.swap_buffers_duration_ms, average_swap_buffers_duration_ms);
+            average_window_events_duration_ms = smooth_average(game_loop_stats.window_events_duration_ms, average_window_events_duration_ms);
+            average_update_duration_ms = smooth_average(game_loop_stats.update_duration_ms, average_update_duration_ms, smoothing_factor);
         }
 
         ImGui::Begin("Game loop");
@@ -214,6 +221,9 @@ namespace Storytime {
         ImGui::Text("Update duration: %.3lf ms", average_update_duration_ms);
         ImGui::Text("Render duration: %.3lf ms", average_render_duration_ms);
         ImGui::Text("ImGui render duration: %.3lf ms", average_imgui_render_duration_ms);
+        ImGui::Text("Window events duration: %.3lf ms", average_window_events_duration_ms);
+        ImGui::Text("Game events duration: %.3lf ms", average_game_events_duration_ms);
+        ImGui::Text("Swap buffers duration: %.3lf ms", average_swap_buffers_duration_ms);
         ImGui::Text("Cycle duration: %.3lf ms", average_cycle_duration_ms);
         ImGui::End();
     }
