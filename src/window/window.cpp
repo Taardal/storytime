@@ -27,7 +27,7 @@ namespace Storytime {
 
         ST_ASSERT(config.width > 0, "Window width must be greater than zero");
         ST_ASSERT(config.height > 0 || config.aspect_ratio > 0.0f, "Window height or aspect ratio must be greater than zero");
-        i32 height = config.height > 0 ? config.height : static_cast<f32>(config.width) / config.aspect_ratio;
+        i32 height = config.aspect_ratio > 0.0f ? (f32) config.width / config.aspect_ratio : config.height;
 
         ST_LOG_TRACE("Creating GLFW window");
         GLFWmonitor* fullscreen_monitor = nullptr;

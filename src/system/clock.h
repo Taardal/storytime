@@ -20,7 +20,7 @@ namespace Storytime {
 namespace Storytime {
     typedef std::chrono::duration<i64, std::nano> Nanoseconds;
     typedef std::chrono::duration<i64, std::micro> Microseconds;
-    typedef std::chrono::duration<i64, std::milli> Milliseconds;
+    typedef std::chrono::duration<f64, std::milli> Milliseconds;
     typedef std::chrono::duration<f64> Seconds;
 
     typedef Nanoseconds ns;

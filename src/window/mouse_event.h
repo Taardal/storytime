@@ -20,7 +20,7 @@ namespace Storytime {
         f32 x_offset;
         f32 y_offset;
 
-        MouseScrollEvent(f32 xOffset, f32 yOffset);
+        MouseScrollEvent(f32 x_offset, f32 y_offset);
 
         std::string to_string() const override;
     };

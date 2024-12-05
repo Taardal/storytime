@@ -11,6 +11,20 @@ namespace Storytime {
         f32 height;
     };
 
+    struct SpriteRenderConfig {
+        glm::vec2 position = { 0.0f, 0.0f };
+        f32 scale = 1.0f;
+        bool debug = false;
+        glm::vec4 debug_color = { 1.0f, 0.0f, 1.0f, 1.0f };
+        glm::vec4 debug_collider_color = { 0.0f, 1.0f, 1.0f, 1.0f };
+        glm::mat4 rotation = glm::mat4(1.0f);
+        f32 rotation_deg = 0.0f;
+        bool flip_horizontally = false;
+        bool flip_vertically = false;
+        bool flip_diagonally = false;
+        SpriteCollider collider;
+    };
+
     struct SpritesheetCoordinate {
         u32 row = 0;
         u32 column = 0;
@@ -31,6 +45,7 @@ namespace Storytime {
         std::vector<std::array<TextureCoordinate, 4>> spritesheet_texture_coordinates;
         u32 frame = 0;
         f64 frame_time_sec = 0.0;
+        Size<u32> size;
 
     public:
         Sprite() = default;
@@ -45,22 +60,11 @@ namespace Storytime {
 
         bool is_animated() const;
 
+        const Size<u32>& get_size() const;
+
         void update(f64 timestep);
 
-        struct RenderConfig {
-            glm::vec2 position = { 0.0f, 0.0f };
-            f32 scale = 1.0f;
-            bool debug = false;
-            glm::vec4 debug_color = { 1.0f, 0.0f, 1.0f, 1.0f };
-            glm::vec4 debug_collider_color = { 0.0f, 1.0f, 1.0f, 1.0f };
-            glm::mat4 rotation = glm::mat4(1.0f);
-            f32 rotation_deg = 0.0f;
-            bool flip_horizontally = false;
-            bool flip_vertically = false;
-            SpriteCollider collider;
-        };
-
-        void render(Renderer* renderer, const RenderConfig& render_config) const;
+        void render(Renderer* renderer, const SpriteRenderConfig& render_config) const;
     };
 
     struct SpritesheetConfig {

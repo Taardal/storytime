@@ -169,7 +169,9 @@ namespace Storytime {
                 // PROCESS INPUT
                 //
 
+                TimePoint window_event_start_time = Time::now();
                 window.process_events();
+                TimePoint window_event_end_time = Time::now();
 
                 //
                 // UPDATE
@@ -193,9 +195,11 @@ namespace Storytime {
 
                 // Process game events between updating and rendering to have any changes in the game state
                 // be rendered in the same cycle.
+                TimePoint game_event_start_time = update_count > 0 ? Time::now() : Time::zero();
                 if (update_count > 0) {
                     event_manager.process_events();
                 }
+                TimePoint game_event_end_time = update_count > 0 ? Time::now() : Time::zero();
 
                 //
                 // RENDER
@@ -220,7 +224,10 @@ namespace Storytime {
                 TimePoint imgui_render_end_time = Time::now();
 #endif
 
+                TimePoint swap_buffers_start_time = Time::now();
                 window.swap_buffers();
+                TimePoint swap_buffers_end_time = Time::now();
+
                 TimePoint cycle_end_time = Time::now();
 
                 //
@@ -234,8 +241,14 @@ namespace Storytime {
                 }
                 game_loop_stats.render_duration_ms = Time::as<Nanoseconds>(render_end_time - render_start_time).count() / 1000000.0;
                 game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
+#ifdef ST_RENDER_IMGUI
                 game_loop_stats.imgui_render_duration_ms = Time::as<Nanoseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
+#endif
                 game_loop_stats.cycle_duration_ms = Time::as<Nanoseconds>(cycle_end_time - cycle_start_time).count() / 1000000.0;
+
+                game_loop_stats.swap_buffers_duration_ms = Time::as<Nanoseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000000.0;
+                game_loop_stats.window_events_duration_ms = Time::as<Nanoseconds>(window_event_end_time - window_event_start_time).count() / 1000000.0;
+                game_loop_stats.game_events_duration_ms = Time::as<Nanoseconds>(game_event_end_time - game_event_start_time).count() / 1000000.0;
             }
 
             ST_LOG_INFO("Terminating...");
