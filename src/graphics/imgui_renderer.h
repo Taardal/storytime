@@ -18,8 +18,6 @@ namespace Storytime {
 
     private:
         ImGuiRendererConfig config;
-        Framebuffer framebuffer;
-        std::vector<SubscriptionID> event_subscriptions;
         ImVec2 game_window_size{};
 
     public:
@@ -27,9 +25,9 @@ namespace Storytime {
 
         virtual ~ImGuiRenderer();
 
-        void begin_frame() const;
+        static void begin_frame();
 
-        void render(const GameLoopStatistics& game_loop_stats);
+        void render(const Framebuffer& framebuffer, const GameLoopStatistics& game_loop_stats);
 
         void end_frame() const;
 
@@ -38,14 +36,10 @@ namespace Storytime {
 
         static void terminate_imgui();
 
-        void subscribe_to_events();
-
-        void unsubscribe_from_events();
-
         static void render_root_window();
 
         void render_game_window(const Framebuffer& framebuffer);
 
-        static void render_game_loop_statistics(const GameLoopStatistics& game_loop_stats);
+        static void render_game_loop_window(const GameLoopStatistics& game_loop_stats);
     };
 }

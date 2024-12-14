@@ -63,7 +63,7 @@ namespace Storytime {
     }
 
     void Shader::set_shader_source(const char* source, u32 shader_id) const {
-        ST_LOG_TRACE("Setting source on shader [{0}] \n{1}", shader_id, source);
+        ST_LOG_TRACE("Setting source on shader [{0}]:\n{1}", shader_id, source);
         i32 count = 1;
         i32* length = nullptr;
         ST_GL_CALL(glShaderSource(shader_id, count, &source, length));
