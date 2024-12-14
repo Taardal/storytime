@@ -1,6 +1,5 @@
 #include "imgui_renderer.h"
 #include "imgui_window_event.h"
-#include "window/window_event.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <imgui_impl_glfw.h>
@@ -10,19 +9,11 @@ namespace Storytime {
     std::string ImGuiRenderer::root_window_name = "Root";
     std::string ImGuiRenderer::game_window_name = "Game";
 
-    ImGuiRenderer::ImGuiRenderer(const ImGuiRendererConfig& config)
-    : config(config),
-      framebuffer({
-          .width = (u32) config.window->get_size_in_pixels().width,
-          .height = (u32) config.window->get_size_in_pixels().height,
-      })
-    {
+    ImGuiRenderer::ImGuiRenderer(const ImGuiRendererConfig& config) : config(config) {
         initialize_imgui();
-        subscribe_to_events();
     }
 
     ImGuiRenderer::~ImGuiRenderer() {
-        unsubscribe_from_events();
         terminate_imgui();
     }
 
@@ -53,39 +44,16 @@ namespace Storytime {
         ST_LOG_DEBUG("Terminated ImGui");
     }
 
-    void ImGuiRenderer::subscribe_to_events() {
-        event_subscriptions.push_back(
-            config.event_manager->subscribe(WindowResizeEvent::type, [this](const Event& event) {
-                auto& window_resize_event = (WindowResizeEvent&) event;
-                framebuffer.resize(window_resize_event.width, window_resize_event.height);
-            })
-        );
-        event_subscriptions.push_back(
-            config.event_manager->subscribe(ImGuiWindowResizeEvent::type, [this](const Event& event) {
-                auto& window_resize_event = (ImGuiWindowResizeEvent&) event;
-                if (window_resize_event.window_id == game_window_name) {
-                    framebuffer.resize(window_resize_event.width, window_resize_event.height);
-                }
-            })
-        );
-    }
-
-    void ImGuiRenderer::unsubscribe_from_events() {
-        config.event_manager->unsubscribe_and_clear(event_subscriptions);
-    }
-
-    void ImGuiRenderer::begin_frame() const {
+    void ImGuiRenderer::begin_frame() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        framebuffer.bind();
     }
 
-    void ImGuiRenderer::render(const GameLoopStatistics& frame_info) {
-        framebuffer.unbind();
+    void ImGuiRenderer::render(const Framebuffer& framebuffer, const GameLoopStatistics& game_loop_stats) {
         render_root_window();
         render_game_window(framebuffer);
-        render_game_loop_statistics(frame_info);
+        render_game_loop_window(game_loop_stats);
     }
 
     void ImGuiRenderer::end_frame() const {
@@ -184,7 +152,7 @@ namespace Storytime {
         ImGui::PopStyleVar();
     }
 
-    void ImGuiRenderer::render_game_loop_statistics(const GameLoopStatistics& game_loop_stats) {
+    void ImGuiRenderer::render_game_loop_window(const GameLoopStatistics& game_loop_stats) {
         static f64 average_frames_per_second = 0.0;
         static f64 average_updates_per_second = 0.0;
         static f64 average_update_timestep_ms = 0.0;
@@ -195,8 +163,6 @@ namespace Storytime {
         static f64 average_window_events_duration_ms = 0.0;
         static f64 average_game_events_duration_ms = 0.0;
         static f64 average_swap_buffers_duration_ms = 0.0;
-        static f64 xa = 0.0;
-
         {
             f64 smoothing_factor = 0.1;
             average_frames_per_second = smooth_average(game_loop_stats.frames_per_second, average_frames_per_second, smoothing_factor);
@@ -213,7 +179,6 @@ namespace Storytime {
             average_window_events_duration_ms = smooth_average(game_loop_stats.window_events_duration_ms, average_window_events_duration_ms);
             average_update_duration_ms = smooth_average(game_loop_stats.update_duration_ms, average_update_duration_ms, smoothing_factor);
         }
-
         ImGui::Begin("Game loop");
         ImGui::Text("FPS: %.2lf", average_frames_per_second);
         ImGui::Text("UPS: %.2lf", average_updates_per_second);

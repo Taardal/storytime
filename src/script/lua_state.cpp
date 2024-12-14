@@ -45,8 +45,7 @@ namespace Storytime {
 
     void LuaState::script(const std::string& script) const {
         ST_ASSERT(!script.empty(), "Lua script cannot be empty");
-        ST_LOG_TRACE("Running script");
-        ST_COUTLN(script);
+        ST_LOG_TRACE("Running Lua script:\n{}", script);
 
         // Error handler function
         lua_pushcfunction(L, [](lua_State* L) {

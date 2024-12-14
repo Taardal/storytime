@@ -42,12 +42,15 @@ namespace Storytime {
 
         try {
             ST_LOG_INFO("Initializing...");
+            ServiceLocator service_locator;
 
             EventManager event_manager({
                 .queue_count = 1,
             });
+            service_locator.set<EventManager>(&event_manager);
 
             std::vector<SubscriptionID> event_subscriptions;
+
             event_subscriptions.push_back(
                 event_manager.subscribe(WindowCloseEvent::type, [&](const Event&) {
                     stop();
@@ -65,6 +68,7 @@ namespace Storytime {
                 .context_version_major = config.open_gl_version_major,
                 .context_version_minor = config.open_gl_version_minor,
             });
+            service_locator.set<Window>(&window);
 
             OpenGL::initialize({
                 .window = &window,
@@ -75,13 +79,16 @@ namespace Storytime {
             });
 
             FileReader file_reader;
+            service_locator.set<FileReader>(&file_reader);
 
             AudioEngine audio_engine;
+            service_locator.set<AudioEngine>(&audio_engine);
 
             ResourceLoader resource_loader({
                 .file_reader = &file_reader,
                 .audio_engine = &audio_engine
             });
+            service_locator.set<ResourceLoader>(&resource_loader);
 
             WindowSize window_size_px = window.get_size_in_pixels();
             Renderer renderer({
@@ -100,24 +107,41 @@ namespace Storytime {
                     });
                 })
             );
+            service_locator.set<Renderer>(&renderer);
 
+#ifdef ST_RENDER_IMGUI
             ImGuiRenderer imgui_renderer({
                 .glsl_version = config.glsl_version,
                 .window = &window,
                 .event_manager = &event_manager,
             });
-
-            ServiceLocator service_locator;
-            service_locator.set<EventManager>(&event_manager);
-            service_locator.set<Window>(&window);
-            service_locator.set<FileReader>(&file_reader);
-            service_locator.set<AudioEngine>(&audio_engine);
-            service_locator.set<ResourceLoader>(&resource_loader);
-            service_locator.set<Renderer>(&renderer);
             service_locator.set<ImGuiRenderer>(&imgui_renderer);
 
+            // When rendering ImGui, we need to render the game to a specific ImGui window,
+            // instead of the application window. We accomplish this by first rendering the
+            // game to this framebuffer, and then render that framebuffer to the ImGui window.
+            Framebuffer imgui_framebuffer({
+                .width = (u32) window_size_px.width,
+                .height = (u32) window_size_px.height,
+            });
+            event_subscriptions.push_back(
+                event_manager.subscribe(WindowResizeEvent::type, [&imgui_framebuffer](const Event& event) {
+                    auto& window_resize_event = (WindowResizeEvent&) event;
+                    imgui_framebuffer.resize(window_resize_event.width, window_resize_event.height);
+                })
+            );
+            event_subscriptions.push_back(
+                event_manager.subscribe(ImGuiWindowResizeEvent::type, [&imgui_framebuffer](const Event& event) {
+                    auto& imgui_window_resize_event = (ImGuiWindowResizeEvent&) event;
+                    if (imgui_window_resize_event.window_id == ImGuiRenderer::game_window_name) {
+                        imgui_framebuffer.resize(imgui_window_resize_event.width, imgui_window_resize_event.height);
+                    }
+                })
+            );
+#endif
+
             Storytime storytime(
-                config,
+                &const_cast<Config&>(config),
                 &service_locator,
                 &event_manager
             );
@@ -129,16 +153,6 @@ namespace Storytime {
             // GAME LOOP
             //
 
-            GameLoopStatistics game_loop_stats{};
-
-            auto ms = [](const Duration& duration) -> f64 {
-                return Time::as<Nanoseconds>(duration).count() / 1000000.0;
-            };
-
-            auto get_duration_ms = [](TimePoint start, TimePoint end) -> f64 {
-                return Time::as<Nanoseconds>(end - start).count() / 1000000.0;
-            };
-
             // Update game at fixed timesteps to have game systems update at a predictable rate
             constexpr f64 timestep_sec = 1.0 / 60.0;
             constexpr f64 timestep_ms = timestep_sec * 1000.0;
@@ -149,12 +163,14 @@ namespace Storytime {
             // Use the duration of the last game loop cycle to increment game clock lag
             TimePoint last_cycle_start_time = Time::now();
 
+            GameLoopStatistics game_loop_stats{};
+
             running = true;
             ST_LOG_INFO("Running...");
 
             while (running) {
                 TimePoint cycle_start_time = Time::now();
-                f64 last_cycle_duration_ms = Time::as<Nanoseconds>(cycle_start_time - last_cycle_start_time).count() / 1000000.0;
+                f64 last_cycle_duration_ms = Time::as<Microseconds>(cycle_start_time - last_cycle_start_time).count() / 1000.0;
 
                 // If the last cycle lasted too long, assume that we have resumed from a breakpoint
                 // and override the duration to the target timestep to avoid big spikes in game systems.
@@ -181,9 +197,9 @@ namespace Storytime {
                 f64 update_start_lag_ms = game_clock_lag_ms;
                 TimePoint update_start_time = Time::now();
 
-                // Update game clock at fixed timesteps to have game systems update at a
-                // predictable rate. Whenever the game clock lags behind the app clock by
-                // one-or-more timesteps, tick the game clock forwards until it's caught up.
+                // Update game clock at fixed timesteps to have game systems update at a predictable rate.
+                // Whenever the game clock lags behind the app clock by one-or-more timesteps, tick the game
+                // clock forwards until it's caught up.
                 while (game_clock_lag_ms >= timestep_ms) {
                     on_update(timestep_sec);
                     game_clock_lag_ms -= timestep_ms;
@@ -195,18 +211,20 @@ namespace Storytime {
 
                 // Process game events between updating and rendering to have any changes in the game state
                 // be rendered in the same cycle.
-                TimePoint game_event_start_time = update_count > 0 ? Time::now() : Time::zero();
+                TimePoint game_event_start_time = Time::zero();
+                TimePoint game_event_end_time = Time::zero();
                 if (update_count > 0) {
+                    game_event_start_time = Time::now();
                     event_manager.process_events();
+                    game_event_end_time = Time::now();
                 }
-                TimePoint game_event_end_time = update_count > 0 ? Time::now() : Time::zero();
 
                 //
                 // RENDER
                 //
 
 #ifdef ST_RENDER_IMGUI
-                imgui_renderer.begin_frame();
+                imgui_framebuffer.bind();
 #endif
 
                 TimePoint render_start_time = Time::now();
@@ -214,11 +232,13 @@ namespace Storytime {
                 on_render();
                 renderer.end_frame();
                 TimePoint render_end_time = Time::now();
-                game_loop_stats.render_duration_ms = ms(render_end_time - render_start_time);
 
 #ifdef ST_RENDER_IMGUI
+                imgui_framebuffer.unbind();
+
                 TimePoint imgui_render_start_time = Time::now();
-                imgui_renderer.render(game_loop_stats);
+                imgui_renderer.begin_frame();
+                imgui_renderer.render(imgui_framebuffer, game_loop_stats);
                 on_render_imgui();
                 imgui_renderer.end_frame();
                 TimePoint imgui_render_end_time = Time::now();
@@ -237,18 +257,17 @@ namespace Storytime {
                 if (update_count > 0) {
                     game_loop_stats.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
                     game_loop_stats.updates_per_second = update_count / (game_loop_stats.update_timestep_ms / 1000.0);
-                    game_loop_stats.update_duration_ms = Time::as<Nanoseconds>(update_end_time - update_start_time).count() / 1000000.0;
+                    game_loop_stats.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
                 }
-                game_loop_stats.render_duration_ms = Time::as<Nanoseconds>(render_end_time - render_start_time).count() / 1000000.0;
+                game_loop_stats.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
                 game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
 #ifdef ST_RENDER_IMGUI
-                game_loop_stats.imgui_render_duration_ms = Time::as<Nanoseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000000.0;
+                game_loop_stats.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
 #endif
-                game_loop_stats.cycle_duration_ms = Time::as<Nanoseconds>(cycle_end_time - cycle_start_time).count() / 1000000.0;
-
-                game_loop_stats.swap_buffers_duration_ms = Time::as<Nanoseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000000.0;
-                game_loop_stats.window_events_duration_ms = Time::as<Nanoseconds>(window_event_end_time - window_event_start_time).count() / 1000000.0;
-                game_loop_stats.game_events_duration_ms = Time::as<Nanoseconds>(game_event_end_time - game_event_start_time).count() / 1000000.0;
+                game_loop_stats.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
+                game_loop_stats.game_events_duration_ms = Time::as<Microseconds>(game_event_end_time - game_event_start_time).count() / 1000.0;
+                game_loop_stats.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
+                game_loop_stats.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
             }
 
             ST_LOG_INFO("Terminating...");

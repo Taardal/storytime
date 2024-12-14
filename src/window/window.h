@@ -55,6 +55,8 @@ namespace Storytime {
     private:
         static void on_glfw_error(i32 error, const char* description);
 
+        static void on_cursor_position_change(GLFWwindow* glfw_window, f64 x, f64 y);
+
         static void on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height);
 
         static void on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods);

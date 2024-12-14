@@ -41,6 +41,7 @@ namespace Storytime {
         glfwMakeContextCurrent(glfw_window);
         glfwSetWindowUserPointer(glfw_window, this);
 
+        glfwSetCursorPosCallback(glfw_window, on_cursor_position_change);
         glfwSetFramebufferSizeCallback(glfw_window, on_framebuffer_size_change);
         glfwSetKeyCallback(glfw_window, on_key_change);
         glfwSetMouseButtonCallback(glfw_window, on_mouse_button_change);
@@ -102,6 +103,11 @@ namespace Storytime {
 
     void Window::on_glfw_error(i32 error, const char* description) {
         ST_LOG_ERROR("GLFW error [{0}: {1}]", error, description);
+    }
+
+    void Window::on_cursor_position_change(GLFWwindow* glfw_window, f64 x, f64 y) {
+        MouseMovedEvent event(x, y);
+        on_event(glfw_window, MouseMovedEvent::type, event);
     }
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
