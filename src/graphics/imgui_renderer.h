@@ -4,6 +4,8 @@
 #include "system/game_loop_statistics.h"
 #include "window/window.h"
 
+#include <imgui.h>
+
 namespace Storytime {
     struct ImGuiRendererConfig {
         std::string glsl_version;

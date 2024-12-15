@@ -38,10 +38,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-// ImGui
-#include <imgui.h>
-#include <imgui_internal.h>
-
 // Lua
 #include <lua.hpp>
 

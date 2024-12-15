@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(storytime)
 
+option(STORYTIME_EDITOR "Run with editor UI" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -169,6 +171,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 # Precompiled header
 target_include_directories(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${STORYTIME_SRC_DIR}/st_pch.h)
+
+# Preprocessor macros
+if (${STORYTIME_EDITOR})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ST_IMGUI_ENABLED)
+endif ()
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets

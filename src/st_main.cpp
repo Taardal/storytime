@@ -13,10 +13,6 @@
 #include "window/window.h"
 #include "window/window_event.h"
 
-#ifdef ST_DEBUG
-    #define ST_RENDER_IMGUI
-#endif
-
 extern "C" void on_create(const Storytime::Storytime&);
 
 extern "C" void on_update(f64 timestep);
@@ -109,7 +105,7 @@ namespace Storytime {
             );
             service_locator.set<Renderer>(&renderer);
 
-#ifdef ST_RENDER_IMGUI
+#ifdef ST_IMGUI_ENABLED
             ImGuiRenderer imgui_renderer({
                 .glsl_version = config.glsl_version,
                 .window = &window,
@@ -223,7 +219,7 @@ namespace Storytime {
                 // RENDER
                 //
 
-#ifdef ST_RENDER_IMGUI
+#ifdef ST_IMGUI_ENABLED
                 imgui_framebuffer.bind();
 #endif
 
@@ -233,7 +229,7 @@ namespace Storytime {
                 renderer.end_frame();
                 TimePoint render_end_time = Time::now();
 
-#ifdef ST_RENDER_IMGUI
+#ifdef ST_IMGUI_ENABLED
                 imgui_framebuffer.unbind();
 
                 TimePoint imgui_render_start_time = Time::now();
@@ -261,7 +257,7 @@ namespace Storytime {
                 }
                 game_loop_stats.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
                 game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
-#ifdef ST_RENDER_IMGUI
+#ifdef ST_IMGUI_ENABLED
                 game_loop_stats.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
 #endif
                 game_loop_stats.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
