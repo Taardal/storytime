@@ -20,7 +20,7 @@ namespace Storytime {
         typedef std::vector<EventQueue> EventQueueList;
 
     private:
-        static u32 subscription_counter;
+        static u32 next_subscription_id;
 
     private:
         EventManagerConfig config;
@@ -41,7 +41,9 @@ namespace Storytime {
 
         bool unsubscribe_and_clear(std::vector<SubscriptionID>& subscriptions);
 
-        bool trigger_event(EventType event_type, const Event& event);
+        bool trigger_event(EventType event_type, const Event& event, bool silent = false);
+
+        bool trigger_event_silent(EventType event_type, const Event& event);
 
         void queue_event(EventType event_type, const Shared<Event>& event);
 

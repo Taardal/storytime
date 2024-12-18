@@ -18,4 +18,15 @@ namespace Storytime {
         }
         return false;
     }
+
+    std::ostream& operator<<(std::ostream& os, const CommandLineArguments& arguments) {
+        os << "Args:" << std::endl;
+        for (int i = 0; i < arguments.count; ++i) {
+            os << "[" << i << "] " << arguments.args[i];
+            if (i < arguments.count - 1) {
+                os << std::endl;
+            }
+        }
+        return os;
+    }
 }

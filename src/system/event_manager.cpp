@@ -1,7 +1,7 @@
 #include "event_manager.h"
 
 namespace Storytime {
-    u32 EventManager::subscription_counter = 0;
+    u32 EventManager::next_subscription_id = 0;
 
     EventManager::EventManager(EventManagerConfig config) : config(std::move(config)) {
         ST_ASSERT(config.queue_count > 0, "Event manager must have at least one queue");
@@ -9,7 +9,7 @@ namespace Storytime {
     }
 
     SubscriptionID EventManager::subscribe(const EventType event_type, const Subscription& subscription) {
-        SubscriptionID subscription_id = ++subscription_counter;
+        SubscriptionID subscription_id = ++next_subscription_id;
         subscriptions[event_type].emplace_back(subscription_id, subscription);
         ST_LOG_TRACE("Added subscription with ID [{}] for event type [{}]", subscription_id, event_type);
         return subscription_id;
@@ -63,15 +63,21 @@ namespace Storytime {
         return true;
     }
 
-    bool EventManager::trigger_event(const EventType event_type, const Event& event) {
+    bool EventManager::trigger_event(EventType event_type, const Event& event, bool silent) {
         if (auto it = subscriptions.find(event_type); it != subscriptions.end()) {
             for (auto& [subscription_id, subscription] : it->second) {
                 subscription(event);
             }
-            ST_LOG_TRACE("Triggered event {}", event.to_string());
+            if (!silent) {
+                ST_LOG_TRACE("Triggered event {}", event.to_string());
+            }
             return true;
         }
         return false;
+    }
+
+    bool EventManager::trigger_event_silent(EventType event_type, const Event& event) {
+        return trigger_event(event_type, event, true);
     }
 
     void EventManager::queue_event(EventType event_type, const Shared<Event>& event) {

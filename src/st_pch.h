@@ -54,6 +54,7 @@
 #include "system/memory.h"
 #include "system/numbers.h"
 #include "system/pointers.h"
+#include "system/random.h"
 #include "system/utils.h"
 
 // Script

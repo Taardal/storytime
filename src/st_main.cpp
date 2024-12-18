@@ -3,8 +3,6 @@
 #include "resource/resource_loader.h"
 #include "graphics/open_gl.h"
 #include "graphics/renderer.h"
-#include "graphics/imgui_renderer.h"
-#include "graphics/imgui_window_event.h"
 #include "system/clock.h"
 #include "system/event_manager.h"
 #include "system/file_reader.h"
@@ -13,15 +11,22 @@
 #include "window/window.h"
 #include "window/window_event.h"
 
+#ifdef ST_IMGUI_ENABLED
+    #include "graphics/imgui_renderer.h"
+    #include "graphics/imgui_window_event.h"
+#endif
+
 extern "C" void on_create(const Storytime::Storytime&);
 
 extern "C" void on_update(f64 timestep);
 
 extern "C" void on_render();
 
-extern "C" void on_render_imgui();
-
 extern "C" void on_destroy();
+
+#ifdef ST_IMGUI_ENABLED
+    extern "C" void on_render_imgui();
+#endif
 
 namespace Storytime {
     static bool running = false;
@@ -264,6 +269,8 @@ namespace Storytime {
                 game_loop_stats.game_events_duration_ms = Time::as<Microseconds>(game_event_end_time - game_event_start_time).count() / 1000.0;
                 game_loop_stats.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
                 game_loop_stats.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
+
+                event_manager.trigger_event_silent(GameLoopStatisticsEvent::type, GameLoopStatisticsEvent(game_loop_stats));
             }
 
             ST_LOG_INFO("Terminating...");
