@@ -15,6 +15,7 @@ namespace Storytime {
     struct BitmapTextConfig {
         glm::vec3 position = { 0.0f, 0.0f, 0.0f };
         f32 font_size = 0.0f;
+        bool debug = false;
     };
 
     class BitmapFont {
@@ -22,8 +23,8 @@ namespace Storytime {
         BitmapFontConfig config;
 
     public:
-        explicit BitmapFont(BitmapFontConfig config);
+        BitmapFont(const BitmapFontConfig& config);
 
-        void render_text(const std::string& text, const BitmapTextConfig& text_config = {});
+        void render_text(const std::string& text, const BitmapTextConfig& text_config = {}) const;
     };
 }

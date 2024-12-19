@@ -95,9 +95,9 @@ namespace Storytime {
         return (f32) width / (f32) height;
     }
 
+    // Returns the time elapsed, in seconds, since GLFW was initialized, or zero if an error occurred.
+    // The resolution is system dependent.
     f64 Window::get_time() {
-        // Returns the time elapsed, in seconds, since GLFW was initialized, or zero if an error occurred.
-        // The resolution is system dependent.
         return glfwGetTime();
     }
 
@@ -156,7 +156,6 @@ namespace Storytime {
     }
 
     void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
-        ST_LOG_TRACE(event.to_string());
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Invalid GLFW user pointer: Window object must exist when sending events");
         auto event_manager = window->config.event_manager;

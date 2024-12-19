@@ -14,4 +14,6 @@ namespace Storytime {
 
         bool exists(const char* key) const;
     };
+
+    std::ostream& operator<<(std::ostream& os, const CommandLineArguments& arguments);
 }

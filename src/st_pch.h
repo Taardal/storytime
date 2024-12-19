@@ -38,10 +38,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-// ImGui
-#include <imgui.h>
-#include <imgui_internal.h>
-
 // Lua
 #include <lua.hpp>
 
@@ -58,6 +54,7 @@
 #include "system/memory.h"
 #include "system/numbers.h"
 #include "system/pointers.h"
+#include "system/random.h"
 #include "system/utils.h"
 
 // Script
