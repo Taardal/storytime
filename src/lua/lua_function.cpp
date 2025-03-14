@@ -1,6 +1,9 @@
 #include "lua_function.h"
 
 namespace Storytime {
+    LuaFunction::LuaFunction(lua_State* L) : L(L), name(""), ref(LUA_NOREF) {
+    }
+
     LuaFunction::LuaFunction(lua_State* L, const std::string& name) : L(L), name(name), ref(LUA_NOREF) {
     // Check if the name is a single name or a dot-separated path into one-or-more tables
     char path_delimiter = '.';
@@ -47,6 +50,20 @@ LuaFunction::LuaFunction(lua_State* L, const LuaRef ref) : L(L), name(""), ref(r
 
 LuaRef LuaFunction::get_ref() const {
     return ref;
+}
+
+bool LuaFunction::is_valid() const {
+    i32 type = LUA_TNONE;
+    if (ref != LUA_NOREF) {
+        type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+        lua_pop(L, 1);
+    } else if (name.length() > 0) {
+        type = lua_getglobal(L, name.c_str());
+        lua_pop(L, 1);
+    } else {
+        type = lua_type(L, -1);
+    }
+    return type == LUA_TFUNCTION;
 }
 
 std::string LuaFunction::get_result_code_name(int pcall_result) {

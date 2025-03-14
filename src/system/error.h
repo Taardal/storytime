@@ -6,7 +6,7 @@
     std::stringstream ss;\
     ss << message;\
     std::string message_string = ss.str();\
-    throw Storytime::Error(message_string, ST_TAG)
+    throw ::Storytime::Error(message_string, ST_TAG)
 
 #define ST_ASSERT_THROW(expression, message)\
     if (expression) {\
@@ -16,16 +16,21 @@
     }
 
 #define ST_TRY_THROW(expression, message)\
-    try expression catch (const Error& e) {\
+    try {\
+        expression;\
+    } catch (const ::Storytime::Error& e) {\
         std::stringstream ss;\
-        ss << #expression << ", " << message;\
+        ss << message << ", " << #expression;\
         std::string message_string = ss.str();\
-        throw Storytime::Error(message_string, ST_TAG, std::make_shared<Error>(e));\
+        throw ::Storytime::Error(message_string, ST_TAG, std::make_shared<::Storytime::Error>(e));\
     } catch (const std::exception& e) {\
-        std::stringstream ss;\
-        ss << #expression << ", " << message;\
-        std::string message_string = ss.str();\
-        throw Storytime::Error(message_string, ST_TAG, std::make_shared<Error>(e.what()));\
+        std::stringstream message_ss;\
+        message_ss << message << ", " << #expression;\
+        std::string message_string = message_ss.str();\
+        std::stringstream exception_ss;\
+        exception_ss << e.what() << ", " << ::Storytime::demangle(typeid(e).name());\
+        std::string exception_string = exception_ss.str();\
+        throw ::Storytime::Error(message_string, ST_TAG, std::make_shared<::Storytime::Error>(exception_string));\
     }
 
 namespace Storytime {

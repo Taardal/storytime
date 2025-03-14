@@ -1,7 +1,7 @@
 #include "lua_ref.h"
 
 namespace Storytime {
-    LuaRef::LuaRef(lua_State* L) : ref(create(L)) {
+    LuaRef::LuaRef(lua_State* L, const LuaRefConfig& config) : ref(create(L, config)) {
     }
 
     LuaRef::LuaRef(i32 ref) : ref(ref) {
@@ -28,10 +28,14 @@ namespace Storytime {
         ref = LUA_NOREF;
     }
 
-    i32 LuaRef::create(lua_State* L, i32 index) {
-        if (index < -1) {
-            lua_pushvalue(L, index);
+    i32 LuaRef::create(lua_State* L, const LuaRefConfig& config) {
+        // Creating a ref also pops the value off the Lua stack. To keep it on the stack after the ref
+        // is created, we push an extra copy of the value on to the stack so that the copy is popped
+        // off when the ref is created, while the original value remains
+        if (config.keep_on_stack) {
+            lua_pushvalue(L, -1);
         }
+        // Create a ref to the item at the top of the Lua stack
         return luaL_ref(L, LUA_REGISTRYINDEX);
     }
 

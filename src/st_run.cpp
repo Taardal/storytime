@@ -1,4 +1,4 @@
-#include "st_main.h"
+#include "st_run.h"
 #include "audio/audio_engine.h"
 #include "resource/resource_loader.h"
 #include "graphics/open_gl.h"
@@ -6,7 +6,7 @@
 #include "system/clock.h"
 #include "system/event_manager.h"
 #include "system/file_reader.h"
-#include "system/game_loop_statistics.h"
+#include "system/game_loop_metrics.h"
 #include "system/service_locator.h"
 #include "window/window.h"
 #include "window/window_event.h"
@@ -112,9 +112,10 @@ namespace Storytime {
 
 #ifdef ST_IMGUI_ENABLED
             ImGuiRenderer imgui_renderer({
+                .settings_file_path = config.imgui_settings_file_path,
                 .glsl_version = config.glsl_version,
-                .window = &window,
                 .event_manager = &event_manager,
+                .window = &window,
             });
             service_locator.set<ImGuiRenderer>(&imgui_renderer);
 
@@ -141,6 +142,9 @@ namespace Storytime {
             );
 #endif
 
+            GameLoopMetrics metrics{};
+            service_locator.set<GameLoopMetrics>(&metrics);
+
             Storytime storytime(
                 &const_cast<Config&>(config),
                 &service_locator,
@@ -163,8 +167,6 @@ namespace Storytime {
 
             // Use the duration of the last game loop cycle to increment game clock lag
             TimePoint last_cycle_start_time = Time::now();
-
-            GameLoopStatistics game_loop_stats{};
 
             running = true;
             ST_LOG_INFO("Running...");
@@ -239,7 +241,7 @@ namespace Storytime {
 
                 TimePoint imgui_render_start_time = Time::now();
                 imgui_renderer.begin_frame();
-                imgui_renderer.render(imgui_framebuffer, game_loop_stats);
+                imgui_renderer.render(imgui_framebuffer);
                 on_render_imgui();
                 imgui_renderer.end_frame();
                 TimePoint imgui_render_end_time = Time::now();
@@ -252,25 +254,23 @@ namespace Storytime {
                 TimePoint cycle_end_time = Time::now();
 
                 //
-                // STATISTICS
+                // METRICS
                 //
 
                 if (update_count > 0) {
-                    game_loop_stats.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
-                    game_loop_stats.updates_per_second = update_count / (game_loop_stats.update_timestep_ms / 1000.0);
-                    game_loop_stats.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
+                    metrics.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
+                    metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
+                    metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
                 }
-                game_loop_stats.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
-                game_loop_stats.frames_per_second = 1.0 / (game_loop_stats.render_duration_ms / 1000.0);
+                metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
+                metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
 #ifdef ST_IMGUI_ENABLED
-                game_loop_stats.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
+                metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
 #endif
-                game_loop_stats.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
-                game_loop_stats.game_events_duration_ms = Time::as<Microseconds>(game_event_end_time - game_event_start_time).count() / 1000.0;
-                game_loop_stats.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
-                game_loop_stats.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
-
-                event_manager.trigger_event_silent(GameLoopStatisticsEvent::type, GameLoopStatisticsEvent(game_loop_stats));
+                metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
+                metrics.game_events_duration_ms = Time::as<Microseconds>(game_event_end_time - game_event_start_time).count() / 1000.0;
+                metrics.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
+                metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
             }
 
             ST_LOG_INFO("Terminating...");
@@ -285,7 +285,7 @@ namespace Storytime {
             ST_LOG_CRITICAL("Fatal error");
             e.print_stacktrace();
         } catch (const std::exception& e) {
-            ST_LOG_CRITICAL("Fatal error: {}", e.what());
+            ST_LOG_CRITICAL("Fatal error [{}]: {}", ST_TYPE_NAME(e), e.what());
         }
     }
 

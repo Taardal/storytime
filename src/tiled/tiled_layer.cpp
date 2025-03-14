@@ -47,4 +47,12 @@ namespace Storytime {
     TiledLayer TiledLayer::create(const std::string& json) {
         return nlohmann::json::parse(json).get<TiledLayer>();
     }
+
+    const TiledProperty& TiledLayer::get_property(const std::string& name) const {
+        return get_tiled_property(properties, name);
+    }
+
+    const TiledProperty* TiledLayer::try_get_property(const std::string& name) const {
+        return try_get_tiled_property(properties, name);
+    }
 }

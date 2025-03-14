@@ -8,7 +8,7 @@
 
 namespace Storytime {
     class Entity {
-    private:
+    protected:
         entt::entity entity = entt::null;
         entt::registry* entity_registry = nullptr;
 
@@ -32,8 +32,14 @@ namespace Storytime {
         template<typename T>
         T& get() {
             ST_ASSERT_VALID_ENTITY();
-            ST_ASSERT(has<T>(), "Cannot get component that the entity does not have");
+            ST_ASSERT(has<T>(), "Entity must have component [" << type_name<T>() << "]");
             return entity_registry->get<T>(entity);
+        }
+
+        template<typename T, typename... Args>
+        T& get_or_add(Args &&...args) {
+            ST_ASSERT_VALID_ENTITY();
+            return entity_registry->get_or_emplace<T>(entity, std::forward<Args>(args)...);
         }
 
         template<typename T>
@@ -45,14 +51,14 @@ namespace Storytime {
         template<typename T, typename... Args>
         void set(Args&&... args) {
             ST_ASSERT_VALID_ENTITY();
-            return entity_registry->emplace_or_replace<T>(entity, std::forward<Args>(args)...);
+            entity_registry->emplace_or_replace<T>(entity, std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
         void add(Args&&... args) {
             ST_ASSERT_VALID_ENTITY();
             ST_ASSERT(!has<T>(), "Cannot add component that the entity already have");
-            return entity_registry->emplace<T>(entity, std::forward<Args>(args)...);
+            entity_registry->emplace<T>(entity, std::forward<Args>(args)...);
         }
 
         template<typename T>

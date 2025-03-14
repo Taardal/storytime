@@ -21,4 +21,22 @@ namespace Storytime {
             data.propertytype = json.at("propertytype").get<std::string>();
         }
     }
+
+    const TiledProperty& get_tiled_property(const std::vector<TiledProperty>& properties, const std::string& name) {
+        for (const TiledProperty& property : properties) {
+            if (property.name == name) {
+                return property;
+            }
+        }
+        ST_THROW("Could not find property [" << name << "]");
+    }
+
+    const TiledProperty* try_get_tiled_property(const std::vector<TiledProperty>& properties, const std::string& name) {
+        for (const TiledProperty& property : properties) {
+            if (property.name == name) {
+                return &property;
+            }
+        }
+        return nullptr;
+    }
 }

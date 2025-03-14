@@ -36,7 +36,7 @@ namespace Storytime {
         if (result != LUA_OK) {
             const char* error = lua_tostring(L, -1);
             ST_LOG_ERROR("[{}] {}", result, error);
-            ST_THROW("Could not load Lua script");
+            ST_THROW("Could not load Lua file");
         }
 
         lua_pop(L, lua_gettop(L));
@@ -62,9 +62,6 @@ namespace Storytime {
             ST_LOG_ERROR("[{}] {}", result, error);
             ST_THROW("Could not load Lua script");
         }
-
-        lua_pop(L, lua_gettop(L));
-        ST_ASSERT(lua_gettop(L) == 0, "Lua stack must be empty after executing script");
     }
 
     void LuaState::add_package_path(const std::string& path) const {
@@ -102,10 +99,18 @@ namespace Storytime {
         return ref;
     }
 
+    // Load package by requiring it which adds it to the `package.loaded` global table
     void LuaState::load_package(const std::string& package_name) const {
-        // Load package by requiring it which adds it to the `package.loaded` global table field
         i32 package_ref = require_package(package_name);
         ST_ASSERT(package_ref != LUA_NOREF, "Package [" << package_name << "] was not loaded");
+    }
+
+    // Unload package by setting it to nil in the `package.loaded` global table
+    void LuaState::unload_package(const std::string& package_name) const {
+        lua_getglobal(L, "package");
+        lua_getfield(L, -1, "loaded");
+        lua_pushnil(L);
+        lua_setfield(L, -2, package_name.c_str());
     }
 
     i32 LuaState::create_ref() const {
@@ -118,6 +123,11 @@ namespace Storytime {
     void LuaState::destroy_ref(i32 ref) const {
         ST_ASSERT(ref != LUA_NOREF, "Invalid Lua ref");
         luaL_unref(L, LUA_REGISTRYINDEX, ref);
+    }
+
+    std::string LuaState::get_version() const {
+        script("return _VERSION:match('Lua (.+)')");
+        return lua_tostring(L, -1);
     }
 }
 

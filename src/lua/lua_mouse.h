@@ -3,7 +3,6 @@
 namespace Storytime {
     class LuaMouse {
     public:
-        static const std::string table_name;
         static const std::string metatable_name;
 
     public:

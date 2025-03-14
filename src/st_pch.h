@@ -41,6 +41,9 @@
 // Lua
 #include <lua.hpp>
 
+// MessagePack
+#include <msgpack.hpp>
+
 // --------------------------------------------------------------------------------------------------------------
 // App
 // --------------------------------------------------------------------------------------------------------------
@@ -54,11 +57,11 @@
 #include "system/memory.h"
 #include "system/numbers.h"
 #include "system/pointers.h"
-#include "system/random.h"
+#include "system/size.h"
 #include "system/utils.h"
 
-// Script
-#include "script/lua_error.h"
-#include "script/lua_ref.h"
-#include "script/lua_utils.h"
+// Lua
+#include "lua/lua_error.h"
+#include "lua/lua_ref.h"
+#include "lua/lua_utils.h"
 

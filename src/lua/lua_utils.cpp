@@ -130,3 +130,7 @@ int lua_getbottom(lua_State* L) {
 bool lua_isempty(lua_State* L) {
     return lua_gettop(L) == 0;
 }
+
+i32 lua_invoke_function(lua_State* L, const LuaFnConfig& config) {
+    return lua_pcall(L, config.arg_count, config.return_count, config.error_handler_index);
+}

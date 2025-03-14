@@ -4,17 +4,21 @@ namespace Storytime {
     class LuaFunction {
     private:
         lua_State* L;
-        std::string name;
-        LuaRef ref;
+        std::string name = "";
+        LuaRef ref = LUA_NOREF;
         u8 argument_count = 0;
         u8 return_value_count = 0;
 
     public:
+        LuaFunction(lua_State* L);
+
         LuaFunction(lua_State* L, const std::string& name);
 
         LuaFunction(lua_State* L, LuaRef ref);
 
         LuaRef get_ref() const;
+
+        bool is_valid() const;
 
         //
         // Overload the function call operator to allow LuaFunction objects to be invoked using ():
@@ -36,14 +40,16 @@ namespace Storytime {
                 return 1; // Return the error message
             });
 
-            // Lua function to invoke
-            if (ref != 0) {
-                int type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-                ST_ASSERT(type == LUA_TFUNCTION, "Lua ref type [" << type << "] must be function [" << LUA_TFUNCTION << "]");
+            int type = LUA_TNONE;
+            if (ref != LUA_NOREF) {
+                type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+            } else if (name.length() > 0) {
+                type = lua_getglobal(L, name.c_str());
             } else {
-                ST_ASSERT(name.length() > 0, "Name is required invoke global Lua function");
-                lua_getglobal(L, name.c_str());
+                lua_pushvalue(L, -2);
+                type = lua_type(L, -1); // Invoke the function at the top of the stack
             }
+            ST_ASSERT(type == LUA_TFUNCTION, "Invalid Lua function");
 
             // Assert expected Lua stack
             ST_ASSERT(lua_isfunction(L, -1), "Lua function to invoke must be at the top of the stack"); // Function to invoke
@@ -68,7 +74,7 @@ namespace Storytime {
     private:
         // Use variadic templates to recursively push each argument onto the Lua stack (pushes one argument at a time).
         template<class T, class... Args>
-        void push_args(lua_State* L, T&& value, Args&&... args) {
+        void push_args(lua_State* L, T& value, Args&&... args) {
             lua_push<T>(L, value); // Push the first argument
             push_args(L, args...); // Recursively call push_args with the rest of the arguments
         }

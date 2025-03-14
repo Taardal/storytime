@@ -2,8 +2,7 @@
 #include "window/user_input.h"
 
 namespace Storytime {
-    const std::string LuaMouse::table_name = "mouse";
-    const std::string LuaMouse::metatable_name = table_name + ".meta";
+    const std::string LuaMouse::metatable_name = "Mouse";
 
     i32 LuaMouse::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
@@ -19,10 +18,7 @@ namespace Storytime {
         lua_newtable(L);
 
         luaL_getmetatable(L, metatable_name.c_str());
-        if (lua_isnil(L, -1)) {
-            lua_pop(L, 1);
-            ST_LUA_ASSERT_CREATED(create_metatable(L), LUA_TTABLE);
-        }
+        ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
         lua_setmetatable(L, -2);
 
         return 1;

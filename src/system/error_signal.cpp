@@ -33,8 +33,10 @@ namespace Storytime {
         print_unix_stacktrace();
 #elif defined(ST_PRINT_WINDOWS_STACKTRACE)
         fprintf(stderr, "Could not print stacktrace for Windows, not implemented\n");
+        ST_BREAK();
 #else
         fprintf(stderr, "Could not print stacktrace, unsupported platform\n");
+        ST_BREAK();
 #endif
     }
 

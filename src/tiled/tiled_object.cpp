@@ -25,6 +25,18 @@ namespace Storytime {
         object.y = json.at("y").get<int>();
     }
 
+    TiledObject TiledObject::create(const std::string& json) {
+        return nlohmann::json::parse(json).get<TiledObject>();
+    }
+
+    const TiledProperty& TiledObject::get_property(const std::string& name) const {
+        return get_tiled_property(properties, name);
+    }
+
+    const TiledProperty* TiledObject::try_get_property(const std::string& name) const {
+        return try_get_tiled_property(properties, name);
+    }
+
     void from_json(const nlohmann::json& json, TiledObjectGroup& object_group) {
         object_group.draworder = json.at("draworder").get<std::string>();
         if (json.contains("id")) {

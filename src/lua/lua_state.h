@@ -31,9 +31,13 @@ namespace Storytime {
 
         void load_package(const std::string& package_name) const;
 
+        void unload_package(const std::string& package_name) const;
+
         i32 create_ref() const;
 
         void destroy_ref(i32 ref) const;
+
+        std::string get_version() const;
 
         class GetterSetter {
         private:

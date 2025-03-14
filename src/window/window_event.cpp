@@ -2,14 +2,14 @@
 #include <sstream>
 
 namespace Storytime {
-    const EventType WindowCloseEvent::type = 3557600239;
+    const EventType WindowCloseEvent::type = 3557;
     const std::string WindowCloseEvent::name = "WindowCloseEvent";
 
     WindowCloseEvent::WindowCloseEvent()
         : Event(type, name) {
     }
 
-    const EventType WindowResizeEvent::type = 3475249015;
+    const EventType WindowResizeEvent::type = 3475;
     const std::string WindowResizeEvent::name = "WindowResizeEvent";
 
     WindowResizeEvent::WindowResizeEvent(i32 width, i32 height)
@@ -22,7 +22,7 @@ namespace Storytime {
         return ss.str();
     }
 
-    const EventType WindowMinimizeEvent::type = 1063552704;
+    const EventType WindowMinimizeEvent::type = 1063;
     const std::string WindowMinimizeEvent::name = "WindowMinimizeEvent";
 
     WindowMinimizeEvent::WindowMinimizeEvent(bool minimized)

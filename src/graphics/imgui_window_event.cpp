@@ -1,7 +1,7 @@
 #include "imgui_window_event.h"
 
 namespace Storytime {
-    const EventType ImGuiWindowResizeEvent::type = 4125743016;
+    const EventType ImGuiWindowResizeEvent::type = 4125;
     const std::string ImGuiWindowResizeEvent::name = "ImGuiWindowResizeEvent";
 
     ImGuiWindowResizeEvent::ImGuiWindowResizeEvent(const std::string& window_id, i32 width, i32 height)

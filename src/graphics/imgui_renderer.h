@@ -1,16 +1,16 @@
 #pragma once
 
 #include "graphics/framebuffer.h"
-#include "system/game_loop_statistics.h"
 #include "window/window.h"
 
 #include <imgui.h>
 
 namespace Storytime {
     struct ImGuiRendererConfig {
+        std::filesystem::path settings_file_path;
         std::string glsl_version;
-        Window* window = nullptr;
         EventManager* event_manager = nullptr;
+        Window* window = nullptr;
     };
 
     class ImGuiRenderer {
@@ -29,9 +29,9 @@ namespace Storytime {
 
         static void begin_frame();
 
-        void render(const Framebuffer& framebuffer, const GameLoopStatistics& game_loop_stats);
-
         void end_frame() const;
+
+        void render(const Framebuffer& framebuffer);
 
     private:
         void initialize_imgui() const;
@@ -41,7 +41,5 @@ namespace Storytime {
         static void render_root_window();
 
         void render_game_window(const Framebuffer& framebuffer);
-
-        static void render_game_loop_window(const GameLoopStatistics& game_loop_stats);
     };
 }

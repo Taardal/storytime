@@ -1,13 +1,17 @@
 #pragma once
 
-#include "lua_serialize_deserialize.h"
+#include "lua_to_from.h"
 #include "lua_utils.h"
 
 namespace Storytime {
+    struct LuaRefConfig {
+        bool keep_on_stack = false;
+    };
+
     struct LuaRef {
         i32 ref = LUA_NOREF;
 
-        LuaRef(lua_State* L);
+        LuaRef(lua_State* L, const LuaRefConfig& config = {});
 
         LuaRef(i32 ref);
 
@@ -19,7 +23,7 @@ namespace Storytime {
 
         void destroy(lua_State* L);
 
-        static i32 create(lua_State* L, i32 index = -1);
+        static i32 create(lua_State* L, const LuaRefConfig& config = {});
 
         static void destroy(lua_State* L, i32 ref);
     };

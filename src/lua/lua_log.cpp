@@ -69,18 +69,23 @@ namespace Storytime {
     }
 
     LuaStacktraceEntry get_stacktrace_entry(lua_State* L) {
-        // We want to get the stacktrace entry of the calling Lua function to print extra debug information
-        // The first entry of the stack is this function. We only want the second entry, which is the Lua code that called
-        // this function.
+        // We want to get the stacktrace entry of the calling Lua function to print extra
+        // debug information. The first entry of the stack is this function. We only want
+        // the second entry, which is the Lua code that called this function.
         constexpr u8 stacktrace_depth = 2;
         std::vector<LuaStacktraceEntry> stacktrace = get_lua_stacktrace(L, stacktrace_depth);
-        assert(stacktrace.size() == stacktrace_depth);
+        ST_ASSERT(
+            stacktrace.size() == stacktrace_depth,
+            "Lua stacktrace size [" << stacktrace.size() << "] must match provided stacktrace depth [" << stacktrace_depth << "]"
+        );
         return stacktrace[1];
     }
 
-    const std::string LuaLog::table_name = "log";
+    const std::string LuaLog::metatable_name = "Log";
 
-    int LuaLog::create(lua_State* L) {
+    i32 LuaLog::create_metatable(lua_State* L) {
+        luaL_newmetatable(L, metatable_name.c_str());
+
         lua_newtable(L);
         lua_pushcfunction(L, lua_log_trace);
         lua_setfield(L, -2, "t");
@@ -94,6 +99,19 @@ namespace Storytime {
         lua_setfield(L, -2, "e");
         lua_pushcfunction(L, lua_log_critical);
         lua_setfield(L, -2, "c");
+
+        lua_setfield(L, -2, "__index");
+
+        return 1;
+    }
+
+    i32 LuaLog::create(lua_State* L) {
+        lua_newtable(L);
+
+        luaL_getmetatable(L, metatable_name.c_str());
+        ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
+        lua_setmetatable(L, -2);
+
         return 1;
     }
 }

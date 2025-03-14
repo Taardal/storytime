@@ -3,7 +3,6 @@
 namespace Storytime {
     class LuaGLM {
     public:
-        static const std::string table_name;
         static const std::string metatable_name;
         static const std::string vec2_metatable_name;
         static const std::string vec3_metatable_name;

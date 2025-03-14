@@ -27,6 +27,7 @@ namespace Storytime {
         SubscriptionMap subscriptions;
         EventQueueList queues;
         u8 queue_index = 0;
+        std::map<EventType, bool> muted_event_types;
 
     public:
         explicit EventManager(EventManagerConfig config = {});
@@ -41,12 +42,16 @@ namespace Storytime {
 
         bool unsubscribe_and_clear(std::vector<SubscriptionID>& subscriptions);
 
-        bool trigger_event(EventType event_type, const Event& event, bool silent = false);
-
-        bool trigger_event_silent(EventType event_type, const Event& event);
+        bool trigger_event(EventType event_type, const Event& event);
 
         void queue_event(EventType event_type, const Shared<Event>& event);
 
         void process_events();
+
+        void mute(EventType event_type);
+
+        void unmute(EventType event_type);
+
+        bool is_muted(EventType event_type);
     };
 }

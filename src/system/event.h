@@ -6,17 +6,19 @@ namespace Storytime {
     typedef u32 EventType;
 
     struct Event {
-        EventType type;
-        std::string name;
+        EventType event_type;
+        std::string event_type_name;
 
-        Event(EventType type, const std::string& name);
+        Event() = default;
+
+        Event(EventType event_type, const std::string& name);
 
         virtual ~Event() = default;
 
-        virtual std::string to_string() const;
-
-        std::string get_name() const;
-
         EventType get_type() const;
+
+        const std::string& get_type_name() const;
+
+        virtual std::string to_string() const;
     };
 }

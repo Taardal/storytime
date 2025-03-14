@@ -17,6 +17,7 @@ namespace Storytime {
         u32 open_gl_version_major = 4;
         u32 open_gl_version_minor = 1;
         std::string glsl_version = "#version 410";
+        std::filesystem::path imgui_settings_file_path;
     };
 
     void run(const Config& config);

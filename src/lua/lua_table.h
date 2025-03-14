@@ -16,33 +16,15 @@ namespace Storytime {
 
         LuaRef get_ref() const;
 
+        LuaFunction get_function(const std::string& key) const;
+
         template<class... Args>
         void invoke_function(const std::string& key, Args&&... args) {
             LuaFunction fn = get_function(key);
             fn(std::forward<Args>(args)...);
         }
 
-        LuaFunction get_function(const std::string& key) const {
-            push_self();
-            lua_getfield(L, -1, key.c_str());
-            ST_ASSERT(lua_isfunction(L, -1), "Field must be function");
-            LuaRef ref(L);
-            LuaFunction lua_function(L, ref);
-            lua_pop(L, 2);
-            return lua_function;
-        }
-
-        LuaRef get_function_if_exists(const std::string& key) const {
-            push_self();
-            lua_getfield(L, -1, key.c_str());
-            if (lua_type(L, -1) == LUA_TNIL) {
-                lua_pop(L, 2);
-                return LUA_NOREF;
-            }
-            LuaRef ref(L);
-            lua_pop(L, 2);
-            return ref;
-        }
+        bool has_field(const std::string& key) const;
 
         template<typename T>
         T get_field(const std::string& key) const {

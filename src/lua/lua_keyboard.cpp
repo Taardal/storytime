@@ -2,8 +2,7 @@
 #include "window/user_input.h"
 
 namespace Storytime {
-    const std::string LuaKeyboard::table_name = "key";
-    const std::string LuaKeyboard::metatable_name = table_name + ".meta";
+    const std::string LuaKeyboard::metatable_name = "Keyboard";
 
     i32 LuaKeyboard::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
@@ -19,16 +18,21 @@ namespace Storytime {
         lua_newtable(L);
 
         luaL_getmetatable(L, metatable_name.c_str());
-        if (lua_isnil(L, -1)) {
-            lua_pop(L, 1);
-            ST_LUA_ASSERT_CREATED(create_metatable(L), LUA_TTABLE);
-        }
+        ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
         lua_setmetatable(L, -2);
+
+        for (auto [key_code, key_name] : Key::names_by_key) {
+            lua_pushnumber(L, key_code);
+
+            std::string name = key_name;
+            string_to_lower(name);
+            lua_setfield(L, -2, name.c_str());
+        }
 
         return 1;
     }
 
-    int LuaKeyboard::index(lua_State* L) {
+    i32 LuaKeyboard::index(lua_State* L) {
         ST_ASSERT(lua_isstring(L, -1), "Index name must be at top of stack");
         std::string index_name = lua_tostring(L, -1);
         if (index_name == "is_pressed") {
@@ -44,7 +48,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaKeyboard::is_pressed(lua_State* L) {
+    i32 LuaKeyboard::is_pressed(lua_State* L) {
         i32 parameter_type = lua_type(L, -1);
         ST_ASSERT(parameter_type == LUA_TSTRING || parameter_type == LUA_TNUMBER, "Key parameter must be either string or number");
         bool pressed;

@@ -17,8 +17,10 @@ namespace Storytime {
 
     class LuaLog {
     public:
-        static const std::string table_name;
+        static const std::string metatable_name;
 
-        static int create(lua_State* L);
+        static i32 create_metatable(lua_State* L);
+
+        static i32 create(lua_State* L);
     };
 }

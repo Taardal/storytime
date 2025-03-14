@@ -1,15 +1,14 @@
-#include "script/lua_glm.h"
+#include "lua_glm.h"
 
 namespace Storytime {
-    const std::string LuaGLM::table_name = "glm";
-    const std::string LuaGLM::metatable_name = table_name + ".meta";
-    const std::string LuaGLM::vec2_metatable_name = table_name + ".vec2.meta";
-    const std::string LuaGLM::vec3_metatable_name = table_name + ".vec3.meta";
-    const std::string LuaGLM::vec4_metatable_name = table_name + ".vec4.meta";
-    const std::string LuaGLM::mat2_metatable_name = table_name + ".mat2.meta";
-    const std::string LuaGLM::mat3_metatable_name = table_name + ".mat3.meta";
-    const std::string LuaGLM::mat4_metatable_name = table_name + ".mat4.meta";
-    const std::string LuaGLM::quat_metatable_name = table_name + ".quat.meta";
+    const std::string LuaGLM::metatable_name = "GLM";
+    const std::string LuaGLM::vec2_metatable_name = metatable_name + ".Vec2";
+    const std::string LuaGLM::vec3_metatable_name = metatable_name + ".Vec3";
+    const std::string LuaGLM::vec4_metatable_name = metatable_name + ".Vec4";
+    const std::string LuaGLM::mat2_metatable_name = metatable_name + ".Mat2";
+    const std::string LuaGLM::mat3_metatable_name = metatable_name + ".Mat3";
+    const std::string LuaGLM::mat4_metatable_name = metatable_name + ".Mat4";
+    const std::string LuaGLM::quat_metatable_name = metatable_name + ".Quat";
 
     int LuaGLM::create_metatable(lua_State* L) {
         create_vec2_metatable(L);
@@ -38,10 +37,7 @@ namespace Storytime {
         lua_newtable(L);
 
         luaL_getmetatable(L, metatable_name.c_str());
-        if (lua_isnil(L, -1)) {
-            lua_pop(L, 1);
-            ST_LUA_ASSERT_CREATED(create_metatable(L), LUA_TTABLE);
-        }
+        ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
         lua_setmetatable(L, -2);
 
         return 1;

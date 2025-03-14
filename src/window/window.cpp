@@ -50,6 +50,8 @@ namespace Storytime {
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
 
         ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, config.width, config.height);
+
+        config.event_manager->mute(MouseMovedEvent::type);
     }
 
     Window::~Window() {
