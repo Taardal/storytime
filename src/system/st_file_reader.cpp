@@ -3,7 +3,7 @@
 #include <fstream>
 
 namespace Storytime {
-    std::string FileReader::read_file(const char* path) {
+    std::string FileReader::read(const char* path) {
         ST_LOG_TRACE("Reading file [{0}]", path);
         std::string result;
         std::ifstream input_stream(path, std::ios::in | std::ios::binary);

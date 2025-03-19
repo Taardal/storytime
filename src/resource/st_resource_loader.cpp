@@ -9,60 +9,86 @@ namespace Storytime {
 
     Shared<Shader> ResourceLoader::load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const {
         ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-        const std::string& vertex_shader_source = config.file_reader->read_file(vertex_shader_path.c_str());
-        const std::string& fragment_shader_source = config.file_reader->read_file(fragment_shader_path.c_str());
-        auto shader = shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
+
+        const std::string& vertex_shader_source = config.file_reader->read(vertex_shader_path.c_str());
+        ST_ASSERT(!vertex_shader_source.empty(), "Could not read vertex shader file [" << vertex_shader_path.c_str() << "]");
+
+        const std::string& fragment_shader_source = config.file_reader->read(fragment_shader_path.c_str());
+        ST_ASSERT(!fragment_shader_source.empty(), "Could not read fragment shader file [" << vertex_shader_path.c_str() << "]");
+
+        auto shader = std::make_shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
         ST_LOG_DEBUG("Loaded shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
         return shader;
     }
 
     Shared<Texture> ResourceLoader::load_texture(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading texture [{}]", path.c_str());
+
+        ST_ASSERT(!path.empty(), "Texture path must not be empty");
+        ST_ASSERT(std::filesystem::exists(path), "Texture must exist on path [" << path << "]");
+
         Image image = load_image(path);
-        Shared<Texture> texture = shared<Texture>(image);
+        auto texture = std::make_shared<Texture>(image);
         free_image(image);
+
         ST_LOG_DEBUG("Loaded texture [{}]", path.c_str());
         return texture;
     }
 
     Shared<Audio> ResourceLoader::load_audio(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading audio [{}]", path.c_str());
-        auto audio = shared<Audio>(config.audio_engine, path);
+
+        ST_ASSERT(!path.empty(), "Audio path must not be empty");
+        ST_ASSERT(std::filesystem::exists(path), "Audio must exist on path [" << path << "]");
+
+        auto audio = std::make_shared<Audio>(config.audio_engine, path);
+
         ST_LOG_DEBUG("Loaded audio [{}]", path.c_str());
         return audio;
     }
 
     Shared<Spritesheet> ResourceLoader::load_spritesheet(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading spritesheet [{}]", path.c_str());
-        SpritesheetConfig spritesheet_config = {
-            .texture = load_texture(path),
-        };
-        auto spritesheet = shared<Spritesheet>(spritesheet_config);
+
+        ST_ASSERT(!path.empty(), "Spritesheet path must not be empty");
+        ST_ASSERT(std::filesystem::exists(path), "Spritesheet must exist on path [" << path << "]");
+
+        Shared<Texture> texture = load_texture(path);
+        ST_ASSERT(texture != nullptr, "Spritesheet texture must be loaded");
+
+        auto spritesheet = std::make_shared<Spritesheet>(SpritesheetConfig{
+            .texture = texture,
+        });
+
         ST_LOG_DEBUG("Loaded spritesheet [{}]", path.c_str());
         return spritesheet;
     }
 
     Shared<TiledProject> ResourceLoader::load_tiled_project(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading Tiled project [{}]", path.c_str());
-        ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
 
-        std::string json = config.file_reader->read_file(path.c_str());
-        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled project [" << path.c_str() << "]");
+        ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
+        ST_ASSERT(std::filesystem::exists(path), "Tiled project must exist on path [" << path << "]");
+
+        std::string json = config.file_reader->read(path.c_str());
+        ST_ASSERT(!json.empty(), "Could not read JSON for tiled project [" << path.c_str() << "]");
 
         ST_TRY_THROW({
-            return shared<TiledProject>(TiledProject::create(json));
+            return std::make_shared<TiledProject>(TiledProject::create(json));
         }, "Could not load tiled project");
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
         ST_LOG_TRACE("Loading Tiled map [{}]", path.c_str());
-        ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
 
-        std::string json = config.file_reader->read_file(path.c_str());
-        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled map [" << path.c_str() << "]");
+        ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
+        ST_ASSERT(std::filesystem::exists(path), "Tiled map must exist on path [" << path << "]");
+
+        std::string json = config.file_reader->read(path.c_str());
+        ST_ASSERT(!json.empty(), "Could not read JSON for tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
-            return shared<TiledMap>(TiledMap::create(json));
+            return std::make_shared<TiledMap>(TiledMap::create(json));
         }, "Could not load tiled map");
     }
 
@@ -70,11 +96,11 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled tileset [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
 
-        std::string json = config.file_reader->read_file(path.c_str());
-        ST_ASSERT_THROW(!json.empty(), "Could not read JSON for tiled tileset [" << path.c_str() << "]");
+        std::string json = config.file_reader->read(path.c_str());
+        ST_ASSERT(!json.empty(), "Could not read JSON for tiled tileset [" << path.c_str() << "]");
 
         ST_TRY_THROW({
-            return shared<TiledTileset>(TiledTileset::create(json));
+            return std::make_shared<TiledTileset>(TiledTileset::create(json));
         }, "Could not load tiled map");
     }
 

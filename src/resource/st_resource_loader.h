@@ -11,6 +11,8 @@
 
 #include <memory>
 
+#define ST_RES_PATH(relative_path) std::filesystem::path(ST_RES_DIR) / std::filesystem::path(relative_path)
+
 namespace Storytime {
     struct ResourceLoaderConfig {
         FileReader* file_reader = nullptr;

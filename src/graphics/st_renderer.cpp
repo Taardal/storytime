@@ -9,11 +9,11 @@ namespace Storytime {
     constexpr u32 Renderer::INDICES_PER_BATCH = QUADS_PER_BATCH * INDICES_PER_QUAD;
 
     Renderer::Renderer(const RendererConfig& config)
-        : vertex_array(shared<VertexArray>()),
-          vertex_buffer(shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
-          shader(config.resource_loader->load_shader("res/shaders/texture.vertex.glsl", "res/shaders/texture.fragment.glsl")),
+        : vertex_array(std::make_shared<VertexArray>()),
+          vertex_buffer(std::make_shared<VertexBuffer>(sizeof(Vertex) * VERTICES_PER_BATCH)),
+          shader(config.resource_loader->load_shader(ST_RES_PATH("shaders/texture.vertex.glsl"), ST_RES_PATH("shaders/texture.fragment.glsl"))),
           textures(new Shared<Texture>[MAX_TEXTURE_SLOTS]),
-          white_texture(shared<Texture>(1, 1)),
+          white_texture(std::make_shared<Texture>(1, 1)),
           vertices(new Vertex[VERTICES_PER_BATCH]),
           indices(new u32[INDICES_PER_BATCH]),
           vertex_count(0),
@@ -45,7 +45,7 @@ namespace Storytime {
             indices[i + 5] = offset + 0;
             offset += VERTICES_PER_QUAD;
         }
-        auto index_buffer = shared<IndexBuffer>(indices, INDICES_PER_BATCH);
+        auto index_buffer = std::make_shared<IndexBuffer>(indices, INDICES_PER_BATCH);
 
         vertex_array->add_vertex_buffer(vertex_buffer);
         vertex_array->set_index_buffer(index_buffer);

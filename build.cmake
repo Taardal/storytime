@@ -26,16 +26,16 @@ if(RELEASE)
 else()
     set(BUILD_TYPE "Debug")
 endif()
-string(TOLOWER "${BUILD_TYPE}" BUILD_TYPE_LOWERCASE)
-message(STATUS "Using build type: ${BUILD_TYPE} (${BUILD_TYPE_LOWERCASE})")
+string(TOLOWER "${BUILD_TYPE}" BUILD_TYPE_DIR_NAME)
+message(STATUS "Using build type: ${BUILD_TYPE}")
 
 set(SOURCE_DIRECTORY "${CMAKE_SOURCE_DIR}")
 message(STATUS "Using CMake source directory: ${SOURCE_DIRECTORY}")
 
-set(BUILD_DIRECTORY "${CMAKE_BINARY_DIR}/build/${BUILD_TYPE_LOWERCASE}")
+set(BUILD_DIRECTORY "${CMAKE_BINARY_DIR}/build/${BUILD_TYPE_DIR_NAME}")
 message(STATUS "Using CMake build directory: ${BUILD_DIRECTORY}")
 
-set(BIN_DIRECTORY "${CMAKE_BINARY_DIR}/bin/${BUILD_TYPE_LOWERCASE}")
+set(BIN_DIRECTORY "${CMAKE_BINARY_DIR}/bin/${BUILD_TYPE_DIR_NAME}")
 message(STATUS "Using CMake output directory: ${BIN_DIRECTORY}")
 
 set(GENERATOR "")

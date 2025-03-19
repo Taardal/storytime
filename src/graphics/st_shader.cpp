@@ -7,9 +7,17 @@
 
 namespace Storytime {
     Shader::Shader(const char* vertex_source, const char* fragment_source) : id(0) {
-        u32 vertexShaderId = create_shader(vertex_source, GL_VERTEX_SHADER);
-        u32 fragmentShaderId = create_shader(fragment_source, GL_FRAGMENT_SHADER);
-        id = create_program(vertexShaderId, fragmentShaderId);
+        ST_ASSERT(strlen(vertex_source) > 0, "Vertex shader source cannot be empty");
+        ST_ASSERT(strlen(fragment_source) > 0, "Fragment shader source cannot be empty");
+
+        u32 vertex_shader_id = create_shader(vertex_source, GL_VERTEX_SHADER);
+        ST_ASSERT(vertex_shader_id != 0, "Vertex shader ID cannot be zero");
+
+        u32 fragment_shader_id = create_shader(fragment_source, GL_FRAGMENT_SHADER);
+        ST_ASSERT(fragment_shader_id != 0, "Fragment shader ID cannot be zero");
+
+        id = create_program(vertex_shader_id, fragment_shader_id);
+        ST_ASSERT(id != 0, "Shader ID cannot be zero");
     }
 
     Shader::~Shader() {
@@ -47,19 +55,21 @@ namespace Storytime {
     }
 
     u32 Shader::create_shader(const char* source, u32 type) const {
-        const char* type_string = type == GL_VERTEX_SHADER ? ST_TO_STRING(GL_VERTEX_SHADER) : ST_TO_STRING(GL_FRAGMENT_SHADER);
-        ST_LOG_TRACE("Creating [{0}] shader", type_string);
+        ST_LOG_TRACE("Creating [{0}] shader", type == GL_VERTEX_SHADER ? ST_TO_STRING(GL_VERTEX_SHADER) : ST_TO_STRING(GL_FRAGMENT_SHADER));
+
         ST_GL_CALL(u32 shader_id = glCreateShader(type));
         ST_LOG_TRACE("Created shader with id [{0}]", shader_id);
+
         set_shader_source(source, shader_id);
+
         bool compiled = compile_shader(shader_id);
-        if (compiled) {
-            ST_LOG_TRACE("Shader created successfully");
-            return shader_id;
+        if (!compiled) {
+            ST_LOG_ERROR("Could not compile shader with id [{}] using source code [{}]", shader_id, source);
+            ST_GL_CALL(glDeleteShader(shader_id));
+            return 0;
         }
-        ST_LOG_TRACE("Deleting shader with id [{0}]", shader_id);
-        ST_GL_CALL(glDeleteShader(shader_id));
-        return 0;
+        ST_LOG_TRACE("Shader created successfully");
+        return shader_id;
     }
 
     void Shader::set_shader_source(const char* source, u32 shader_id) const {

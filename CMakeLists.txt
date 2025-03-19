@@ -5,7 +5,7 @@ project(storytime)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(ST_TARGET_NAME ${PROJECT_NAME})
+set(ST_TARGET ${PROJECT_NAME})
 set(ST_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(ST_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 set(ST_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
@@ -13,7 +13,7 @@ set(ST_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(ST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 add_library(
-    ${ST_TARGET_NAME}
+    ${ST_TARGET}
     ${ST_SRC_DIR}/st_run.cpp
     ${ST_SRC_DIR}/st_run.h
     ${ST_SRC_DIR}/audio/st_audio.cpp
@@ -166,22 +166,26 @@ add_library(
 )
 
 set_target_properties(
-    ${ST_TARGET_NAME}
+    ${ST_TARGET}
     PROPERTIES
     PREFIX ""
-    ARCHIVE_OUTPUT_NAME ${ST_TARGET_NAME}
+    ARCHIVE_OUTPUT_NAME ${ST_TARGET}
     ARCHIVE_OUTPUT_DIRECTORY ${ST_BIN_DIR}
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${ST_BIN_DIR}/debug
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${ST_BIN_DIR}/release
-    LIBRARY_OUTPUT_NAME ${ST_TARGET_NAME}
+    LIBRARY_OUTPUT_NAME ${ST_TARGET}
     LIBRARY_OUTPUT_DIRECTORY ${ST_BIN_DIR}
     LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ST_BIN_DIR}/debug
     LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ST_BIN_DIR}/release
+    RUNTIME_OUTPUT_NAME ${ST_TARGET}
+    RUNTIME_OUTPUT_DIRECTORY ${ST_BIN_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${ST_BIN_DIR}/debug
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${ST_BIN_DIR}/release
 )
 
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${ST_INCLUDE_DIR})
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${ST_SRC_DIR})
-target_precompile_headers(${ST_TARGET_NAME} PUBLIC ${ST_SRC_DIR}/st_pch.h)
+target_include_directories(${ST_TARGET} PUBLIC ${ST_INCLUDE_DIR})
+target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
+target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
@@ -197,11 +201,17 @@ endif ()
 set(ST_RESOURCES_OUTPUT_DIR ${ST_OUTPUT_DIR}/res)
 set(ST_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
 add_custom_target(
-    ST_CopyResources
+    ST_COPY_RESOURCES_TARGET
     COMMENT "Copying resources"
     COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy_resources.cmake
 )
-add_dependencies(${ST_TARGET_NAME} ST_CopyResources)
+add_dependencies(${ST_TARGET} ST_COPY_RESOURCES_TARGET)
+
+# --------------------------------------------------------------------------------------------------------------
+# Preprocessor macros
+# --------------------------------------------------------------------------------------------------------------
+
+target_compile_definitions(${ST_TARGET} PUBLIC ST_RES_DIR="${ST_RESOURCES_OUTPUT_DIR}")
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
@@ -217,7 +227,7 @@ FetchContent_Declare(
     GIT_TAG v3.13.1
 )
 FetchContent_MakeAvailable(entt)
-target_link_libraries(${ST_TARGET_NAME} EnTT::EnTT)
+target_link_libraries(${ST_TARGET} EnTT::EnTT)
 
 # GLM
 FetchContent_Declare(
@@ -226,15 +236,15 @@ FetchContent_Declare(
     GIT_TAG 1.0.1
 )
 FetchContent_MakeAvailable(glm)
-target_link_libraries(${ST_TARGET_NAME} glm::glm)
+target_link_libraries(${ST_TARGET} glm::glm)
 
 # GLAD
 set(GLAD_NAME glad)
 set(GLAD_DIR ${ST_LIB_DIR}/glad-0.1.33)
 add_library(${GLAD_NAME} ${GLAD_DIR}/src/glad.c)
 target_include_directories(${GLAD_NAME} PRIVATE ${GLAD_DIR}/include)
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${GLAD_DIR}/include)
-target_link_libraries(${ST_TARGET_NAME} glad ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
+target_include_directories(${ST_TARGET} PUBLIC ${GLAD_DIR}/include)
+target_link_libraries(${ST_TARGET} glad ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
 
 # GLFW
 set(GLFW_INSTALL OFF CACHE INTERNAL Generate installation target)
@@ -247,7 +257,7 @@ FetchContent_Declare(
     GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
-target_link_libraries(${ST_TARGET_NAME} glfw)
+target_link_libraries(${ST_TARGET} glfw)
 
 # ImGui
 set(IMGUI_NAME imgui)
@@ -271,8 +281,8 @@ add_library(
 )
 target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
 target_link_libraries(${IMGUI_NAME} glfw)
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${IMGUI_DIR})
-target_link_libraries(${ST_TARGET_NAME} ${IMGUI_NAME})
+target_include_directories(${ST_TARGET} PUBLIC ${IMGUI_DIR})
+target_link_libraries(${ST_TARGET} ${IMGUI_NAME})
 
 # JSON
 FetchContent_Declare(
@@ -281,12 +291,12 @@ FetchContent_Declare(
     GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(json)
-target_link_libraries(${ST_TARGET_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${ST_TARGET} nlohmann_json::nlohmann_json)
 
 # Lua
 find_package(Lua REQUIRED)
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${LUA_INCLUDE_DIR})
-target_link_libraries(${ST_TARGET_NAME} ${LUA_LIBRARIES})
+target_include_directories(${ST_TARGET} PUBLIC ${LUA_INCLUDE_DIR})
+target_link_libraries(${ST_TARGET} ${LUA_LIBRARIES})
 
 # Message Pack
 set(MSGPACK_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -299,7 +309,7 @@ FetchContent_Declare(
     GIT_TAG cpp-4.1.2
 )
 FetchContent_MakeAvailable(msgpack)
-target_link_libraries(${ST_TARGET_NAME} msgpackc-cxx)
+target_link_libraries(${ST_TARGET} msgpackc-cxx)
 
 # Miniaudio
 FetchContent_Declare(
@@ -308,7 +318,7 @@ FetchContent_Declare(
     GIT_TAG 0.11.21
 )
 FetchContent_MakeAvailable(miniaudio)
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${miniaudio_SOURCE_DIR})
+target_include_directories(${ST_TARGET} PUBLIC ${miniaudio_SOURCE_DIR})
 
 # STB image
 set(STB_IMAGE_NAME stb_image)
@@ -318,8 +328,8 @@ add_library(
     ${STB_IMAGE_DIR}/src/stb_image.cpp
 )
 target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
-target_include_directories(${ST_TARGET_NAME} PUBLIC ${STB_IMAGE_DIR}/include)
-target_link_libraries(${ST_TARGET_NAME} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
+target_include_directories(${ST_TARGET} PUBLIC ${STB_IMAGE_DIR}/include)
+target_link_libraries(${ST_TARGET} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
 
 # SPDLOG
 FetchContent_Declare(
@@ -328,4 +338,4 @@ FetchContent_Declare(
     GIT_TAG v1.9.2
 )
 FetchContent_MakeAvailable(spdlog)
-target_link_libraries(${ST_TARGET_NAME} spdlog::spdlog)
+target_link_libraries(${ST_TARGET} spdlog::spdlog)
