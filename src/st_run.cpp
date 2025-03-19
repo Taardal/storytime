@@ -1,19 +1,19 @@
 #include "st_run.h"
-#include "audio/audio_engine.h"
-#include "resource/resource_loader.h"
-#include "graphics/open_gl.h"
-#include "graphics/renderer.h"
-#include "system/clock.h"
-#include "system/event_manager.h"
-#include "system/file_reader.h"
-#include "system/game_loop_metrics.h"
-#include "system/service_locator.h"
-#include "window/window.h"
-#include "window/window_event.h"
+#include "audio/st_audio_engine.h"
+#include "resource/st_resource_loader.h"
+#include "graphics/st_open_gl.h"
+#include "graphics/st_renderer.h"
+#include "system/st_clock.h"
+#include "system/st_event_manager.h"
+#include "system/st_file_reader.h"
+#include "system/st_game_loop_metrics.h"
+#include "system/st_service_locator.h"
+#include "window/st_window.h"
+#include "window/st_window_event.h"
 
 #ifdef ST_IMGUI_ENABLED
-    #include "graphics/imgui_renderer.h"
-    #include "graphics/imgui_window_event.h"
+    #include "graphics/st_imgui_renderer.h"
+    #include "graphics/st_imgui_window_event.h"
 #endif
 
 extern "C" void on_create(const Storytime::Storytime&);
@@ -227,7 +227,7 @@ namespace Storytime {
                 //
 
 #ifdef ST_IMGUI_ENABLED
-                imgui_framebuffer.bind();
+                // imgui_framebuffer.bind();
 #endif
 
                 TimePoint render_start_time = Time::now();
@@ -237,11 +237,11 @@ namespace Storytime {
                 TimePoint render_end_time = Time::now();
 
 #ifdef ST_IMGUI_ENABLED
-                imgui_framebuffer.unbind();
+                // imgui_framebuffer.unbind();
 
                 TimePoint imgui_render_start_time = Time::now();
                 imgui_renderer.begin_frame();
-                imgui_renderer.render(imgui_framebuffer);
+                // imgui_renderer.render(imgui_framebuffer);
                 on_render_imgui();
                 imgui_renderer.end_frame();
                 TimePoint imgui_render_end_time = Time::now();

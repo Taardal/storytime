@@ -1,8 +1,8 @@
 #pragma once
 
-#include "system/command_line_arguments.h"
-#include "system/service_locator.h"
-#include "system/event_manager.h"
+#include "system/st_command_line_arguments.h"
+#include "system/st_service_locator.h"
+#include "system/st_event_manager.h"
 
 namespace Storytime {
     struct Config {
