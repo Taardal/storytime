@@ -22,7 +22,7 @@ namespace Storytime {
         void* get(Type type) const {
             auto it = services.find(type);
             if (it == services.end()) {
-                ST_LOG_WARNING("Could not find service of type [{}]", type.name());
+                ST_LOG_WARNING("Could not find service of type [{}]", demangle(type.name()));
                 return nullptr;
             }
             return it->second;
