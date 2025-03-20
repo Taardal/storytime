@@ -1,56 +1,79 @@
 #pragma once
 
+// --------------------------------------------------------------------------------------------------------------
+// INCLUDES
+// --------------------------------------------------------------------------------------------------------------
+
 // Entrypoint
-#include "st_main.h"
-
-// System
-#include "system/defer.h"
-#include "system/event_manager.h"
-#include "system/file_reader.h"
-#include "system/random.h"
-
-// Window
-#include "window/key.h"
-#include "window/key_event.h"
-#include "window/mouse_button.h"
-#include "window/mouse_event.h"
-#include "window/user_input.h"
-#include "window/window.h"
-#include "window/window_event.h"
+#include "st_run.h"
 
 // Graphics
-#include "graphics/bitmap_font.h"
-#include "graphics/camera.h"
-#include "graphics/spritesheet.h"
-#include "graphics/view_projection.h"
+#include "graphics/st_animation.h"
+#include "graphics/st_bitmap_font.h"
+#include "graphics/st_camera.h"
+#include "graphics/st_spritesheet.h"
+#include "graphics/st_view_projection.h"
 #ifdef ST_IMGUI_ENABLED
-    #include "graphics/imgui_renderer.h"
-    #include "graphics/imgui_window_event.h"
+    #include <imgui.h>
+    #include <imgui_internal.h>
+    #include "graphics/st_imgui_renderer.h"
+    #include "graphics/st_imgui_window_event.h"
 #endif
 
+// Lua
+#include "lua/st_lua_function.h"
+#include "lua/st_lua_glm.h"
+#include "lua/st_lua_keyboard.h"
+#include "lua/st_lua_log.h"
+#include "lua/st_lua_mouse.h"
+#include "lua/st_lua_to_from.h"
+#include "lua/st_lua_state.h"
+#include "lua/st_lua_table.h"
+#include "lua/st_lua_usertype.h"
+
 // Resource
-#include "resource/resource_loader.h"
+#include "resource/st_resource_loader.h"
 
 // Scene
-#include "scene/scene.h"
-
-// Script
-#include "script/lua_function.h"
-#include "script/lua_glm.h"
-#include "script/lua_keyboard.h"
-#include "script/lua_log.h"
-#include "script/lua_mouse.h"
-#include "script/lua_serialize_deserialize.h"
-#include "script/lua_state.h"
-#include "script/lua_table.h"
-#include "script/lua_usertype.h"
+#include "scene/st_entity.h"
+#include "scene/st_scene.h"
 
 // System
-#include "system/json_serialize_deserialize.h"
+#include "system/st_binary_to_from.h"
+#include "system/st_defer.h"
+#include "system/st_event_manager.h"
+#include "system/st_file_reader.h"
+#include "system/st_json_to_from.h"
+#include "system/st_game_loop_metrics.h"
+#include "system/st_msgpack_filesystem_adaptor.h"
+#include "system/st_msgpack_glm_adaptor.h"
+#include "system/st_msgpack_utils.h"
+#include "system/st_random.h"
+#include "system/st_variant.h"
 
 // Tiled
-#include "tiled/tiled_project.h"
-#include "tiled/tiled_map.h"
+#include "tiled/st_tiled_class.h"
+#include "tiled/st_tiled_enum.h"
+#include "tiled/st_tiled_layer.h"
+#include "tiled/st_tiled_map.h"
+#include "tiled/st_tiled_object.h"
+#include "tiled/st_tiled_project.h"
+#include "tiled/st_tiled_property.h"
+#include "tiled/st_tiled_template.h"
+#include "tiled/st_tiled_tile.h"
+#include "tiled/st_tiled_tileset.h"
 
-// Namespaces
+// Window
+#include "window/st_key.h"
+#include "window/st_key_event.h"
+#include "window/st_mouse_button.h"
+#include "window/st_mouse_event.h"
+#include "window/st_user_input.h"
+#include "window/st_window.h"
+#include "window/st_window_event.h"
+
+// --------------------------------------------------------------------------------------------------------------
+// NAMESPACES
+// --------------------------------------------------------------------------------------------------------------
+
 namespace st = Storytime;

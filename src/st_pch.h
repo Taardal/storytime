@@ -46,19 +46,19 @@
 // --------------------------------------------------------------------------------------------------------------
 
 // System
-#include "system/assert.h"
-#include "system/environment.h"
-#include "system/error.h"
-#include "system/error_signal.h"
-#include "system/log.h"
-#include "system/memory.h"
-#include "system/numbers.h"
-#include "system/pointers.h"
-#include "system/random.h"
-#include "system/utils.h"
+#include "system/st_assert.h"
+#include "system/st_environment.h"
+#include "system/st_error.h"
+#include "system/st_error_signal.h"
+#include "system/st_log.h"
+#include "system/st_memory.h"
+#include "system/st_numbers.h"
+#include "system/st_pointers.h"
+#include "system/st_size.h"
+#include "system/st_utils.h"
 
-// Script
-#include "script/lua_error.h"
-#include "script/lua_ref.h"
-#include "script/lua_utils.h"
+// Lua
+#include "lua/st_lua_error.h"
+#include "lua/st_lua_ref.h"
+#include "lua/st_lua_utils.h"
 
