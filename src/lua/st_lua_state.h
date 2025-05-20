@@ -19,9 +19,9 @@ namespace Storytime {
 
         void open_standard_libraries() const;
 
-        void file(const std::string& path) const;
+        void run_file(const std::string& path) const;
 
-        void script(const std::string& script) const;
+        void run_script(const std::string& script) const;
 
         void add_package_path(const std::string& path) const;
 

@@ -19,7 +19,7 @@ namespace Storytime {
         luaL_openlibs(L);
     }
 
-    void LuaState::file(const std::string& path) const {
+    void LuaState::run_file(const std::string& path) const {
         ST_ASSERT(!path.empty(), "Lua file path cannot be empty");
         ST_LOG_TRACE("Running file [{}]", path);
 
@@ -30,6 +30,7 @@ namespace Storytime {
         });
 
         luaL_loadfile(L, path.c_str());
+
         int error_handler_index = -2;
         constexpr int argument_count = 0;
         int result = lua_pcall(L, argument_count, LUA_MULTRET, error_handler_index);
@@ -38,12 +39,9 @@ namespace Storytime {
             ST_LOG_ERROR("[{}] {}", result, error);
             ST_THROW("Could not load Lua file");
         }
-
-        lua_pop(L, lua_gettop(L));
-        ST_ASSERT(lua_gettop(L) == 0, "Lua stack must be empty after executing file");
     }
 
-    void LuaState::script(const std::string& script) const {
+    void LuaState::run_script(const std::string& script) const {
         ST_ASSERT(!script.empty(), "Lua script cannot be empty");
         ST_LOG_TRACE("Running Lua script:\n{}", script);
 
@@ -54,6 +52,7 @@ namespace Storytime {
         });
 
         luaL_loadstring(L, script.c_str());
+
         int error_handler_index = -2;
         constexpr int argument_count = 0;
         int result = lua_pcall(L, argument_count, LUA_MULTRET, error_handler_index);
@@ -69,7 +68,7 @@ namespace Storytime {
         std::stringstream ss;
         ss << "package.path = '" << path << ";' .. package.path";
         std::string package_path = ss.str();
-        script(package_path);
+        run_script(package_path);
     }
 
     void LuaState::add_c_package_path(const std::string& path) const {
@@ -77,7 +76,7 @@ namespace Storytime {
         std::stringstream ss;
         ss << "package.cpath = '" << path << ";' .. package.cpath";
         std::string package_path = ss.str();
-        script(package_path);
+        run_script(package_path);
     }
 
     i32 LuaState::require_package(const std::string& package_name) const {
@@ -86,7 +85,7 @@ namespace Storytime {
         std::stringstream ss;
         ss << "require('" << package_name << "')";
         std::string require_package_script = ss.str();
-        script(require_package_script);
+        run_script(require_package_script);
 
         lua_getglobal(L, "package");
         lua_getfield(L, -1, "loaded");
@@ -126,7 +125,7 @@ namespace Storytime {
     }
 
     std::string LuaState::get_version() const {
-        script("return _VERSION:match('Lua (.+)')");
+        run_script("return _VERSION:match('Lua (.+)')");
         return lua_tostring(L, -1);
     }
 }

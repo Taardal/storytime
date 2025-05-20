@@ -62,6 +62,12 @@ namespace Storytime {
 
         static int angle_axis(lua_State* L);
 
+        static int concat_vec2(lua_State* L);
+
+        static int concat_vec3(lua_State* L);
+
+        static int concat_vec4(lua_State* L);
+
         static int cross(lua_State* L);
 
         static int degrees(lua_State* L);

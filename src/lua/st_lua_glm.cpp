@@ -70,6 +70,9 @@ namespace Storytime {
         lua_pushcfunction(L, to_string_vec2);
         lua_setfield(L, -2, "__tostring");
 
+        lua_pushcfunction(L, concat_vec2);
+        lua_setfield(L, -2, "__concat");
+
         return 1;
     }
 
@@ -100,6 +103,9 @@ namespace Storytime {
         lua_pushcfunction(L, to_string_vec3);
         lua_setfield(L, -2, "__tostring");
 
+        lua_pushcfunction(L, concat_vec3);
+        lua_setfield(L, -2, "__concat");
+
         return 1;
     }
 
@@ -129,6 +135,9 @@ namespace Storytime {
 
         lua_pushcfunction(L, to_string_vec4);
         lua_setfield(L, -2, "__tostring");
+
+        lua_pushcfunction(L, concat_vec4);
+        lua_setfield(L, -2, "__concat");
 
         return 1;
     }
@@ -782,6 +791,63 @@ namespace Storytime {
         float angle = (float) lua_tonumber(L, -2);
         glm::quat result = glm::angleAxis(angle, axis);
         lua_pushquat(L, result);
+        return 1;
+    }
+
+    // Lua stack
+    // - [-1] table or string     Vec2 (self) or suffix string
+    // - [-2] table or string     Vec2 (self) or prefix string
+    int LuaGLM::concat_vec2(lua_State* L) {
+        bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
+        bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
+        ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec2_metatable_name << "] without a prefix or a suffix string");
+        if (concat_prefix) {
+            glm::vec2 self = lua_tovec2(L, -1);
+            const char* str = lua_tostring(L, -2);
+            lua_pushfstring(L, "%sx: %d, y: %d", str, self.x, self.y);
+        } else {
+            glm::vec2 self = lua_tovec2(L, -2);
+            const char* str = lua_tostring(L, -1);
+            lua_pushfstring(L, "x: %d, y: %d%s", self.x, self.y, str);
+        }
+        return 1;
+    }
+
+    // Lua stack
+    // - [-1] table or string     Vec2 (self) or suffix string
+    // - [-2] table or string     Vec2 (self) or prefix string
+    int LuaGLM::concat_vec3(lua_State* L) {
+        bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
+        bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
+        ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec3_metatable_name << "] without a prefix or a suffix string");
+        if (concat_prefix) {
+            glm::vec3 self = lua_tovec3(L, -1);
+            const char* str = lua_tostring(L, -2);
+            lua_pushfstring(L, "%sx: %d, y: %d, z: %d", str, self.x, self.y, self.z);
+        } else {
+            glm::vec3 self = lua_tovec3(L, -2);
+            const char* str = lua_tostring(L, -1);
+            lua_pushfstring(L, "x: %d, y: %d, z: %d%s", self.x, self.y, self.z, str);
+        }
+        return 1;
+    }
+
+    // Lua stack
+    // - [-1] table or string     Vec2 (self) or suffix string
+    // - [-2] table or string     Vec2 (self) or prefix string
+    int LuaGLM::concat_vec4(lua_State* L) {
+        bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
+        bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
+        ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec4_metatable_name << "] without a prefix or a suffix string");
+        if (concat_prefix) {
+            glm::vec4 self = lua_tovec4(L, -1);
+            const char* str = lua_tostring(L, -2);
+            lua_pushfstring(L, "%sx: %d, y: %d, z: %d, w: %d", str, self.x, self.y, self.z, self.w);
+        } else {
+            glm::vec4 self = lua_tovec4(L, -2);
+            const char* str = lua_tostring(L, -1);
+            lua_pushfstring(L, "x: %d, y: %d, z: %d, w: %d%s", self.x, self.y, self.z, self.w, str);
+        }
         return 1;
     }
 
