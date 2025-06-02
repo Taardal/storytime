@@ -4,6 +4,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+
 namespace Storytime {
     struct WindowSize {
         i32 width;
@@ -30,6 +32,8 @@ namespace Storytime {
     private:
         WindowConfig config;
         GLFWwindow* glfw_window = nullptr;
+        bool mouse_events_enabled = true;
+        bool keyboard_events_enabled = true;
 
     public:
         explicit Window(const WindowConfig& config);
@@ -52,6 +56,10 @@ namespace Storytime {
 
         static f64 get_time();
 
+        void set_mouse_events_enabled(bool mouse_events_enabled);
+
+        void set_keyboard_events_enabled(bool keyboard_events_enabled);
+
     private:
         static void on_glfw_error(i32 error, const char* description);
 
@@ -68,8 +76,5 @@ namespace Storytime {
         static void on_window_close_change(GLFWwindow* glfw_window);
 
         static void on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified);
-
-        static void on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event);
-
     };
 }

@@ -12,6 +12,10 @@ set(ST_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(ST_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(ST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE Debug)
+endif ()
+
 add_library(
     ${ST_TARGET}
     ${ST_SRC_DIR}/st_run.cpp

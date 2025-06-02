@@ -282,3 +282,12 @@ namespace Storytime {
         return it->second;
     }
 }
+
+namespace Storytime {
+    constexpr ModCode Mod::MOD_SHIFT = GLFW_MOD_SHIFT;
+    constexpr ModCode Mod::MOD_CONTROL = GLFW_MOD_CONTROL;
+    constexpr ModCode Mod::MOD_ALT = GLFW_MOD_ALT;
+    constexpr ModCode Mod::MOD_SUPER = GLFW_MOD_SUPER;
+    constexpr ModCode Mod::MOD_CAPS_LOCK = GLFW_MOD_CAPS_LOCK;
+    constexpr ModCode Mod::MOD_NUM_LOCK = GLFW_MOD_NUM_LOCK;
+}

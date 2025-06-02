@@ -118,28 +118,6 @@ namespace Storytime {
                 .window = &window,
             });
             service_locator.set<ImGuiRenderer>(&imgui_renderer);
-
-            // When rendering ImGui, we need to render the game to a specific ImGui window,
-            // instead of the application window. We accomplish this by first rendering the
-            // game to this framebuffer, and then render that framebuffer to the ImGui window.
-            Framebuffer imgui_framebuffer({
-                .width = (u32) window_size_px.width,
-                .height = (u32) window_size_px.height,
-            });
-            event_subscriptions.push_back(
-                event_manager.subscribe(WindowResizeEvent::type, [&imgui_framebuffer](const Event& event) {
-                    auto& window_resize_event = (WindowResizeEvent&) event;
-                    imgui_framebuffer.resize(window_resize_event.width, window_resize_event.height);
-                })
-            );
-            event_subscriptions.push_back(
-                event_manager.subscribe(ImGuiWindowResizeEvent::type, [&imgui_framebuffer](const Event& event) {
-                    auto& imgui_window_resize_event = (ImGuiWindowResizeEvent&) event;
-                    if (imgui_window_resize_event.window_id == ImGuiRenderer::game_window_name) {
-                        imgui_framebuffer.resize(imgui_window_resize_event.width, imgui_window_resize_event.height);
-                    }
-                })
-            );
 #endif
 
             GameLoopMetrics metrics{};
@@ -175,7 +153,7 @@ namespace Storytime {
                 TimePoint cycle_start_time = Time::now();
                 f64 last_cycle_duration_ms = Time::as<Microseconds>(cycle_start_time - last_cycle_start_time).count() / 1000.0;
 
-                // If the last cycle lasted too long, assume that we have resumed from a breakpoint
+                // If the last cycle lasted too long, assume that we have resumed from a breakpoint or similar
                 // and override the duration to the target timestep to avoid big spikes in game systems.
                 if (last_cycle_duration_ms > 1000.0) {
                     last_cycle_duration_ms = timestep_ms;
@@ -226,10 +204,6 @@ namespace Storytime {
                 // RENDER
                 //
 
-#ifdef ST_IMGUI_ENABLED
-                // imgui_framebuffer.bind();
-#endif
-
                 TimePoint render_start_time = Time::now();
                 renderer.begin_frame();
                 on_render();
@@ -237,11 +211,8 @@ namespace Storytime {
                 TimePoint render_end_time = Time::now();
 
 #ifdef ST_IMGUI_ENABLED
-                // imgui_framebuffer.unbind();
-
                 TimePoint imgui_render_start_time = Time::now();
                 imgui_renderer.begin_frame();
-                // imgui_renderer.render(imgui_framebuffer);
                 on_render_imgui();
                 imgui_renderer.end_frame();
                 TimePoint imgui_render_end_time = Time::now();
