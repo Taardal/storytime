@@ -67,9 +67,10 @@
 // Window
 #include "window/st_key.h"
 #include "window/st_key_event.h"
+#include "window/st_keyboard.h"
+#include "window/st_mouse.h"
 #include "window/st_mouse_button.h"
 #include "window/st_mouse_event.h"
-#include "window/st_user_input.h"
 #include "window/st_window.h"
 #include "window/st_window_event.h"
 

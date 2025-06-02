@@ -4,8 +4,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include "imgui.h"
-
 namespace Storytime {
     struct WindowSize {
         i32 width;

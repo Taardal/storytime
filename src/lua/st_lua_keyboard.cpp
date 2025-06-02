@@ -1,8 +1,10 @@
 #include "st_lua_keyboard.h"
-#include "window/st_user_input.h"
 
 namespace Storytime {
     const std::string LuaKeyboard::metatable_name = "Keyboard";
+
+    LuaKeyboard::LuaKeyboard(lua_State* L, Keyboard* keyboard) : L(L), keyboard(keyboard) {
+    }
 
     i32 LuaKeyboard::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
@@ -14,20 +16,13 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaKeyboard::create(lua_State* L) {
-        lua_newtable(L);
+    i32 LuaKeyboard::create(lua_State* L, Keyboard* keyboard) {
+        void* userdata = lua_newuserdata(L, sizeof(LuaKeyboard));
+        new (userdata) LuaKeyboard(L, keyboard);
 
         luaL_getmetatable(L, metatable_name.c_str());
         ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
         lua_setmetatable(L, -2);
-
-        for (auto [key_code, key_name] : Key::names_by_key) {
-            lua_pushnumber(L, key_code);
-
-            std::string name = key_name;
-            string_to_lower(name);
-            lua_setfield(L, -2, name.c_str());
-        }
 
         return 1;
     }
@@ -51,17 +46,21 @@ namespace Storytime {
     i32 LuaKeyboard::is_pressed(lua_State* L) {
         i32 parameter_type = lua_type(L, -1);
         ST_ASSERT(parameter_type == LUA_TSTRING || parameter_type == LUA_TNUMBER, "Key parameter must be either string or number");
+
+        auto userdata = static_cast<LuaKeyboard*>(lua_touserdata(L, -2));
+        ST_ASSERT(userdata != nullptr, "Userdata cannot be null");
+
         bool pressed;
         if (lua_type(L, -1) == LUA_TSTRING) {
             std::string key_name = lua_tostring(L, -1);
             ST_ASSERT(key_name.length() > 0, "Key name cannot be empty");
             KeyCode key_code = Key::from_name(key_name);
             ST_ASSERT(key_code != Key::NONE, "Invalid key name given");
-            pressed = Keyboard::is_pressed(key_code);
+            pressed = userdata->keyboard->is_pressed(key_code);
         } else {
             KeyCode key_code = lua_tonumber(L, -1);
             ST_ASSERT(key_code != Key::NONE, "Invalid key name given");
-            pressed = Keyboard::is_pressed(key_code);
+            pressed = userdata->keyboard->is_pressed(key_code);
         }
         lua_pushboolean(L, pressed);
         return 1;

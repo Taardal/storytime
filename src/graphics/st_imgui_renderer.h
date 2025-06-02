@@ -1,12 +1,14 @@
 #pragma once
 
+#include "window/st_keyboard.h"
+#include "window/st_mouse.h"
 #include "window/st_window.h"
-
-#include <imgui.h>
 
 namespace Storytime {
     struct ImGuiRendererConfig {
         EventManager* event_manager = nullptr;
+        Keyboard* keyboard = nullptr;
+        Mouse* mouse = nullptr;
         Window* window = nullptr;
         std::filesystem::path settings_file_path;
         std::string glsl_version;

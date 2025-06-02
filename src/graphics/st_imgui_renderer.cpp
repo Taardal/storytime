@@ -42,9 +42,15 @@ namespace Storytime {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // If ImGui wants mouse/keyboard focus, we need to disable any mouse/keyboard input for the client application
+        // For example, if you type "WASD" in an ImGui text field, the character in the client game should not move
         ImGuiIO& io = ImGui::GetIO();
-        config.window->set_mouse_events_enabled(!io.WantCaptureMouse);
-        config.window->set_keyboard_events_enabled(!io.WantCaptureKeyboard);
+        bool application_mouse_enabled = !io.WantCaptureMouse;
+        bool application_keyboard_enabled = !io.WantCaptureKeyboard;
+        config.mouse->set_enabled(application_mouse_enabled);
+        config.keyboard->set_enabled(application_keyboard_enabled);
+        config.window->set_mouse_events_enabled(application_mouse_enabled);
+        config.window->set_keyboard_events_enabled(application_keyboard_enabled);
     }
 
     void ImGuiRenderer::end_frame() const {

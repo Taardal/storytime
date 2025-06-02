@@ -1,8 +1,10 @@
 #include "st_lua_mouse.h"
-#include "window/st_user_input.h"
 
 namespace Storytime {
     const std::string LuaMouse::metatable_name = "Mouse";
+
+    LuaMouse::LuaMouse(lua_State* L, Mouse* mouse) : L(L), mouse(mouse)  {
+    }
 
     i32 LuaMouse::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
@@ -14,8 +16,11 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaMouse::create(lua_State* L) {
-        lua_newtable(L);
+    i32 LuaMouse::create(lua_State* L, Mouse* mouse) {
+        ST_ASSERT(mouse != nullptr, "Mouse cannot be null");
+
+        void* userdata = lua_newuserdata(L, sizeof(LuaMouse));
+        new (userdata) LuaMouse(L, mouse);
 
         luaL_getmetatable(L, metatable_name.c_str());
         ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
@@ -43,17 +48,21 @@ namespace Storytime {
     int LuaMouse::is_pressed(lua_State* L) {
         i32 parameter_type = lua_type(L, -1);
         ST_ASSERT(parameter_type == LUA_TSTRING || parameter_type == LUA_TNUMBER, "Mouse button parameter must be either string or number");
+
+        auto userdata = static_cast<LuaMouse*>(lua_touserdata(L, -2));
+        ST_ASSERT(userdata != nullptr, "Userdata cannot be null");
+
         bool pressed;
         if (lua_type(L, -1) == LUA_TSTRING) {
             std::string button_name = lua_tostring(L, -1);
             ST_ASSERT(button_name.length() > 0, "Mouse name cannot be empty");
             MouseButtonCode button_code = MouseButton::from_name(button_name);
             ST_ASSERT(button_code != MouseButton::NONE, "Invalid button name given");
-            pressed = Mouse::is_pressed(button_code);
+            pressed = userdata->mouse->is_pressed(button_code);
         } else {
             MouseButtonCode button_code = lua_tonumber(L, -1);
             ST_ASSERT(button_code != MouseButton::NONE, "Invalid button name given");
-            pressed = Mouse::is_pressed(button_code);
+            pressed = userdata->mouse->is_pressed(button_code);
         }
         lua_pushboolean(L, pressed);
         return 1;

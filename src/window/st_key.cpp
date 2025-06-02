@@ -291,3 +291,9 @@ namespace Storytime {
     constexpr ModCode Mod::MOD_CAPS_LOCK = GLFW_MOD_CAPS_LOCK;
     constexpr ModCode Mod::MOD_NUM_LOCK = GLFW_MOD_NUM_LOCK;
 }
+
+namespace Storytime {
+    constexpr ActionCode Action::ACTION_PRESS = GLFW_PRESS;
+    constexpr ActionCode Action::ACTION_RELEASE = GLFW_RELEASE;
+    constexpr ActionCode Action::ACTION_REPEAT = GLFW_REPEAT;
+}

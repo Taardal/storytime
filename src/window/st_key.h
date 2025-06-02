@@ -148,3 +148,13 @@ namespace Storytime {
         static const ModCode MOD_NUM_LOCK;
     };
 }
+
+namespace Storytime {
+    typedef i32 ActionCode;
+
+    struct Action {
+        static const ActionCode ACTION_PRESS;
+        static const ActionCode ACTION_RELEASE;
+        static const ActionCode ACTION_REPEAT;
+    };
+}

@@ -8,6 +8,8 @@
 #include "system/st_file_reader.h"
 #include "system/st_game_loop_metrics.h"
 #include "system/st_service_locator.h"
+#include "window/st_keyboard.h"
+#include "window/st_mouse.h"
 #include "window/st_window.h"
 #include "window/st_window_event.h"
 
@@ -71,6 +73,16 @@ namespace Storytime {
             });
             service_locator.set<Window>(&window);
 
+            Keyboard keyboard({
+                .window = &window,
+            });
+            service_locator.set<Keyboard>(&keyboard);
+
+            Mouse mouse({
+                .window = &window,
+            });
+            service_locator.set<Mouse>(&mouse);
+
             OpenGL::initialize({
                 .window = &window,
                 .log_level = config.log_level,
@@ -116,6 +128,8 @@ namespace Storytime {
                 .glsl_version = config.glsl_version,
                 .event_manager = &event_manager,
                 .window = &window,
+                .keyboard = &keyboard,
+                .mouse = &mouse,
             });
             service_locator.set<ImGuiRenderer>(&imgui_renderer);
 #endif
