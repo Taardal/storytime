@@ -75,6 +75,7 @@ namespace Storytime {
 
             Keyboard keyboard({
                 .window = &window,
+                .event_manager = &event_manager,
             });
             service_locator.set<Keyboard>(&keyboard);
 

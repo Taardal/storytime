@@ -31,6 +31,10 @@
             ST_LOG_CRITICAL("Assertion failed: {}, {}", #expression, message_string); \
             ST_BREAK(); \
         }
+
+    #define ST_ASSERT_NOT_NULL(pointer) \
+        ST_ASSERT(pointer != nullptr, #pointer << " cannot be null")
 #else
     #define ST_ASSERT(expression, message)
+    #define ST_ASSERT_NOT_NULL(pointer)
 #endif
