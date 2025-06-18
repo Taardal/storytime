@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system/st_event.h"
+#include "st_event.h"
 
 namespace Storytime {
     typedef u32 SubscriptionID;

@@ -24,6 +24,35 @@ add_library(
     ${ST_SRC_DIR}/audio/st_audio.h
     ${ST_SRC_DIR}/audio/st_audio_engine.cpp
     ${ST_SRC_DIR}/audio/st_audio_engine.h
+    ${ST_SRC_DIR}/event/st_event.cpp
+    ${ST_SRC_DIR}/event/st_event.h
+    ${ST_SRC_DIR}/event/st_event_handler.cpp
+    ${ST_SRC_DIR}/event/st_event_handler.h
+    ${ST_SRC_DIR}/event/st_event_manager.cpp
+    ${ST_SRC_DIR}/event/st_event_manager.h
+    ${ST_SRC_DIR}/event/st_events.h
+    ${ST_SRC_DIR}/event/st_key_pressed_event.cpp
+    ${ST_SRC_DIR}/event/st_key_pressed_event.h
+    ${ST_SRC_DIR}/event/st_key_released_event.cpp
+    ${ST_SRC_DIR}/event/st_key_released_event.h
+    ${ST_SRC_DIR}/event/st_key_repeated_event.cpp
+    ${ST_SRC_DIR}/event/st_key_repeated_event.h
+    ${ST_SRC_DIR}/event/st_key_typed_event.cpp
+    ${ST_SRC_DIR}/event/st_key_typed_event.h
+    ${ST_SRC_DIR}/event/st_mouse_button_pressed_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_button_pressed_event.h
+    ${ST_SRC_DIR}/event/st_mouse_button_released_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_button_released_event.h
+    ${ST_SRC_DIR}/event/st_mouse_moved_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_moved_event.h
+    ${ST_SRC_DIR}/event/st_mouse_scroll_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_scroll_event.h
+    ${ST_SRC_DIR}/event/st_window_closed_event.cpp
+    ${ST_SRC_DIR}/event/st_window_closed_event.h
+    ${ST_SRC_DIR}/event/st_window_minimized_event.cpp
+    ${ST_SRC_DIR}/event/st_window_minimized_event.h
+    ${ST_SRC_DIR}/event/st_window_resized_event.cpp
+    ${ST_SRC_DIR}/event/st_window_resized_event.h
     ${ST_SRC_DIR}/graphics/st_animation.cpp
     ${ST_SRC_DIR}/graphics/st_animation.h
     ${ST_SRC_DIR}/graphics/st_bitmap_font.cpp
@@ -34,8 +63,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_framebuffer.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
-    ${ST_SRC_DIR}/graphics/st_imgui_window_event.cpp
-    ${ST_SRC_DIR}/graphics/st_imgui_window_event.h
     ${ST_SRC_DIR}/graphics/st_index_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_index_buffer.h
     ${ST_SRC_DIR}/graphics/st_open_gl.cpp
@@ -101,10 +128,6 @@ add_library(
     ${ST_SRC_DIR}/system/st_error.h
     ${ST_SRC_DIR}/system/st_error_signal.cpp
     ${ST_SRC_DIR}/system/st_error_signal.h
-    ${ST_SRC_DIR}/system/st_event.cpp
-    ${ST_SRC_DIR}/system/st_event.h
-    ${ST_SRC_DIR}/system/st_event_manager.cpp
-    ${ST_SRC_DIR}/system/st_event_manager.h
     ${ST_SRC_DIR}/system/st_file_reader.cpp
     ${ST_SRC_DIR}/system/st_file_reader.h
     ${ST_SRC_DIR}/system/st_game_loop_metrics.h
@@ -133,6 +156,7 @@ add_library(
     ${ST_SRC_DIR}/tiled/st_tiled_class.h
     ${ST_SRC_DIR}/tiled/st_tiled_enum.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_enum.h
+    ${ST_SRC_DIR}/tiled/st_tiled_id.h
     ${ST_SRC_DIR}/tiled/st_tiled_layer.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_layer.h
     ${ST_SRC_DIR}/tiled/st_tiled_map.cpp
@@ -149,22 +173,17 @@ add_library(
     ${ST_SRC_DIR}/tiled/st_tiled_tile.h
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.h
+    ${ST_SRC_DIR}/tiled/st_tiled_transformation_flags.h
     ${ST_SRC_DIR}/window/st_key.cpp
     ${ST_SRC_DIR}/window/st_key.h
-    ${ST_SRC_DIR}/window/st_key_event.cpp
-    ${ST_SRC_DIR}/window/st_key_event.h
     ${ST_SRC_DIR}/window/st_keyboard.cpp
     ${ST_SRC_DIR}/window/st_keyboard.h
     ${ST_SRC_DIR}/window/st_mouse.cpp
     ${ST_SRC_DIR}/window/st_mouse.h
     ${ST_SRC_DIR}/window/st_mouse_button.cpp
     ${ST_SRC_DIR}/window/st_mouse_button.h
-    ${ST_SRC_DIR}/window/st_mouse_event.cpp
-    ${ST_SRC_DIR}/window/st_mouse_event.h
     ${ST_SRC_DIR}/window/st_window.cpp
     ${ST_SRC_DIR}/window/st_window.h
-    ${ST_SRC_DIR}/window/st_window_event.cpp
-    ${ST_SRC_DIR}/window/st_window_event.h
 )
 
 set_target_properties(
@@ -187,6 +206,7 @@ set_target_properties(
 
 target_include_directories(${ST_TARGET} PUBLIC ${ST_INCLUDE_DIR})
 target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
+
 target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------

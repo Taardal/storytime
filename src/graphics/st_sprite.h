@@ -11,9 +11,9 @@ namespace Storytime {
         glm::vec2 position = { 0.0f, 0.0f };
         f32 scale = 1.0f;
         f32 rotation_deg = 0.0f;
-        bool flip_horizontally = false;
-        bool flip_vertically = false;
-        bool flip_diagonally = false;
+        bool flipped_horizontally = false;
+        bool flipped_vertically = false;
+        bool flipped_diagonally = false;
     };
 
     struct SpriteConfig {
@@ -32,7 +32,9 @@ namespace Storytime {
     public:
         Sprite() = default;
 
-        explicit Sprite(const SpriteConfig& config);
+        Sprite(const SpriteConfig& config);
+
+        Shared<Texture> get_texture();
 
         u32 get_width() const;
 

@@ -1,21 +1,22 @@
 #include "st_run.h"
+
 #include "audio/st_audio_engine.h"
-#include "resource/st_resource_loader.h"
+#include "event/st_event_manager.h"
+#include "event/st_window_closed_event.h"
+#include "event/st_window_resized_event.h"
 #include "graphics/st_open_gl.h"
 #include "graphics/st_renderer.h"
+#include "resource/st_resource_loader.h"
 #include "system/st_clock.h"
-#include "system/st_event_manager.h"
 #include "system/st_file_reader.h"
 #include "system/st_game_loop_metrics.h"
 #include "system/st_service_locator.h"
 #include "window/st_keyboard.h"
 #include "window/st_mouse.h"
 #include "window/st_window.h"
-#include "window/st_window_event.h"
 
 #ifdef ST_IMGUI_ENABLED
     #include "graphics/st_imgui_renderer.h"
-    #include "graphics/st_imgui_window_event.h"
 #endif
 
 extern "C" void on_create(const Storytime::Storytime&);
@@ -55,7 +56,7 @@ namespace Storytime {
             std::vector<SubscriptionID> event_subscriptions;
 
             event_subscriptions.push_back(
-                event_manager.subscribe(WindowCloseEvent::type, [&](const Event&) {
+                event_manager.subscribe(WindowClosedEvent::type, [&](const Event&) {
                     stop();
                 })
             );
@@ -113,8 +114,8 @@ namespace Storytime {
                 },
             });
             event_subscriptions.push_back(
-                event_manager.subscribe(WindowResizeEvent::type, [&renderer](const Event& event) {
-                    auto& window_resize_event = (WindowResizeEvent&) event;
+                event_manager.subscribe(WindowResizedEvent::type, [&renderer](const Event& event) {
+                    auto& window_resize_event = (WindowResizedEvent&) event;
                     renderer.set_viewport({
                         .width = window_resize_event.width,
                         .height = window_resize_event.height,

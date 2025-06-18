@@ -5,6 +5,10 @@ namespace Storytime {
         ST_ASSERT(config.spritesheet_texture != nullptr, "Sprite must have a texture");
     }
 
+    Shared<Texture> Sprite::get_texture() {
+        return config.spritesheet_texture;
+    }
+
     u32 Sprite::get_width() const {
         return config.width;
     }
@@ -24,7 +28,7 @@ namespace Storytime {
             .position = { render_config.position.x, render_config.position.y, 0.0f },
         };
 
-        bool flipped = render_config.flip_horizontally || render_config.flip_vertically || render_config.flip_diagonally;
+        bool flipped = render_config.flipped_horizontally || render_config.flipped_vertically || render_config.flipped_diagonally;
         if (!flipped) {
             renderer->render_quad(quad, config.spritesheet_texture_coordinates);
             return;
@@ -35,7 +39,7 @@ namespace Storytime {
         auto texture_coordinates = config.spritesheet_texture_coordinates;
 
         // Switch left and right texture coordinates to flip sprite horizontally
-        if (render_config.flip_horizontally) {
+        if (render_config.flipped_horizontally) {
             f32 x_left = texture_coordinates[0].x;   // Top left
             f32 x_right = texture_coordinates[1].x;  // Top right
             texture_coordinates[0].x = x_right;      // Left --> Right
@@ -45,7 +49,7 @@ namespace Storytime {
         }
 
         // Switch top and bottom texture coordinates to flip sprite vertically
-        if (render_config.flip_vertically) {
+        if (render_config.flipped_vertically) {
             f32 y_top = texture_coordinates[1].y;    // Top right
             f32 y_bottom = texture_coordinates[2].y; // Bottom right
             texture_coordinates[0].y = y_bottom;     // Top --> Bottom
@@ -55,7 +59,7 @@ namespace Storytime {
         }
 
         // Switch top left and bottom right texture coordinates to flip sprite diagonally
-        if (render_config.flip_diagonally) {
+        if (render_config.flipped_diagonally) {
             glm::vec2 top_left = texture_coordinates[0];
             glm::vec2 bottom_right = texture_coordinates[2];
             texture_coordinates[0] = bottom_right;

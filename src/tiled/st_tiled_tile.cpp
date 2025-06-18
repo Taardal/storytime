@@ -35,4 +35,22 @@ namespace Storytime {
     const TiledProperty* TiledTile::try_get_property(const std::string& name) const {
         return try_get_tiled_property(properties, name);
     }
+
+    const TiledObject* TiledTile::get_object(const std::string& name) const {
+        for (const TiledObject& object : objectgroup.objects) {
+            if (object.name == name) {
+                return &object;
+            }
+        }
+        return nullptr;
+    }
+
+    const TiledObject* TiledTile::get_object(i32 global_id) const {
+        for (const TiledObject& object : objectgroup.objects) {
+            if (object.gid == global_id) {
+                return &object;
+            }
+        }
+        return nullptr;
+    }
 }

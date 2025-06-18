@@ -12,7 +12,7 @@ namespace Storytime {
 
     struct AnimationConfig {
         std::vector<AnimationFrame> frames;
-        bool loop = false;
+        bool looping = false;
     };
 
     class Animation {
@@ -42,7 +42,7 @@ namespace Storytime {
 
         void set_frame_duration(u32 frame_index, f32 duration_ms);
 
-        void set_looping(bool loop);
+        void set_looping(bool looping);
 
         bool has_ended() const;
 

@@ -37,7 +37,7 @@ namespace Storytime {
         if (result != LUA_OK) {
             const char* error = lua_tostring(L, -1);
             ST_LOG_ERROR("[{}] {}", result, error);
-            ST_THROW("Could not load Lua file");
+            ST_THROW("Could not load Lua file [" << path << "]");
         }
     }
 

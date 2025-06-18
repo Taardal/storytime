@@ -1,9 +1,6 @@
 #include "st_window.h"
 
-#include "system/st_assert.h"
-#include "st_key_event.h"
-#include "st_mouse_event.h"
-#include "window/st_window_event.h"
+#include "event/st_events.h"
 
 namespace Storytime {
     Window::Window(const WindowConfig& config) : config(config) {
@@ -126,7 +123,10 @@ namespace Storytime {
         auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
-        MouseMovedEvent event(x, y);
+        MouseMovedEvent event;
+        event.x = x;
+        event.y = y;
+
         event_manager->trigger_event(MouseMovedEvent::type, event);
     }
 
@@ -137,8 +137,11 @@ namespace Storytime {
         auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
-        WindowResizeEvent event(width, height);
-        event_manager->trigger_event(WindowResizeEvent::type, event);
+        WindowResizedEvent event;
+        event.width = width;
+        event.height = height;
+
+        event_manager->trigger_event(WindowResizedEvent::type, event);
     }
 
     void Window::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
@@ -153,13 +156,22 @@ namespace Storytime {
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
         if (action == GLFW_PRESS) {
-            KeyPressedEvent event(key, mods, scanCode);
+            KeyPressedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
             event_manager->trigger_event(KeyPressedEvent::type, event);
         } else if (action == GLFW_RELEASE) {
-            KeyReleasedEvent event(key, mods, scanCode);
+            KeyReleasedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
             event_manager->trigger_event(KeyReleasedEvent::type, event);
         } else if (action == GLFW_REPEAT) {
-            KeyRepeatedEvent event(key, mods, scanCode);
+            KeyRepeatedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
             event_manager->trigger_event(KeyRepeatedEvent::type, event);
         }
     }
@@ -176,11 +188,13 @@ namespace Storytime {
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
         if (action == GLFW_PRESS) {
-            MouseButtonPressedEvent event(button);
+            MouseButtonPressedEvent event;
+            event.button = button;
             event_manager->trigger_event(MouseButtonPressedEvent::type, event);
         }
         if (action == GLFW_RELEASE) {
-            MouseButtonReleasedEvent event(button);
+            MouseButtonReleasedEvent event;
+            event.button = button;
             event_manager->trigger_event(MouseButtonReleasedEvent::type, event);
         }
     }
@@ -196,7 +210,10 @@ namespace Storytime {
         auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
-        MouseScrollEvent event(xoffset, yoffset);
+        MouseScrollEvent event;
+        event.x_offset = xoffset;
+        event.y_offset = yoffset;
+
         event_manager->trigger_event(MouseScrollEvent::type, event);
     }
 
@@ -207,8 +224,9 @@ namespace Storytime {
         auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
-        WindowCloseEvent event{};
-        event_manager->trigger_event(WindowCloseEvent::type, event);
+        WindowClosedEvent event{};
+
+        event_manager->trigger_event(WindowClosedEvent::type, event);
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
@@ -218,9 +236,9 @@ namespace Storytime {
         auto event_manager = window->config.event_manager;
         ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
 
-        bool minimized = iconified == 1;
-        WindowMinimizeEvent event(minimized);
+        WindowMinimizedEvent event;
+        event.minimized = iconified == 1;
 
-        event_manager->trigger_event(WindowMinimizeEvent::type, event);
+        event_manager->trigger_event(WindowMinimizedEvent::type, event);
     }
 }

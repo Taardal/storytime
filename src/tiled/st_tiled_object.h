@@ -21,6 +21,14 @@ namespace Storytime {
 
         static TiledObject create(const std::string& json);
 
+        bool is_ellipse() const;
+
+        bool is_point() const;
+
+        bool is_polygon() const;
+
+        bool is_rectangle() const;
+
         const TiledProperty& get_property(const std::string& name) const;
 
         const TiledProperty* try_get_property(const std::string& name) const;
