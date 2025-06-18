@@ -3,7 +3,7 @@
 #include "window/st_mouse.h"
 
 namespace Storytime {
-    class LuaMouse {
+    class LuaMouseBinding {
     public:
         static const std::string metatable_name;
 
@@ -12,7 +12,7 @@ namespace Storytime {
         Mouse* mouse = nullptr;
 
     public:
-        LuaMouse(lua_State* L, Mouse* mouse);
+        LuaMouseBinding(lua_State* L, Mouse* mouse);
 
         static i32 create_metatable(lua_State* L);
 

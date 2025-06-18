@@ -1,16 +1,16 @@
-#include "st_lua_glm.h"
+#include "st_lua_glm_binding.h"
 
 namespace Storytime {
-    const std::string LuaGLM::metatable_name = "GLM";
-    const std::string LuaGLM::vec2_metatable_name = metatable_name + ".Vec2";
-    const std::string LuaGLM::vec3_metatable_name = metatable_name + ".Vec3";
-    const std::string LuaGLM::vec4_metatable_name = metatable_name + ".Vec4";
-    const std::string LuaGLM::mat2_metatable_name = metatable_name + ".Mat2";
-    const std::string LuaGLM::mat3_metatable_name = metatable_name + ".Mat3";
-    const std::string LuaGLM::mat4_metatable_name = metatable_name + ".Mat4";
-    const std::string LuaGLM::quat_metatable_name = metatable_name + ".Quat";
+    const std::string LuaGLMBinding::metatable_name = "LuaGLMBinding";
+    const std::string LuaGLMBinding::vec2_metatable_name = metatable_name + ".Vec2";
+    const std::string LuaGLMBinding::vec3_metatable_name = metatable_name + ".Vec3";
+    const std::string LuaGLMBinding::vec4_metatable_name = metatable_name + ".Vec4";
+    const std::string LuaGLMBinding::mat2_metatable_name = metatable_name + ".Mat2";
+    const std::string LuaGLMBinding::mat3_metatable_name = metatable_name + ".Mat3";
+    const std::string LuaGLMBinding::mat4_metatable_name = metatable_name + ".Mat4";
+    const std::string LuaGLMBinding::quat_metatable_name = metatable_name + ".Quat";
 
-    int LuaGLM::create_metatable(lua_State* L) {
+    int LuaGLMBinding::create_metatable(lua_State* L) {
         create_vec2_metatable(L);
         lua_pop(L, 1);
         create_vec3_metatable(L);
@@ -33,7 +33,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create(lua_State* L) {
+    int LuaGLMBinding::create(lua_State* L) {
         lua_newtable(L);
 
         luaL_getmetatable(L, metatable_name.c_str());
@@ -43,7 +43,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_vec2_metatable(lua_State* L) {
+    int LuaGLMBinding::create_vec2_metatable(lua_State* L) {
         luaL_newmetatable(L, vec2_metatable_name.c_str());
 
         lua_pushcfunction(L, add_vec2);
@@ -76,7 +76,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_vec3_metatable(lua_State* L) {
+    int LuaGLMBinding::create_vec3_metatable(lua_State* L) {
         luaL_newmetatable(L, vec3_metatable_name.c_str());
 
         lua_pushcfunction(L, add_vec3);
@@ -109,7 +109,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_vec4_metatable(lua_State* L) {
+    int LuaGLMBinding::create_vec4_metatable(lua_State* L) {
         luaL_newmetatable(L, vec4_metatable_name.c_str());
 
         lua_pushcfunction(L, add_vec4);
@@ -142,7 +142,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_mat2_metatable(lua_State* L) {
+    int LuaGLMBinding::create_mat2_metatable(lua_State* L) {
         luaL_newmetatable(L, mat2_metatable_name.c_str());
 
         lua_pushcfunction(L, add_mat2);
@@ -160,7 +160,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_mat3_metatable(lua_State* L) {
+    int LuaGLMBinding::create_mat3_metatable(lua_State* L) {
         luaL_newmetatable(L, mat3_metatable_name.c_str());
 
         lua_pushcfunction(L, add_mat3);
@@ -181,7 +181,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_mat4_metatable(lua_State* L) {
+    int LuaGLMBinding::create_mat4_metatable(lua_State* L) {
         luaL_newmetatable(L, mat4_metatable_name.c_str());
 
         lua_pushcfunction(L, add_mat4);
@@ -202,7 +202,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::create_quat_metatable(lua_State* L) {
+    int LuaGLMBinding::create_quat_metatable(lua_State* L) {
         luaL_newmetatable(L, quat_metatable_name.c_str());
 
         lua_pushcfunction(L, add_quat);
@@ -223,7 +223,7 @@ namespace Storytime {
         return 1;
     }
 
-    int LuaGLM::index(lua_State* L) {
+    int LuaGLMBinding::index(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -506,7 +506,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_mat3(lua_State* L) {
+    int LuaGLMBinding::index_mat3(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -520,7 +520,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_mat4(lua_State* L) {
+    int LuaGLMBinding::index_mat4(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -534,7 +534,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_quat(lua_State* L) {
+    int LuaGLMBinding::index_quat(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -556,7 +556,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_vec2(lua_State* L) {
+    int LuaGLMBinding::index_vec2(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -570,7 +570,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_vec3(lua_State* L) {
+    int LuaGLMBinding::index_vec3(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -584,7 +584,7 @@ namespace Storytime {
         return 0;
     }
 
-    int LuaGLM::index_vec4(lua_State* L) {
+    int LuaGLMBinding::index_vec4(lua_State* L) {
         constexpr i32 key_index = -1;
         ST_ASSERT(lua_type(L, key_index) == LUA_TSTRING, "Key must be at expected stack location");
 
@@ -601,7 +601,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector2 B or scalar B
     // - [-2] table or number    Vector2 A or scalar A
-    int LuaGLM::add_vec2(lua_State* L) {
+    int LuaGLMBinding::add_vec2(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -648,7 +648,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector3 B or scalar B
     // - [-2] table or number    Vector3 A or scalar A
-    int LuaGLM::add_vec3(lua_State* L) {
+    int LuaGLMBinding::add_vec3(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -695,7 +695,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector4 B or scalar B
     // - [-2] table or number    Vector4 A or scalar A
-    int LuaGLM::add_vec4(lua_State* L) {
+    int LuaGLMBinding::add_vec4(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -742,7 +742,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat2 B
     // - [-2] table     Mat2 A
-    int LuaGLM::add_mat2(lua_State* L) {
+    int LuaGLMBinding::add_mat2(lua_State* L) {
         glm::mat2 matrix_b = lua_tomat2(L, -1);
         glm::mat2 matrix_a = lua_tomat2(L, -2);
         glm::mat2 result = matrix_a + matrix_b;
@@ -753,7 +753,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat3 B
     // - [-2] table     Mat3 A
-    int LuaGLM::add_mat3(lua_State* L) {
+    int LuaGLMBinding::add_mat3(lua_State* L) {
         glm::mat3 matrix_b = lua_tomat3(L, -1);
         glm::mat3 matrix_a = lua_tomat3(L, -2);
         glm::mat3 result = matrix_a + matrix_b;
@@ -764,7 +764,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat4 B
     // - [-2] table     Mat4 A
-    int LuaGLM::add_mat4(lua_State* L) {
+    int LuaGLMBinding::add_mat4(lua_State* L) {
         glm::mat4 matrix_b = lua_tomat4(L, -1);
         glm::mat4 matrix_a = lua_tomat4(L, -2);
         glm::mat4 result = matrix_a + matrix_b;
@@ -775,7 +775,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Quat B
     // - [-2] table     Quat A
-    int LuaGLM::add_quat(lua_State* L) {
+    int LuaGLMBinding::add_quat(lua_State* L) {
         glm::quat quat_b = lua_toquat(L, -1);
         glm::quat quat_a = lua_toquat(L, -2);
         glm::quat result = quat_a + quat_b;
@@ -786,7 +786,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Axis vector3
     // - [-2] number    Angle (radians)
-    int LuaGLM::angle_axis(lua_State* L) {
+    int LuaGLMBinding::angle_axis(lua_State* L) {
         glm::vec3 axis = lua_tovec3(L, -1);
         float angle = (float) lua_tonumber(L, -2);
         glm::quat result = glm::angleAxis(angle, axis);
@@ -797,7 +797,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or string     Vec2 (self) or suffix string
     // - [-2] table or string     Vec2 (self) or prefix string
-    int LuaGLM::concat_vec2(lua_State* L) {
+    int LuaGLMBinding::concat_vec2(lua_State* L) {
         bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
         bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
         ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec2_metatable_name << "] without a prefix or a suffix string");
@@ -816,7 +816,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or string     Vec2 (self) or suffix string
     // - [-2] table or string     Vec2 (self) or prefix string
-    int LuaGLM::concat_vec3(lua_State* L) {
+    int LuaGLMBinding::concat_vec3(lua_State* L) {
         bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
         bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
         ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec3_metatable_name << "] without a prefix or a suffix string");
@@ -835,7 +835,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or string     Vec2 (self) or suffix string
     // - [-2] table or string     Vec2 (self) or prefix string
-    int LuaGLM::concat_vec4(lua_State* L) {
+    int LuaGLMBinding::concat_vec4(lua_State* L) {
         bool concat_prefix = lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TTABLE;
         bool concat_suffix = lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TTABLE;
         ST_ASSERT(concat_prefix || concat_suffix, "Cannot concat [" << vec4_metatable_name << "] without a prefix or a suffix string");
@@ -854,7 +854,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Vector B
     // - [-2] table     Vector A
-    int LuaGLM::cross(lua_State* L) {
+    int LuaGLMBinding::cross(lua_State* L) {
         glm::vec3 vector_a = lua_tovec3(L, -1);
         glm::vec3 vector_b = lua_tovec3(L, -2);
         glm::vec3 result = glm::cross(vector_a, vector_b);
@@ -864,7 +864,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec3
-    int LuaGLM::degrees(lua_State* L) {
+    int LuaGLMBinding::degrees(lua_State* L) {
         glm::vec3 vector = lua_tovec3(L, -1);
         glm::vec3 result = glm::degrees(vector);
         lua_pushvec3(L, result);
@@ -874,7 +874,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector2 B or scalar B
     // - [-2] table or number    Vector2 A or scalar A
-    int LuaGLM::divide_vec2(lua_State* L) {
+    int LuaGLMBinding::divide_vec2(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -921,7 +921,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector3 B or scalar B
     // - [-2] table or number    Vector3 A or scalar A
-    int LuaGLM::divide_vec3(lua_State* L) {
+    int LuaGLMBinding::divide_vec3(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -968,7 +968,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector4 B or scalar B
     // - [-2] table or number    Vector4 A or scalar A
-    int LuaGLM::divide_vec4(lua_State* L) {
+    int LuaGLMBinding::divide_vec4(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1015,7 +1015,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat2 B
     // - [-2] table     Mat2 A
-    int LuaGLM::divide_mat2(lua_State* L) {
+    int LuaGLMBinding::divide_mat2(lua_State* L) {
         glm::mat2 matrix_b = lua_tomat2(L, -1);
         glm::mat2 matrix_a = lua_tomat2(L, -2);
         glm::mat2 result = matrix_a / matrix_b;
@@ -1026,7 +1026,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat3 B
     // - [-2] table     Mat3 A
-    int LuaGLM::divide_mat3(lua_State* L) {
+    int LuaGLMBinding::divide_mat3(lua_State* L) {
         glm::mat3 matrix_b = lua_tomat3(L, -1);
         glm::mat3 matrix_a = lua_tomat3(L, -2);
         glm::mat3 result = matrix_a / matrix_b;
@@ -1037,7 +1037,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat4 B
     // - [-2] table     Mat4 A
-    int LuaGLM::divide_mat4(lua_State* L) {
+    int LuaGLMBinding::divide_mat4(lua_State* L) {
         glm::mat4 matrix_b = lua_tomat4(L, -1);
         glm::mat4 matrix_a = lua_tomat4(L, -2);
         glm::mat4 result = matrix_a / matrix_b;
@@ -1048,7 +1048,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Quat B
     // - [-2] table     Quat A
-    int LuaGLM::divide_quat(lua_State* L) {
+    int LuaGLMBinding::divide_quat(lua_State* L) {
         glm::quat quat_b = lua_toquat(L, -1);
         glm::quat quat_a = lua_toquat(L, -2);
 
@@ -1062,7 +1062,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Vec2 B
     // - [-2] table     Vec2 A
-    int LuaGLM::dot_vec2(lua_State* L) {
+    int LuaGLMBinding::dot_vec2(lua_State* L) {
         glm::vec2 vector_b = lua_tovec2(L, -1);
         glm::vec2 vector_a = lua_tovec2(L, -2);
         float result = glm::dot(vector_a, vector_b);
@@ -1073,7 +1073,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Vec3 B
     // - [-2] table     Vec3 A
-    int LuaGLM::dot_vec3(lua_State* L) {
+    int LuaGLMBinding::dot_vec3(lua_State* L) {
         glm::vec3 vector_b = lua_tovec3(L, -1);
         glm::vec3 vector_a = lua_tovec3(L, -2);
         float result = glm::dot(vector_a, vector_b);
@@ -1084,7 +1084,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Vec4 B
     // - [-2] table     Vec4 A
-    int LuaGLM::dot_vec4(lua_State* L) {
+    int LuaGLMBinding::dot_vec4(lua_State* L) {
         glm::vec4 vector_b = lua_tovec4(L, -1);
         glm::vec4 vector_a = lua_tovec4(L, -2);
         float result = glm::dot(vector_a, vector_b);
@@ -1094,7 +1094,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Quaternion
-    int LuaGLM::euler_angles(lua_State* L) {
+    int LuaGLMBinding::euler_angles(lua_State* L) {
         glm::quat quaternion = lua_toquat(L, -1);
         glm::vec3 result = glm::eulerAngles(quaternion);
         lua_pushvec3(L, result);
@@ -1103,7 +1103,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Quaternion
-    int LuaGLM::inverse_quat(lua_State* L) {
+    int LuaGLMBinding::inverse_quat(lua_State* L) {
         glm::quat quaternion = lua_toquat(L, -1);
         glm::quat result = glm::inverse(quaternion);
         lua_pushquat(L, result);
@@ -1112,7 +1112,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Mat2
-    int LuaGLM::inverse_mat2(lua_State* L) {
+    int LuaGLMBinding::inverse_mat2(lua_State* L) {
         glm::mat2 matrix = lua_tomat2(L, -1);
         glm::mat2 result = glm::inverse(matrix);
         lua_pushmat2(L, result);
@@ -1121,7 +1121,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Mat3
-    int LuaGLM::inverse_mat3(lua_State* L) {
+    int LuaGLMBinding::inverse_mat3(lua_State* L) {
         glm::mat3 matrix = lua_tomat3(L, -1);
         glm::mat3 result = glm::inverse(matrix);
         lua_pushmat3(L, result);
@@ -1130,7 +1130,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Mat4
-    int LuaGLM::inverse_mat4(lua_State* L) {
+    int LuaGLMBinding::inverse_mat4(lua_State* L) {
         glm::mat4 matrix = lua_tomat4(L, -1);
         glm::mat4 result = glm::inverse(matrix);
         lua_pushmat4(L, result);
@@ -1139,7 +1139,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec2
-    int LuaGLM::length_vec2(lua_State* L) {
+    int LuaGLMBinding::length_vec2(lua_State* L) {
         glm::vec2 vector = lua_tovec2(L, -1);
         float result = glm::length(vector);
         lua_pushnumber(L, result);
@@ -1148,7 +1148,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec3
-    int LuaGLM::length_vec3(lua_State* L) {
+    int LuaGLMBinding::length_vec3(lua_State* L) {
         glm::vec3 vector = lua_tovec3(L, -1);
         float result = glm::length(vector);
         lua_pushnumber(L, result);
@@ -1157,7 +1157,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec4
-    int LuaGLM::length_vec4(lua_State* L) {
+    int LuaGLMBinding::length_vec4(lua_State* L) {
         glm::vec4 vector = lua_tovec4(L, -1);
         float result = glm::length(vector);
         lua_pushnumber(L, result);
@@ -1168,7 +1168,7 @@ namespace Storytime {
     // - [-1] number    timestep
     // - [-2] table     End position vec3
     // - [-3] table     Start position vec3
-    int LuaGLM::lerp(lua_State* L) {
+    int LuaGLMBinding::lerp(lua_State* L) {
         float timestep = (float) lua_tonumber(L, -1);
         glm::vec3 end = lua_tovec3(L, -2);
         glm::vec3 start = lua_tovec3(L, -3);
@@ -1181,7 +1181,7 @@ namespace Storytime {
     // - [-1] table     Up direction vec3
     // - [-2] table     Center vec3
     // - [-3] table     Eye vec3
-    int LuaGLM::look_at(lua_State* L) {
+    int LuaGLMBinding::look_at(lua_State* L) {
         glm::vec3 up_direction = lua_tovec3(L, -1);
         glm::vec3 center = lua_tovec3(L, -2);
         glm::vec3 eye = lua_tovec3(L, -3);
@@ -1192,7 +1192,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] number   Scalar
-    int LuaGLM::mat2(lua_State* L) {
+    int LuaGLMBinding::mat2(lua_State* L) {
         float scalar = 0.0f;
         bool missing = lua_isnil(L, -1);
         if (!missing) {
@@ -1205,7 +1205,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] number   Scalar
-    int LuaGLM::mat3(lua_State* L) {
+    int LuaGLMBinding::mat3(lua_State* L) {
         float scalar = 0.0f;
         bool missing = lua_isnil(L, -1);
         if (!missing) {
@@ -1218,7 +1218,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] number   Scalar
-    int LuaGLM::mat4(lua_State* L) {
+    int LuaGLMBinding::mat4(lua_State* L) {
         float scalar = 0.0f;
         bool missing = lua_isnil(L, -1);
         if (!missing) {
@@ -1231,7 +1231,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Matrix 3x3
-    int LuaGLM::mat3_to_quat(lua_State* L) {
+    int LuaGLMBinding::mat3_to_quat(lua_State* L) {
         glm::mat3 matrix = lua_tomat3(L, -1);
         glm::quat result = glm::toQuat(matrix);
         lua_pushquat(L, result);
@@ -1240,7 +1240,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Matrix 4x4
-    int LuaGLM::mat4_to_quat(lua_State* L) {
+    int LuaGLMBinding::mat4_to_quat(lua_State* L) {
         glm::mat4 matrix = lua_tomat4(L, -1);
         glm::quat result = glm::toQuat(matrix);
         lua_pushquat(L, result);
@@ -1250,7 +1250,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector2 B or scalar B
     // - [-2] table or number    Vector2 A or scalar A
-    int LuaGLM::multiply_vec2(lua_State* L) {
+    int LuaGLMBinding::multiply_vec2(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1297,7 +1297,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector3 B or scalar B
     // - [-2] table or number    Vector3 A or scalar A
-    int LuaGLM::multiply_vec3(lua_State* L) {
+    int LuaGLMBinding::multiply_vec3(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1344,7 +1344,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector4 B or scalar B
     // - [-2] table or number    Vector4 A or scalar A
-    int LuaGLM::multiply_vec4(lua_State* L) {
+    int LuaGLMBinding::multiply_vec4(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1391,7 +1391,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat2 B
     // - [-2] table     Mat2 A
-    int LuaGLM::multiply_mat2(lua_State* L) {
+    int LuaGLMBinding::multiply_mat2(lua_State* L) {
         glm::mat2 matrix_b = lua_tomat2(L, -1);
         glm::mat2 matrix_a = lua_tomat2(L, -2);
         glm::mat2 result = matrix_a * matrix_b;
@@ -1402,7 +1402,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat3 B
     // - [-2] table     Mat3 A
-    int LuaGLM::multiply_mat3(lua_State* L) {
+    int LuaGLMBinding::multiply_mat3(lua_State* L) {
         glm::mat3 matrix_b = lua_tomat3(L, -1);
         glm::mat3 matrix_a = lua_tomat3(L, -2);
         glm::mat3 result = matrix_a * matrix_b;
@@ -1413,7 +1413,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat4 B
     // - [-2] table     Mat4 A
-    int LuaGLM::multiply_mat4(lua_State* L) {
+    int LuaGLMBinding::multiply_mat4(lua_State* L) {
         glm::mat4 matrix_b = lua_tomat4(L, -1);
         glm::mat4 matrix_a = lua_tomat4(L, -2);
         glm::mat4 result = matrix_a * matrix_b;
@@ -1424,7 +1424,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Quat B
     // - [-2] table     Quat A
-    int LuaGLM::multiply_quat(lua_State* L) {
+    int LuaGLMBinding::multiply_quat(lua_State* L) {
         glm::quat quat_b = lua_toquat(L, -1);
         glm::quat quat_a = lua_toquat(L, -2);
         glm::quat result = quat_a * quat_b;
@@ -1434,7 +1434,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Quaternion
-    int LuaGLM::normalize_quat(lua_State* L) {
+    int LuaGLMBinding::normalize_quat(lua_State* L) {
         glm::quat quaternion = lua_toquat(L, -1);
         glm::quat result = glm::normalize(quaternion);
         lua_pushquat(L, result);
@@ -1443,7 +1443,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec2
-    int LuaGLM::normalize_vec2(lua_State* L) {
+    int LuaGLMBinding::normalize_vec2(lua_State* L) {
         glm::vec2 vector = lua_tovec2(L, -1);
         glm::vec2 result = glm::normalize(vector);
         lua_pushvec2(L, result);
@@ -1452,7 +1452,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec3
-    int LuaGLM::normalize_vec3(lua_State* L) {
+    int LuaGLMBinding::normalize_vec3(lua_State* L) {
         glm::vec3 vector = lua_tovec3(L, -1);
         glm::vec3 result = glm::normalize(vector);
         lua_pushvec3(L, result);
@@ -1461,7 +1461,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec4
-    int LuaGLM::normalize_vec4(lua_State* L) {
+    int LuaGLMBinding::normalize_vec4(lua_State* L) {
         glm::vec4 vector = lua_tovec4(L, -1);
         glm::vec4 result = glm::normalize(vector);
         lua_pushvec4(L, result);
@@ -1473,7 +1473,7 @@ namespace Storytime {
     // - [-2] number     Y
     // - [-3] number     X
     // - [-4] number     W
-    int LuaGLM::quat(lua_State* L) {
+    int LuaGLMBinding::quat(lua_State* L) {
         glm::quat result{};
         result.z = (float) lua_tonumber(L, -1);
         result.y = (float) lua_tonumber(L, -2);
@@ -1486,7 +1486,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Up direction vector3
     // - [-2] table     Forward direction vector3
-    int LuaGLM::quat_look_at(lua_State* L) {
+    int LuaGLMBinding::quat_look_at(lua_State* L) {
         glm::vec3 up_direction = lua_tovec3(L, -1);
         glm::vec3 forward_direction = lua_tovec3(L, -2);
         glm::quat result = glm::quatLookAt(forward_direction, up_direction);
@@ -1497,7 +1497,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Up direction vector3
     // - [-2] table     Forward direction vector3
-    int LuaGLM::quat_look_at_rh(lua_State* L) {
+    int LuaGLMBinding::quat_look_at_rh(lua_State* L) {
         glm::vec3 up_direction = lua_tovec3(L, -1);
         glm::vec3 forward_direction = lua_tovec3(L, -2);
         glm::quat result = glm::quatLookAtRH(forward_direction, up_direction);
@@ -1508,7 +1508,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Up direction vector3
     // - [-2] table     Forward direction vector3
-    int LuaGLM::quat_look_at_lh(lua_State* L) {
+    int LuaGLMBinding::quat_look_at_lh(lua_State* L) {
         glm::vec3 up_direction = lua_tovec3(L, -1);
         glm::vec3 forward_direction = lua_tovec3(L, -2);
         glm::quat result = glm::quatLookAtLH(forward_direction, up_direction);
@@ -1518,7 +1518,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table    Quaternion
-    int LuaGLM::quat_to_mat4(lua_State* L) {
+    int LuaGLMBinding::quat_to_mat4(lua_State* L) {
         glm::quat quaternion = lua_toquat(L, -1);
         glm::mat4 result = glm::toMat4(quaternion);
         lua_pushmat4(L, result);
@@ -1527,7 +1527,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] number    Angle (degrees)
-    int LuaGLM::radians(lua_State* L) {
+    int LuaGLMBinding::radians(lua_State* L) {
         float angle = (float) lua_tonumber(L, -1);
         float result = glm::radians(angle);
         lua_pushnumber(L, result);
@@ -1537,7 +1537,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     vector
     // - [-2] table     quaternion
-    int LuaGLM::rotate(lua_State* L) {
+    int LuaGLMBinding::rotate(lua_State* L) {
         glm::vec3 vector = lua_tovec3(L, -1);
         glm::quat quaternion = lua_toquat(L, -2);
         glm::vec3 result = glm::rotate(quaternion, vector);
@@ -1548,7 +1548,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] number    Angle
     // - [-2] table     Vector3
-    int LuaGLM::rotate_x(lua_State* L) {
+    int LuaGLMBinding::rotate_x(lua_State* L) {
         auto angle = (float) lua_tonumber(L, -1);
         glm::vec3 vector = lua_tovec3(L, -2);
         glm::vec3 result = glm::rotateX(vector, angle);
@@ -1559,7 +1559,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] number    Angle
     // - [-2] table     Vector3
-    int LuaGLM::rotate_y(lua_State* L) {
+    int LuaGLMBinding::rotate_y(lua_State* L) {
         auto angle = (float) lua_tonumber(L, -1);
         glm::vec3 vector = lua_tovec3(L, -2);
         glm::vec3 result = glm::rotateY(vector, angle);
@@ -1570,7 +1570,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] number    Angle
     // - [-2] table     Vector3
-    int LuaGLM::rotate_z(lua_State* L) {
+    int LuaGLMBinding::rotate_z(lua_State* L) {
         auto angle = (float) lua_tonumber(L, -1);
         glm::vec3 vector = lua_tovec3(L, -2);
         glm::vec3 result = glm::rotateZ(vector, angle);
@@ -1582,7 +1582,7 @@ namespace Storytime {
     // - [-1] number    Timestep
     // - [-2] table     End quaternion
     // - [-3] table     Start quaternion
-    int LuaGLM::slerp(lua_State* L) {
+    int LuaGLMBinding::slerp(lua_State* L) {
         float timestep = (float) lua_tonumber(L, -1);
         glm::quat end = lua_toquat(L, -2);
         glm::quat start = lua_toquat(L, -3);
@@ -1594,7 +1594,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector2 B or scalar B
     // - [-2] table or number    Vector2 A or scalar A
-    int LuaGLM::subtract_vec2(lua_State* L) {
+    int LuaGLMBinding::subtract_vec2(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1641,7 +1641,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector3 B or scalar B
     // - [-2] table or number    Vector3 A or scalar A
-    int LuaGLM::subtract_vec3(lua_State* L) {
+    int LuaGLMBinding::subtract_vec3(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1688,7 +1688,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table or number    Vector4 B or scalar B
     // - [-2] table or number    Vector4 A or scalar A
-    int LuaGLM::subtract_vec4(lua_State* L) {
+    int LuaGLMBinding::subtract_vec4(lua_State* L) {
         bool b_is_vector = lua_istable(L, -1);
         bool b_is_scalar = lua_isnumber(L, -1);
 
@@ -1734,7 +1734,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec2 (self)
-    int LuaGLM::to_string_vec2(lua_State* L) {
+    int LuaGLMBinding::to_string_vec2(lua_State* L) {
         glm::vec2 self = lua_tovec2(L, -1);
         lua_pushfstring(L, "x: %d, y: %d", self.x, self.y);
         return 1;
@@ -1742,7 +1742,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec3 (self)
-    int LuaGLM::to_string_vec3(lua_State* L) {
+    int LuaGLMBinding::to_string_vec3(lua_State* L) {
         glm::vec3 self = lua_tovec3(L, -1);
         lua_pushfstring(L, "x: %d, y: %d, z: %d", self.x, self.y, self.z);
         return 1;
@@ -1750,7 +1750,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec4 (self)
-    int LuaGLM::to_string_vec4(lua_State* L) {
+    int LuaGLMBinding::to_string_vec4(lua_State* L) {
         glm::vec4 self = lua_tovec4(L, -1);
         lua_pushfstring(L, "x: %d, y: %d, z: %d, w: %d", self.x, self.y, self.z, self.w);
         return 1;
@@ -1759,7 +1759,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat2 B
     // - [-2] table     Mat2 A
-    int LuaGLM::subtract_mat2(lua_State* L) {
+    int LuaGLMBinding::subtract_mat2(lua_State* L) {
         glm::mat2 matrix_b = lua_tomat2(L, -1);
         glm::mat2 matrix_a = lua_tomat2(L, -2);
         glm::mat2 result = matrix_a - matrix_b;
@@ -1770,7 +1770,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat3 B
     // - [-2] table     Mat3 A
-    int LuaGLM::subtract_mat3(lua_State* L) {
+    int LuaGLMBinding::subtract_mat3(lua_State* L) {
         glm::mat3 matrix_b = lua_tomat3(L, -1);
         glm::mat3 matrix_a = lua_tomat3(L, -2);
         glm::mat3 result = matrix_a - matrix_b;
@@ -1781,7 +1781,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Mat4 B
     // - [-2] table     Mat4 A
-    int LuaGLM::subtract_mat4(lua_State* L) {
+    int LuaGLMBinding::subtract_mat4(lua_State* L) {
         glm::mat4 matrix_b = lua_tomat4(L, -1);
         glm::mat4 matrix_a = lua_tomat4(L, -2);
         glm::mat4 result = matrix_a - matrix_b;
@@ -1792,7 +1792,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table     Quat B
     // - [-2] table     Quat A
-    int LuaGLM::subtract_quat(lua_State* L) {
+    int LuaGLMBinding::subtract_quat(lua_State* L) {
         glm::quat quat_b = lua_toquat(L, -1);
         glm::quat quat_a = lua_toquat(L, -2);
         glm::quat result = quat_a - quat_b;
@@ -1803,7 +1803,7 @@ namespace Storytime {
     // Lua stack
     // - [-1] table    Vec3
     // - [-2] table    Mat4
-    int LuaGLM::translate(lua_State* L) {
+    int LuaGLMBinding::translate(lua_State* L) {
         glm::vec3 vector = lua_tovec3(L, -1);
         glm::mat4 matrix = lua_tomat4(L, -2);
         glm::mat4 result = glm::translate(matrix, vector);
@@ -1813,7 +1813,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec2 (self)
-    int LuaGLM::unary_minus_vec2(lua_State* L) {
+    int LuaGLMBinding::unary_minus_vec2(lua_State* L) {
         glm::vec2 self = lua_tovec2(L, -1);
         lua_pushvec2(L, -self);
         return 1;
@@ -1821,7 +1821,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec3 (self)
-    int LuaGLM::unary_minus_vec3(lua_State* L) {
+    int LuaGLMBinding::unary_minus_vec3(lua_State* L) {
         glm::vec3 self = lua_tovec3(L, -1);
         lua_pushvec3(L, -self);
         return 1;
@@ -1829,7 +1829,7 @@ namespace Storytime {
 
     // Lua stack
     // - [-1] table     Vec4 (self)
-    int LuaGLM::unary_minus_vec4(lua_State* L) {
+    int LuaGLMBinding::unary_minus_vec4(lua_State* L) {
         glm::vec4 self = lua_tovec4(L, -1);
         lua_pushvec4(L, -self);
         return 1;
@@ -1846,7 +1846,7 @@ namespace Storytime {
     // glm.vec(x, y)
     // - [-1] number    Y
     // - [-2] number    X
-    int LuaGLM::vec2(lua_State* L) {
+    int LuaGLMBinding::vec2(lua_State* L) {
         glm::vec2 vector{};
         uint32_t argument_count = lua_gettop(L);
         if (argument_count == 1) {
@@ -1875,7 +1875,7 @@ namespace Storytime {
     // - [-1] number    Z
     // - [-2] number    Y
     // - [-3] number    X
-    int LuaGLM::vec3(lua_State* L) {
+    int LuaGLMBinding::vec3(lua_State* L) {
         glm::vec3 vector{0, 0, 0};
         uint32_t argument_count = lua_gettop(L);
         if (argument_count == 1) {
@@ -1908,7 +1908,7 @@ namespace Storytime {
     // - [-2] number    Z
     // - [-3] number    Y
     // - [-4] number    X
-    int LuaGLM::vec4(lua_State* L) {
+    int LuaGLMBinding::vec4(lua_State* L) {
         glm::vec4 vector{};
         uint32_t argument_count = lua_gettop(L);
         if (argument_count == 1) {
@@ -1955,7 +1955,7 @@ void lua_pushvec2(lua_State* L, const glm::vec2& vector) {
     lua_pushnumber(L, vector.y);
     lua_setfield(L, -2, "y");
 
-    luaL_getmetatable(L, Storytime::LuaGLM::vec2_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::vec2_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -1989,7 +1989,7 @@ void lua_pushvec3(lua_State* L, const glm::vec3& vector) {
     lua_pushnumber(L, vector.z);
     lua_setfield(L, -2, "z");
 
-    luaL_getmetatable(L, Storytime::LuaGLM::vec3_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::vec3_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -2030,7 +2030,7 @@ void lua_pushvec4(lua_State* L, const glm::vec4& vector) {
     lua_pushnumber(L, vector.w);
     lua_setfield(L, -2, "w");
 
-    luaL_getmetatable(L, Storytime::LuaGLM::vec4_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::vec4_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -2060,11 +2060,11 @@ void lua_pushmat2(lua_State* L, const glm::mat2& matrix) {
         lua_setfield(L, -2, "x");
         lua_pushnumber(L, matrix[i].y);
         lua_setfield(L, -2, "y");
-        luaL_getmetatable(L, Storytime::LuaGLM::vec2_metatable_name.c_str());
+        luaL_getmetatable(L, Storytime::LuaGLMBinding::vec2_metatable_name.c_str());
         lua_setmetatable(L, -2);
         lua_seti(L, -2, i + 1); // Lua uses 1-based indexing
     }
-    luaL_getmetatable(L, Storytime::LuaGLM::mat2_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::mat2_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -2100,11 +2100,11 @@ void lua_pushmat3(lua_State* L, const glm::mat3& matrix) {
         lua_setfield(L, -2, "y");
         lua_pushnumber(L, matrix[i].z);
         lua_setfield(L, -2, "z");
-        luaL_getmetatable(L, Storytime::LuaGLM::vec3_metatable_name.c_str());
+        luaL_getmetatable(L, Storytime::LuaGLMBinding::vec3_metatable_name.c_str());
         lua_setmetatable(L, -2);
         lua_seti(L, -2, i + 1); // Lua uses 1-based indexing
     }
-    luaL_getmetatable(L, Storytime::LuaGLM::mat3_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::mat3_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -2146,11 +2146,11 @@ void lua_pushmat4(lua_State* L, const glm::mat4& matrix) {
         lua_setfield(L, -2, "z");
         lua_pushnumber(L, matrix[i].w);
         lua_setfield(L, -2, "w");
-        luaL_getmetatable(L, Storytime::LuaGLM::vec4_metatable_name.c_str());
+        luaL_getmetatable(L, Storytime::LuaGLMBinding::vec4_metatable_name.c_str());
         lua_setmetatable(L, -2);
         lua_seti(L, -2, i + 1); // Lua uses 1-based indexing
     }
-    luaL_getmetatable(L, Storytime::LuaGLM::mat4_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::mat4_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }
 
@@ -2186,6 +2186,6 @@ void lua_pushquat(lua_State* L, const glm::quat& quaternion) {
     lua_setfield(L, -2, "z");
     lua_pushnumber(L, quaternion.w);
     lua_setfield(L, -2, "w");
-    luaL_getmetatable(L, Storytime::LuaGLM::quat_metatable_name.c_str());
+    luaL_getmetatable(L, Storytime::LuaGLMBinding::quat_metatable_name.c_str());
     lua_setmetatable(L, -2);
 }

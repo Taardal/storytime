@@ -15,7 +15,7 @@ namespace Storytime {
 
     LuaStacktraceEntry get_stacktrace_entry(lua_State* L);
 
-    class LuaLog {
+    class LuaLogBinding {
     public:
         static const std::string metatable_name;
 

@@ -43,13 +43,13 @@
 
 // Lua
 #include "lua/st_lua_function.h"
-#include "lua/st_lua_glm.h"
-#include "lua/st_lua_keyboard.h"
-#include "lua/st_lua_log.h"
-#include "lua/st_lua_mouse.h"
-#include "lua/st_lua_to_from.h"
+#include "lua/st_lua_glm_binding.h"
+#include "lua/st_lua_keyboard_binding.h"
+#include "lua/st_lua_log_binding.h"
+#include "lua/st_lua_mouse_binding.h"
 #include "lua/st_lua_state.h"
 #include "lua/st_lua_table.h"
+#include "lua/st_lua_to_from.h"
 #include "lua/st_lua_usertype.h"
 
 // Resource

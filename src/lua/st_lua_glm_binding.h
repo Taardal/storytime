@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Storytime {
-    class LuaGLM {
+    class LuaGLMBinding {
     public:
         static const std::string metatable_name;
         static const std::string vec2_metatable_name;

@@ -19,6 +19,12 @@ namespace Storytime {
         luaL_openlibs(L);
     }
 
+    void LuaState::run_files(const std::filesystem::path& directory_path) const {
+        for (const auto& entry : std::filesystem::directory_iterator(directory_path)) {
+            run_file(entry.path());
+        }
+    }
+
     void LuaState::run_file(const std::string& path) const {
         ST_ASSERT(!path.empty(), "Lua file path cannot be empty");
         ST_LOG_TRACE("Running file [{}]", path);

@@ -93,14 +93,14 @@ add_library(
     ${ST_SRC_DIR}/lua/st_lua_error.h
     ${ST_SRC_DIR}/lua/st_lua_function.cpp
     ${ST_SRC_DIR}/lua/st_lua_function.h
-    ${ST_SRC_DIR}/lua/st_lua_glm.cpp
-    ${ST_SRC_DIR}/lua/st_lua_glm.h
-    ${ST_SRC_DIR}/lua/st_lua_keyboard.cpp
-    ${ST_SRC_DIR}/lua/st_lua_keyboard.h
-    ${ST_SRC_DIR}/lua/st_lua_log.cpp
-    ${ST_SRC_DIR}/lua/st_lua_log.h
-    ${ST_SRC_DIR}/lua/st_lua_mouse.cpp
-    ${ST_SRC_DIR}/lua/st_lua_mouse.h
+    ${ST_SRC_DIR}/lua/st_lua_glm_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_glm_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_keyboard_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_keyboard_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_log_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_log_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_mouse_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_mouse_binding.h
     ${ST_SRC_DIR}/lua/st_lua_ref.cpp
     ${ST_SRC_DIR}/lua/st_lua_ref.h
     ${ST_SRC_DIR}/lua/st_lua_to_from.h

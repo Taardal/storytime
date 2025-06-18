@@ -1,6 +1,27 @@
 #include "st_lua_function.h"
 
 namespace Storytime {
+    std::string lua_function_result_to_string(int pcall_result) {
+        switch (pcall_result) {
+            // Success
+            case LUA_OK:
+                return "LUA_OK";
+                // Runtime error
+            case LUA_ERRRUN:
+                return "LUA_ERRRUN";
+                // Memory allocation error (Lua will not call the message handler)
+            case LUA_ERRMEM:
+                return "LUA_ERRMEM";
+                // Error while running the error message handler
+            case LUA_ERRERR:
+                return "LUA_ERRERR";
+            default:
+                return "";
+        }
+    }
+}
+
+namespace Storytime {
     LuaFunction::LuaFunction(lua_State* L) : L(L), name(""), ref(LUA_NOREF) {
     }
 
@@ -45,44 +66,23 @@ namespace Storytime {
     lua_pop(L, lua_gettop(L));
 }
 
-LuaFunction::LuaFunction(lua_State* L, const LuaRef ref) : L(L), name(""), ref(ref) {
-}
+    LuaFunction::LuaFunction(lua_State* L, const LuaRef ref) : L(L), name(""), ref(ref) {}
 
-LuaRef LuaFunction::get_ref() const {
-    return ref;
-}
-
-bool LuaFunction::is_valid() const {
-    i32 type = LUA_TNONE;
-    if (ref != LUA_NOREF) {
-        type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-        lua_pop(L, 1);
-    } else if (name.length() > 0) {
-        type = lua_getglobal(L, name.c_str());
-        lua_pop(L, 1);
-    } else {
-        type = lua_type(L, -1);
+    LuaRef LuaFunction::get_ref() const {
+        return ref;
     }
-    return type == LUA_TFUNCTION;
-}
 
-std::string LuaFunction::get_result_code_name(int pcall_result) {
-    switch (pcall_result) {
-        // Success
-        case LUA_OK:
-            return "LUA_OK";
-        // Runtime error
-        case LUA_ERRRUN:
-            return "LUA_ERRRUN";
-        // Memory allocation error (Lua will not call the message handler)
-        case LUA_ERRMEM:
-            return "LUA_ERRMEM";
-        // Error while running the error message handler
-        case LUA_ERRERR:
-            return "LUA_ERRERR";
-        default:
-            return "";
+    bool LuaFunction::is_valid() const {
+        i32 type = LUA_TNONE;
+        if (ref != LUA_NOREF) {
+            type = lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+            lua_pop(L, 1);
+        } else if (name.length() > 0) {
+            type = lua_getglobal(L, name.c_str());
+            lua_pop(L, 1);
+        } else {
+            type = lua_type(L, -1);
+        }
+        return type == LUA_TFUNCTION;
     }
-}
-
 }

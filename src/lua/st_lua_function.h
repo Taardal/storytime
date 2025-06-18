@@ -1,6 +1,8 @@
 #pragma once
 
 namespace Storytime {
+    std::string lua_function_result_to_string(int result);
+
     class LuaFunction {
     private:
         lua_State* L;
@@ -65,7 +67,7 @@ namespace Storytime {
             // Invoke the Lua function
             int result = lua_pcall(L, argument_count, return_value_count, error_handler_index);
             if (result != LUA_OK) {
-                std::string error_code_name = get_result_code_name(result);
+                std::string error_code_name = lua_function_result_to_string(result);
                 std::string error_message = lua_tostring(L, -1);
                 ST_LOG_ERROR("[{}] {}", error_code_name, error_message);
             }
@@ -75,22 +77,35 @@ namespace Storytime {
         // Use variadic templates to recursively push each argument onto the Lua stack (pushes one argument at a time).
         template<class T, class... Args>
         void push_args(lua_State* L, T& value, Args&&... args) {
-            lua_push<T>(L, value); // Push the first argument
+            if constexpr (std::is_pointer_v<std::decay_t<T>>) {
+                lua_push(L, value); // already a pointer
+            } else {
+                lua_push(L, &value); // pass address
+            }
             push_args(L, args...); // Recursively call push_args with the rest of the arguments
         }
 
         // Base case for the recursion. When there are no arguments left to push, this function does nothing.
         void push_args(lua_State* L) {
         }
-
-        static std::string get_result_code_name(int pcall_result);
     };
+
+//     template<typename T>
+// constexpr bool is_ptr = std::is_pointer_v<std::decay_t<T>>;
+//
+//     template<typename T>
+//     void do_something(T&& value) {
+//         if constexpr (is_ptr<T>) {
+//             // already a pointer
+//         } else {
+//             // take address
+//         }
+//     }
 }
 
 template<>
-inline Storytime::LuaFunction lua_to(lua_State* L, int index) {
+inline void lua_to(lua_State* L, int index, Storytime::LuaFunction* value) {
     ST_ASSERT(lua_isfunction(L, index), "Item at index [" << index << "] on Lua stack must be of type function");
     Storytime::LuaRef ref(L);
-    Storytime::LuaFunction lua_function(L, ref);
-    return lua_function;
+    *value = Storytime::LuaFunction(L, ref);
 }

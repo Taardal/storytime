@@ -3,7 +3,7 @@
 #include "window/st_keyboard.h"
 
 namespace Storytime {
-    class LuaKeyboard {
+    class LuaKeyboardBinding {
     public:
         static const std::string metatable_name;
     private:
@@ -11,7 +11,7 @@ namespace Storytime {
         Keyboard* keyboard = nullptr;
 
     public:
-        LuaKeyboard(lua_State* L, Keyboard* keyboard);
+        LuaKeyboardBinding(lua_State* L, Keyboard* keyboard);
 
         static i32 create_metatable(lua_State* L);
 

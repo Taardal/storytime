@@ -1,4 +1,4 @@
-#include "st_lua_log.h"
+#include "st_lua_log_binding.h"
 
 #define ST_LUA_LOG(log_command, lua_message)\
     LuaStacktraceEntry stacktrace_entry = get_stacktrace_entry(L);\
@@ -81,9 +81,9 @@ namespace Storytime {
         return stacktrace[1];
     }
 
-    const std::string LuaLog::metatable_name = "Log";
+    const std::string LuaLogBinding::metatable_name = "LuaLogBinding";
 
-    i32 LuaLog::create_metatable(lua_State* L) {
+    i32 LuaLogBinding::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
 
         lua_newtable(L);
@@ -105,7 +105,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaLog::create(lua_State* L) {
+    i32 LuaLogBinding::create(lua_State* L) {
         lua_newtable(L);
 
         luaL_getmetatable(L, metatable_name.c_str());

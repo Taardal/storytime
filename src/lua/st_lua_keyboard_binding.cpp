@@ -1,12 +1,12 @@
-#include "st_lua_keyboard.h"
+#include "st_lua_keyboard_binding.h"
 
 namespace Storytime {
-    const std::string LuaKeyboard::metatable_name = "Keyboard";
+    const std::string LuaKeyboardBinding::metatable_name = "LuaKeyboardBinding";
 
-    LuaKeyboard::LuaKeyboard(lua_State* L, Keyboard* keyboard) : L(L), keyboard(keyboard) {
+    LuaKeyboardBinding::LuaKeyboardBinding(lua_State* L, Keyboard* keyboard) : L(L), keyboard(keyboard) {
     }
 
-    i32 LuaKeyboard::create_metatable(lua_State* L) {
+    i32 LuaKeyboardBinding::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
 
         lua_pushstring(L, "__index");
@@ -16,9 +16,9 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaKeyboard::create(lua_State* L, Keyboard* keyboard) {
-        void* userdata = lua_newuserdata(L, sizeof(LuaKeyboard));
-        new (userdata) LuaKeyboard(L, keyboard);
+    i32 LuaKeyboardBinding::create(lua_State* L, Keyboard* keyboard) {
+        void* userdata = lua_newuserdata(L, sizeof(LuaKeyboardBinding));
+        new (userdata) LuaKeyboardBinding(L, keyboard);
 
         luaL_getmetatable(L, metatable_name.c_str());
         ST_ASSERT(!lua_isnil(L, -1), "Metatable [" << metatable_name.c_str() << "] cannot be null");
@@ -27,11 +27,11 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaKeyboard::index(lua_State* L) {
+    i32 LuaKeyboardBinding::index(lua_State* L) {
         ST_ASSERT(lua_isstring(L, -1), "Index name must be at top of stack");
         std::string index_name = lua_tostring(L, -1);
         if (index_name == "is_pressed") {
-            lua_pushcfunction(L, LuaKeyboard::is_pressed);
+            lua_pushcfunction(L, LuaKeyboardBinding::is_pressed);
             return 1;
         }
         KeyCode key_code = Key::from_name(index_name);
@@ -43,11 +43,11 @@ namespace Storytime {
         return 0;
     }
 
-    i32 LuaKeyboard::is_pressed(lua_State* L) {
+    i32 LuaKeyboardBinding::is_pressed(lua_State* L) {
         i32 parameter_type = lua_type(L, -1);
         ST_ASSERT(parameter_type == LUA_TSTRING || parameter_type == LUA_TNUMBER, "Key parameter must be either string or number");
 
-        auto userdata = static_cast<LuaKeyboard*>(lua_touserdata(L, -2));
+        auto userdata = static_cast<LuaKeyboardBinding*>(lua_touserdata(L, -2));
         ST_ASSERT(userdata != nullptr, "Userdata cannot be null");
 
         bool pressed;
