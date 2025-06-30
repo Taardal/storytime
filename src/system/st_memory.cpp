@@ -64,7 +64,7 @@ namespace Storytime {
         ST_ASSERT(allocations != nullptr, "Allocations map has already been terminated or was never initialized");
         if (!allocations->empty()) {
             std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
-            std::cerr << "[Storytime] Memory leaks" << std::endl;
+            std::cerr << "[Storytime] Unfreed memory" << std::endl;
             std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
             for (auto& [pointer, allocation] : *allocations) {
                 std::string allocation_string = allocation.to_string();

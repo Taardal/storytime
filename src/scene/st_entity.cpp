@@ -6,6 +6,10 @@ namespace Storytime {
         ST_ASSERT_VALID_ENTITY();
     }
 
+    entt::entity Entity::raw() const {
+        return entity;
+    }
+
     Entity::operator entt::entity() const {
         return entity;
     }

@@ -23,6 +23,8 @@ namespace Storytime {
 
         Entity(entt::entity entity, entt::registry* entity_registry);
 
+        entt::entity raw() const;
+
         operator entt::entity() const;
 
         operator u32() const;
