@@ -46,4 +46,8 @@ compile_commands.json
 # macOS
 .DS_Store
 
+# Lua
+lua/lib
+lua/share
+
 
