@@ -1,6 +1,6 @@
 ---Define a Lua class.
 ---
----A a Lua class emulates object-oriented programming and enables inheritance hierarchies.
+---A Lua class emulates object-oriented programming and enables inheritance hierarchies.
 ---It also provides the ability for Lua "classes" to extend C++ classes.
 ---
 ---This function is an implementation of the function described in the book "Game Coding Complete: Fourth Edition":
