@@ -47,10 +47,16 @@
 #include "lua/st_lua_keyboard_binding.h"
 #include "lua/st_lua_log_binding.h"
 #include "lua/st_lua_mouse_binding.h"
+#include "lua/st_lua_process_binding.h"
+#include "lua/st_lua_process_manager_binding.h"
 #include "lua/st_lua_state.h"
 #include "lua/st_lua_table.h"
 #include "lua/st_lua_to_from.h"
 #include "lua/st_lua_usertype.h"
+
+// Process
+#include "process/st_process.h"
+#include "process/st_process_manager.h"
 
 // Resource
 #include "resource/st_resource_loader.h"

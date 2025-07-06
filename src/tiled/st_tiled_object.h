@@ -13,6 +13,7 @@ namespace Storytime {
         std::vector<glm::vec2> polygons;
         std::vector<TiledProperty> properties;
         float rotation;
+        std::string template_path;
         std::string type;
         bool visible;
         int width;

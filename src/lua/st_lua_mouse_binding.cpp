@@ -29,19 +29,31 @@ namespace Storytime {
         return 1;
     }
 
+    int LuaMouseBinding::destroy(lua_State* L) {
+        ST_ASSERT(lua_type(L, -1) == LUA_TUSERDATA, "Binding must be at expected stack location");
+
+        auto binding = static_cast<LuaMouseBinding*>(lua_touserdata(L, -1));
+        ST_ASSERT(binding != nullptr, "Binding cannot be null");
+
+        binding->~LuaMouseBinding();
+        return 0;
+    }
+
     int LuaMouseBinding::index(lua_State* L) {
         ST_ASSERT(lua_isstring(L, -1), "Index name must be at top of stack");
-        std::string index_name = lua_tostring(L, -1);
-        if (index_name == "is_pressed") {
+
+        const char* key = lua_tostring(L, -1);
+        if (strcmp(key, "is_pressed") == 0) {
             lua_pushcfunction(L, LuaMouseBinding::is_pressed);
             return 1;
         }
-        MouseButtonCode button_code = MouseButton::from_name(index_name);
+
+        MouseButtonCode button_code = MouseButton::from_name(key);
         if (button_code != MouseButton::NONE) {
             lua_pushnumber(L, button_code);
             return 1;
         }
-        ST_LOG_WARNING("Could not resolve index [{}]", index_name);
+
         return 0;
     }
 

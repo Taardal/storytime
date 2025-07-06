@@ -27,19 +27,31 @@ namespace Storytime {
         return 1;
     }
 
+    i32 LuaKeyboardBinding::destroy(lua_State* L) {
+        ST_ASSERT(lua_type(L, -1) == LUA_TUSERDATA, "Binding must be at expected stack location");
+
+        auto binding = static_cast<LuaKeyboardBinding*>(lua_touserdata(L, -1));
+        ST_ASSERT(binding != nullptr, "Binding cannot be null");
+
+        binding->~LuaKeyboardBinding();
+        return 0;
+    }
+
     i32 LuaKeyboardBinding::index(lua_State* L) {
         ST_ASSERT(lua_isstring(L, -1), "Index name must be at top of stack");
-        std::string index_name = lua_tostring(L, -1);
-        if (index_name == "is_pressed") {
+
+        const char* key = lua_tostring(L, -1);
+        if (strcmp(key, "is_pressed") == 0) {
             lua_pushcfunction(L, LuaKeyboardBinding::is_pressed);
             return 1;
         }
-        KeyCode key_code = Key::from_name(index_name);
+
+        KeyCode key_code = Key::from_name(key);
         if (key_code != Key::NONE) {
             lua_pushnumber(L, key_code);
             return 1;
         }
-        ST_LOG_WARNING("Could not resolve index [{}]", index_name);
+
         return 0;
     }
 

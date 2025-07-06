@@ -8,8 +8,7 @@
 #include "system/st_file_reader.h"
 #include "tiled/st_tiled_map.h"
 #include "tiled/st_tiled_project.h"
-
-#include <memory>
+#include "tiled/st_tiled_template.h"
 
 #define ST_RES_PATH(relative_path) std::filesystem::path(ST_RES_DIR) / std::filesystem::path(relative_path)
 
@@ -39,6 +38,8 @@ namespace Storytime {
         Shared<TiledMap> load_tiled_map(const std::filesystem::path& path) const;
 
         Shared<TiledTileset> load_tiled_tileset(const std::filesystem::path& path) const;
+
+        Shared<TiledObjectTemplate> load_tiled_object_template(const std::filesystem::path& path) const;
 
     private:
         Image load_image(const std::filesystem::path& path) const;

@@ -16,6 +16,14 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE Debug)
 endif ()
 
+if ("${ST_OUTPUT_DIR}" STREQUAL "")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL Debug)
+        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/debug)
+    else ()
+        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/release)
+    endif ()
+endif ()
+
 add_library(
     ${ST_TARGET}
     ${ST_SRC_DIR}/st_run.cpp
@@ -101,6 +109,10 @@ add_library(
     ${ST_SRC_DIR}/lua/st_lua_log_binding.h
     ${ST_SRC_DIR}/lua/st_lua_mouse_binding.cpp
     ${ST_SRC_DIR}/lua/st_lua_mouse_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_process_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_process_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_process_manager_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_process_manager_binding.h
     ${ST_SRC_DIR}/lua/st_lua_ref.cpp
     ${ST_SRC_DIR}/lua/st_lua_ref.h
     ${ST_SRC_DIR}/lua/st_lua_to_from.h
@@ -112,6 +124,10 @@ add_library(
     ${ST_SRC_DIR}/lua/st_lua_usertype.h
     ${ST_SRC_DIR}/lua/st_lua_utils.cpp
     ${ST_SRC_DIR}/lua/st_lua_utils.h
+    ${ST_SRC_DIR}/process/st_process.cpp
+    ${ST_SRC_DIR}/process/st_process.h
+    ${ST_SRC_DIR}/process/st_process_manager.cpp
+    ${ST_SRC_DIR}/process/st_process_manager.h
     ${ST_SRC_DIR}/scene/st_entity.cpp
     ${ST_SRC_DIR}/scene/st_entity.h
     ${ST_SRC_DIR}/scene/st_scene.cpp
@@ -213,27 +229,39 @@ target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
 
-if ("${ST_OUTPUT_DIR}" STREQUAL "")
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL Debug)
-        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/debug)
-    else ()
-        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/release)
-    endif ()
-endif ()
-set(ST_RESOURCES_OUTPUT_DIR ${ST_OUTPUT_DIR}/res)
-set(ST_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-add_custom_target(
-    ST_COPY_RESOURCES_TARGET
-    COMMENT "Copying resources"
-    COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy_resources.cmake
-)
-add_dependencies(${ST_TARGET} ST_COPY_RESOURCES_TARGET)
+#
+# Copy resource files to runtime directory
+#
 
-# --------------------------------------------------------------------------------------------------------------
-# Preprocessor macros
-# --------------------------------------------------------------------------------------------------------------
+set(ST_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+set(ST_RESOURCES_OUTPUT_DIR ${ST_OUTPUT_DIR}/res)
+
+set(ST_COPY_RESOURCES_TARGET st_copy_resources)
+add_custom_target(
+    ${ST_COPY_RESOURCES_TARGET}
+    COMMENT "Copying resources"
+    COMMAND ${CMAKE_COMMAND} -D SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy.cmake
+)
+add_dependencies(${ST_TARGET} ${ST_COPY_RESOURCES_TARGET})
 
 target_compile_definitions(${ST_TARGET} PUBLIC ST_RES_DIR="${ST_RESOURCES_OUTPUT_DIR}")
+
+#
+# Compile Lua files to runtime directory
+#
+
+set(ST_LUA_SOURCE_DIR ${PROJECT_SOURCE_DIR}/lua)
+set(ST_LUA_OUTPUT_DIR ${ST_OUTPUT_DIR}/lua)
+
+set(ST_COMPILE_LUA_TARGET st_compile_lua)
+add_custom_target(
+    ${ST_COMPILE_LUA_TARGET}
+    COMMAND ${CMAKE_COMMAND} -D LUA_SOURCE_DIR=${ST_LUA_SOURCE_DIR} -D LUA_OUTPUT_DIR=${ST_LUA_OUTPUT_DIR} -P ${CMAKE_DIR}/compile_lua.cmake
+    COMMENT "Compiling Lua"
+)
+add_dependencies(${ST_TARGET} ${ST_COMPILE_LUA_TARGET})
+
+target_compile_definitions(${ST_TARGET} PUBLIC ST_LUA_DIR="${ST_LUA_OUTPUT_DIR}")
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies

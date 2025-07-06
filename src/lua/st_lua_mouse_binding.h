@@ -19,6 +19,8 @@ namespace Storytime {
         static i32 create(lua_State* L, Mouse* mouse);
 
     private:
+        static int destroy(lua_State* L);
+
         static int index(lua_State* L);
 
         static int is_pressed(lua_State* L);

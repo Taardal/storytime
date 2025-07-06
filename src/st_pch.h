@@ -8,6 +8,8 @@
 #include <array>
 #include <filesystem>
 #include <iostream>
+#include <list>
+#include <memory>
 #include <map>
 #include <set>
 #include <sstream>

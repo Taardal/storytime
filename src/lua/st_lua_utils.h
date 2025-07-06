@@ -8,7 +8,7 @@
             i32 type = lua_type(L, index);\
             ST_ASSERT(\
                 type == expected_type,\
-                "Expected item on Lua stack index [" << index << "] to be of type [" << lua_typename(L, expected_type) << "], was [" << lua_typename(L, type) << "]";\
+                "Expected item on Lua stack index [" << index << "] to be of type [" << lua_typename(L, expected_type) << " (" << expected_type << ")], was [" << lua_typename(L, type) << " (" << type << ")]"\
             );\
         }
 #else

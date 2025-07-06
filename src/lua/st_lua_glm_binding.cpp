@@ -502,7 +502,6 @@ namespace Storytime {
             lua_pushcfunction(L, vec4);
             return 1;
         }
-        ST_LOG_WARNING("Could not resolve index [{}]", key);
         return 0;
     }
 
