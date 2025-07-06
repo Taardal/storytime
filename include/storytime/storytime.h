@@ -65,6 +65,14 @@
 #include "scene/st_entity.h"
 #include "scene/st_scene.h"
 
+// Shapes
+#include "shapes/st_ellipse.h"
+#include "shapes/st_intersect.h"
+#include "shapes/st_point.h"
+#include "shapes/st_polygon.h"
+#include "shapes/st_rectangle.h"
+#include "shapes/st_shape.h"
+
 // System
 #include "system/st_binary_to_from.h"
 #include "system/st_defer.h"

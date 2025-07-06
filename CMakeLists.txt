@@ -132,6 +132,18 @@ add_library(
     ${ST_SRC_DIR}/scene/st_entity.h
     ${ST_SRC_DIR}/scene/st_scene.cpp
     ${ST_SRC_DIR}/scene/st_scene.h
+    ${ST_SRC_DIR}/shapes/st_ellipse.cpp
+    ${ST_SRC_DIR}/shapes/st_ellipse.h
+    ${ST_SRC_DIR}/shapes/st_intersect.cpp
+    ${ST_SRC_DIR}/shapes/st_intersect.h
+    ${ST_SRC_DIR}/shapes/st_point.cpp
+    ${ST_SRC_DIR}/shapes/st_point.h
+    ${ST_SRC_DIR}/shapes/st_polygon.cpp
+    ${ST_SRC_DIR}/shapes/st_polygon.h
+    ${ST_SRC_DIR}/shapes/st_rectangle.cpp
+    ${ST_SRC_DIR}/shapes/st_rectangle.h
+    ${ST_SRC_DIR}/shapes/st_shape.cpp
+    ${ST_SRC_DIR}/shapes/st_shape.h
     ${ST_SRC_DIR}/system/st_assert.h
     ${ST_SRC_DIR}/system/st_binary_to_from.h
     ${ST_SRC_DIR}/system/st_clock.cpp
