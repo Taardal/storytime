@@ -33,16 +33,16 @@ namespace Storytime {
         return glfwGetKey(*config.window, key_code) == GLFW_PRESS;
     }
 
-    void Keyboard::on_pressed(const OnPressedFn& on_pressed) {
-        on_pressed_fns.emplace_back(on_pressed);
+    void Keyboard::on_pressed(const OnPressedSubscription& subscription) {
+        on_pressed_subscriptions.emplace_back(subscription);
     }
 
-    void Keyboard::on_released(const OnReleasedFn& on_released) {
-        on_released_fns.emplace_back(on_released);
+    void Keyboard::on_released(const OnReleasedSubscription& subscription) {
+        on_released_subscriptions.emplace_back(subscription);
     }
 
-    void Keyboard::on_repeated(const OnRepeatedFn& on_repeated) {
-        on_repeated_fns.emplace_back(on_repeated);
+    void Keyboard::on_repeated(const OnRepeatedSubscription& subscription) {
+        on_repeated_subscriptions.emplace_back(subscription);
     }
 
     void Keyboard::initialize() {
@@ -52,8 +52,8 @@ namespace Storytime {
                     return;
                 }
                 auto& event = (KeyPressedEvent&) e;
-                for (auto on_pressed : on_pressed_fns) {
-                    on_pressed(event);
+                for (auto subscription : on_pressed_subscriptions) {
+                    subscription(event);
                 }
             })
         );
@@ -63,8 +63,8 @@ namespace Storytime {
                     return;
                 }
                 auto& event = (KeyReleasedEvent&) e;
-                for (auto on_released : on_released_fns) {
-                    on_released(event);
+                for (auto subscription : on_released_subscriptions) {
+                    subscription(event);
                 }
             })
         );
@@ -74,17 +74,17 @@ namespace Storytime {
                     return;
                 }
                 auto& event = (KeyRepeatedEvent&) e;
-                for (auto on_repeated : on_repeated_fns) {
-                    on_repeated(event);
+                for (auto subscription : on_repeated_subscriptions) {
+                    subscription(event);
                 }
             })
         );
     }
 
     void Keyboard::terminate() {
-        on_repeated_fns.clear();
-        on_released_fns.clear();
-        on_pressed_fns.clear();
+        on_repeated_subscriptions.clear();
+        on_released_subscriptions.clear();
+        on_pressed_subscriptions.clear();
         config.event_manager->unsubscribe_and_clear(event_subscriptions);
     }
 }

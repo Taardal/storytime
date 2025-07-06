@@ -5,9 +5,9 @@
 #include "window/st_window.h"
 
 namespace Storytime {
-    typedef std::function<void(const KeyPressedEvent&)> OnPressedFn;
-    typedef std::function<void(const KeyReleasedEvent&)> OnReleasedFn;
-    typedef std::function<void(const KeyRepeatedEvent&)> OnRepeatedFn;
+    typedef std::function<void(const KeyPressedEvent&)> OnPressedSubscription;
+    typedef std::function<void(const KeyReleasedEvent&)> OnReleasedSubscription;
+    typedef std::function<void(const KeyRepeatedEvent&)> OnRepeatedSubscription;
 
     struct KeyboardConfig {
         Window* window = nullptr;
@@ -18,9 +18,9 @@ namespace Storytime {
     private:
         KeyboardConfig config;
         std::vector<SubscriptionID> event_subscriptions;
-        std::vector<OnPressedFn> on_pressed_fns;
-        std::vector<OnReleasedFn> on_released_fns;
-        std::vector<OnRepeatedFn> on_repeated_fns;
+        std::vector<OnPressedSubscription> on_pressed_subscriptions;
+        std::vector<OnReleasedSubscription> on_released_subscriptions;
+        std::vector<OnRepeatedSubscription> on_repeated_subscriptions;
         bool enabled = true;
 
     public:
@@ -36,11 +36,11 @@ namespace Storytime {
 
         bool is_pressed(KeyCode key_code) const;
 
-        void on_pressed(const OnPressedFn& on_pressed);
+        void on_pressed(const OnPressedSubscription& subscription);
 
-        void on_released(const OnReleasedFn& on_released);
+        void on_released(const OnReleasedSubscription& subscription);
 
-        void on_repeated(const OnRepeatedFn& on_repeated);
+        void on_repeated(const OnRepeatedSubscription& subscription);
 
     private:
         void initialize();

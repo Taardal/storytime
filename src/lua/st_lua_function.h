@@ -22,12 +22,11 @@ namespace Storytime {
 
         bool is_valid() const;
 
-        //
-        // Overload the function call operator to allow LuaFunction objects to be invoked using ():
-        //
+        // Overload the function call operator to allow LuaFunction objects to be invoked using the `()` operator:
+        // ```
         // LuaFunction lua_main(L, "main");
         // lua_main();
-        //
+        // ```
         template<class... Args>
         void operator()(Args&&... args) {
             invoke(std::forward<Args>(args)...);
@@ -77,30 +76,29 @@ namespace Storytime {
         // Use variadic templates to recursively push each argument onto the Lua stack (pushes one argument at a time).
         template<class T, class... Args>
         void push_args(lua_State* L, T& value, Args&&... args) {
+
+            // At compile time, check whether T is a pointer type (like int*, const Foo*, etc.).
+            // - [std::is_pointer_v<T>] Returns true if T is a pointer type (int*, MyType*, etc.)
+            // - [std::decay_t<T>] Normalize the type by...
+            //      - Removing reference types (T&, T&&),
+            //      - Removing const and volatile,
+            //      - Converting array types to pointers
+            //      - Converting function types to function pointers
+            //
             if constexpr (std::is_pointer_v<std::decay_t<T>>) {
-                lua_push(L, value); // already a pointer
+                lua_push(L, value);
             } else {
-                lua_push(L, &value); // pass address
+                lua_push(L, &value);
             }
-            push_args(L, args...); // Recursively call push_args with the rest of the arguments
+
+            // Recursively call push_args with the rest of the arguments
+            push_args(L, args...);
         }
 
         // Base case for the recursion. When there are no arguments left to push, this function does nothing.
         void push_args(lua_State* L) {
         }
     };
-
-//     template<typename T>
-// constexpr bool is_ptr = std::is_pointer_v<std::decay_t<T>>;
-//
-//     template<typename T>
-//     void do_something(T&& value) {
-//         if constexpr (is_ptr<T>) {
-//             // already a pointer
-//         } else {
-//             // take address
-//         }
-//     }
 }
 
 template<>
