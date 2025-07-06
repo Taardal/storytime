@@ -11,13 +11,4 @@ namespace Storytime {
 
         static TiledObjectTemplate create(const std::string& json);
     };
-
-    struct TiledObjectTemplateRef {
-        int id;
-        std::string template_path;
-        int x;
-        int y;
-
-        static TiledObjectTemplateRef create(const std::string& json);
-    };
 }

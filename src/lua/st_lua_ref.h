@@ -30,11 +30,6 @@ namespace Storytime {
 }
 
 template<>
-inline void to_lua(lua_State* L, Storytime::LuaRef value) {
-    value.push(L);
-}
-
-template<>
-inline void to_lua(lua_State* L, Storytime::LuaRef& value) {
-    value.push(L);
+inline void lua_push(lua_State* L, Storytime::LuaRef* value) {
+    value->push(L);
 }

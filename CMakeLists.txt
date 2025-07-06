@@ -12,6 +12,18 @@ set(ST_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(ST_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(ST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE Debug)
+endif ()
+
+if ("${ST_OUTPUT_DIR}" STREQUAL "")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL Debug)
+        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/debug)
+    else ()
+        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/release)
+    endif ()
+endif ()
+
 add_library(
     ${ST_TARGET}
     ${ST_SRC_DIR}/st_run.cpp
@@ -20,119 +32,147 @@ add_library(
     ${ST_SRC_DIR}/audio/st_audio.h
     ${ST_SRC_DIR}/audio/st_audio_engine.cpp
     ${ST_SRC_DIR}/audio/st_audio_engine.h
-    ${ST_SRC_DIR}/graphics/st_animation.h
+    ${ST_SRC_DIR}/event/st_event.cpp
+    ${ST_SRC_DIR}/event/st_event.h
+    ${ST_SRC_DIR}/event/st_event_handler.cpp
+    ${ST_SRC_DIR}/event/st_event_handler.h
+    ${ST_SRC_DIR}/event/st_event_manager.cpp
+    ${ST_SRC_DIR}/event/st_event_manager.h
+    ${ST_SRC_DIR}/event/st_events.h
+    ${ST_SRC_DIR}/event/st_key_pressed_event.cpp
+    ${ST_SRC_DIR}/event/st_key_pressed_event.h
+    ${ST_SRC_DIR}/event/st_key_released_event.cpp
+    ${ST_SRC_DIR}/event/st_key_released_event.h
+    ${ST_SRC_DIR}/event/st_key_repeated_event.cpp
+    ${ST_SRC_DIR}/event/st_key_repeated_event.h
+    ${ST_SRC_DIR}/event/st_key_typed_event.cpp
+    ${ST_SRC_DIR}/event/st_key_typed_event.h
+    ${ST_SRC_DIR}/event/st_mouse_button_pressed_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_button_pressed_event.h
+    ${ST_SRC_DIR}/event/st_mouse_button_released_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_button_released_event.h
+    ${ST_SRC_DIR}/event/st_mouse_moved_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_moved_event.h
+    ${ST_SRC_DIR}/event/st_mouse_scroll_event.cpp
+    ${ST_SRC_DIR}/event/st_mouse_scroll_event.h
+    ${ST_SRC_DIR}/event/st_window_closed_event.cpp
+    ${ST_SRC_DIR}/event/st_window_closed_event.h
+    ${ST_SRC_DIR}/event/st_window_minimized_event.cpp
+    ${ST_SRC_DIR}/event/st_window_minimized_event.h
+    ${ST_SRC_DIR}/event/st_window_resized_event.cpp
+    ${ST_SRC_DIR}/event/st_window_resized_event.h
     ${ST_SRC_DIR}/graphics/st_animation.cpp
-    ${ST_SRC_DIR}/graphics/st_bitmap_font.h
+    ${ST_SRC_DIR}/graphics/st_animation.h
     ${ST_SRC_DIR}/graphics/st_bitmap_font.cpp
-    ${ST_SRC_DIR}/graphics/st_camera.h
+    ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
-    ${ST_SRC_DIR}/graphics/st_framebuffer.h
+    ${ST_SRC_DIR}/graphics/st_camera.h
     ${ST_SRC_DIR}/graphics/st_framebuffer.cpp
-    ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
+    ${ST_SRC_DIR}/graphics/st_framebuffer.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
-    ${ST_SRC_DIR}/graphics/st_imgui_window_event.h
-    ${ST_SRC_DIR}/graphics/st_imgui_window_event.cpp
-    ${ST_SRC_DIR}/graphics/st_index_buffer.h
+    ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
     ${ST_SRC_DIR}/graphics/st_index_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_open_gl.h
+    ${ST_SRC_DIR}/graphics/st_index_buffer.h
     ${ST_SRC_DIR}/graphics/st_open_gl.cpp
-    ${ST_SRC_DIR}/graphics/st_renderer.h
+    ${ST_SRC_DIR}/graphics/st_open_gl.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
-    ${ST_SRC_DIR}/graphics/st_shader.h
+    ${ST_SRC_DIR}/graphics/st_renderer.h
     ${ST_SRC_DIR}/graphics/st_shader.cpp
-    ${ST_SRC_DIR}/graphics/st_sprite.h
+    ${ST_SRC_DIR}/graphics/st_shader.h
     ${ST_SRC_DIR}/graphics/st_sprite.cpp
-    ${ST_SRC_DIR}/graphics/st_spritesheet.h
+    ${ST_SRC_DIR}/graphics/st_sprite.h
     ${ST_SRC_DIR}/graphics/st_spritesheet.cpp
-    ${ST_SRC_DIR}/graphics/st_texture.h
+    ${ST_SRC_DIR}/graphics/st_spritesheet.h
     ${ST_SRC_DIR}/graphics/st_texture.cpp
-    ${ST_SRC_DIR}/graphics/st_texture_coordinate.h
+    ${ST_SRC_DIR}/graphics/st_texture.h
     ${ST_SRC_DIR}/graphics/st_texture_coordinate.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_array.h
+    ${ST_SRC_DIR}/graphics/st_texture_coordinate.h
     ${ST_SRC_DIR}/graphics/st_vertex_array.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_attribute.h
+    ${ST_SRC_DIR}/graphics/st_vertex_array.h
     ${ST_SRC_DIR}/graphics/st_vertex_attribute.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vertex_attribute.h
     ${ST_SRC_DIR}/graphics/st_vertex_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_view_projection.h
+    ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
-    ${ST_SRC_DIR}/resource/st_resource_loader.h
+    ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
-    ${ST_SRC_DIR}/lua/st_lua_error.h
+    ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
-    ${ST_SRC_DIR}/lua/st_lua_function.h
+    ${ST_SRC_DIR}/lua/st_lua_error.h
     ${ST_SRC_DIR}/lua/st_lua_function.cpp
-    ${ST_SRC_DIR}/lua/st_lua_glm.cpp
-    ${ST_SRC_DIR}/lua/st_lua_glm.h
-    ${ST_SRC_DIR}/lua/st_lua_keyboard.cpp
-    ${ST_SRC_DIR}/lua/st_lua_keyboard.h
-    ${ST_SRC_DIR}/lua/st_lua_log.h
-    ${ST_SRC_DIR}/lua/st_lua_log.cpp
-    ${ST_SRC_DIR}/lua/st_lua_mouse.cpp
-    ${ST_SRC_DIR}/lua/st_lua_mouse.h
-    ${ST_SRC_DIR}/lua/st_lua_ref.h
+    ${ST_SRC_DIR}/lua/st_lua_function.h
+    ${ST_SRC_DIR}/lua/st_lua_glm_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_glm_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_keyboard_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_keyboard_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_log_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_log_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_mouse_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_mouse_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_process_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_process_binding.h
+    ${ST_SRC_DIR}/lua/st_lua_process_manager_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_process_manager_binding.h
     ${ST_SRC_DIR}/lua/st_lua_ref.cpp
+    ${ST_SRC_DIR}/lua/st_lua_ref.h
     ${ST_SRC_DIR}/lua/st_lua_to_from.h
-    ${ST_SRC_DIR}/lua/st_lua_state.h
     ${ST_SRC_DIR}/lua/st_lua_state.cpp
     ${ST_SRC_DIR}/lua/st_lua_state.h
-    ${ST_SRC_DIR}/lua/st_lua_state.cpp
-    ${ST_SRC_DIR}/lua/st_lua_table.h
     ${ST_SRC_DIR}/lua/st_lua_table.cpp
-    ${ST_SRC_DIR}/lua/st_lua_usertype.h
+    ${ST_SRC_DIR}/lua/st_lua_table.h
     ${ST_SRC_DIR}/lua/st_lua_usertype.cpp
-    ${ST_SRC_DIR}/lua/st_lua_utils.h
+    ${ST_SRC_DIR}/lua/st_lua_usertype.h
     ${ST_SRC_DIR}/lua/st_lua_utils.cpp
+    ${ST_SRC_DIR}/lua/st_lua_utils.h
+    ${ST_SRC_DIR}/process/st_process.cpp
+    ${ST_SRC_DIR}/process/st_process.h
+    ${ST_SRC_DIR}/process/st_process_manager.cpp
+    ${ST_SRC_DIR}/process/st_process_manager.h
     ${ST_SRC_DIR}/scene/st_entity.cpp
     ${ST_SRC_DIR}/scene/st_entity.h
-    ${ST_SRC_DIR}/scene/st_entity.h
-    ${ST_SRC_DIR}/scene/st_entity.cpp
     ${ST_SRC_DIR}/scene/st_scene.cpp
     ${ST_SRC_DIR}/scene/st_scene.h
     ${ST_SRC_DIR}/system/st_assert.h
     ${ST_SRC_DIR}/system/st_binary_to_from.h
-    ${ST_SRC_DIR}/system/st_clock.h
     ${ST_SRC_DIR}/system/st_clock.cpp
+    ${ST_SRC_DIR}/system/st_clock.h
     ${ST_SRC_DIR}/system/st_command_line_arguments.cpp
     ${ST_SRC_DIR}/system/st_command_line_arguments.h
     ${ST_SRC_DIR}/system/st_defer.h
     ${ST_SRC_DIR}/system/st_environment.h
-    ${ST_SRC_DIR}/system/st_error.h
     ${ST_SRC_DIR}/system/st_error.cpp
-    ${ST_SRC_DIR}/system/st_error_signal.h
+    ${ST_SRC_DIR}/system/st_error.h
     ${ST_SRC_DIR}/system/st_error_signal.cpp
-    ${ST_SRC_DIR}/system/st_event.h
-    ${ST_SRC_DIR}/system/st_event.cpp
-    ${ST_SRC_DIR}/system/st_event_manager.h
-    ${ST_SRC_DIR}/system/st_event_manager.cpp
-    ${ST_SRC_DIR}/system/st_file_reader.h
+    ${ST_SRC_DIR}/system/st_error_signal.h
     ${ST_SRC_DIR}/system/st_file_reader.cpp
+    ${ST_SRC_DIR}/system/st_file_reader.h
     ${ST_SRC_DIR}/system/st_game_loop_metrics.h
     ${ST_SRC_DIR}/system/st_json_to_from.h
-    ${ST_SRC_DIR}/system/st_log.h
     ${ST_SRC_DIR}/system/st_log.cpp
-    ${ST_SRC_DIR}/system/st_memory.h
+    ${ST_SRC_DIR}/system/st_log.h
     ${ST_SRC_DIR}/system/st_memory.cpp
-    ${ST_SRC_DIR}/system/st_memory_allocator.h
+    ${ST_SRC_DIR}/system/st_memory.h
     ${ST_SRC_DIR}/system/st_memory_allocator.cpp
+    ${ST_SRC_DIR}/system/st_memory_allocator.h
     ${ST_SRC_DIR}/system/st_msgpack_filesystem_adaptor.h
     ${ST_SRC_DIR}/system/st_msgpack_glm_adaptor.h
     ${ST_SRC_DIR}/system/st_msgpack_utils.cpp
     ${ST_SRC_DIR}/system/st_msgpack_utils.h
     ${ST_SRC_DIR}/system/st_pointers.h
-    ${ST_SRC_DIR}/system/st_random.h
     ${ST_SRC_DIR}/system/st_random.cpp
-    ${ST_SRC_DIR}/system/st_size.h
+    ${ST_SRC_DIR}/system/st_random.h
     ${ST_SRC_DIR}/system/st_size.cpp
-    ${ST_SRC_DIR}/system/st_utils.h
+    ${ST_SRC_DIR}/system/st_size.h
     ${ST_SRC_DIR}/system/st_utils.cpp
-    ${ST_SRC_DIR}/system/st_uuid.h
+    ${ST_SRC_DIR}/system/st_utils.h
     ${ST_SRC_DIR}/system/st_uuid.cpp
+    ${ST_SRC_DIR}/system/st_uuid.h
     ${ST_SRC_DIR}/system/st_variant.h
     ${ST_SRC_DIR}/tiled/st_tiled_class.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_class.h
     ${ST_SRC_DIR}/tiled/st_tiled_enum.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_enum.h
+    ${ST_SRC_DIR}/tiled/st_tiled_id.h
     ${ST_SRC_DIR}/tiled/st_tiled_layer.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_layer.h
     ${ST_SRC_DIR}/tiled/st_tiled_map.cpp
@@ -149,20 +189,17 @@ add_library(
     ${ST_SRC_DIR}/tiled/st_tiled_tile.h
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.h
+    ${ST_SRC_DIR}/tiled/st_tiled_transformation_flags.h
     ${ST_SRC_DIR}/window/st_key.cpp
     ${ST_SRC_DIR}/window/st_key.h
-    ${ST_SRC_DIR}/window/st_key_event.h
-    ${ST_SRC_DIR}/window/st_key_event.cpp
-    ${ST_SRC_DIR}/window/st_mouse_button.h
+    ${ST_SRC_DIR}/window/st_keyboard.cpp
+    ${ST_SRC_DIR}/window/st_keyboard.h
+    ${ST_SRC_DIR}/window/st_mouse.cpp
+    ${ST_SRC_DIR}/window/st_mouse.h
     ${ST_SRC_DIR}/window/st_mouse_button.cpp
-    ${ST_SRC_DIR}/window/st_mouse_event.h
-    ${ST_SRC_DIR}/window/st_mouse_event.cpp
-    ${ST_SRC_DIR}/window/st_user_input.h
-    ${ST_SRC_DIR}/window/st_user_input.cpp
-    ${ST_SRC_DIR}/window/st_window.h
+    ${ST_SRC_DIR}/window/st_mouse_button.h
     ${ST_SRC_DIR}/window/st_window.cpp
-    ${ST_SRC_DIR}/window/st_window_event.h
-    ${ST_SRC_DIR}/window/st_window_event.cpp
+    ${ST_SRC_DIR}/window/st_window.h
 )
 
 set_target_properties(
@@ -185,33 +222,46 @@ set_target_properties(
 
 target_include_directories(${ST_TARGET} PUBLIC ${ST_INCLUDE_DIR})
 target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
+
 target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
 
-if ("${ST_OUTPUT_DIR}" STREQUAL "")
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL Debug)
-        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/debug)
-    else ()
-        set(ST_OUTPUT_DIR ${ST_BIN_DIR}/release)
-    endif ()
-endif ()
-set(ST_RESOURCES_OUTPUT_DIR ${ST_OUTPUT_DIR}/res)
-set(ST_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-add_custom_target(
-    ST_COPY_RESOURCES_TARGET
-    COMMENT "Copying resources"
-    COMMAND ${CMAKE_COMMAND} -D RESOURCES_SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D RESOURCES_OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy_resources.cmake
-)
-add_dependencies(${ST_TARGET} ST_COPY_RESOURCES_TARGET)
+#
+# Copy resource files to runtime directory
+#
 
-# --------------------------------------------------------------------------------------------------------------
-# Preprocessor macros
-# --------------------------------------------------------------------------------------------------------------
+set(ST_RESOURCES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
+set(ST_RESOURCES_OUTPUT_DIR ${ST_OUTPUT_DIR}/res)
+
+set(ST_COPY_RESOURCES_TARGET st_copy_resources)
+add_custom_target(
+    ${ST_COPY_RESOURCES_TARGET}
+    COMMENT "Copying resources"
+    COMMAND ${CMAKE_COMMAND} -D SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy.cmake
+)
+add_dependencies(${ST_TARGET} ${ST_COPY_RESOURCES_TARGET})
 
 target_compile_definitions(${ST_TARGET} PUBLIC ST_RES_DIR="${ST_RESOURCES_OUTPUT_DIR}")
+
+#
+# Compile Lua files to runtime directory
+#
+
+set(ST_LUA_SOURCE_DIR ${PROJECT_SOURCE_DIR}/lua)
+set(ST_LUA_OUTPUT_DIR ${ST_OUTPUT_DIR}/lua)
+
+set(ST_COMPILE_LUA_TARGET st_compile_lua)
+add_custom_target(
+    ${ST_COMPILE_LUA_TARGET}
+    COMMAND ${CMAKE_COMMAND} -D LUA_SOURCE_DIR=${ST_LUA_SOURCE_DIR} -D LUA_OUTPUT_DIR=${ST_LUA_OUTPUT_DIR} -P ${CMAKE_DIR}/compile_lua.cmake
+    COMMENT "Compiling Lua"
+)
+add_dependencies(${ST_TARGET} ${ST_COMPILE_LUA_TARGET})
+
+target_compile_definitions(${ST_TARGET} PUBLIC ST_LUA_DIR="${ST_LUA_OUTPUT_DIR}")
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies

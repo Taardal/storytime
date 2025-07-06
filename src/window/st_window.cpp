@@ -1,9 +1,6 @@
 #include "st_window.h"
 
-#include "system/st_assert.h"
-#include "st_key_event.h"
-#include "st_mouse_event.h"
-#include "window/st_window_event.h"
+#include "event/st_events.h"
 
 namespace Storytime {
     Window::Window(const WindowConfig& config) : config(config) {
@@ -103,65 +100,145 @@ namespace Storytime {
         return glfwGetTime();
     }
 
+    void Window::set_mouse_events_enabled(bool mouse_events_enabled) {
+        this->mouse_events_enabled = mouse_events_enabled;
+    }
+
+    void Window::set_keyboard_events_enabled(bool keyboard_events_enabled) {
+        this->keyboard_events_enabled = keyboard_events_enabled;
+    }
+
     void Window::on_glfw_error(i32 error, const char* description) {
         ST_LOG_ERROR("GLFW error [{0}: {1}]", error, description);
     }
 
     void Window::on_cursor_position_change(GLFWwindow* glfw_window, f64 x, f64 y) {
-        MouseMovedEvent event(x, y);
-        on_event(glfw_window, MouseMovedEvent::type, event);
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        if (!window->mouse_events_enabled) {
+            return;
+        }
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        MouseMovedEvent event;
+        event.x = x;
+        event.y = y;
+
+        event_manager->trigger_event(MouseMovedEvent::type, event);
     }
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
-        WindowResizeEvent event(width, height);
-        on_event(glfw_window, WindowResizeEvent::type, event);
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        WindowResizedEvent event;
+        event.width = width;
+        event.height = height;
+
+        event_manager->trigger_event(WindowResizedEvent::type, event);
     }
 
     void Window::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        if (!window->keyboard_events_enabled) {
+            return;
+        }
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
         if (action == GLFW_PRESS) {
-            KeyPressedEvent event(key, mods, scanCode);
-            on_event(glfw_window, KeyPressedEvent::type, event);
+            KeyPressedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
+            event_manager->trigger_event(KeyPressedEvent::type, event);
         } else if (action == GLFW_RELEASE) {
-            KeyReleasedEvent event(key, mods, scanCode);
-            on_event(glfw_window, KeyReleasedEvent::type, event);
+            KeyReleasedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
+            event_manager->trigger_event(KeyReleasedEvent::type, event);
         } else if (action == GLFW_REPEAT) {
-            KeyRepeatedEvent event(key, mods, scanCode);
-            on_event(glfw_window, KeyRepeatedEvent::type, event);
+            KeyRepeatedEvent event;
+            event.key_code = key;
+            event.mods = mods;
+            event.scan_code = scanCode;
+            event_manager->trigger_event(KeyRepeatedEvent::type, event);
         }
     }
 
     void Window::on_mouse_button_change(GLFWwindow* glfw_window, i32 button, i32 action, i32 mods) {
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        if (!window->mouse_events_enabled) {
+            return;
+        }
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
         if (action == GLFW_PRESS) {
-            MouseButtonPressedEvent event(button);
-            on_event(glfw_window, MouseButtonPressedEvent::type, event);
+            MouseButtonPressedEvent event;
+            event.button = button;
+            event_manager->trigger_event(MouseButtonPressedEvent::type, event);
         }
         if (action == GLFW_RELEASE) {
-            MouseButtonReleasedEvent event(button);
-            on_event(glfw_window, MouseButtonReleasedEvent::type, event);
+            MouseButtonReleasedEvent event;
+            event.button = button;
+            event_manager->trigger_event(MouseButtonReleasedEvent::type, event);
         }
     }
 
     void Window::on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset) {
-        MouseScrollEvent event(xoffset, yoffset);
-        on_event(glfw_window, MouseScrollEvent::type, event);
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        if (!window->mouse_events_enabled) {
+            return;
+        }
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        MouseScrollEvent event;
+        event.x_offset = xoffset;
+        event.y_offset = yoffset;
+
+        event_manager->trigger_event(MouseScrollEvent::type, event);
     }
 
     void Window::on_window_close_change(GLFWwindow* glfw_window) {
-        WindowCloseEvent event{};
-        on_event(glfw_window, WindowCloseEvent::type, event);
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        WindowClosedEvent event{};
+
+        event_manager->trigger_event(WindowClosedEvent::type, event);
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
-        bool minimized = iconified == 1;
-        WindowMinimizeEvent event(minimized);
-        on_event(glfw_window, WindowMinimizeEvent::type, event);
-    }
-
-    void Window::on_event(GLFWwindow* glfw_window, EventType event_type, const Event& event) {
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
-        ST_ASSERT(window != nullptr, "Invalid GLFW user pointer: Window object must exist when sending events");
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
         auto event_manager = window->config.event_manager;
-        ST_ASSERT(event_manager != nullptr, "Invalid GLFW user pointer: Event manager object must exist when sending events");
-        event_manager->trigger_event(event_type, event);
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        WindowMinimizedEvent event;
+        event.minimized = iconified == 1;
+
+        event_manager->trigger_event(WindowMinimizedEvent::type, event);
     }
 }

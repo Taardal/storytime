@@ -2,9 +2,13 @@
 
 #include <entt/entt.hpp>
 
-#define ST_ASSERT_VALID_ENTITY() \
+#ifdef ST_ENABLE_ASSERT
+    #define ST_ASSERT_VALID_ENTITY() \
     ST_ASSERT(entity != entt::null, "Invalid entity"); \
     ST_ASSERT(entity_registry != nullptr, "Invalid entity registry")
+#else
+    ST_ASSERT_VALID_ENTITY()
+#endif
 
 namespace Storytime {
     class Entity {
@@ -18,6 +22,8 @@ namespace Storytime {
         Entity(const Entity& other) = default;
 
         Entity(entt::entity entity, entt::registry* entity_registry);
+
+        entt::entity raw() const;
 
         operator entt::entity() const;
 

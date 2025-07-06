@@ -1,6 +1,8 @@
 #pragma once
 
 namespace Storytime {
+    std::string lua_function_result_to_string(int result);
+
     class LuaFunction {
     private:
         lua_State* L;
@@ -20,12 +22,11 @@ namespace Storytime {
 
         bool is_valid() const;
 
-        //
-        // Overload the function call operator to allow LuaFunction objects to be invoked using ():
-        //
+        // Overload the function call operator to allow LuaFunction objects to be invoked using the `()` operator:
+        // ```
         // LuaFunction lua_main(L, "main");
         // lua_main();
-        //
+        // ```
         template<class... Args>
         void operator()(Args&&... args) {
             invoke(std::forward<Args>(args)...);
@@ -65,7 +66,7 @@ namespace Storytime {
             // Invoke the Lua function
             int result = lua_pcall(L, argument_count, return_value_count, error_handler_index);
             if (result != LUA_OK) {
-                std::string error_code_name = get_result_code_name(result);
+                std::string error_code_name = lua_function_result_to_string(result);
                 std::string error_message = lua_tostring(L, -1);
                 ST_LOG_ERROR("[{}] {}", error_code_name, error_message);
             }
@@ -75,22 +76,34 @@ namespace Storytime {
         // Use variadic templates to recursively push each argument onto the Lua stack (pushes one argument at a time).
         template<class T, class... Args>
         void push_args(lua_State* L, T& value, Args&&... args) {
-            lua_push<T>(L, value); // Push the first argument
-            push_args(L, args...); // Recursively call push_args with the rest of the arguments
+
+            // At compile time, check whether T is a pointer type (like int*, const Foo*, etc.).
+            // - [std::is_pointer_v<T>] Returns true if T is a pointer type (int*, MyType*, etc.)
+            // - [std::decay_t<T>] Normalize the type by...
+            //      - Removing reference types (T&, T&&),
+            //      - Removing const and volatile,
+            //      - Converting array types to pointers
+            //      - Converting function types to function pointers
+            //
+            if constexpr (std::is_pointer_v<std::decay_t<T>>) {
+                lua_push(L, value);
+            } else {
+                lua_push(L, &value);
+            }
+
+            // Recursively call push_args with the rest of the arguments
+            push_args(L, args...);
         }
 
         // Base case for the recursion. When there are no arguments left to push, this function does nothing.
         void push_args(lua_State* L) {
         }
-
-        static std::string get_result_code_name(int pcall_result);
     };
 }
 
 template<>
-inline Storytime::LuaFunction lua_to(lua_State* L, int index) {
+inline void lua_to(lua_State* L, int index, Storytime::LuaFunction* value) {
     ST_ASSERT(lua_isfunction(L, index), "Item at index [" << index << "] on Lua stack must be of type function");
     Storytime::LuaRef ref(L);
-    Storytime::LuaFunction lua_function(L, ref);
-    return lua_function;
+    *value = Storytime::LuaFunction(L, ref);
 }

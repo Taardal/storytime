@@ -8,8 +8,6 @@ namespace Storytime {
 
     extern void from_json(const nlohmann::json&, TiledObject&);
 
-    extern void from_json(const nlohmann::json&, TiledObjectTemplateRef&);
-
     void from_json(const nlohmann::json& json, TiledLayer& data) {
         data.name = json.at("name").get<std::string>();
         data.type = json.at("type").get<std::string>();
@@ -21,12 +19,7 @@ namespace Storytime {
         if (data.type == "objectgroup") {
             if (json.contains("objects")) {
                 for (const nlohmann::json& object_json : json.at("objects")) {
-                    bool is_object_template_ref = object_json.contains("template");
-                    if (is_object_template_ref) {
-                        data.object_template_refs.push_back(object_json.get<TiledObjectTemplateRef>());
-                    } else {
-                        data.objects.push_back(object_json.get<TiledObject>());
-                    }
+                    data.objects.push_back(object_json.get<TiledObject>());
                 }
             }
             data.draworder = json.at("draworder").get<std::string>();

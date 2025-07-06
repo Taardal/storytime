@@ -60,8 +60,8 @@ namespace Storytime {
         frame.duration_ms = duration_ms;
     }
 
-    void Animation::set_looping(bool loop) {
-        config.loop = loop;
+    void Animation::set_looping(bool looping) {
+        config.looping = looping;
     }
 
     bool Animation::has_ended() const {
@@ -96,7 +96,7 @@ namespace Storytime {
         }
 
         u32 next_frame_index = frame_index + 1;
-        if (next_frame_index > end_frame_index && !config.loop) {
+        if (next_frame_index > end_frame_index && !config.looping) {
             return;
         }
         frame_index = next_frame_index % (end_frame_index + 1);

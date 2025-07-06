@@ -13,6 +13,7 @@ namespace Storytime {
         std::vector<glm::vec2> polygons;
         std::vector<TiledProperty> properties;
         float rotation;
+        std::string template_path;
         std::string type;
         bool visible;
         int width;
@@ -20,6 +21,14 @@ namespace Storytime {
         float y;
 
         static TiledObject create(const std::string& json);
+
+        bool is_ellipse() const;
+
+        bool is_point() const;
+
+        bool is_polygon() const;
+
+        bool is_rectangle() const;
 
         const TiledProperty& get_property(const std::string& name) const;
 

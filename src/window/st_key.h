@@ -135,3 +135,26 @@ namespace Storytime {
         static std::string to_name(KeyCode key_code);
     };
 }
+
+namespace Storytime {
+    typedef i32 ModCode;
+
+    struct Mod {
+        static const ModCode MOD_SHIFT;
+        static const ModCode MOD_CONTROL;
+        static const ModCode MOD_ALT;
+        static const ModCode MOD_SUPER;
+        static const ModCode MOD_CAPS_LOCK;
+        static const ModCode MOD_NUM_LOCK;
+    };
+}
+
+namespace Storytime {
+    typedef i32 ActionCode;
+
+    struct Action {
+        static const ActionCode ACTION_PRESS;
+        static const ActionCode ACTION_RELEASE;
+        static const ActionCode ACTION_REPEAT;
+    };
+}

@@ -31,6 +31,18 @@
             ST_LOG_CRITICAL("Assertion failed: {}, {}", #expression, message_string); \
             ST_BREAK(); \
         }
+
+    #define ST_ASSERT_NOT_NULL(pointer) \
+        ST_ASSERT(pointer != nullptr, "Pointer [" << #pointer << "] cannot be null")
+
+    #define ST_ASSERT_NOT_EMPTY(value) \
+        ST_ASSERT(!value.empty(), "Value [" << #value << "] cannot be empty")
+
+    #define ST_ASSERT_NOT_CEMPTY(value) \
+        ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
 #else
     #define ST_ASSERT(expression, message)
+    #define ST_ASSERT_NOT_NULL(pointer)
+    #define ST_ASSERT_NOT_EMPTY(value)
+    #define ST_ASSERT_NOT_CEMPTY(value)
 #endif

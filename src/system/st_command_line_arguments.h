@@ -10,9 +10,11 @@ namespace Storytime {
         CommandLineArguments(int count, char** args) : count(count), args(args) {
         }
 
-        const char* operator[](int index) const;
+        const char* get(int index) const;
 
-        bool exists(const char* key) const;
+        std::filesystem::path exe() const;
+
+        const char* operator[](int index) const;
     };
 
     std::ostream& operator<<(std::ostream& os, const CommandLineArguments& arguments);

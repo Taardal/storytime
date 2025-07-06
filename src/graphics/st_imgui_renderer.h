@@ -1,45 +1,30 @@
 #pragma once
 
-#include "graphics/st_framebuffer.h"
+#include "window/st_keyboard.h"
+#include "window/st_mouse.h"
 #include "window/st_window.h"
-
-#include <imgui.h>
 
 namespace Storytime {
     struct ImGuiRendererConfig {
+        EventManager* event_manager = nullptr;
+        Keyboard* keyboard = nullptr;
+        Mouse* mouse = nullptr;
+        Window* window = nullptr;
         std::filesystem::path settings_file_path;
         std::string glsl_version;
-        EventManager* event_manager = nullptr;
-        Window* window = nullptr;
     };
 
     class ImGuiRenderer {
-    public:
-        static std::string root_window_name;
-        static std::string game_window_name;
-
     private:
         ImGuiRendererConfig config;
-        ImVec2 game_window_size{};
 
     public:
-        explicit ImGuiRenderer(const ImGuiRendererConfig& config);
+        ImGuiRenderer(const ImGuiRendererConfig& config);
 
-        virtual ~ImGuiRenderer();
+        ~ImGuiRenderer();
 
-        static void begin_frame();
+        void begin_frame() const;
 
         void end_frame() const;
-
-        void render(const Framebuffer& framebuffer);
-
-    private:
-        void initialize_imgui() const;
-
-        static void terminate_imgui();
-
-        static void render_root_window();
-
-        void render_game_window(const Framebuffer& framebuffer);
     };
 }

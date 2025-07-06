@@ -71,11 +71,11 @@ namespace Storytime {
         ST_ASSERT(std::filesystem::exists(path), "Tiled project must exist on path [" << path << "]");
 
         std::string json = config.file_reader->read(path.c_str());
-        ST_ASSERT(!json.empty(), "Could not read JSON for tiled project [" << path.c_str() << "]");
+        ST_ASSERT(!json.empty(), "Could not read JSON for Tiled project [" << path.c_str() << "]");
 
         ST_TRY_THROW({
             return std::make_shared<TiledProject>(TiledProject::create(json));
-        }, "Could not load tiled project");
+        }, "Could not load Tiled project");
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
@@ -85,11 +85,11 @@ namespace Storytime {
         ST_ASSERT(std::filesystem::exists(path), "Tiled map must exist on path [" << path << "]");
 
         std::string json = config.file_reader->read(path.c_str());
-        ST_ASSERT(!json.empty(), "Could not read JSON for tiled map [" << path.c_str() << "]");
+        ST_ASSERT(!json.empty(), "Could not read JSON for Tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
             return std::make_shared<TiledMap>(TiledMap::create(json));
-        }, "Could not load tiled map");
+        }, "Could not load Tiled map");
     }
 
     Shared<TiledTileset> ResourceLoader::load_tiled_tileset(const std::filesystem::path& path) const {
@@ -97,11 +97,23 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
 
         std::string json = config.file_reader->read(path.c_str());
-        ST_ASSERT(!json.empty(), "Could not read JSON for tiled tileset [" << path.c_str() << "]");
+        ST_ASSERT(!json.empty(), "Could not read JSON for Tiled tileset [" << path.c_str() << "]");
 
         ST_TRY_THROW({
             return std::make_shared<TiledTileset>(TiledTileset::create(json));
-        }, "Could not load tiled map");
+        }, "Could not load Tiled tileset");
+    }
+
+    Shared<TiledObjectTemplate> ResourceLoader::load_tiled_object_template(const std::filesystem::path& path) const {
+        ST_LOG_TRACE("Loading Tiled template [{}]", path.c_str());
+        ST_ASSERT(!path.empty(), "Tiled template path must not be empty");
+
+        std::string json = config.file_reader->read(path.c_str());
+        ST_ASSERT(!json.empty(), "Could not read JSON for Tiled template [" << path.c_str() << "]");
+
+        ST_TRY_THROW({
+            return std::make_shared<TiledObjectTemplate>(TiledObjectTemplate::create(json));
+        }, "Could not load Tiled template");
     }
 
     Image ResourceLoader::load_image(const std::filesystem::path& path) const {

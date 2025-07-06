@@ -8,8 +8,8 @@ namespace Storytime {
 
     struct TiledProperty {
         std::string name;
-        std::string type;
         std::string propertytype;
+        std::string type;
         TiledPropertyValue value;
 
         template<typename T>
