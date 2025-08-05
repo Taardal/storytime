@@ -20,26 +20,23 @@ namespace Storytime {
             ST_GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
         }
 #endif
-        ST_LOG_INFO("Using renderer [{}, {}]", glGetString(GL_RENDERER), glGetString(GL_VERSION));
+        ST_LOG_INFO("Using renderer [{}, {}]", (const char*) glGetString(GL_RENDERER), (const char*) glGetString(GL_VERSION));
     }
 
     void OpenGL::clear_errors() {
         while (glGetError() != GL_NO_ERROR);
     }
 
-    void OpenGL::log_errors(const std::string& tag, const std::string& function_signature) {
-        uint32_t error_code;
-        uint32_t error_count = 0;
+    void OpenGL::log_errors(const std::string& function_signature) {
+        u32 error_code;
+        u32 error_count = 0;
         while ((error_code = glGetError()) != GL_NO_ERROR) {
-            std::stringstream ss;
-            ss << tag << " OpenGL error on function [{0}] - {1}";
-            std::string error_message = ss.str();
-            spdlog::error(error_message, function_signature, get_error_message(error_code));
+            spdlog::error("OpenGL error on function [{}] - {}", function_signature, get_error_message(error_code));
             error_count++;
         }
     }
 
-    const char* OpenGL::get_error_message(uint32_t errorCode) {
+    const char* OpenGL::get_error_message(u32 errorCode) {
         switch (errorCode) {
             case GL_INVALID_ENUM:
                 return "INVALID_ENUM";
@@ -61,15 +58,15 @@ namespace Storytime {
     }
 
     void OpenGL::on_debug_message(
-        uint32_t source,
-        uint32_t type,
-        uint32_t id,
-        uint32_t severity,
-        int32_t length,
+        u32 source,
+        u32 type,
+        u32 id,
+        u32 severity,
+        i32 length,
         const char* message,
         const void* user_param
     ) {
-        std::string log_message = "OpenGL message [id = {}, type = {}, severity = {}, source = {}, length = {}] - {}";
+        constexpr auto log_message = "OpenGL message [id = {}, type = {}, severity = {}, source = {}, length = {}] - {}";
         std::string message_type = get_debug_message_type(type);
         std::string message_source = get_debug_message_source(source);
         std::string message_severity = get_debug_message_severity(severity);
@@ -87,7 +84,7 @@ namespace Storytime {
         }
     }
 
-    std::string OpenGL::get_debug_message_type(uint32_t type) {
+    std::string OpenGL::get_debug_message_type(u32 type) {
         switch (type) {
             case GL_DEBUG_TYPE_ERROR:
                 return "ERROR";
@@ -108,7 +105,7 @@ namespace Storytime {
         }
     }
 
-    std::string OpenGL::get_debug_message_source(uint32_t source) {
+    std::string OpenGL::get_debug_message_source(u32 source) {
         switch (source) {
             case GL_DEBUG_SOURCE_API:
                 return "API";
@@ -127,7 +124,7 @@ namespace Storytime {
         }
     }
 
-    std::string OpenGL::get_debug_message_severity(uint32_t severity) {
+    std::string OpenGL::get_debug_message_severity(u32 severity) {
         switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
                 return "HIGH";

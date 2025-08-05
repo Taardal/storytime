@@ -76,6 +76,7 @@
 // System
 #include "system/st_binary_to_from.h"
 #include "system/st_defer.h"
+#include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
 #include "system/st_game_loop_metrics.h"

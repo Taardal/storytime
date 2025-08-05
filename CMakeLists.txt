@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 
 project(storytime)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ST_TARGET ${PROJECT_NAME})
@@ -153,6 +153,8 @@ add_library(
     ${ST_SRC_DIR}/system/st_command_line_arguments.cpp
     ${ST_SRC_DIR}/system/st_command_line_arguments.h
     ${ST_SRC_DIR}/system/st_defer.h
+    ${ST_SRC_DIR}/system/st_dispatcher.cpp
+    ${ST_SRC_DIR}/system/st_dispatcher.h
     ${ST_SRC_DIR}/system/st_environment.h
     ${ST_SRC_DIR}/system/st_error.cpp
     ${ST_SRC_DIR}/system/st_error.h
@@ -400,7 +402,7 @@ target_link_libraries(${ST_TARGET} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link wi
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog
-    GIT_TAG v1.9.2
+    GIT_TAG v1.15.3
 )
 FetchContent_MakeAvailable(spdlog)
 target_link_libraries(${ST_TARGET} spdlog::spdlog)

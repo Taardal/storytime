@@ -36,10 +36,8 @@ namespace Storytime {
     static bool running = false;
 
     void run(const Config& config) {
-        set_log_level(config.log_level);
-
+        initialize_log(config.log_level);
         initialize_error_signal_handlers();
-
 #ifdef ST_TRACK_MEMORY
         initialize_memory_tracking();
         std::atexit(terminate_memory_tracking);
