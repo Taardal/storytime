@@ -6,13 +6,29 @@
     #define ST_ASSERT_LUA_TYPE(L, index, expected_type)\
         {\
             i32 type = lua_type(L, index);\
+            if (type != expected_type) {\
+                print_lua_stack(L, "ST_ASSERT_LUA_TYPE");\
+            }\
             ST_ASSERT(\
                 type == expected_type,\
                 "Expected item on Lua stack index [" << index << "] to be of type [" << lua_typename(L, expected_type) << " (" << expected_type << ")], was [" << lua_typename(L, type) << " (" << type << ")]"\
             );\
         }
+
+    #define ST_ASSERT_LUA_NOT_NULL(L, index)\
+        {\
+            bool is_nil = lua_isnil(L, index);\
+            if (is_nil) {\
+                print_lua_stack(L, "ST_ASSERT_LUA_NOT_NULL");\
+            }\
+            ST_ASSERT(\
+                !lua_isnil(L, index),\
+                "Expected item on Lua stack index [" << index << "] to not be null"\
+            );\
+        }
 #else
     #define ST_ASSERT_LUA_TYPE(L, index, expected_type)
+    #define ST_ASSERT_LUA_NOT_NULL(L, index)
 #endif
 
 typedef i32 LuaType;

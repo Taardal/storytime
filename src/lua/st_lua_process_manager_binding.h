@@ -18,17 +18,16 @@ namespace Storytime {
 
         static i32 create(lua_State* L, ProcessManager* process_manager);
 
-    private:
-        static i32 destroy(lua_State* L);
+        static i32 lua_destroy(lua_State* L);
 
-        static i32 index(lua_State* L);
+        static i32 lua_index(lua_State* L);
 
-        static i32 add(lua_State* L);
+        static i32 lua_add(lua_State* L);
 
-        static i32 abort(lua_State* L);
+        static i32 lua_abort(lua_State* L);
 
-        static i32 clear(lua_State* L);
+        static i32 lua_clear(lua_State* L);
 
-        static i32 empty(lua_State* L);
+        static i32 lua_empty(lua_State* L);
     };
 }

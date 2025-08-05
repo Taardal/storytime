@@ -57,6 +57,8 @@ add_library(
     ${ST_SRC_DIR}/event/st_mouse_scroll_event.h
     ${ST_SRC_DIR}/event/st_window_closed_event.cpp
     ${ST_SRC_DIR}/event/st_window_closed_event.h
+    ${ST_SRC_DIR}/event/st_window_focused_event.cpp
+    ${ST_SRC_DIR}/event/st_window_focused_event.h
     ${ST_SRC_DIR}/event/st_window_minimized_event.cpp
     ${ST_SRC_DIR}/event/st_window_minimized_event.h
     ${ST_SRC_DIR}/event/st_window_resized_event.cpp
@@ -168,6 +170,7 @@ add_library(
     ${ST_SRC_DIR}/system/st_memory_allocator.h
     ${ST_SRC_DIR}/system/st_msgpack_filesystem_adaptor.h
     ${ST_SRC_DIR}/system/st_msgpack_glm_adaptor.h
+    ${ST_SRC_DIR}/system/st_msgpack_to_from.h
     ${ST_SRC_DIR}/system/st_msgpack_utils.cpp
     ${ST_SRC_DIR}/system/st_msgpack_utils.h
     ${ST_SRC_DIR}/system/st_pointers.h

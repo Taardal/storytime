@@ -44,6 +44,7 @@ namespace Storytime {
         glfwSetMouseButtonCallback(glfw_window, on_mouse_button_change);
         glfwSetScrollCallback(glfw_window, on_mouse_scroll_change);
         glfwSetWindowCloseCallback(glfw_window, on_window_close_change);
+        glfwSetWindowFocusCallback(glfw_window, on_window_focus_change);
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
 
         ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, config.width, config.height);
@@ -227,6 +228,19 @@ namespace Storytime {
         WindowClosedEvent event{};
 
         event_manager->trigger_event(WindowClosedEvent::type, event);
+    }
+
+    void Window::on_window_focus_change(GLFWwindow* glfw_window, i32 focused) {
+        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
+
+        auto event_manager = window->config.event_manager;
+        ST_ASSERT(event_manager != nullptr, "Event manager must exist on Window GLFW user pointer");
+
+        WindowFocusedEvent event;
+        event.focused = focused == 1;
+
+        event_manager->trigger_event(WindowMinimizedEvent::type, event);
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {

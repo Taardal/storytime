@@ -1,10 +1,16 @@
 #include "st_lua_table.h"
 
 namespace Storytime {
-    LuaTable::LuaTable(lua_State* L, const std::string& name) : L(L), name(name), ref(LUA_NOREF) {
+    LuaTable::LuaTable(lua_State* L)
+        : L(L), ref(luaL_ref(L, LUA_REGISTRYINDEX)), global_name("") {
     }
 
-    LuaTable::LuaTable(lua_State* L, const LuaRef ref) : L(L), name(""), ref(ref) {
+    LuaTable::LuaTable(lua_State* L, const LuaRef ref)
+        : L(L), ref(ref), global_name("") {
+    }
+
+    LuaTable::LuaTable(lua_State* L, const std::string& global_name)
+        : L(L), ref(LUA_NOREF), global_name(global_name) {
     }
 
     LuaRef LuaTable::get_ref() const {
@@ -33,8 +39,8 @@ namespace Storytime {
     void LuaTable::push_self() const {
         if (ref != LUA_NOREF) {
             ref.push(L);
-        } else if (name.length() > 0) {
-            lua_getglobal(L, name.c_str());
+        } else if (global_name.length() > 0) {
+            lua_getglobal(L, global_name.c_str());
         } else {
             ST_THROW("Could not push table to Lua stack, neither ref or global name is valid");
         }

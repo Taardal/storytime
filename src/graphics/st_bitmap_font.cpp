@@ -18,7 +18,7 @@ namespace Storytime {
 
             if (value == '\n') {
                 position.y += size_y;
-                position.x = text_config.position.x + size_x / 2;
+                position.x = text_config.position.x;
                 continue;
             }
 

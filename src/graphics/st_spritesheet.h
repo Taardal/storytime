@@ -31,7 +31,7 @@ namespace Storytime {
             u32 height;
         };
 
-        Sprite get_sprite(u32 row, u32 column, u32 width, u32 height) const;
+        Sprite get_sprite(u32 column, u32 row, u32 width, u32 height) const;
 
         struct AnimationCoordinate {
             u32 row;

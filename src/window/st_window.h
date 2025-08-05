@@ -73,6 +73,8 @@ namespace Storytime {
 
         static void on_window_close_change(GLFWwindow* glfw_window);
 
+        static void on_window_focus_change(GLFWwindow* glfw_window, i32 focused);
+
         static void on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified);
     };
 }

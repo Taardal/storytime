@@ -6,6 +6,7 @@
 #include "event/st_window_resized_event.h"
 #include "graphics/st_open_gl.h"
 #include "graphics/st_renderer.h"
+#include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_clock.h"
 #include "system/st_file_reader.h"
@@ -135,6 +136,9 @@ namespace Storytime {
             });
             service_locator.set<ImGuiRenderer>(&imgui_renderer);
 #endif
+
+            ProcessManager process_manager{};
+            service_locator.set<ProcessManager>(&process_manager);
 
             GameLoopMetrics metrics{};
             service_locator.set<GameLoopMetrics>(&metrics);

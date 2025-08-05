@@ -16,7 +16,13 @@ namespace Storytime {
     public:
         ~ProcessManager();
 
+        const std::list<Shared<Process>>& get_processes() const;
+
         void add(const Shared<Process>& process);
+
+        void remove(const Shared<Process>& process);
+
+        void remove_if(const std::function<bool(const Shared<Process>&)>& on_is_process_equal);
 
         ProcessUpdateResult update(f64 timestep);
 

@@ -15,6 +15,7 @@ namespace Storytime {
     protected:
         entt::entity entity = entt::null;
         entt::registry* entity_registry = nullptr;
+        entt::dispatcher* entity_dispatcher = nullptr;
 
     public:
         Entity() = default;
@@ -22,6 +23,8 @@ namespace Storytime {
         Entity(const Entity& other) = default;
 
         Entity(entt::entity entity, entt::registry* entity_registry);
+
+        Entity(entt::entity entity, entt::registry* entity_registry, entt::dispatcher* entity_dispatcher);
 
         entt::entity raw() const;
 

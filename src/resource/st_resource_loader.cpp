@@ -75,7 +75,7 @@ namespace Storytime {
 
         ST_TRY_THROW({
             return std::make_shared<TiledProject>(TiledProject::create(json));
-        }, "Could not load Tiled project");
+        }, "Could not load Tiled project [" << path << "]");
     }
 
     Shared<TiledMap> ResourceLoader::load_tiled_map(const std::filesystem::path& path) const {
@@ -89,7 +89,7 @@ namespace Storytime {
 
         ST_TRY_THROW({
             return std::make_shared<TiledMap>(TiledMap::create(json));
-        }, "Could not load Tiled map");
+        }, "Could not load Tiled map [" << path << "]");
     }
 
     Shared<TiledTileset> ResourceLoader::load_tiled_tileset(const std::filesystem::path& path) const {
@@ -101,7 +101,7 @@ namespace Storytime {
 
         ST_TRY_THROW({
             return std::make_shared<TiledTileset>(TiledTileset::create(json));
-        }, "Could not load Tiled tileset");
+        }, "Could not load Tiled tileset [" << path << "]");
     }
 
     Shared<TiledObjectTemplate> ResourceLoader::load_tiled_object_template(const std::filesystem::path& path) const {
@@ -113,7 +113,7 @@ namespace Storytime {
 
         ST_TRY_THROW({
             return std::make_shared<TiledObjectTemplate>(TiledObjectTemplate::create(json));
-        }, "Could not load Tiled template");
+        }, "Could not load Tiled template [" << path << "]");
     }
 
     Image ResourceLoader::load_image(const std::filesystem::path& path) const {

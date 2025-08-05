@@ -1,8 +1,8 @@
 #include "st_event.h"
 
 namespace Storytime {
-    Event::Event(EventType event_type, const std::string& event_type_name)
-        : event_type(event_type), event_type_name(event_type_name) {
+    Event::Event(EventType type, const std::string& type_name)
+        : event_type(type), event_type_name(type_name) {
     }
 
     std::string Event::to_string() const {

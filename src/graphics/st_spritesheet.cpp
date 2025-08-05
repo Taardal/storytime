@@ -10,7 +10,7 @@ namespace Storytime {
         return config.texture;
     }
 
-    Sprite Spritesheet::get_sprite(u32 row, u32 column, u32 width, u32 height) const {
+    Sprite Spritesheet::get_sprite(u32 column, u32 row, u32 width, u32 height) const {
         f32 spritesheet_width = (f32) config.texture->get_width();
         f32 spritesheet_height = (f32) config.texture->get_height();
 
@@ -44,7 +44,7 @@ namespace Storytime {
         frames.reserve(column_count);
         for (int column = 0; column < column_count; ++column) {
             frames.push_back({
-                .sprite = get_sprite(row, column, sprite_width, sprite_height),
+                .sprite = get_sprite(column, row, sprite_width, sprite_height),
             });
         }
         return Animation({

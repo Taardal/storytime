@@ -9,8 +9,12 @@ namespace Storytime {
     i32 LuaKeyboardBinding::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
 
+        lua_pushstring(L, "__gc");
+        lua_pushcfunction(L, lua_destroy);
+        lua_settable(L, -3);
+
         lua_pushstring(L, "__index");
-        lua_pushcfunction(L, index);
+        lua_pushcfunction(L, lua_index);
         lua_settable(L, -3);
 
         return 1;
@@ -27,7 +31,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaKeyboardBinding::destroy(lua_State* L) {
+    i32 LuaKeyboardBinding::lua_destroy(lua_State* L) {
         ST_ASSERT(lua_type(L, -1) == LUA_TUSERDATA, "Binding must be at expected stack location");
 
         auto binding = static_cast<LuaKeyboardBinding*>(lua_touserdata(L, -1));
@@ -37,12 +41,12 @@ namespace Storytime {
         return 0;
     }
 
-    i32 LuaKeyboardBinding::index(lua_State* L) {
+    i32 LuaKeyboardBinding::lua_index(lua_State* L) {
         ST_ASSERT(lua_isstring(L, -1), "Index name must be at top of stack");
 
         const char* key = lua_tostring(L, -1);
         if (strcmp(key, "is_pressed") == 0) {
-            lua_pushcfunction(L, LuaKeyboardBinding::is_pressed);
+            lua_pushcfunction(L, LuaKeyboardBinding::lua_is_pressed);
             return 1;
         }
 
@@ -55,7 +59,7 @@ namespace Storytime {
         return 0;
     }
 
-    i32 LuaKeyboardBinding::is_pressed(lua_State* L) {
+    i32 LuaKeyboardBinding::lua_is_pressed(lua_State* L) {
         i32 parameter_type = lua_type(L, -1);
         ST_ASSERT(parameter_type == LUA_TSTRING || parameter_type == LUA_TNUMBER, "Key parameter must be either string or number");
 

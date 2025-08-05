@@ -2,6 +2,9 @@
 
 namespace Storytime {
 
+    /// An object ID is a unique identifier assigned to each object within a single map.
+    typedef u32 TiledObjectID;
+
     /// A layer ID is a unique identifier assigned to each layer within a single map.
     /// Every layer type (tile layer, object layer, image layer, group layer) gets a layer ID
     typedef u32 TiledLayerID;
