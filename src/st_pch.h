@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 #include <map>
+#include <ranges>
 #include <set>
 #include <sstream>
 #include <string>

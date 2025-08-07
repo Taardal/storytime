@@ -99,8 +99,12 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
     ${ST_SRC_DIR}/resource/st_resource_loader.h
+    ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
     ${ST_SRC_DIR}/lua/st_lua_error.h
+    ${ST_SRC_DIR}/lua/st_lua_event_manager_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_event_manager_binding.h
     ${ST_SRC_DIR}/lua/st_lua_function.cpp
     ${ST_SRC_DIR}/lua/st_lua_function.h
     ${ST_SRC_DIR}/lua/st_lua_glm_binding.cpp

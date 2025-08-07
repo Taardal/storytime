@@ -42,6 +42,8 @@
 #endif
 
 // Lua
+#include "lua/st_lua_dispatcher_binding.h"
+#include "lua/st_lua_event_manager_binding.h"
 #include "lua/st_lua_function.h"
 #include "lua/st_lua_glm_binding.h"
 #include "lua/st_lua_keyboard_binding.h"

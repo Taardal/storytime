@@ -25,13 +25,7 @@ namespace Storytime {
     public:
         Dispatcher(const DispatcherConfig& config);
 
-        /// Get the sink for a type. A sink manages the subscribers for a type. Each type `T` has its own sink.
-        /// @tparam T The sink type.
-        /// @return The sink.
-        template<typename T>
-        Sink<T> sink() const {
-            return config.dispatcher->sink<T>();
-        }
+        ~Dispatcher();
 
         /// Subscribe a function (static or member function) to a type.
         /// @tparam T The type to subscribe to (e.g., FooEvent, BarCommand).
@@ -110,7 +104,7 @@ namespace Storytime {
             entt::connection connection = config.dispatcher->sink<T>().template connect<&SubscriptionFn<T>::operator()>(*subscription_fn_ptr);
             subscription_connections.emplace(subscription_id, connection);
 
-            ST_LOG_TRACE("Added subscription with ID [{}] for event type [{}]", subscription_id, type_name<T>());
+            ST_LOG_TRACE("Added subscription with ID [{}] for type [{}]", subscription_id, type_name<T>());
             return subscription_id;
         }
 
@@ -121,9 +115,9 @@ namespace Storytime {
 
         // T&& makes this a universal reference (aka forwarding reference).
         // std::decay_t<T> strips off references and const qualifiers — giving you the raw value type.
-        // std::forward<T>(event) moves if rvalue, copies if lvalue — exactly what EnTT expects.
+        // std::forward<T>(value) moves if rvalue, copies if lvalue — exactly what EnTT expects.
         template<typename T>
-        void trigger(T&& event) {
+        void trigger(T&& value) {
             ST_ASSERT_NOT_NULL(config.dispatcher);
 
             //
@@ -135,26 +129,34 @@ namespace Storytime {
             // `std::forward<T>(x)` preserves the value category (lvalue/rvalue) of arguments when forwarding them to the `enqueue`
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             //
-            config.dispatcher->trigger<std::decay_t<T>>(std::forward<T>(event));
+            config.dispatcher->trigger<std::decay_t<T>>(std::forward<T>(value));
 
-            ST_LOG_TRACE("Triggered event [{}]", type_name<T>());
+            ST_LOG_TRACE("Triggered value [{}]", type_name<T>());
         }
 
         /// Add an object of a given type to a queue to be dispatched later.
         /// @tparam T The type of the object.
-        /// @tparam Args Additional argument types needed to construct the event.
-        /// @param args Additional arguments needed to construct the event.
+        /// @tparam Args Additional argument types needed to construct the value.
+        /// @param args Additional arguments needed to construct the value.
         template<typename T, typename... Args>
         void enqueue(Args&&... args) {
             ST_ASSERT_NOT_NULL(config.dispatcher);
 
-            // `std::forward<T>(x)` preserves the value category (lvalue/rvalue) of arguments when forwarding them to the `enqueue`
+            // `std::forward<T>(value)` preserves the value category (lvalue/rvalue) of arguments when forwarding them to the `enqueue`
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             config.dispatcher->enqueue<T>(std::forward<Args>(args)...);
 
-            ST_LOG_TRACE("Enqueued event [{}]", type_name<T>());
+            ST_LOG_TRACE("Enqueued value [{}]", type_name<T>());
         }
 
         void update() const;
+
+        /// Get the sink for a type. A sink manages the subscribers for a type. Each type `T` has its own sink.
+        /// @tparam T The sink type.
+        /// @return The sink.
+        template<typename T>
+        Sink<T> sink() const {
+            return config.dispatcher->sink<T>();
+        }
     };
 }

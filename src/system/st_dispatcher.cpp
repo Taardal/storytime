@@ -1,9 +1,19 @@
 #include "st_dispatcher.h"
 
+#include <ranges>
+
 namespace Storytime {
     u32 Dispatcher::next_subscription_id = 0;
 
     Dispatcher::Dispatcher(const DispatcherConfig& config) : config(config) {
+    }
+
+    Dispatcher::~Dispatcher() {
+        for (entt::connection& connection : subscription_connections | std::views::values) {
+            connection.release();
+        }
+        subscription_connections.clear();
+        subscription_functions.clear();
     }
 
     void Dispatcher::update() const {
