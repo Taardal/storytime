@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event/st_event_manager.h"
+#include "system/st_dispatcher.h"
 
 #include <GLFW/glfw3.h>
 
@@ -15,7 +15,7 @@ namespace Storytime {
     };
 
     struct WindowConfig {
-        EventManager* event_manager = nullptr;
+        Dispatcher* dispatcher = nullptr;
         std::string title;
         i32 width;
         i32 height;
@@ -40,7 +40,7 @@ namespace Storytime {
 
         operator GLFWwindow*() const;
 
-        static void process_events();
+        static void poll_events();
 
         void swap_buffers() const;
 

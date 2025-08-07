@@ -1,7 +1,6 @@
 #include "st_run.h"
 
 #include "audio/st_audio_engine.h"
-#include "event/st_event_manager.h"
 #include "event/st_window_closed_event.h"
 #include "event/st_window_resized_event.h"
 #include "graphics/st_open_gl.h"
@@ -9,6 +8,7 @@
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_clock.h"
+#include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_game_loop_metrics.h"
 #include "system/st_service_locator.h"
@@ -47,21 +47,18 @@ namespace Storytime {
             ST_LOG_INFO("Initializing...");
             ServiceLocator service_locator;
 
-            EventManager event_manager({
-                .queue_count = 1,
-            });
-            service_locator.set<EventManager>(&event_manager);
+            Dispatcher dispatcher{};
+            service_locator.set<Dispatcher>(&dispatcher);
 
             std::vector<SubscriptionID> event_subscriptions;
 
             event_subscriptions.push_back(
-                event_manager.subscribe(WindowClosedEvent::type, [&](const Event&) {
+                dispatcher.subscribe<WindowClosedEvent>([&](const WindowClosedEvent&) {
                     stop();
                 })
             );
 
             Window window({
-                .event_manager = &event_manager,
                 .title = config.window_title,
                 .width = config.window_width,
                 .height = config.window_height,
@@ -70,12 +67,13 @@ namespace Storytime {
                 .resizable = config.window_resizable,
                 .context_version_major = config.open_gl_version_major,
                 .context_version_minor = config.open_gl_version_minor,
+                .dispatcher = &dispatcher,
             });
             service_locator.set<Window>(&window);
 
             Keyboard keyboard({
                 .window = &window,
-                .event_manager = &event_manager,
+                .dispatcher = &dispatcher,
             });
             service_locator.set<Keyboard>(&keyboard);
 
@@ -113,11 +111,10 @@ namespace Storytime {
                 },
             });
             event_subscriptions.push_back(
-                event_manager.subscribe(WindowResizedEvent::type, [&renderer](const Event& event) {
-                    auto& window_resize_event = (WindowResizedEvent&) event;
+                dispatcher.subscribe<WindowResizedEvent>([&renderer](const WindowResizedEvent& event) {
                     renderer.set_viewport({
-                        .width = window_resize_event.width,
-                        .height = window_resize_event.height,
+                        .width = event.width,
+                        .height = event.height,
                     });
                 })
             );
@@ -127,7 +124,6 @@ namespace Storytime {
             ImGuiRenderer imgui_renderer({
                 .settings_file_path = config.imgui_settings_file_path,
                 .glsl_version = config.glsl_version,
-                .event_manager = &event_manager,
                 .window = &window,
                 .keyboard = &keyboard,
                 .mouse = &mouse,
@@ -144,7 +140,7 @@ namespace Storytime {
             Storytime storytime(
                 &const_cast<Config&>(config),
                 &service_locator,
-                &event_manager
+                &dispatcher
             );
 
             on_create(storytime);
@@ -185,7 +181,7 @@ namespace Storytime {
                 //
 
                 TimePoint window_event_start_time = Time::now();
-                window.process_events();
+                window.poll_events();
                 TimePoint window_event_end_time = Time::now();
 
                 //
@@ -207,16 +203,6 @@ namespace Storytime {
 
                 TimePoint update_end_time = Time::now();
                 f64 update_end_lag_ms = game_clock_lag_ms;
-
-                // Process game events between updating and rendering to have any changes in the game state
-                // be rendered in the same cycle.
-                TimePoint game_event_start_time = Time::zero();
-                TimePoint game_event_end_time = Time::zero();
-                if (update_count > 0) {
-                    game_event_start_time = Time::now();
-                    event_manager.process_events();
-                    game_event_end_time = Time::now();
-                }
 
                 //
                 // RENDER
@@ -257,7 +243,6 @@ namespace Storytime {
                 metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
 #endif
                 metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
-                metrics.game_events_duration_ms = Time::as<Microseconds>(game_event_end_time - game_event_start_time).count() / 1000.0;
                 metrics.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
                 metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
             }
@@ -267,7 +252,7 @@ namespace Storytime {
             on_destroy();
             ST_LOG_INFO("Destroyed client");
 
-            event_manager.unsubscribe_and_clear(event_subscriptions);
+            dispatcher.unsubscribe_and_clear(event_subscriptions);
             ST_LOG_DEBUG("Unsubscribed event listeners");
 
         } catch (const Error& e) {

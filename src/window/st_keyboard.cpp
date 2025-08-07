@@ -47,33 +47,30 @@ namespace Storytime {
 
     void Keyboard::initialize() {
         event_subscriptions.push_back(
-            config.event_manager->subscribe(KeyPressedEvent::type, [this](const Event& e) {
+            config.dispatcher->subscribe<KeyPressedEvent>([this](const KeyPressedEvent& event) {
                 if (!enabled) {
                     return;
                 }
-                auto& event = (KeyPressedEvent&) e;
                 for (auto subscription : on_pressed_subscriptions) {
                     subscription(event);
                 }
             })
         );
         event_subscriptions.push_back(
-            config.event_manager->subscribe(KeyReleasedEvent::type, [this](const Event& e) {
+            config.dispatcher->subscribe<KeyReleasedEvent>([this](const KeyReleasedEvent& event) {
                 if (!enabled) {
                     return;
                 }
-                auto& event = (KeyReleasedEvent&) e;
                 for (auto subscription : on_released_subscriptions) {
                     subscription(event);
                 }
             })
         );
         event_subscriptions.push_back(
-            config.event_manager->subscribe(KeyRepeatedEvent::type, [this](const Event& e) {
+            config.dispatcher->subscribe<KeyRepeatedEvent>([this](const KeyRepeatedEvent& event) {
                 if (!enabled) {
                     return;
                 }
-                auto& event = (KeyRepeatedEvent&) e;
                 for (auto subscription : on_repeated_subscriptions) {
                     subscription(event);
                 }
@@ -85,6 +82,6 @@ namespace Storytime {
         on_repeated_subscriptions.clear();
         on_released_subscriptions.clear();
         on_pressed_subscriptions.clear();
-        config.event_manager->unsubscribe_and_clear(event_subscriptions);
+        config.dispatcher->unsubscribe_and_clear(event_subscriptions);
     }
 }

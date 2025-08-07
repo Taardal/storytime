@@ -14,8 +14,6 @@
 
 // Event
 #include "event/st_event.h"
-#include "event/st_event_handler.h"
-#include "event/st_event_manager.h"
 #include "event/st_events.h"
 #include "event/st_key_pressed_event.h"
 #include "event/st_key_released_event.h"
@@ -43,7 +41,6 @@
 
 // Lua
 #include "lua/st_lua_dispatcher_binding.h"
-#include "lua/st_lua_event_manager_binding.h"
 #include "lua/st_lua_function.h"
 #include "lua/st_lua_glm_binding.h"
 #include "lua/st_lua_keyboard_binding.h"
@@ -86,6 +83,7 @@
 #include "system/st_msgpack_glm_adaptor.h"
 #include "system/st_msgpack_utils.h"
 #include "system/st_random.h"
+#include "system/st_scoped_subscriber.h"
 #include "system/st_variant.h"
 
 // Tiled

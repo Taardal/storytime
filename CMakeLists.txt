@@ -34,10 +34,6 @@ add_library(
     ${ST_SRC_DIR}/audio/st_audio_engine.h
     ${ST_SRC_DIR}/event/st_event.cpp
     ${ST_SRC_DIR}/event/st_event.h
-    ${ST_SRC_DIR}/event/st_event_handler.cpp
-    ${ST_SRC_DIR}/event/st_event_handler.h
-    ${ST_SRC_DIR}/event/st_event_manager.cpp
-    ${ST_SRC_DIR}/event/st_event_manager.h
     ${ST_SRC_DIR}/event/st_events.h
     ${ST_SRC_DIR}/event/st_key_pressed_event.cpp
     ${ST_SRC_DIR}/event/st_key_pressed_event.h
@@ -103,8 +99,6 @@ add_library(
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
     ${ST_SRC_DIR}/lua/st_lua_error.h
-    ${ST_SRC_DIR}/lua/st_lua_event_manager_binding.cpp
-    ${ST_SRC_DIR}/lua/st_lua_event_manager_binding.h
     ${ST_SRC_DIR}/lua/st_lua_function.cpp
     ${ST_SRC_DIR}/lua/st_lua_function.h
     ${ST_SRC_DIR}/lua/st_lua_glm_binding.cpp
@@ -182,6 +176,8 @@ add_library(
     ${ST_SRC_DIR}/system/st_pointers.h
     ${ST_SRC_DIR}/system/st_random.cpp
     ${ST_SRC_DIR}/system/st_random.h
+    ${ST_SRC_DIR}/system/st_scoped_subscriber.cpp
+    ${ST_SRC_DIR}/system/st_scoped_subscriber.h
     ${ST_SRC_DIR}/system/st_size.cpp
     ${ST_SRC_DIR}/system/st_size.h
     ${ST_SRC_DIR}/system/st_utils.cpp

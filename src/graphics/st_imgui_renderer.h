@@ -6,7 +6,6 @@
 
 namespace Storytime {
     struct ImGuiRendererConfig {
-        EventManager* event_manager = nullptr;
         Keyboard* keyboard = nullptr;
         Mouse* mouse = nullptr;
         Window* window = nullptr;

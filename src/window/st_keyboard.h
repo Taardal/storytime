@@ -11,7 +11,7 @@ namespace Storytime {
 
     struct KeyboardConfig {
         Window* window = nullptr;
-        EventManager* event_manager = nullptr;
+        Dispatcher* dispatcher = nullptr;
     };
 
     class Keyboard {

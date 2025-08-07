@@ -1,8 +1,8 @@
 #pragma once
 
 #include "system/st_command_line_arguments.h"
+#include "system/st_dispatcher.h"
 #include "system/st_service_locator.h"
-#include "event/st_event_manager.h"
 
 namespace Storytime {
     struct Config {
@@ -30,11 +30,11 @@ namespace Storytime {
     private:
         Config* config = nullptr;
         ServiceLocator* service_locator = nullptr;
-        EventManager* event_manager = nullptr;
+        Dispatcher* dispatcher = nullptr;
 
     public:
-        Storytime(Config* config, ServiceLocator* service_locator, EventManager* event_manager)
-            : config(config), service_locator(service_locator), event_manager(event_manager) {
+        Storytime(Config* config, ServiceLocator* service_locator, Dispatcher* dispatcher)
+            : config(config), service_locator(service_locator), dispatcher(dispatcher) {
         }
 
         const Config& cfg() const {
@@ -53,9 +53,10 @@ namespace Storytime {
             return service_locator->get<T>();
         }
 
-        SubscriptionID subscribe(EventType event_type, const Subscription& subscription) const {
-            ST_ASSERT(event_manager != nullptr, "Event manager cannot be null");
-            return event_manager->subscribe(event_type, subscription);
+        template<typename T>
+        SubscriptionID subscribe(const SubscriptionFn<T>& subscription_fn) const {
+            ST_ASSERT(dispatcher != nullptr, "Dispatcher cannot be null");
+            return dispatcher->subscribe<T>(subscription_fn);
         }
 
         void set_log_level(LogLevel log_level) const {

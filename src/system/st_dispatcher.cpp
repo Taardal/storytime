@@ -5,7 +5,10 @@
 namespace Storytime {
     u32 Dispatcher::next_subscription_id = 0;
 
-    Dispatcher::Dispatcher(const DispatcherConfig& config) : config(config) {
+    Dispatcher::Dispatcher() : dispatcher(entt::dispatcher()) {}
+
+    Dispatcher::Dispatcher(entt::dispatcher& dispatcher) : dispatcher(entt::dispatcher()) {
+        this->dispatcher.swap(dispatcher);
     }
 
     Dispatcher::~Dispatcher() {
@@ -17,8 +20,7 @@ namespace Storytime {
     }
 
     void Dispatcher::update() const {
-        ST_ASSERT_NOT_NULL(config.dispatcher);
-        config.dispatcher->update();
+        dispatcher.update();
     }
 
     bool Dispatcher::unsubscribe(i32 subscription_id) {
@@ -45,5 +47,25 @@ namespace Storytime {
             ST_LOG_WARNING("Could not remove subscription with ID [{}] because it did not exist", subscription_id);
         }
         return unsubscribed;
+    }
+
+    bool Dispatcher::unsubscribe_all(const std::vector<SubscriptionID>& subscription_ids) {
+        for (SubscriptionID subscription_id : subscription_ids) {
+            bool unsubscribed = unsubscribe(subscription_id);
+            if (!unsubscribed) {
+                ST_LOG_WARNING("Could not remove subscription with ID [{}]", subscription_id);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool Dispatcher::unsubscribe_and_clear(std::vector<SubscriptionID>& subscription_ids) {
+        bool unsubscribed = unsubscribe_all(subscription_ids);
+        if (!unsubscribed) {
+            return false;
+        }
+        subscription_ids.clear();
+        return true;
     }
 }
