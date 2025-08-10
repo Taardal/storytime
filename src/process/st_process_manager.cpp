@@ -92,6 +92,8 @@ namespace Storytime {
     }
 
     void ProcessManager::clear() {
+        bool abort_immediately = true;
+        abort(abort_immediately);
         processes.clear();
     }
 

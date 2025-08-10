@@ -4,10 +4,10 @@
 
 #ifdef ST_ENABLE_ASSERT
     #define ST_ASSERT_VALID_ENTITY() \
-    ST_ASSERT(entity != entt::null, "Invalid entity"); \
-    ST_ASSERT(entity_registry != nullptr, "Invalid entity registry")
+        ST_ASSERT(entity != entt::null, "Invalid entity"); \
+        ST_ASSERT(entity_registry != nullptr, "Invalid entity registry")
 #else
-    ST_ASSERT_VALID_ENTITY()
+    #define ST_ASSERT_VALID_ENTITY()
 #endif
 
 namespace Storytime {

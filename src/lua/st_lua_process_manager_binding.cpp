@@ -86,29 +86,14 @@ namespace Storytime {
     }
 
     i32 LuaProcessManagerBinding::lua_abort(lua_State* L) {
-        bool abort_immediately = false;
-        i32 binding_index = -1;
+        ST_ASSERT(lua_isuserdata(L, -1), "The process manager binding must be at expected stack location");
 
-        bool abort_immediately_argument_exists = lua_isboolean(L, -1);
-        if (abort_immediately_argument_exists) {
-            abort_immediately = lua_toboolean(L, -1);
-            binding_index--; // If the optional `abort_immediately` argument exists, the binding must be one index lower.
-        } else {
-            ST_ASSERT(
-                lua_isuserdata(L, -1),
-                "The process manager binding must be at expected stack location when the `abort_immediately` argument is not supplied"
-            );
-        }
-
-        ST_ASSERT(
-            lua_isuserdata(L, binding_index),
-            "The process manager binding must be at expected stack location"
-        );
-
-        auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, binding_index);
+        auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
 
+        bool abort_immediately = false;
         process_manager_binding->process_manager->abort(abort_immediately);
+
         return 0;
     }
 

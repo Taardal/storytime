@@ -35,12 +35,12 @@ namespace Storytime {
         const TiledProperty* try_get_property(const std::string& name) const;
 
         template<typename T>
-        T get_property_value(const std::string& name) {
+        T get_property_value(const std::string& name) const {
             return get_tiled_property_value<T>(properties, name);
         }
 
         template<typename T>
-        std::optional<T> try_get_property_value(const std::string& name) {
+        std::optional<T> try_get_property_value(const std::string& name) const {
             return try_get_tiled_property_value<T>(properties, name);
         }
     };

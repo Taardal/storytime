@@ -125,9 +125,9 @@ namespace Storytime {
         /// @return True if all functions was unsubscribed.
         bool unsubscribe_and_clear(std::vector<SubscriptionID>& subscription_ids);
 
-        // T&& makes this a universal reference (aka forwarding reference).
-        // std::decay_t<T> strips off references and const qualifiers — giving you the raw value type.
-        // std::forward<T>(value) moves if rvalue, copies if lvalue — exactly what EnTT expects.
+        /// Dispatch an object of a given type to a sink immediately.
+        /// @tparam T The type of the object.
+        /// @param value The object to trigger.
         template<typename T>
         void trigger(T&& value) {
             //
