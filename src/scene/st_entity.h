@@ -38,7 +38,7 @@ namespace Storytime {
         template<typename T>
         T& get() {
             ST_ASSERT_VALID_ENTITY();
-            ST_ASSERT(has<T>(), "Entity must have component [" << type_name<T>() << "]");
+            ST_ASSERT(has<T>(), "Entity [" << (u32) entity << "] must have component [" << type_name<T>() << "]");
             return entity_registry->get<T>(entity);
         }
 
