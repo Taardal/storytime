@@ -57,4 +57,12 @@ namespace Storytime {
     bool Rectangle::intersects_with(const Rectangle& other) const {
         return intersects(*this, other);
     }
+
+    bool Rectangle::intersects_horizontally_with(const Rectangle& other) const {
+        return intersects_horizontally(*this, other);
+    }
+
+    bool Rectangle::intersects_vertically_with(const Rectangle& other) const {
+        return intersects_vertically(*this, other);
+    }
 }

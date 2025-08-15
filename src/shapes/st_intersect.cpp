@@ -121,19 +121,14 @@ namespace Storytime {
     }
 
     bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
-        f32 a_left = rectangle_a.get_left();
-        f32 a_right = rectangle_a.get_right();
-        f32 a_top = rectangle_a.get_top();
-        f32 a_bottom = rectangle_a.get_bottom();
+        return intersects_horizontally(rectangle_a, rectangle_b) && intersects_vertically(rectangle_a, rectangle_b);
+    }
 
-        f32 b_left = rectangle_b.get_left();
-        f32 b_right = rectangle_b.get_right();
-        f32 b_top = rectangle_b.get_top();
-        f32 b_bottom = rectangle_b.get_bottom();
+    bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
+        return rectangle_a.get_left() < rectangle_b.get_right() - epsilon && rectangle_a.get_right() > rectangle_b.get_left() + epsilon;
+    }
 
-        bool intersects_horizontally = a_left < b_right - epsilon && a_right > b_left + epsilon;
-        bool intersects_vertically = a_top < b_bottom - epsilon && a_bottom > b_top + epsilon;
-
-        return intersects_horizontally && intersects_vertically;
+    bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
+        return rectangle_a.get_top() < rectangle_b.get_bottom() - epsilon && rectangle_a.get_bottom() > rectangle_b.get_top() + epsilon;
     }
 }

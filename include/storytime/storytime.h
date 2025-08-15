@@ -73,16 +73,12 @@
 #include "shapes/st_shape.h"
 
 // System
-// #include "system/st_binary_to_from.h"
 #include "system/st_clock.h"
 #include "system/st_defer.h"
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
 #include "system/st_game_loop_metrics.h"
-// #include "system/st_msgpack_filesystem_adaptor.h"
-// #include "system/st_msgpack_glm_adaptor.h"
-// #include "system/st_msgpack_utils.h"
 #include "system/st_random.h"
 #include "system/st_scoped_subscriber.h"
 #include "system/st_variant.h"

@@ -145,7 +145,6 @@ add_library(
     ${ST_SRC_DIR}/shapes/st_shape.cpp
     ${ST_SRC_DIR}/shapes/st_shape.h
     ${ST_SRC_DIR}/system/st_assert.h
-#    ${ST_SRC_DIR}/system/st_binary_to_from.h
     ${ST_SRC_DIR}/system/st_clock.cpp
     ${ST_SRC_DIR}/system/st_clock.h
     ${ST_SRC_DIR}/system/st_command_line_arguments.cpp
@@ -168,11 +167,6 @@ add_library(
     ${ST_SRC_DIR}/system/st_memory.h
     ${ST_SRC_DIR}/system/st_memory_allocator.cpp
     ${ST_SRC_DIR}/system/st_memory_allocator.h
-#    ${ST_SRC_DIR}/system/st_msgpack_filesystem_adaptor.h
-#    ${ST_SRC_DIR}/system/st_msgpack_glm_adaptor.h
-#    ${ST_SRC_DIR}/system/st_msgpack_to_from.h
-#    ${ST_SRC_DIR}/system/st_msgpack_utils.cpp
-#    ${ST_SRC_DIR}/system/st_msgpack_utils.h
     ${ST_SRC_DIR}/system/st_pointers.h
     ${ST_SRC_DIR}/system/st_random.cpp
     ${ST_SRC_DIR}/system/st_random.h
@@ -364,19 +358,6 @@ target_link_libraries(${ST_TARGET} nlohmann_json::nlohmann_json)
 find_package(Lua REQUIRED)
 target_include_directories(${ST_TARGET} PUBLIC ${LUA_INCLUDE_DIR})
 target_link_libraries(${ST_TARGET} ${LUA_LIBRARIES})
-
-# Message Pack
-#set(MSGPACK_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-#set(MSGPACK_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-#set(MSGPACK_CXX_STANDARD 17 CACHE STRING "" FORCE)
-#set(MSGPACK_USE_BOOST OFF CACHE BOOL "" FORCE)
-#FetchContent_Declare(
-#    msgpack
-#    GIT_REPOSITORY https://github.com/msgpack/msgpack-c.git
-#    GIT_TAG cpp-4.1.2
-#)
-#FetchContent_MakeAvailable(msgpack)
-#target_link_libraries(${ST_TARGET} msgpackc-cxx)
 
 # Miniaudio
 FetchContent_Declare(

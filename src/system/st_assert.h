@@ -40,13 +40,9 @@
 
     #define ST_ASSERT_NOT_CEMPTY(value) \
         ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
-
-    #define ST_ASSERT_TRUE(expression) \
-        ST_ASSERT(expression, "Expression [" << #expression << "] must be true")
 #else
     #define ST_ASSERT(expression, message)
     #define ST_ASSERT_NOT_NULL(pointer)
     #define ST_ASSERT_NOT_EMPTY(value)
     #define ST_ASSERT_NOT_CEMPTY(value)
-    #define ST_ASSERT_TRUE(expression)
 #endif

@@ -54,4 +54,8 @@ namespace Storytime {
     bool intersects(const Rectangle& rectangle, const Polygon& polygon);
 
     bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b);
+
+    bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b);
+
+    bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b);
 }
