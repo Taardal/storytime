@@ -7,8 +7,6 @@
 
 namespace Storytime {
 
-    constexpr float epsilon = 0.01f;
-
     // ------------------------------------------------------------------------------------
     // Ellipse
     // ------------------------------------------------------------------------------------
@@ -74,8 +72,8 @@ namespace Storytime {
     }
 
     bool intersects(const Point& point, const Rectangle& rectangle) {
-        bool point_inside_rectangle_x = point.x > rectangle.get_left() - epsilon && point.x < rectangle.get_right() + epsilon;
-        bool point_inside_rectangle_y = point.y > rectangle.get_top() - epsilon && point.y < rectangle.get_bottom() + epsilon;
+        bool point_inside_rectangle_x = point.x > rectangle.get_left() - intersection_epsilon && point.x < rectangle.get_right() + intersection_epsilon;
+        bool point_inside_rectangle_y = point.y > rectangle.get_top() - intersection_epsilon && point.y < rectangle.get_bottom() + intersection_epsilon;
         return point_inside_rectangle_x && point_inside_rectangle_y;
     }
 
@@ -120,15 +118,15 @@ namespace Storytime {
         return false;
     }
 
-    bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
-        return intersects_horizontally(rectangle_a, rectangle_b) && intersects_vertically(rectangle_a, rectangle_b);
+    bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
+        return intersects_horizontally(rectangle_a, rectangle_b, epsilon) && intersects_vertically(rectangle_a, rectangle_b, epsilon);
     }
 
-    bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
+    bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
         return rectangle_a.get_left() < rectangle_b.get_right() - epsilon && rectangle_a.get_right() > rectangle_b.get_left() + epsilon;
     }
 
-    bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b) {
+    bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
         return rectangle_a.get_top() < rectangle_b.get_bottom() - epsilon && rectangle_a.get_bottom() > rectangle_b.get_top() + epsilon;
     }
 }

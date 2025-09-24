@@ -34,6 +34,10 @@ namespace Storytime {
 
         Sprite(const SpriteConfig& config);
 
+        bool is_valid() const;
+
+        void invalidate();
+
         Shared<Texture> get_texture();
 
         u32 get_width() const;

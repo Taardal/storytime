@@ -34,7 +34,6 @@ add_library(
     ${ST_SRC_DIR}/audio/st_audio_engine.h
     ${ST_SRC_DIR}/event/st_event.cpp
     ${ST_SRC_DIR}/event/st_event.h
-    ${ST_SRC_DIR}/event/st_events.h
     ${ST_SRC_DIR}/event/st_key_pressed_event.cpp
     ${ST_SRC_DIR}/event/st_key_pressed_event.h
     ${ST_SRC_DIR}/event/st_key_released_event.cpp

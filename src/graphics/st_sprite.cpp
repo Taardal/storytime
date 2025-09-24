@@ -5,6 +5,16 @@ namespace Storytime {
         ST_ASSERT(config.spritesheet_texture != nullptr, "Sprite must have a texture");
     }
 
+    bool Sprite::is_valid() const {
+        return config.spritesheet_texture != nullptr && config.width > 0 && config.height > 0;
+    }
+
+    void Sprite::invalidate() {
+        config.spritesheet_texture = nullptr;
+        config.width = 0;
+        config.height = 0;
+    }
+
     Shared<Texture> Sprite::get_texture() {
         return config.spritesheet_texture;
     }
@@ -24,8 +34,8 @@ namespace Storytime {
     void Sprite::render(Renderer* renderer, const SpriteRenderConfig& render_config) const {
         Quad quad = {
             .texture = config.spritesheet_texture,
-            .size = { (f32) config.width, (f32) config.height },
             .position = { render_config.position.x, render_config.position.y, 0.0f },
+            .size = { (f32) config.width, (f32) config.height },
         };
 
         bool flipped = render_config.flipped_horizontally || render_config.flipped_vertically || render_config.flipped_diagonally;
@@ -36,7 +46,7 @@ namespace Storytime {
 
         // Sprite should be flipped
         // Copy the texture coordinates to preserve the normal/unflipped ones
-        auto texture_coordinates = config.spritesheet_texture_coordinates;
+        std::array<TextureCoordinate, 4> texture_coordinates = config.spritesheet_texture_coordinates;
 
         // Switch left and right texture coordinates to flip sprite horizontally
         if (render_config.flipped_horizontally) {
