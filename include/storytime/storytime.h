@@ -6,7 +6,8 @@
 
 // Entrypoint
 #include "st_pch.h"
-#include "st_run.h"
+#include "st_main.h"
+#include "st_config.h"
 
 // Audio
 #include "audio/st_audio.h"
@@ -30,13 +31,9 @@
 #include "graphics/st_animation.h"
 #include "graphics/st_bitmap_font.h"
 #include "graphics/st_camera.h"
+#include "graphics/st_imgui_renderer.h"
 #include "graphics/st_spritesheet.h"
 #include "graphics/st_view_projection.h"
-#ifdef ST_IMGUI_ENABLED
-    #include <imgui.h>
-    #include <imgui_internal.h>
-    #include "graphics/st_imgui_renderer.h"
-#endif
 
 // Lua
 #include "lua/st_lua_dispatcher_binding.h"
@@ -73,13 +70,14 @@
 
 // System
 #include "system/st_clock.h"
+#include "system/st_command_line_arguments.h"
 #include "system/st_defer.h"
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
 #include "system/st_game_loop_metrics.h"
 #include "system/st_random.h"
-#include "system/st_scoped_subscriber.h"
+#include "system/st_subscriber.h"
 #include "system/st_variant.h"
 
 // Tiled

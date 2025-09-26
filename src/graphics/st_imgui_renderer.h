@@ -6,9 +6,9 @@
 
 namespace Storytime {
     struct ImGuiRendererConfig {
+        Window* window = nullptr;
         Keyboard* keyboard = nullptr;
         Mouse* mouse = nullptr;
-        Window* window = nullptr;
         std::filesystem::path settings_file_path;
         std::string glsl_version;
     };

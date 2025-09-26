@@ -5,8 +5,6 @@
 namespace Storytime {
     u32 Dispatcher::next_subscription_id = 0;
 
-    Dispatcher::Dispatcher() : dispatcher(entt::dispatcher()) {}
-
     Dispatcher::Dispatcher(entt::dispatcher& dispatcher) : dispatcher(entt::dispatcher()) {
         this->dispatcher.swap(dispatcher);
     }
@@ -60,9 +58,9 @@ namespace Storytime {
         return true;
     }
 
-    bool Dispatcher::unsubscribe_and_clear(std::vector<SubscriptionID>& subscription_ids) {
-        bool unsubscribed = unsubscribe_all(subscription_ids);
-        if (!unsubscribed) {
+    bool Dispatcher::unsubscribe_all_and_clear(std::vector<SubscriptionID>& subscription_ids) {
+        bool unsubscribed_all = unsubscribe_all(subscription_ids);
+        if (!unsubscribed_all) {
             return false;
         }
         subscription_ids.clear();

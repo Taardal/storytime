@@ -14,11 +14,18 @@
 
 namespace Storytime {
     Window::Window(const WindowConfig& config) : config(config) {
+        ST_ASSERT(config.width > 0, "Window width must be greater than zero");
+        i32 width = config.width;
+
+        ST_ASSERT(config.height > 0 || config.aspect_ratio > 0.0f, "Window height or aspect ratio must be greater than zero");
+        i32 height = config.aspect_ratio > 0.0f ? (f32) config.width / config.aspect_ratio : config.height;
+
         ST_LOG_TRACE("Initializing GLFW");
         if (!glfwInit()) {
             ST_THROW("Could not initialize GLFW");
         }
         ST_LOG_DEBUG("Initialized GLFW");
+
         glfwSetErrorCallback(on_glfw_error);
 
         ST_LOG_TRACE("Setting GLFW window hints");
@@ -27,23 +34,31 @@ namespace Storytime {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_MAXIMIZED, config.maximized);
         glfwWindowHint(GLFW_RESIZABLE, config.resizable);
+
 #ifdef ST_PLATFORM_MACOS
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
 #endif
         ST_LOG_DEBUG("GLFW context version [{0}.{1}]", config.context_version_major, config.context_version_minor);
 
-        ST_ASSERT(config.width > 0, "Window width must be greater than zero");
-        ST_ASSERT(config.height > 0 || config.aspect_ratio > 0.0f, "Window height or aspect ratio must be greater than zero");
-        i32 height = config.aspect_ratio > 0.0f ? (f32) config.width / config.aspect_ratio : config.height;
+        GLFWmonitor* fullscreen_monitor = nullptr;
+        if (config.fullscreen) {
+            fullscreen_monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* video_mode = glfwGetVideoMode(fullscreen_monitor);
+            glfwWindowHint(GLFW_RED_BITS, video_mode->redBits);
+            glfwWindowHint(GLFW_GREEN_BITS, video_mode->greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS, video_mode->blueBits);
+            glfwWindowHint(GLFW_REFRESH_RATE, video_mode->refreshRate);
+        }
+
+        GLFWwindow* shared_window = nullptr;
 
         ST_LOG_TRACE("Creating GLFW window");
-        GLFWmonitor* fullscreen_monitor = nullptr;
-        GLFWwindow* shared_window = nullptr;
-        glfw_window = glfwCreateWindow(config.width, height, config.title.c_str(), fullscreen_monitor, shared_window);
+        glfw_window = glfwCreateWindow(width, height, config.title.c_str(), fullscreen_monitor, shared_window);
         if (glfw_window == nullptr) {
             ST_THROW("Could not create GLFW window");
         }
-        ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, config.width, config.height);
+        ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, width, height);
 
         glfwMakeContextCurrent(glfw_window);
         glfwSetWindowUserPointer(glfw_window, this);
@@ -57,7 +72,9 @@ namespace Storytime {
         glfwSetWindowFocusCallback(glfw_window, on_window_focus_change);
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
 
-        ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, config.width, config.height);
+        glfwSwapInterval(config.vsync ? 1 : 0);
+
+        ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, width, height);
     }
 
     Window::~Window() {

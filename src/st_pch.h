@@ -5,6 +5,7 @@
 // --------------------------------------------------------------------------------------------------------------
 
 #include <algorithm>
+#include <any>
 #include <array>
 #include <filesystem>
 #include <iostream>
@@ -43,6 +44,10 @@
 
 // Lua
 #include <lua.hpp>
+
+// ImGui
+#include <imgui.h>
+#include <imgui_internal.h>
 
 // --------------------------------------------------------------------------------------------------------------
 // App

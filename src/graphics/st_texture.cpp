@@ -79,6 +79,7 @@ namespace Storytime {
             GL_UNSIGNED_BYTE,
             pixels
         ));
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     void Texture::bind(u32 texture_slot) const {
@@ -95,7 +96,7 @@ namespace Storytime {
         ST_GL_CALL(glBindTexture(TARGET, id));
         ST_GL_CALL(glTexParameteri(TARGET, GL_TEXTURE_WRAP_S, GL_REPEAT));
         ST_GL_CALL(glTexParameteri(TARGET, GL_TEXTURE_WRAP_T, GL_REPEAT));
-        ST_GL_CALL(glTexParameteri(TARGET, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        ST_GL_CALL(glTexParameteri(TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST));
         ST_GL_CALL(glTexParameteri(TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
 }

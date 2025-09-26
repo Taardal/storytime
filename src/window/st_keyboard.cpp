@@ -82,6 +82,6 @@ namespace Storytime {
         on_repeated_subscriptions.clear();
         on_released_subscriptions.clear();
         on_pressed_subscriptions.clear();
-        config.dispatcher->unsubscribe_and_clear(event_subscriptions);
+        config.dispatcher->unsubscribe_all_and_clear(event_subscriptions);
     }
 }

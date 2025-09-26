@@ -20,8 +20,10 @@ namespace Storytime {
         i32 width;
         i32 height;
         f32 aspect_ratio;
+        bool fullscreen;
         bool maximized;
         bool resizable;
+        bool vsync;
         u32 context_version_major;
         u32 context_version_minor;
     };
@@ -34,7 +36,7 @@ namespace Storytime {
         bool keyboard_events_enabled = true;
 
     public:
-        explicit Window(const WindowConfig& config);
+        Window(const WindowConfig& config);
 
         ~Window();
 

@@ -1,7 +1,7 @@
 #include "st_open_gl.h"
 
 namespace Storytime {
-    void OpenGL::initialize(const OpenGLConfig& config) {
+    OpenGL::OpenGL(const OpenGLConfig& config) {
         // GLFW must have a current context before initializing GLAD
         ST_ASSERT(config.window != nullptr, "Invalid window");
         glfwMakeContextCurrent(*config.window);

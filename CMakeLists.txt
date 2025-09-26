@@ -26,8 +26,12 @@ endif ()
 
 add_library(
     ${ST_TARGET}
-    ${ST_SRC_DIR}/st_run.cpp
-    ${ST_SRC_DIR}/st_run.h
+    ${ST_SRC_DIR}/st_app.h
+    ${ST_SRC_DIR}/st_config.h
+    ${ST_SRC_DIR}/st_engine.cpp
+    ${ST_SRC_DIR}/st_engine.h
+    ${ST_SRC_DIR}/st_main.cpp
+    ${ST_SRC_DIR}/st_main.h
     ${ST_SRC_DIR}/audio/st_audio.cpp
     ${ST_SRC_DIR}/audio/st_audio.h
     ${ST_SRC_DIR}/audio/st_audio_engine.cpp
@@ -169,10 +173,10 @@ add_library(
     ${ST_SRC_DIR}/system/st_pointers.h
     ${ST_SRC_DIR}/system/st_random.cpp
     ${ST_SRC_DIR}/system/st_random.h
-    ${ST_SRC_DIR}/system/st_scoped_subscriber.cpp
-    ${ST_SRC_DIR}/system/st_scoped_subscriber.h
     ${ST_SRC_DIR}/system/st_size.cpp
     ${ST_SRC_DIR}/system/st_size.h
+    ${ST_SRC_DIR}/system/st_subscriber.cpp
+    ${ST_SRC_DIR}/system/st_subscriber.h
     ${ST_SRC_DIR}/system/st_utils.cpp
     ${ST_SRC_DIR}/system/st_utils.h
     ${ST_SRC_DIR}/system/st_uuid.cpp

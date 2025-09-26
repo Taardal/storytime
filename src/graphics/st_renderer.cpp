@@ -1,4 +1,6 @@
 #include "st_renderer.h"
+
+#include "event/st_window_resized_event.h"
 #include "system/st_log.h"
 #include "system/st_environment.h"
 #include "graphics/st_open_gl.h"
@@ -22,10 +24,25 @@ namespace Storytime {
           reserved_textures_count(0),
           statistics()
     {
+        ST_ASSERT_NOT_NULL(config.dispatcher);
+        config.dispatcher->subscribe<WindowResizedEvent>([this](const WindowResizedEvent& event) {
+            set_viewport({
+                .width = event.width,
+                .height = event.height,
+            });
+        });
+
+        ST_ASSERT_NOT_NULL(config.window);
+        WindowSize window_size_px = config.window->get_size_in_pixels();
+        set_viewport({
+            .width = window_size_px.width,
+            .height = window_size_px.height,
+        });
+
+        set_clear_color({0.1f, 0.1f, 0.1f, 1.0f});
+
         ST_GL_CALL(glEnable(GL_BLEND));
         ST_GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        ST_GL_CALL(glClearColor(config.clear_color.r, config.clear_color.g, config.clear_color.b, config.clear_color.a));
-        ST_GL_CALL(glViewport(config.viewport.x, config.viewport.y, config.viewport.width, config.viewport.height));
 
         vertex_buffer->set_attribute_layout({
             {GLSLType::Vec3, "position"},
@@ -76,6 +93,7 @@ namespace Storytime {
     }
 
     Renderer::~Renderer() {
+        config.dispatcher->unsubscribe_all_and_clear(event_subscriptions);
         shader->unbind();
         vertex_array->unbind();
         delete[] textures;
@@ -87,12 +105,12 @@ namespace Storytime {
         return statistics;
     }
 
-    void Renderer::set_clear_color(const glm::vec4& clear_color) {
-        ST_GL_CALL(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
+    void Renderer::set_viewport(const Viewport& viewport) const {
+        ST_GL_CALL(glViewport(viewport.x, viewport.y, viewport.width, viewport.height));
     }
 
-    void Renderer::set_viewport(const Viewport& viewport) {
-        ST_GL_CALL(glViewport(viewport.x, viewport.y, viewport.width, viewport.height));
+    void Renderer::set_clear_color(const glm::vec4& clear_color) const {
+        ST_GL_CALL(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
     }
 
     void Renderer::set_view_projection(const ViewProjection& view_projection) const {

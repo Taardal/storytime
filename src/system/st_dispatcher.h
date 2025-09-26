@@ -23,12 +23,12 @@ namespace Storytime {
         static SubscriptionID next_subscription_id;
 
     private:
-        entt::dispatcher dispatcher;
+        entt::dispatcher dispatcher{};
         std::map<SubscriptionID, entt::connection> subscription_connections;
         std::map<SubscriptionID, std::shared_ptr<void>> subscription_functions;
 
     public:
-        Dispatcher();
+        Dispatcher() = default;
 
         Dispatcher(entt::dispatcher& dispatcher);
 
@@ -55,6 +55,7 @@ namespace Storytime {
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             //
             dispatcher.sink<T>().template connect<SubscriptionFnPtr>(std::forward<Args>(args)...);
+            ST_LOG_TRACE("Added subscription for type [{}]", type_name<T>());
         }
 
         /// Unsubscribe a function (static or member function) from a type.
@@ -78,6 +79,7 @@ namespace Storytime {
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             //
             dispatcher.sink<T>().template disconnect<SubscriptionFnPtr>(std::forward<Args>(args)...);
+            ST_LOG_TRACE("Removed subscription for type [{}]", type_name<T>());
         }
 
         /// Subscribe a lambda function to a type.
@@ -123,7 +125,7 @@ namespace Storytime {
         /// Unsubscribe all functions from their types. Also clears the provided list of subscription ID's if successful.
         /// @param subscription_ids The subscription ID's to unsubscribe. Will be cleared if successful.
         /// @return True if all functions was unsubscribed.
-        bool unsubscribe_and_clear(std::vector<SubscriptionID>& subscription_ids);
+        bool unsubscribe_all_and_clear(std::vector<SubscriptionID>& subscription_ids);
 
         /// Dispatch an object of a given type to a sink immediately.
         /// @tparam T The type of the object.
@@ -140,11 +142,6 @@ namespace Storytime {
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             //
             dispatcher.trigger<std::decay_t<T>>(std::forward<T>(value));
-            if constexpr (HasToStringFn<T>) {
-                ST_LOG_TRACE("Triggered value [{}]", value.to_string());
-            } else {
-                ST_LOG_TRACE("Triggered value [{}]", type_name<T>());
-            }
         }
 
         /// Add an object of a given type to a sink to be dispatched later.
@@ -153,11 +150,6 @@ namespace Storytime {
         template<typename T>
         void enqueue(T&& value) {
             dispatcher.enqueue<T>(value);
-            if constexpr (HasToStringFn<T>) {
-                ST_LOG_TRACE("Enqueued value [{}]", value.to_string());
-            } else {
-                ST_LOG_TRACE("Enqueued value [{}]", type_name<T>());
-            }
         }
 
         /// Add an object of a given type to a sink to be dispatched later.
@@ -171,7 +163,6 @@ namespace Storytime {
             // function to avoid unnecessary copies or moves. rvalues are forwarded as rvalues, and lvalues are forwarded as lvalues.
             //
             dispatcher.enqueue<T>(std::forward<Args>(args)...);
-            ST_LOG_TRACE("Enqueued value [{}]", type_name<T>());
         }
 
         /// Dispatches all pending values in all sinks.
