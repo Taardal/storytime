@@ -1,6 +1,5 @@
 #include "st_lua_process_binding.h"
 #include "st_lua_function.h"
-#include "st_lua_usertype.h"
 
 namespace Storytime {
     const std::string LuaProcessBinding::metatable_name = "LuaProcessBinding";
@@ -58,18 +57,8 @@ namespace Storytime {
 
     void LuaProcessBinding::on_update(f64 timestep) {
         ST_ASSERT(lua_on_update_fn_ref.is_valid(), "Every Lua process must have implemented on_update");
-        // LuaFunction lua_on_update_fn(L, lua_on_update_fn_ref);
-        // lua_on_update_fn(lua_instance_table_ref, timestep);
-
-        i32 start = lua_gettop(L);
-        lua_instance_table_ref.push(L);
-        lua_getfield(L, -1, "on_update");
-        // print_lua_stack(L, "foo");
-        LuaFunction lua_on_update_fn(L);
+        LuaFunction lua_on_update_fn(L, lua_on_update_fn_ref);
         lua_on_update_fn(lua_instance_table_ref, timestep);
-        lua_pop(L, std::max(0, lua_gettop(L) - start));
-        i32 end = lua_gettop(L);
-        ST_ASSERT(start == end, "[" << start << "] == [" << end << "]");
     }
 
     void LuaProcessBinding::on_success() {

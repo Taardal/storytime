@@ -4,10 +4,10 @@
 
 #ifdef ST_ENABLE_ASSERT
     #define ST_ASSERT_VALID_ENTITY() \
-    ST_ASSERT(entity != entt::null, "Invalid entity"); \
-    ST_ASSERT(entity_registry != nullptr, "Invalid entity registry")
+        ST_ASSERT(entity != entt::null, "Invalid entity"); \
+        ST_ASSERT(entity_registry != nullptr, "Invalid entity registry")
 #else
-    ST_ASSERT_VALID_ENTITY()
+    #define ST_ASSERT_VALID_ENTITY()
 #endif
 
 namespace Storytime {
@@ -38,7 +38,7 @@ namespace Storytime {
         template<typename T>
         T& get() {
             ST_ASSERT_VALID_ENTITY();
-            ST_ASSERT(has<T>(), "Entity must have component [" << type_name<T>() << "]");
+            ST_ASSERT(has<T>(), "Entity [" << (u32) entity << "] must have component [" << type_name<T>() << "]");
             return entity_registry->get<T>(entity);
         }
 

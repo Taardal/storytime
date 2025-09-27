@@ -14,10 +14,8 @@ local function class(parent_class, class_body)
 
     -- Set up the inheritance chain: class --> parent class
     if (parent_class ~= nil) then
-        local class_metatable = {
-            __index = parent_class -- If a field does not exist in the class table, look in the parent class table.
-        }
-        setmetatable(clazz, class_metatable)
+        setmetatable(clazz, clazz)
+        clazz.__index = parent_class
     end
 
     -- Add function to create new instance tables from the class table.
@@ -29,22 +27,17 @@ local function class(parent_class, class_body)
         if (parent_class ~= nil) then
 
             -- Pass in the class table in case the parent class is a C++ class.
-            --
             -- C++ parent classes, that binds Lua together with C++ (a.k.a. "bindings"), needs to obtain Lua references to the
             -- fields and functions defined in the Lua class table so that C++ code can invoke them.
-            --
             instance = parent_class:new(construction_data, class_self);
         else
             instance = construction_data or {};
         end
 
         -- Bind the instance to the class inheritance chain: instance --> class --> parent class.
-        local instance_metatable = {
-            __index = class_self -- If a field does not exist in the instance table, look in the class table.
-        }
-        setmetatable(instance, instance_metatable)
+        setmetatable(instance, instance)
+        instance.__index = class_self
 
-        --
         -- Copy metafields and metafunctions from the class table to the instance metatable.
         --
         -- In C++, you can define custom operators on a class. For example, you can override the `+` operator on a class so that you

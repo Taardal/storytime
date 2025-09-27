@@ -9,7 +9,7 @@ namespace Storytime {
 
         Event() = default;
 
-        Event(EventType event_type, const std::string& name);
+        Event(EventType type, const std::string& name);
 
         virtual ~Event() = default;
 

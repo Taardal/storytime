@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.0.0)
 
 project(storytime)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ST_TARGET ${PROJECT_NAME})
@@ -26,19 +26,18 @@ endif ()
 
 add_library(
     ${ST_TARGET}
-    ${ST_SRC_DIR}/st_run.cpp
-    ${ST_SRC_DIR}/st_run.h
+    ${ST_SRC_DIR}/st_app.h
+    ${ST_SRC_DIR}/st_config.h
+    ${ST_SRC_DIR}/st_engine.cpp
+    ${ST_SRC_DIR}/st_engine.h
+    ${ST_SRC_DIR}/st_main.cpp
+    ${ST_SRC_DIR}/st_main.h
     ${ST_SRC_DIR}/audio/st_audio.cpp
     ${ST_SRC_DIR}/audio/st_audio.h
     ${ST_SRC_DIR}/audio/st_audio_engine.cpp
     ${ST_SRC_DIR}/audio/st_audio_engine.h
     ${ST_SRC_DIR}/event/st_event.cpp
     ${ST_SRC_DIR}/event/st_event.h
-    ${ST_SRC_DIR}/event/st_event_handler.cpp
-    ${ST_SRC_DIR}/event/st_event_handler.h
-    ${ST_SRC_DIR}/event/st_event_manager.cpp
-    ${ST_SRC_DIR}/event/st_event_manager.h
-    ${ST_SRC_DIR}/event/st_events.h
     ${ST_SRC_DIR}/event/st_key_pressed_event.cpp
     ${ST_SRC_DIR}/event/st_key_pressed_event.h
     ${ST_SRC_DIR}/event/st_key_released_event.cpp
@@ -57,6 +56,8 @@ add_library(
     ${ST_SRC_DIR}/event/st_mouse_scroll_event.h
     ${ST_SRC_DIR}/event/st_window_closed_event.cpp
     ${ST_SRC_DIR}/event/st_window_closed_event.h
+    ${ST_SRC_DIR}/event/st_window_focused_event.cpp
+    ${ST_SRC_DIR}/event/st_window_focused_event.h
     ${ST_SRC_DIR}/event/st_window_minimized_event.cpp
     ${ST_SRC_DIR}/event/st_window_minimized_event.h
     ${ST_SRC_DIR}/event/st_window_resized_event.cpp
@@ -97,6 +98,8 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
     ${ST_SRC_DIR}/resource/st_resource_loader.h
+    ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp
+    ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
     ${ST_SRC_DIR}/lua/st_lua_error.h
     ${ST_SRC_DIR}/lua/st_lua_function.cpp
@@ -145,12 +148,13 @@ add_library(
     ${ST_SRC_DIR}/shapes/st_shape.cpp
     ${ST_SRC_DIR}/shapes/st_shape.h
     ${ST_SRC_DIR}/system/st_assert.h
-    ${ST_SRC_DIR}/system/st_binary_to_from.h
     ${ST_SRC_DIR}/system/st_clock.cpp
     ${ST_SRC_DIR}/system/st_clock.h
     ${ST_SRC_DIR}/system/st_command_line_arguments.cpp
     ${ST_SRC_DIR}/system/st_command_line_arguments.h
     ${ST_SRC_DIR}/system/st_defer.h
+    ${ST_SRC_DIR}/system/st_dispatcher.cpp
+    ${ST_SRC_DIR}/system/st_dispatcher.h
     ${ST_SRC_DIR}/system/st_environment.h
     ${ST_SRC_DIR}/system/st_error.cpp
     ${ST_SRC_DIR}/system/st_error.h
@@ -166,15 +170,13 @@ add_library(
     ${ST_SRC_DIR}/system/st_memory.h
     ${ST_SRC_DIR}/system/st_memory_allocator.cpp
     ${ST_SRC_DIR}/system/st_memory_allocator.h
-    ${ST_SRC_DIR}/system/st_msgpack_filesystem_adaptor.h
-    ${ST_SRC_DIR}/system/st_msgpack_glm_adaptor.h
-    ${ST_SRC_DIR}/system/st_msgpack_utils.cpp
-    ${ST_SRC_DIR}/system/st_msgpack_utils.h
     ${ST_SRC_DIR}/system/st_pointers.h
     ${ST_SRC_DIR}/system/st_random.cpp
     ${ST_SRC_DIR}/system/st_random.h
     ${ST_SRC_DIR}/system/st_size.cpp
     ${ST_SRC_DIR}/system/st_size.h
+    ${ST_SRC_DIR}/system/st_subscriber.cpp
+    ${ST_SRC_DIR}/system/st_subscriber.h
     ${ST_SRC_DIR}/system/st_utils.cpp
     ${ST_SRC_DIR}/system/st_utils.h
     ${ST_SRC_DIR}/system/st_uuid.cpp
@@ -360,19 +362,6 @@ find_package(Lua REQUIRED)
 target_include_directories(${ST_TARGET} PUBLIC ${LUA_INCLUDE_DIR})
 target_link_libraries(${ST_TARGET} ${LUA_LIBRARIES})
 
-# Message Pack
-set(MSGPACK_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(MSGPACK_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(MSGPACK_CXX_STANDARD 17 CACHE STRING "" FORCE)
-set(MSGPACK_USE_BOOST OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    msgpack
-    GIT_REPOSITORY https://github.com/msgpack/msgpack-c.git
-    GIT_TAG cpp-4.1.2
-)
-FetchContent_MakeAvailable(msgpack)
-target_link_libraries(${ST_TARGET} msgpackc-cxx)
-
 # Miniaudio
 FetchContent_Declare(
     miniaudio
@@ -397,7 +386,7 @@ target_link_libraries(${ST_TARGET} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link wi
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog
-    GIT_TAG v1.9.2
+    GIT_TAG v1.15.3
 )
 FetchContent_MakeAvailable(spdlog)
 target_link_libraries(${ST_TARGET} spdlog::spdlog)

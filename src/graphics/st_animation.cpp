@@ -64,6 +64,10 @@ namespace Storytime {
         config.looping = looping;
     }
 
+    void Animation::set_paused(bool paused) {
+        config.paused = paused;
+    }
+
     bool Animation::has_ended() const {
         if (frame_index < end_frame_index) {
             return false;
@@ -83,6 +87,9 @@ namespace Storytime {
     }
 
     void Animation::update(f64 timestep) {
+        if (config.paused) {
+            return;
+        }
         u32 frame_count = config.frames.size();
         ST_ASSERT(
             frame_index < frame_count,

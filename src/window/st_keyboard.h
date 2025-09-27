@@ -1,7 +1,9 @@
 #pragma once
 
+#include "event/st_key_pressed_event.h"
+#include "event/st_key_released_event.h"
+#include "event/st_key_repeated_event.h"
 #include "window/st_key.h"
-#include "event/st_events.h"
 #include "window/st_window.h"
 
 namespace Storytime {
@@ -11,7 +13,7 @@ namespace Storytime {
 
     struct KeyboardConfig {
         Window* window = nullptr;
-        EventManager* event_manager = nullptr;
+        Dispatcher* dispatcher = nullptr;
     };
 
     class Keyboard {

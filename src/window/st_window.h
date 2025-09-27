@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event/st_event_manager.h"
+#include "system/st_dispatcher.h"
 
 #include <GLFW/glfw3.h>
 
@@ -15,13 +15,15 @@ namespace Storytime {
     };
 
     struct WindowConfig {
-        EventManager* event_manager = nullptr;
+        Dispatcher* dispatcher = nullptr;
         std::string title;
         i32 width;
         i32 height;
         f32 aspect_ratio;
+        bool fullscreen;
         bool maximized;
         bool resizable;
+        bool vsync;
         u32 context_version_major;
         u32 context_version_minor;
     };
@@ -34,13 +36,13 @@ namespace Storytime {
         bool keyboard_events_enabled = true;
 
     public:
-        explicit Window(const WindowConfig& config);
+        Window(const WindowConfig& config);
 
         ~Window();
 
         operator GLFWwindow*() const;
 
-        static void process_events();
+        static void poll_events();
 
         void swap_buffers() const;
 
@@ -72,6 +74,8 @@ namespace Storytime {
         static void on_mouse_scroll_change(GLFWwindow* glfw_window, f64 xoffset, f64 yoffset);
 
         static void on_window_close_change(GLFWwindow* glfw_window);
+
+        static void on_window_focus_change(GLFWwindow* glfw_window, i32 focused);
 
         static void on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified);
     };

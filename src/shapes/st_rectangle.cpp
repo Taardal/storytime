@@ -26,6 +26,11 @@ namespace Storytime {
         return width > 0 && height > 0;
     }
 
+    void Rectangle::invalidate() {
+        width = 0;
+        height = 0;
+    }
+
     f32 Rectangle::get_left() const {
         return x;
     }
@@ -54,7 +59,15 @@ namespace Storytime {
         return intersects(*this, other);
     }
 
-    bool Rectangle::intersects_with(const Rectangle& other) const {
+    bool Rectangle::intersects_with(const Rectangle& other, f32 epsilon) const {
         return intersects(*this, other);
+    }
+
+    bool Rectangle::intersects_horizontally_with(const Rectangle& other, f32 epsilon) const {
+        return intersects_horizontally(*this, other);
+    }
+
+    bool Rectangle::intersects_vertically_with(const Rectangle& other, f32 epsilon) const {
+        return intersects_vertically(*this, other);
     }
 }

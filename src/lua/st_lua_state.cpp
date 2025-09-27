@@ -130,6 +130,12 @@ namespace Storytime {
         luaL_unref(L, LUA_REGISTRYINDEX, ref);
     }
 
+    LuaTable LuaState::create_table() const {
+        lua_newtable(L);
+        i32 table_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        return LuaTable(L, table_ref);
+    }
+
     std::string LuaState::get_version() const {
         run_script("return _VERSION:match('Lua (.+)')");
         return lua_tostring(L, -1);

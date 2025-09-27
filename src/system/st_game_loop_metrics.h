@@ -4,7 +4,6 @@ namespace Storytime {
     struct GameLoopMetrics {
         f64 cycle_duration_ms = 0.0;
         f64 frames_per_second = 0.0;
-        f64 game_events_duration_ms = 0.0;
         f64 imgui_render_duration_ms = 0.0;
         f64 render_duration_ms = 0.0;
         f64 swap_buffers_duration_ms = 0.0;

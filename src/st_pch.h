@@ -5,12 +5,14 @@
 // --------------------------------------------------------------------------------------------------------------
 
 #include <algorithm>
+#include <any>
 #include <array>
 #include <filesystem>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <map>
+#include <ranges>
 #include <set>
 #include <sstream>
 #include <string>
@@ -42,6 +44,10 @@
 
 // Lua
 #include <lua.hpp>
+
+// ImGui
+#include <imgui.h>
+#include <imgui_internal.h>
 
 // --------------------------------------------------------------------------------------------------------------
 // App

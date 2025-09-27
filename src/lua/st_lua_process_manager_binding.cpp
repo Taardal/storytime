@@ -11,7 +11,10 @@ namespace Storytime {
     i32 LuaProcessManagerBinding::create_metatable(lua_State* L) {
         luaL_newmetatable(L, metatable_name.c_str());
 
-        lua_pushcfunction(L, index);
+        lua_pushcfunction(L, lua_destroy);
+        lua_setfield(L, -2, "__gc");
+
+        lua_pushcfunction(L, lua_index);
         lua_setfield(L, -2, "__index");
 
         return 1;
@@ -30,7 +33,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaProcessManagerBinding::destroy(lua_State* L) {
+    i32 LuaProcessManagerBinding::lua_destroy(lua_State* L) {
         ST_ASSERT(lua_type(L, -1) == LUA_TUSERDATA, "Binding must be at expected stack location");
 
         auto binding = static_cast<LuaProcessManagerBinding*>(lua_touserdata(L, -1));
@@ -40,33 +43,33 @@ namespace Storytime {
         return 0;
     }
 
-    i32 LuaProcessManagerBinding::index(lua_State* L) {
+    i32 LuaProcessManagerBinding::lua_index(lua_State* L) {
         ST_ASSERT(lua_type(L, -1) == LUA_TSTRING, "Key must be at expected stack location");
 
         const char* key = lua_tostring(L, -1);
         ST_ASSERT(strlen(key) > 0, "Key cannot be empty");
 
         if (strcmp(key, "add") == 0) {
-            lua_pushcfunction(L, add);
+            lua_pushcfunction(L, lua_add);
             return 1;
         }
         if (strcmp(key, "abort") == 0) {
-            lua_pushcfunction(L, abort);
+            lua_pushcfunction(L, lua_abort);
             return 1;
         }
         if (strcmp(key, "clear") == 0) {
-            lua_pushcfunction(L, clear);
+            lua_pushcfunction(L, lua_clear);
             return 1;
         }
         if (strcmp(key, "empty") == 0) {
-            lua_pushcfunction(L, empty);
+            lua_pushcfunction(L, lua_empty);
             return 1;
         }
 
         return 0;
     }
 
-    i32 LuaProcessManagerBinding::add(lua_State* L) {
+    i32 LuaProcessManagerBinding::lua_add(lua_State* L) {
         ST_ASSERT(lua_type(L, -1) == LUA_TTABLE, "Lua process instance table must be at expected stack location");
 
         lua_getfield(L, -1, LuaProcessBinding::instance_binding_field_name.c_str());
@@ -82,41 +85,26 @@ namespace Storytime {
         return 0;
     }
 
-    i32 LuaProcessManagerBinding::abort(lua_State* L) {
-        bool abort_immediately = false;
-        i32 binding_index = -1;
+    i32 LuaProcessManagerBinding::lua_abort(lua_State* L) {
+        ST_ASSERT(lua_isuserdata(L, -1), "The process manager binding must be at expected stack location");
 
-        bool abort_immediately_argument_exists = lua_isboolean(L, -1);
-        if (abort_immediately_argument_exists) {
-            abort_immediately = lua_toboolean(L, -1);
-            binding_index--; // If the optional `abort_immediately` argument exists, the binding must be one index lower.
-        } else {
-            ST_ASSERT(
-                lua_isuserdata(L, -1),
-                "The process manager binding must be at expected stack location when the `abort_immediately` argument is not supplied"
-            );
-        }
-
-        ST_ASSERT(
-            lua_isuserdata(L, binding_index),
-            "The process manager binding must be at expected stack location"
-        );
-
-        auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, binding_index);
+        auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
 
+        bool abort_immediately = false;
         process_manager_binding->process_manager->abort(abort_immediately);
+
         return 0;
     }
 
-    i32 LuaProcessManagerBinding::clear(lua_State* L) {
+    i32 LuaProcessManagerBinding::lua_clear(lua_State* L) {
         auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
         process_manager_binding->process_manager->clear();
         return 0;
     }
 
-    i32 LuaProcessManagerBinding::empty(lua_State* L) {
+    i32 LuaProcessManagerBinding::lua_empty(lua_State* L) {
         auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
         lua_pushboolean(L, process_manager_binding->process_manager->empty());

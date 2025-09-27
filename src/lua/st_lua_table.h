@@ -6,13 +6,15 @@ namespace Storytime {
     class LuaTable {
     private:
         lua_State* L;
-        std::string name;
-        LuaRef ref;
+        LuaRef ref = LUA_NOREF;
+        std::string global_name;
 
     public:
-        LuaTable(lua_State* L, const std::string& name);
+        LuaTable(lua_State* L);
 
         LuaTable(lua_State* L, LuaRef ref);
+
+        LuaTable(lua_State* L, const std::string& global_name);
 
         LuaRef get_ref() const;
 
@@ -28,15 +30,43 @@ namespace Storytime {
 
         template<typename T>
         T get_field(const std::string& key) const {
+            T value;
+            get_field(L, key, &value);
+            return value;
+        }
+
+        template<typename T>
+        T get_field(const std::string& key, T* value) const {
             push_self();
             lua_getfield(L, -1, key.c_str());
-            T value = lua_to<T>(L, -1);
+            lua_to<T>(L, -1, &value);
             lua_pop(L, 2);
             return value;
         }
 
         template<typename T>
-        void set_field(const std::string& key, T value) const {
+        std::optional<T> try_get_field(const std::string& key) const {
+            if (!has_field(key)) {
+                return std::nullopt;
+            }
+            T value;
+            get_field(L, key, &value);
+            return value;
+        }
+
+        template<typename T>
+        void try_get_field(const std::string& key, T* value) const {
+            if (!has_field(key)) {
+                return;
+            }
+            push_self();
+            lua_getfield(L, -1, key.c_str());
+            lua_to<T>(L, -1, &value);
+            lua_pop(L, 2);
+        }
+
+        template<typename T>
+        void set_field(const std::string& key, T* value) const {
             push_self();
             lua_push<T>(L, value);
             lua_setfield(L, -2, key.c_str());

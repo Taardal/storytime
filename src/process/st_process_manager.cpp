@@ -5,8 +5,20 @@ namespace Storytime {
         clear();
     }
 
+    const std::list<Shared<Process>>& ProcessManager::get_processes() const {
+        return processes;
+    }
+
     void ProcessManager::add(const Shared<Process>& process) {
         processes.push_front(process);
+    }
+
+    void ProcessManager::remove(const Shared<Process>& process) {
+        processes.remove(process);
+    }
+
+    void ProcessManager::remove_if(const std::function<bool(const Shared<Process>&)>& on_is_process_equal) {
+        processes.remove_if(on_is_process_equal);
     }
 
     ProcessUpdateResult ProcessManager::update(const f64 timestep) {
@@ -80,6 +92,8 @@ namespace Storytime {
     }
 
     void ProcessManager::clear() {
+        bool abort_immediately = true;
+        abort(abort_immediately);
         processes.clear();
     }
 

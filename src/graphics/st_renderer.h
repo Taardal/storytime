@@ -1,17 +1,17 @@
 #pragma once
 
-#include "st_vertex_array.h"
-#include "st_shader.h"
-#include "st_texture.h"
-#include "st_view_projection.h"
-#include "st_texture_coordinate.h"
+#include "graphics/st_shader.h"
+#include "graphics/st_texture.h"
+#include "graphics/st_texture_coordinate.h"
+#include "graphics/st_vertex_array.h"
+#include "graphics/st_view_projection.h"
+#include "resource/st_resource_loader.h"
+#include "system/st_dispatcher.h"
+#include "window/st_window.h"
 
 namespace Storytime {
 
     typedef glm::vec4 QuadOffset;
-
-    // Forward declaration
-    class ResourceLoader;
 
     struct Quad {
         Shared<Texture> texture = nullptr;
@@ -23,10 +23,10 @@ namespace Storytime {
     };
 
     struct Viewport {
-        i32 width = 0;
-        i32 height = 0;
         i32 x = 0;
         i32 y = 0;
+        i32 width = 0;
+        i32 height = 0;
     };
 
     struct RendererStatistics {
@@ -37,9 +37,9 @@ namespace Storytime {
     };
 
     struct RendererConfig {
+        Dispatcher* dispatcher = nullptr;
         ResourceLoader* resource_loader = nullptr;
-        glm::vec4 clear_color = {0.1f, 0.1f, 0.1f, 1.0f};
-        Viewport viewport{};
+        Window* window = nullptr;
     };
 
     class Renderer {
@@ -62,6 +62,7 @@ namespace Storytime {
 
     private:
         RendererConfig config;
+        std::vector<SubscriptionID> event_subscriptions;
         Shared<VertexArray> vertex_array;
         Shared<VertexBuffer> vertex_buffer;
         Shared<Shader> shader;
@@ -84,9 +85,9 @@ namespace Storytime {
 
         RendererStatistics get_statistics() const;
 
-        static void set_clear_color(const glm::vec4& clear_color);
+        void set_viewport(const Viewport& viewport) const;
 
-        static void set_viewport(const Viewport& viewport);
+        void set_clear_color(const glm::vec4& clear_color) const;
 
         void set_view_projection(const ViewProjection& view_projection) const;
 

@@ -6,7 +6,8 @@
 
 // Entrypoint
 #include "st_pch.h"
-#include "st_run.h"
+#include "st_main.h"
+#include "st_config.h"
 
 // Audio
 #include "audio/st_audio.h"
@@ -14,9 +15,6 @@
 
 // Event
 #include "event/st_event.h"
-#include "event/st_event_handler.h"
-#include "event/st_event_manager.h"
-#include "event/st_events.h"
 #include "event/st_key_pressed_event.h"
 #include "event/st_key_released_event.h"
 #include "event/st_key_repeated_event.h"
@@ -33,15 +31,12 @@
 #include "graphics/st_animation.h"
 #include "graphics/st_bitmap_font.h"
 #include "graphics/st_camera.h"
+#include "graphics/st_imgui_renderer.h"
 #include "graphics/st_spritesheet.h"
 #include "graphics/st_view_projection.h"
-#ifdef ST_IMGUI_ENABLED
-    #include <imgui.h>
-    #include <imgui_internal.h>
-    #include "graphics/st_imgui_renderer.h"
-#endif
 
 // Lua
+#include "lua/st_lua_dispatcher_binding.h"
 #include "lua/st_lua_function.h"
 #include "lua/st_lua_glm_binding.h"
 #include "lua/st_lua_keyboard_binding.h"
@@ -74,15 +69,15 @@
 #include "shapes/st_shape.h"
 
 // System
-#include "system/st_binary_to_from.h"
+#include "system/st_clock.h"
+#include "system/st_command_line_arguments.h"
 #include "system/st_defer.h"
+#include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
 #include "system/st_game_loop_metrics.h"
-#include "system/st_msgpack_filesystem_adaptor.h"
-#include "system/st_msgpack_glm_adaptor.h"
-#include "system/st_msgpack_utils.h"
 #include "system/st_random.h"
+#include "system/st_subscriber.h"
 #include "system/st_variant.h"
 
 // Tiled

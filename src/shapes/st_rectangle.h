@@ -23,6 +23,8 @@ namespace Storytime {
 
         bool is_valid() const;
 
+        void invalidate();
+
         f32 get_left() const;
 
         f32 get_right() const;
@@ -37,6 +39,10 @@ namespace Storytime {
 
         bool intersects_with(const Polygon& other) const;
 
-        bool intersects_with(const Rectangle& other) const;
+        bool intersects_with(const Rectangle& other, f32 epsilon = intersection_epsilon) const;
+
+        bool intersects_horizontally_with(const Rectangle& other, f32 epsilon = intersection_epsilon) const;
+
+        bool intersects_vertically_with(const Rectangle& other, f32 epsilon = intersection_epsilon) const;
     };
 }

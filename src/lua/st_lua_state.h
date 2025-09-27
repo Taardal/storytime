@@ -39,6 +39,8 @@ namespace Storytime {
 
         void destroy_ref(i32 ref) const;
 
+        LuaTable create_table() const;
+
         std::string get_version() const;
 
         class GetterSetter {

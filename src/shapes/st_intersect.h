@@ -2,6 +2,8 @@
 
 namespace Storytime {
 
+    constexpr float intersection_epsilon = 0.01f;
+
     struct Ellipse;
     struct Point;
     struct Polygon;
@@ -53,5 +55,9 @@ namespace Storytime {
 
     bool intersects(const Rectangle& rectangle, const Polygon& polygon);
 
-    bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b);
+    bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon = intersection_epsilon);
+
+    bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon = intersection_epsilon);
+
+    bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon = intersection_epsilon);
 }
