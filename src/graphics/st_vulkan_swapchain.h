@@ -2,7 +2,6 @@
 
 #include "st_vulkan_command_buffer.h"
 #include "st_vulkan_device.h"
-#include "event/st_window_resized_event.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -14,6 +13,7 @@ namespace Storytime {
         VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         std::string name = "SwapChain";
+        u32 min_required_image_count = 0;
     };
 
     class VulkanSwapchain {
@@ -30,11 +30,7 @@ namespace Storytime {
         std::vector<VkImageView> image_views;
         std::vector<VkFramebuffer> framebuffers;
         VkRenderPass render_pass = nullptr;
-        std::vector<VkFence> in_flight_fences;
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkSemaphore> render_finished_semaphores;
         u32 current_image = 0;
-        bool surface_resized = false;
 
     public:
         VulkanSwapchain(const Config& config);
@@ -50,6 +46,26 @@ namespace Storytime {
         void begin_frame();
 
         void end_frame(VkCommandBuffer command_buffer);
+
+        void begin_render_pass(const VulkanCommandBuffer& command_buffer) const;
+
+        void end_render_pass(const VulkanCommandBuffer& command_buffer) const;
+
+        void set_viewport(const VulkanCommandBuffer& command_buffer) const;
+
+        void set_scissor(const VulkanCommandBuffer& command_buffer) const;
+
+        struct AcquireNextImageConfig {
+            u64 timeout;
+            VkSemaphore semaphore;
+            VkFence fence;
+        };
+
+        VkResult acquire_next_image(const AcquireNextImageConfig& config);
+
+        VkResult acquire_next_image(u64 timeout, VkSemaphore semaphore, VkFence fence);
+
+        VkResult present(VkSemaphore wait_semaphore) const;
 
     private:
         void create_swapchain();
@@ -75,24 +91,5 @@ namespace Storytime {
         void create_framebuffers();
 
         void destroy_framebuffers() const;
-
-        void create_sync_objects();
-
-        void destroy_sync_objects() const;
-
-        void subscribe_to_events();
-
-        void unsubscribe_from_events();
-
-        void on_window_resized_event(const WindowResizedEvent& event);
-
-    public:
-        void begin_render_pass(const VulkanCommandBuffer& command_buffer) const;
-
-        void end_render_pass(const VulkanCommandBuffer& command_buffer) const;
-
-        void set_viewport(const VulkanCommandBuffer& command_buffer) const;
-
-        void set_scissor(const VulkanCommandBuffer& command_buffer) const;
     };
 }

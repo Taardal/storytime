@@ -60,7 +60,7 @@ namespace Storytime {
           vulkan_renderer({
               .dispatcher = &dispatcher,
               .window = &window,
-              .app_name = config.app_name,
+              .name = config.app_name,
               .max_frames_in_flight = config.rendering_buffer_count,
               .validation_layers_enabled = config.vulkan_validation_layers_enabled,
           })
