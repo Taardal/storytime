@@ -96,6 +96,27 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
+    ${ST_SRC_DIR}/graphics/st_vulkan.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_device.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_device.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_instance.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_instance.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_queue.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_queue.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_renderer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_renderer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_surface.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_surface.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
     ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp
@@ -239,6 +260,9 @@ target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
 
 target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
+option(ST_USE_VULKAN "Use Vulkan renderer" ON)
+target_compile_definitions(${ST_TARGET} PUBLIC ST_USE_VULKAN=${ST_USE_VULKAN})
+
 # --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
@@ -276,6 +300,21 @@ add_custom_target(
 add_dependencies(${ST_TARGET} ${ST_COMPILE_LUA_TARGET})
 
 target_compile_definitions(${ST_TARGET} PUBLIC ST_LUA_DIR="${ST_LUA_OUTPUT_DIR}")
+
+#
+# Compile Vulkan shaders to SPIR-V
+#
+
+set(SHADERS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res/shaders)
+set(SHADERS_OUTPUT_DIR ${ST_OUTPUT_DIR}/res/shaders)
+
+set(ST_COMPILE_SHADERS_TARGET st_compile_shaders)
+add_custom_target(
+    ${ST_COMPILE_SHADERS_TARGET}
+    COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${SHADERS_SOURCE_DIR} -D SHADERS_OUTPUT_DIR=${SHADERS_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_shaders.cmake
+    COMMENT "Compiling shaders"
+)
+add_dependencies(${ST_TARGET} ${ST_COMPILE_SHADERS_TARGET})
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
@@ -390,3 +429,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 target_link_libraries(${ST_TARGET} spdlog::spdlog)
+
+# Vulkan
+find_package(Vulkan REQUIRED)
+target_include_directories(${ST_TARGET} PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(${ST_TARGET} ${Vulkan_LIBRARIES})

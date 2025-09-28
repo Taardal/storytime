@@ -10,10 +10,10 @@ namespace Storytime {
     Shared<Shader> ResourceLoader::load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const {
         ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
 
-        const std::string& vertex_shader_source = config.file_reader->read(vertex_shader_path.c_str());
+        const std::string& vertex_shader_source = config.file_reader->read_string(vertex_shader_path.c_str());
         ST_ASSERT(!vertex_shader_source.empty(), "Could not read vertex shader file [" << vertex_shader_path.c_str() << "]");
 
-        const std::string& fragment_shader_source = config.file_reader->read(fragment_shader_path.c_str());
+        const std::string& fragment_shader_source = config.file_reader->read_string(fragment_shader_path.c_str());
         ST_ASSERT(!fragment_shader_source.empty(), "Could not read fragment shader file [" << vertex_shader_path.c_str() << "]");
 
         auto shader = std::make_shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
@@ -70,7 +70,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled project must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled project [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -84,7 +84,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled map must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -96,7 +96,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled tileset [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled tileset [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -108,7 +108,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled template [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled template path must not be empty");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled template [" << path.c_str() << "]");
 
         ST_TRY_THROW({

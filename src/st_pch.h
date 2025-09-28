@@ -24,6 +24,9 @@
 // 3rd-party
 // --------------------------------------------------------------------------------------------------------------
 
+// Vulkan
+#include <vulkan/vulkan.h> // Vulkan must be included before GLFW
+
 // GLAD
 #include <glad/glad.h> // Include GLAD before GLFW to let GLAD include the OpenGL header (gl.h)
 

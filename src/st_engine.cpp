@@ -16,7 +16,7 @@ namespace Storytime {
           }),
           window({
               .dispatcher = &dispatcher,
-              .title = config.window_title,
+              .title = config.app_name,
               .width = config.window_width,
               .height = config.window_height,
               .aspect_ratio = config.window_aspect_ratio,
@@ -27,6 +27,7 @@ namespace Storytime {
               .context_version_major = config.open_gl_version_major,
               .context_version_minor = config.open_gl_version_minor,
           }),
+#ifndef ST_USE_VULKAN
           open_gl({
             .window = &window,
             .log_level = config.log_level,
@@ -46,6 +47,7 @@ namespace Storytime {
             .settings_file_path = config.imgui_settings_file_path,
             .glsl_version = config.glsl_version,
           }),
+#endif
           keyboard({
               .window = &window,
               .dispatcher = &dispatcher,
@@ -54,7 +56,14 @@ namespace Storytime {
               .window = &window,
           }),
           process_manager(),
-          game_loop_metrics()
+          game_loop_metrics(),
+          vulkan_renderer({
+              .dispatcher = &dispatcher,
+              .window = &window,
+              .app_name = config.app_name,
+              .max_frames_in_flight = config.rendering_buffer_count,
+              .validation_layers_enabled = config.vulkan_validation_layers_enabled,
+          })
     {
         service_locator.set<Dispatcher>(&dispatcher);
         service_locator.set<Window>(&window);
@@ -62,7 +71,9 @@ namespace Storytime {
         service_locator.set<Mouse>(&mouse);
         service_locator.set<FileReader>(&file_reader);
         service_locator.set<ResourceLoader>(&resource_loader);
+#ifndef ST_USE_VULKAN
         service_locator.set<Renderer>(&renderer);
+#endif
         service_locator.set<ProcessManager>(&process_manager);
         service_locator.set<GameLoopMetrics>(&game_loop_metrics);
 
@@ -129,7 +140,7 @@ namespace Storytime {
             // Whenever the game clock lags behind the app clock by one-or-more timesteps, tick the game
             // clock forwards until it's caught up.
             while (game_clock_lag_ms >= timestep_ms) {
-                app.update(timestep_sec);
+                // app.update(timestep_sec);
                 game_clock_lag_ms -= timestep_ms;
                 update_count++;
             }
@@ -142,11 +153,18 @@ namespace Storytime {
             //
 
             TimePoint render_start_time = Time::now();
+#ifndef ST_USE_VULKAN
             renderer.begin_frame();
             app.render();
             renderer.end_frame();
+#else
+            vulkan_renderer.begin_frame();
+            vulkan_renderer.render();
+            vulkan_renderer.end_frame();
+#endif
             TimePoint render_end_time = Time::now();
 
+#ifndef ST_USE_VULKAN
             TimePoint imgui_render_start_time = Time::now();
             imgui_renderer.begin_frame();
             app.render_imgui();
@@ -160,7 +178,7 @@ namespace Storytime {
             TimePoint swap_buffers_start_time = Time::now();
             window.swap_buffers();
             TimePoint swap_buffers_end_time = Time::now();
-
+#endif
             TimePoint cycle_end_time = Time::now();
 
             //
@@ -174,9 +192,13 @@ namespace Storytime {
             }
             game_loop_metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
             game_loop_metrics.frames_per_second = 1.0 / (game_loop_metrics.render_duration_ms / 1000.0);
+#ifndef ST_USE_VULKAN
             game_loop_metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
+#endif
             game_loop_metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
+#ifndef ST_USE_VULKAN
             game_loop_metrics.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
+#endif
             game_loop_metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
         }
     }

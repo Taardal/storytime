@@ -6,6 +6,7 @@
 #include "graphics/st_imgui_renderer.h"
 #include "graphics/st_open_gl.h"
 #include "graphics/st_renderer.h"
+#include "graphics/st_vulkan_renderer.h"
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_dispatcher.h"
@@ -28,13 +29,16 @@ namespace Storytime {
         AudioEngine audio_engine;
         ResourceLoader resource_loader;
         Window window;
+#ifndef ST_USE_VULKAN
         OpenGL open_gl;
         Renderer renderer;
         ImGuiRenderer imgui_renderer;
+#endif
         Keyboard keyboard;
         Mouse mouse;
         ProcessManager process_manager;
         GameLoopMetrics game_loop_metrics;
+        VulkanRenderer vulkan_renderer;
 
     public:
         Engine(const Config& config);
