@@ -13,14 +13,6 @@ namespace Storytime {
         return device;
     }
 
-    VkQueue VulkanDevice::get_graphics_queue() const {
-        return graphics_queue;
-    }
-
-    VkQueue VulkanDevice::get_present_queue() const {
-        return present_queue;
-    }
-
     VkQueue VulkanDevice::get_queue(u32 queue_family_index, u32 queue_index) const {
         VkQueue queue;
         vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
@@ -188,12 +180,28 @@ namespace Storytime {
         return set_object_tag_fn(device, &object_tag_info);
     }
 
+    void VulkanDevice::begin_cmd_label(VkCommandBuffer command_buffer, const char* label_name, std::array<f32, 4> color) const {
+        VkDebugUtilsLabelEXT label{};
+        label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        label.pLabelName = label_name;
+        std::copy_n(color.data(), 4, label.color);
+        begin_cmd_label(command_buffer, label);
+    }
+
     void VulkanDevice::begin_cmd_label(VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT& label) const {
         auto begin_cmd_label_fn = (PFN_vkCmdBeginDebugUtilsLabelEXT) vkGetDeviceProcAddr(device, "vkCmdBeginDebugUtilsLabelEXT");
         if (!begin_cmd_label_fn) {
             ST_THROW("Could not get function to begin cmd label [" << label.pLabelName << "]");
         }
         begin_cmd_label_fn(command_buffer, &label);
+    }
+
+    void VulkanDevice::insert_cmd_label(VkCommandBuffer command_buffer, const char* label_name, std::array<f32, 4> color) const {
+        VkDebugUtilsLabelEXT label{};
+        label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        label.pLabelName = label_name;
+        std::copy_n(color.data(), 4, label.color);
+        insert_cmd_label(command_buffer, label);
     }
 
     void VulkanDevice::insert_cmd_label(VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT& label) const {
@@ -212,12 +220,28 @@ namespace Storytime {
         end_cmd_label_fn(command_buffer);
     }
 
+    void VulkanDevice::begin_queue_label(VkQueue queue, const char* label_name, std::array<f32, 4> color) const {
+        VkDebugUtilsLabelEXT label{};
+        label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        label.pLabelName = label_name;
+        std::copy_n(color.data(), 4, label.color);
+        begin_queue_label(queue, label);
+    }
+
     void VulkanDevice::begin_queue_label(VkQueue queue, const VkDebugUtilsLabelEXT& label) const {
         auto begin_queue_label_fn = (PFN_vkQueueBeginDebugUtilsLabelEXT) vkGetDeviceProcAddr(device, "vkQueueBeginDebugUtilsLabelEXT");
         if (!begin_queue_label_fn) {
             ST_THROW("Could not get function to begin queue label [" << label.pLabelName << "]");
         }
         begin_queue_label_fn(queue, &label);
+    }
+
+    void VulkanDevice::insert_queue_label(VkQueue queue, const char* label_name, std::array<f32, 4> color) const {
+        VkDebugUtilsLabelEXT label{};
+        label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        label.pLabelName = label_name;
+        std::copy_n(color.data(), 4, label.color);
+        insert_queue_label(queue, label);
     }
 
     void VulkanDevice::insert_queue_label(VkQueue queue, const VkDebugUtilsLabelEXT& label) const {
@@ -259,20 +283,6 @@ namespace Storytime {
 
         if (set_object_name(device, VK_OBJECT_TYPE_DEVICE, config.name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set Vulkan device name [" << config.name << "]");
-        }
-
-        const QueueFamilyIndices& queue_family_indices = config.physical_device->get_queue_family_indices();
-        graphics_queue = get_queue(queue_family_indices.graphics_family.value());
-        present_queue = get_queue(queue_family_indices.present_family.value());
-
-        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
-        if (set_object_name(graphics_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
-        }
-
-        std::string present_queue_name = std::format("{} present queue", config.name);
-        if (set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
         }
     }
 

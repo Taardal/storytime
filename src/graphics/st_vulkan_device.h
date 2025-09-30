@@ -15,8 +15,6 @@ namespace Storytime {
     private:
         Config config;
         VkDevice device = nullptr;
-        VkQueue graphics_queue = nullptr;
-        VkQueue present_queue = nullptr;
 
     public:
         VulkanDevice(const Config& config);
@@ -24,10 +22,6 @@ namespace Storytime {
         ~VulkanDevice();
 
         operator VkDevice() const;
-
-        VkQueue get_graphics_queue() const;
-
-        VkQueue get_present_queue() const;
 
         VkQueue get_queue(u32 queue_family_index, u32 queue_index = 0) const;
 
@@ -128,13 +122,21 @@ namespace Storytime {
 
         VkResult set_object_tag(const VkDebugUtilsObjectTagInfoEXT& object_tag_info) const;
 
+        void begin_cmd_label(VkCommandBuffer command_buffer, const char* label_name, std::array<f32, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f }) const;
+
         void begin_cmd_label(VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT& label) const;
+
+        void insert_cmd_label(VkCommandBuffer command_buffer, const char* label_name, std::array<f32, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f }) const;
 
         void insert_cmd_label(VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT& label) const;
 
         void end_cmd_label(VkCommandBuffer command_buffer) const;
 
+        void begin_queue_label(VkQueue queue, const char* label_name, std::array<f32, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f }) const;
+
         void begin_queue_label(VkQueue queue, const VkDebugUtilsLabelEXT& label) const;
+
+        void insert_queue_label(VkQueue queue, const char* label_name, std::array<f32, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f }) const;
 
         void insert_queue_label(VkQueue queue, const VkDebugUtilsLabelEXT& label) const;
 

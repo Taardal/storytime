@@ -2,6 +2,7 @@
 
 #include "st_vulkan_command_buffer.h"
 #include "st_vulkan_device.h"
+#include "st_vulkan_queue.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -23,14 +24,14 @@ namespace Storytime {
     private:
         Config config;
         VkSwapchainKHR swapchain = nullptr;
-        VkSurfaceFormatKHR surface_format;
-        VkPresentModeKHR present_mode;
-        VkExtent2D image_extent;
+        VkSurfaceFormatKHR surface_format{};
+        VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
+        VkExtent2D image_extent{};
         std::vector<VkImage> images;
         std::vector<VkImageView> image_views;
         std::vector<VkFramebuffer> framebuffers;
         VkRenderPass render_pass = nullptr;
-        u32 current_image = 0;
+        u32 current_image_index = 0;
 
     public:
         VulkanSwapchain(const Config& config);
@@ -39,9 +40,15 @@ namespace Storytime {
 
         void recreate();
 
+        operator VkSwapchainKHR() const;
+
         VkRenderPass get_render_pass() const;
 
         const VkExtent2D& get_image_extent() const;
+
+        u32 get_current_image_index() const;
+
+        VkFramebuffer get_current_framebuffer() const;
 
         void begin_frame();
 
@@ -51,7 +58,13 @@ namespace Storytime {
 
         void end_render_pass(const VulkanCommandBuffer& command_buffer) const;
 
+        VkRenderPassBeginInfo get_render_pass_begin_info(const VkClearValue& clear_color) const;
+
+        VkViewport get_viewport() const;
+
         void set_viewport(const VulkanCommandBuffer& command_buffer) const;
+
+        VkRect2D get_scissor() const;
 
         void set_scissor(const VulkanCommandBuffer& command_buffer) const;
 
@@ -64,6 +77,13 @@ namespace Storytime {
         VkResult acquire_next_image(const AcquireNextImageConfig& config);
 
         VkResult acquire_next_image(u64 timeout, VkSemaphore semaphore, VkFence fence);
+
+        struct PresentConfig {
+            VkQueue present_queue = nullptr;
+            VkSemaphore wait_semaphore = nullptr;
+        };
+
+        VkResult present(const PresentConfig& config) const;
 
         VkResult present(VkSemaphore wait_semaphore) const;
 

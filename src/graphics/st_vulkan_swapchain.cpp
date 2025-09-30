@@ -27,6 +27,10 @@ namespace Storytime {
         create_framebuffers();
     }
 
+    VulkanSwapchain::operator VkSwapchainKHR() const {
+        return swapchain;
+    }
+
     VkRenderPass VulkanSwapchain::get_render_pass() const {
         return render_pass;
     }
@@ -35,10 +39,18 @@ namespace Storytime {
         return image_extent;
     }
 
+    u32 VulkanSwapchain::get_current_image_index() const {
+        return current_image_index;
+    }
+
+    VkFramebuffer VulkanSwapchain::get_current_framebuffer() const {
+        return framebuffers.at(current_image_index);
+    }
+
     void VulkanSwapchain::begin_frame() {
 #if 0
-        VkFence in_flight_fence = in_flight_fences.at(current_image);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image);
+        VkFence in_flight_fence = in_flight_fences.at(current_image_index);
+        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image_index);
 
         //
         // Wait for the previous frame to finish.
@@ -47,7 +59,7 @@ namespace Storytime {
         VkBool32 wait_for_all_fences = VK_TRUE;
         u64 wait_for_fences_timeout = UINT64_MAX; // Wait forever until the fence is signaled.
         if (config.device->wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout) != VK_SUCCESS) {
-            ST_THROW("Could not wait for 'in flight' fence for image [" << current_image + 1 << "] / [" << images.size() << "]");
+            ST_THROW("Could not wait for 'in flight' fence for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
         }
 
         //
@@ -61,7 +73,7 @@ namespace Storytime {
             next_image_timeout,
             image_available_semaphore, // Signal that an image is available.
             image_available_fence,
-            &current_image
+            &current_image_index
         );
         // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
         if (next_image_result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -70,13 +82,13 @@ namespace Storytime {
         }
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
         if (next_image_result != VK_SUCCESS && next_image_result != VK_SUBOPTIMAL_KHR) {
-            ST_THROW("Could not acquire swapchain image for image [" << current_image + 1 << "] / [" << images.size() << "]");
+            ST_THROW("Could not acquire swapchain image for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
         }
 
         // Delay resetting the fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
         // Thus, if we return early, the fence is still signaled and vkWaitForFences won't deadlock the next time we use the same fence object.
         if (config.device->reset_fences(1, &in_flight_fence) != VK_SUCCESS) {
-            ST_THROW("Could not reset 'in flight' fence for image [" << current_image + 1 << "] / [" << images.size() << "]");
+            ST_THROW("Could not reset 'in flight' fence for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
         }
 #endif
     }
@@ -85,9 +97,9 @@ namespace Storytime {
 #if 0
         const VulkanDevice& device = *config.device;
 
-        VkFence in_flight_fence = in_flight_fences.at(current_image);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image);
-        VkSemaphore render_finished_semaphore = render_finished_semaphores.at(current_image);
+        VkFence in_flight_fence = in_flight_fences.at(current_image_index);
+        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image_index);
+        VkSemaphore render_finished_semaphore = render_finished_semaphores.at(current_image_index);
 
         //
         // Submit the rendering commands to the graphics queue to perform the rendering.
@@ -139,7 +151,7 @@ namespace Storytime {
         present_info.pWaitSemaphores = &render_finished_semaphore; // Wait until the image is rendered.
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &swapchain;
-        present_info.pImageIndices = &current_image;
+        present_info.pImageIndices = &current_image_index;
         present_info.pResults = nullptr;
 
         VkDebugUtilsLabelEXT present_queue_label{};
@@ -165,7 +177,7 @@ namespace Storytime {
 
         device.end_queue_label(present_queue);
 
-        current_image = (current_image + 1) % 2;
+        current_image_index = (current_image_index + 1) % 2;
 #endif
     }
 
@@ -416,22 +428,40 @@ namespace Storytime {
         VkRenderPassBeginInfo render_pass_begin_info{};
         render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         render_pass_begin_info.renderPass = render_pass;
-        render_pass_begin_info.framebuffer = framebuffers[current_image];
+        render_pass_begin_info.framebuffer = framebuffers[current_image_index];
         render_pass_begin_info.renderArea.offset = {0, 0};
         render_pass_begin_info.renderArea.extent = image_extent;
         render_pass_begin_info.clearValueCount = 1;
         render_pass_begin_info.pClearValues = &clear_color;
-
-        VkDebugUtilsLabelEXT begin_render_pass_label{};
-        begin_render_pass_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        begin_render_pass_label.pLabelName = "Begin render pass";
-        config.device->insert_cmd_label(command_buffer, begin_render_pass_label);
 
         command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     void VulkanSwapchain::end_render_pass(const VulkanCommandBuffer& command_buffer) const {
         command_buffer.end_render_pass();
+    }
+
+    VkRenderPassBeginInfo VulkanSwapchain::get_render_pass_begin_info(const VkClearValue& clear_color) const {
+        VkRenderPassBeginInfo render_pass_begin_info{};
+        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin_info.renderPass = render_pass;
+        render_pass_begin_info.framebuffer = framebuffers[current_image_index];
+        render_pass_begin_info.renderArea.offset = {0, 0};
+        render_pass_begin_info.renderArea.extent = image_extent;
+        render_pass_begin_info.clearValueCount = 1;
+        render_pass_begin_info.pClearValues = &clear_color;
+        return render_pass_begin_info;
+    }
+
+    VkViewport VulkanSwapchain::get_viewport() const {
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = (f32) image_extent.width;
+        viewport.height = (f32) image_extent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        return viewport;
     }
 
     void VulkanSwapchain::set_viewport(const VulkanCommandBuffer& command_buffer) const {
@@ -443,14 +473,16 @@ namespace Storytime {
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
-        VkDebugUtilsLabelEXT set_viewport_label{};
-        set_viewport_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        set_viewport_label.pLabelName = "Set viewport";
-        config.device->insert_cmd_label(command_buffer, set_viewport_label);
-
         u32 first_viewport = 0;
         u32 viewport_count = 1;
-        command_buffer.set_viewport(first_viewport, viewport_count, &viewport);
+        command_buffer.set_viewports(first_viewport, viewport_count, &viewport);
+    }
+
+    VkRect2D VulkanSwapchain::get_scissor() const {
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = image_extent;
+        return scissor;
     }
 
     void VulkanSwapchain::set_scissor(const VulkanCommandBuffer& command_buffer) const {
@@ -458,14 +490,9 @@ namespace Storytime {
         scissor.offset = {0, 0};
         scissor.extent = image_extent;
 
-        VkDebugUtilsLabelEXT set_scissor_label{};
-        set_scissor_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        set_scissor_label.pLabelName = "Set scissor";
-        config.device->insert_cmd_label(command_buffer, set_scissor_label);
-
         u32 first_scissor = 0;
         u32 scissor_count = 1;
-        command_buffer.set_scissor(first_scissor, scissor_count, &scissor);
+        command_buffer.set_scissors(first_scissor, scissor_count, &scissor);
     }
 
     VkResult VulkanSwapchain::acquire_next_image(const AcquireNextImageConfig& config) {
@@ -474,7 +501,7 @@ namespace Storytime {
             config.timeout,
             config.semaphore,
             config.fence,
-            &current_image
+            &current_image_index
         );
     }
 
@@ -484,38 +511,36 @@ namespace Storytime {
             timeout,
             semaphore,
             fence,
-            &current_image
+            &current_image_index
         );
     }
 
+    VkResult VulkanSwapchain::present(const PresentConfig& config) const {
+        return VK_SUCCESS;
+    }
+
     VkResult VulkanSwapchain::present(VkSemaphore wait_semaphore) const {
-        VulkanDevice& device = *config.device;
-
-        VulkanQueue present_queue = device.get_present_queue();
-
-        VkPresentInfoKHR present_info{};
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &wait_semaphore; // Wait until the image is rendered.
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &swapchain;
-        present_info.pImageIndices = &current_image;
-        present_info.pResults = nullptr;
-
-        VkDebugUtilsLabelEXT present_queue_label{};
-        present_queue_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        present_queue_label.pLabelName = "PresentQueue";
-        device.begin_queue_label(present_queue, present_queue_label);
-
-        VkDebugUtilsLabelEXT present_image_label{};
-        present_image_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        present_image_label.pLabelName = "Present swapchain image";
-        device.insert_queue_label(present_queue, present_image_label);
-
-        VkResult present_result = present_queue.present(present_info);
-
-        device.end_queue_label(present_queue);
-
-        return present_result;
+        // VulkanDevice& device = *config.device;
+        //
+        // VulkanQueue present_queue = device.get_present_queue();
+        //
+        // VkPresentInfoKHR present_info{};
+        // present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        // present_info.waitSemaphoreCount = 1;
+        // present_info.pWaitSemaphores = &wait_semaphore; // Wait until the image is rendered.
+        // present_info.swapchainCount = 1;
+        // present_info.pSwapchains = &swapchain;
+        // present_info.pImageIndices = &current_image_index;
+        // present_info.pResults = nullptr;
+        //
+        // device.begin_queue_label(present_queue, "PresentQueue");
+        // device.insert_queue_label(present_queue, "Present swapchain image");
+        //
+        // VkResult present_result = present_queue.present(present_info);
+        //
+        // device.end_queue_label(present_queue);
+        //
+        // return present_result;
+        return VK_SUCCESS;
     }
 }

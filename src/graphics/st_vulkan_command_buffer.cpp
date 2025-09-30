@@ -47,20 +47,32 @@ namespace Storytime {
         vkCmdBindPipeline(command_buffer, bind_point, pipeline);
     }
 
-    void VulkanCommandBuffer::set_viewport(const SetViewportCommand& command) const {
+    void VulkanCommandBuffer::set_viewports(const SetViewportsCommand& command) const {
         vkCmdSetViewport(command_buffer, command.first_viewport, command.viewport_count, command.viewports);
     }
 
-    void VulkanCommandBuffer::set_viewport(u32 first_viewport, u32 viewport_count, const VkViewport* viewports) const {
+    void VulkanCommandBuffer::set_viewports(u32 first_viewport, u32 viewport_count, const VkViewport* viewports) const {
         vkCmdSetViewport(command_buffer, first_viewport, viewport_count, viewports);
     }
 
-    void VulkanCommandBuffer::set_scissor(const SetScissorCommand& command) const {
+    void VulkanCommandBuffer::set_viewport(const VkViewport& viewport) const {
+        u32 first_viewport = 0;
+        u32 viewport_count = 1;
+        vkCmdSetViewport(command_buffer, first_viewport, viewport_count, &viewport);
+    }
+
+    void VulkanCommandBuffer::set_scissors(const SetScissorsCommand& command) const {
         vkCmdSetScissor(command_buffer, command.first_scissor, command.scissor_count, command.scissors);
     }
 
-    void VulkanCommandBuffer::set_scissor(u32 first_scissor, u32 scissor_count, const VkRect2D* scissors) const {
+    void VulkanCommandBuffer::set_scissors(u32 first_scissor, u32 scissor_count, const VkRect2D* scissors) const {
         vkCmdSetScissor(command_buffer, first_scissor, scissor_count, scissors);
+    }
+
+    void VulkanCommandBuffer::set_scissor(const VkRect2D& scissor) const {
+        u32 first_scissor = 0;
+        u32 scissor_count = 1;
+        vkCmdSetScissor(command_buffer, first_scissor, scissor_count, &scissor);
     }
 
     void VulkanCommandBuffer::draw(const DrawCommand& command) const {

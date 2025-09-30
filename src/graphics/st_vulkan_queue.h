@@ -8,6 +8,8 @@ namespace Storytime {
         VkQueue queue = nullptr;
 
     public:
+        VulkanQueue() = default;
+
         VulkanQueue(VkQueue queue);
 
         operator VkQueue() const;

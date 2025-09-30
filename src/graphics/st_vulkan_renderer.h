@@ -32,12 +32,14 @@ namespace Storytime {
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
         VulkanCommandPool command_pool;
+        VulkanQueue graphics_queue;
+        VulkanQueue present_queue;
         std::vector<VkCommandBuffer> command_buffers;
         std::vector<VkFence> in_flight_fences;
         std::vector<VkSemaphore> image_available_semaphores;
         std::vector<VkSemaphore> render_finished_semaphores;
         u32 current_frame = 0;
-        bool surface_resized = false;
+        bool surface_has_been_resized = false;
 
     public:
         VulkanRenderer(const Config& config);
@@ -55,7 +57,9 @@ namespace Storytime {
         // void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates);
 
     private:
-        void create_command_buffers();
+        void initialize_queues();
+
+        void allocate_command_buffers();
 
         void create_sync_objects();
 
@@ -68,5 +72,9 @@ namespace Storytime {
         void on_window_resized_event(const WindowResizedEvent& event);
 
         void recreate_swapchain();
+
+        // void submit_to_graphics_queue();
+        //
+        // void present_to_present_queue();
     };
 }

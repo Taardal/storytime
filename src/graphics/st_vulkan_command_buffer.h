@@ -5,6 +5,8 @@ namespace Storytime {
         VkCommandBuffer command_buffer = nullptr;
 
     public:
+        VulkanCommandBuffer() = default;
+
         VulkanCommandBuffer(VkCommandBuffer command_buffer);
 
         operator VkCommandBuffer() const;
@@ -37,25 +39,29 @@ namespace Storytime {
 
         void bind_pipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline) const;
 
-        struct SetViewportCommand {
+        struct SetViewportsCommand {
             VkViewport* viewports = nullptr;
             u32 first_viewport = 0;
             u32 viewport_count = 0;
         };
 
-        void set_viewport(const SetViewportCommand& command) const;
+        void set_viewports(const SetViewportsCommand& command) const;
 
-        void set_viewport(u32 first_viewport, u32 viewport_count, const VkViewport* viewports) const;
+        void set_viewport(const VkViewport& viewport) const;
 
-        struct SetScissorCommand {
+        void set_viewports(u32 first_viewport, u32 viewport_count, const VkViewport* viewports) const;
+
+        struct SetScissorsCommand {
             VkRect2D* scissors = nullptr;
             u32 first_scissor = 0;
             u32 scissor_count = 0;
         };
 
-        void set_scissor(const SetScissorCommand& command) const;
+        void set_scissors(const SetScissorsCommand& command) const;
 
-        void set_scissor(u32 first_scissor, u32 scissor_count, const VkRect2D* scissors) const;
+        void set_scissor(const VkRect2D& scissor) const;
+
+        void set_scissors(u32 first_scissor, u32 scissor_count, const VkRect2D* scissors) const;
 
         struct DrawCommand {
             u32 vertex_count = 0;
