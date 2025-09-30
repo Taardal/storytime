@@ -3,6 +3,7 @@
 #include "st_vulkan_command_buffer.h"
 #include "st_vulkan_device.h"
 #include "st_vulkan_queue.h"
+#include "event/st_window_resized_event.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -14,7 +15,7 @@ namespace Storytime {
         VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         std::string name = "SwapChain";
-        u32 min_required_image_count = 0;
+        u32 max_frames_in_flight = 0;
     };
 
     class VulkanSwapchain {
@@ -31,7 +32,13 @@ namespace Storytime {
         std::vector<VkImageView> image_views;
         std::vector<VkFramebuffer> framebuffers;
         VkRenderPass render_pass = nullptr;
+        std::vector<VkFence> in_flight_fences;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkSemaphore> render_finished_semaphores;
+        VulkanQueue graphics_queue;
+        VulkanQueue present_queue;
         u32 current_image_index = 0;
+        bool surface_has_been_resized = false;
 
     public:
         VulkanSwapchain(const Config& config);
@@ -46,46 +53,13 @@ namespace Storytime {
 
         const VkExtent2D& get_image_extent() const;
 
-        u32 get_current_image_index() const;
+        bool acquire_frame(u32 frame_index);
 
-        VkFramebuffer get_current_framebuffer() const;
+        void begin_frame(const VulkanCommandBuffer& command_buffer) const;
 
-        void begin_frame();
+        void end_frame(const VulkanCommandBuffer& command_buffer) const;
 
-        void end_frame(VkCommandBuffer command_buffer);
-
-        void begin_render_pass(const VulkanCommandBuffer& command_buffer) const;
-
-        void end_render_pass(const VulkanCommandBuffer& command_buffer) const;
-
-        VkRenderPassBeginInfo get_render_pass_begin_info(const VkClearValue& clear_color) const;
-
-        VkViewport get_viewport() const;
-
-        void set_viewport(const VulkanCommandBuffer& command_buffer) const;
-
-        VkRect2D get_scissor() const;
-
-        void set_scissor(const VulkanCommandBuffer& command_buffer) const;
-
-        struct AcquireNextImageConfig {
-            u64 timeout;
-            VkSemaphore semaphore;
-            VkFence fence;
-        };
-
-        VkResult acquire_next_image(const AcquireNextImageConfig& config);
-
-        VkResult acquire_next_image(u64 timeout, VkSemaphore semaphore, VkFence fence);
-
-        struct PresentConfig {
-            VkQueue present_queue = nullptr;
-            VkSemaphore wait_semaphore = nullptr;
-        };
-
-        VkResult present(const PresentConfig& config) const;
-
-        VkResult present(VkSemaphore wait_semaphore) const;
+        void present_frame(u32 frame_index, VkCommandBuffer command_buffer);
 
     private:
         void create_swapchain();
@@ -111,5 +85,17 @@ namespace Storytime {
         void create_framebuffers();
 
         void destroy_framebuffers() const;
+
+        void create_sync_objects();
+
+        void destroy_sync_objects() const;
+
+        void initialize_queues();
+
+        void subscribe_to_events();
+
+        void unsubscribe_from_events();
+
+        void on_window_resized_event(const WindowResizedEvent& event);
     };
 }

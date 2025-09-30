@@ -1,12 +1,10 @@
 #pragma once
 
-#include "st_vulkan_command_buffer.h"
 #include "st_vulkan_command_pool.h"
 #include "st_vulkan_device.h"
 #include "st_vulkan_graphics_pipeline.h"
 #include "st_vulkan_physical_device.h"
 #include "st_vulkan_swapchain.h"
-#include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_instance.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
@@ -32,19 +30,11 @@ namespace Storytime {
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
         VulkanCommandPool command_pool;
-        VulkanQueue graphics_queue;
-        VulkanQueue present_queue;
         std::vector<VkCommandBuffer> command_buffers;
-        std::vector<VkFence> in_flight_fences;
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkSemaphore> render_finished_semaphores;
-        u32 current_frame = 0;
-        bool surface_has_been_resized = false;
+        u32 current_frame_index = 0;
 
     public:
         VulkanRenderer(const Config& config);
-
-        ~VulkanRenderer();
 
         void begin_frame();
 
@@ -52,29 +42,11 @@ namespace Storytime {
 
         void render();
 
-        // void render_quad(const Quad& quad);
-        //
-        // void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates);
-
     private:
-        void initialize_queues();
-
         void allocate_command_buffers();
 
-        void create_sync_objects();
+        void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
-        void destroy_sync_objects() const;
-
-        void subscribe_to_events();
-
-        void unsubscribe_from_events();
-
-        void on_window_resized_event(const WindowResizedEvent& event);
-
-        void recreate_swapchain();
-
-        // void submit_to_graphics_queue();
-        //
-        // void present_to_present_queue();
+        void end_command_buffer(const VulkanCommandBuffer& command_buffer) const;
     };
 }

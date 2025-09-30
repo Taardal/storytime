@@ -8,9 +8,14 @@ namespace Storytime {
         create_image_views();
         create_render_pass();
         create_framebuffers();
+        create_sync_objects();
+        initialize_queues();
+        subscribe_to_events();
     }
 
     VulkanSwapchain::~VulkanSwapchain() {
+        unsubscribe_from_events();
+        destroy_sync_objects();
         destroy_framebuffers();
         destroy_render_pass();
         destroy_image_views();
@@ -18,6 +23,12 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::recreate() {
+        config.window->wait_until_not_minimized();
+
+        if (config.device->wait_until_idle() != VK_SUCCESS) {
+            ST_THROW("Could not wait until Vulkan device is idle to recreate swapchain");
+        }
+
         destroy_framebuffers();
         destroy_image_views();
         destroy_swapchain();
@@ -39,18 +50,11 @@ namespace Storytime {
         return image_extent;
     }
 
-    u32 VulkanSwapchain::get_current_image_index() const {
-        return current_image_index;
-    }
+    bool VulkanSwapchain::acquire_frame(u32 frame_index) {
+        const VulkanDevice& device = *config.device;
 
-    VkFramebuffer VulkanSwapchain::get_current_framebuffer() const {
-        return framebuffers.at(current_image_index);
-    }
-
-    void VulkanSwapchain::begin_frame() {
-#if 0
-        VkFence in_flight_fence = in_flight_fences.at(current_image_index);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image_index);
+        VkFence in_flight_fence = in_flight_fences.at(frame_index);
+        VkSemaphore image_available_semaphore = image_available_semaphores.at(frame_index);
 
         //
         // Wait for the previous frame to finish.
@@ -58,8 +62,8 @@ namespace Storytime {
 
         VkBool32 wait_for_all_fences = VK_TRUE;
         u64 wait_for_fences_timeout = UINT64_MAX; // Wait forever until the fence is signaled.
-        if (config.device->wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout) != VK_SUCCESS) {
-            ST_THROW("Could not wait for 'in flight' fence for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
+        if (device.wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout) != VK_SUCCESS) {
+            ST_THROW("Could not wait for 'in flight' fence");
         }
 
         //
@@ -68,48 +72,93 @@ namespace Storytime {
 
         u64 next_image_timeout = UINT64_MAX; // Wait forever until an image becomes available.
         VkFence image_available_fence = VK_NULL_HANDLE; // No fences to signal when an image becomes available.
-        VkResult next_image_result = config.device->acquire_next_swapchain_image(
+        VkResult next_image_result = device.acquire_next_swapchain_image(
             swapchain,
             next_image_timeout,
             image_available_semaphore, // Signal that an image is available.
             image_available_fence,
             &current_image_index
         );
+
         // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
         if (next_image_result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreate();
-            return;
+            return false;
         }
+
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
         if (next_image_result != VK_SUCCESS && next_image_result != VK_SUBOPTIMAL_KHR) {
-            ST_THROW("Could not acquire swapchain image for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
+            ST_THROW("Could not acquire swapchain image");
         }
 
-        // Delay resetting the fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
+        // Delay resetting the 'in flight' fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
         // Thus, if we return early, the fence is still signaled and vkWaitForFences won't deadlock the next time we use the same fence object.
-        if (config.device->reset_fences(1, &in_flight_fence) != VK_SUCCESS) {
-            ST_THROW("Could not reset 'in flight' fence for image [" << current_image_index + 1 << "] / [" << images.size() << "]");
+        if (device.reset_fences(1, &in_flight_fence) != VK_SUCCESS) {
+            ST_THROW("Could not reset 'in flight' fence");
         }
-#endif
+
+        return true;
     }
 
-    void VulkanSwapchain::end_frame(VkCommandBuffer command_buffer) {
-#if 0
+    void VulkanSwapchain::begin_frame(const VulkanCommandBuffer& command_buffer) const {
         const VulkanDevice& device = *config.device;
 
-        VkFence in_flight_fence = in_flight_fences.at(current_image_index);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(current_image_index);
-        VkSemaphore render_finished_semaphore = render_finished_semaphores.at(current_image_index);
+        device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
+
+        VkClearColorValue clear_color_value = {
+            .float32 = {0.0f, 0.0f, 0.0f, 1.0f}
+        };
+        VkClearValue clear_color = {
+            .color = clear_color_value
+        };
+
+        VkRenderPassBeginInfo render_pass_begin_info{};
+        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin_info.renderPass = render_pass;
+        render_pass_begin_info.framebuffer = framebuffers[current_image_index];
+        render_pass_begin_info.renderArea.offset = {0, 0};
+        render_pass_begin_info.renderArea.extent = image_extent;
+        render_pass_begin_info.clearValueCount = 1;
+        render_pass_begin_info.pClearValues = &clear_color;
+
+        command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+        device.insert_cmd_label(command_buffer, "Set swapchain viewport");
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = (f32) image_extent.width;
+        viewport.height = (f32) image_extent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        command_buffer.set_viewport(viewport);
+
+        device.insert_cmd_label(command_buffer, "Set swapchain scissor");
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = image_extent;
+        command_buffer.set_scissor(scissor);
+    }
+
+    void VulkanSwapchain::end_frame(const VulkanCommandBuffer& command_buffer) const {
+        config.device->insert_cmd_label(command_buffer, "End render pass");
+        command_buffer.end_render_pass();
+    }
+
+    void VulkanSwapchain::present_frame(u32 frame_index, VkCommandBuffer command_buffer) {
+        const VulkanDevice& device = *config.device;
+
+        VkFence in_flight_fence = in_flight_fences.at(frame_index);
+        VkSemaphore image_available_semaphore = image_available_semaphores.at(frame_index);
+        VkSemaphore render_finished_semaphore = render_finished_semaphores.at(frame_index);
 
         //
-        // Submit the rendering commands to the graphics queue to perform the rendering.
+        // Submit the render commands to the graphics queue to perform the rendering.
         //
 
-        VulkanQueue graphics_queue = device.get_graphics_queue();
-
-        VkDebugUtilsLabelEXT graphis_queue_label{};
-        graphis_queue_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        graphis_queue_label.pLabelName = "GraphicsQueue";
+        device.begin_queue_label(graphics_queue, "GraphicsQueue");
 
         constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -121,17 +170,9 @@ namespace Storytime {
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
         submit_info.signalSemaphoreCount = 1;
-        submit_info.pSignalSemaphores = &render_finished_semaphore; // Signal that the image is rendered and ready for presentation.
+        submit_info.pSignalSemaphores = &render_finished_semaphore; // Signal that the rendering to the image is complete.
 
-        VkDebugUtilsLabelEXT graphics_queue_label{};
-        graphics_queue_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        graphics_queue_label.pLabelName = "GraphicsQueue";
-        device.begin_queue_label(graphics_queue, graphics_queue_label);
-
-        VkDebugUtilsLabelEXT submit_render_commands_label{};
-        submit_render_commands_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        submit_render_commands_label.pLabelName = "Submit render commands";
-        device.insert_queue_label(graphics_queue, submit_render_commands_label);
+        device.insert_queue_label(graphics_queue, "Submit render commands");
 
         if (graphics_queue.submit(submit_info, in_flight_fence) != VK_SUCCESS) {
             ST_THROW("Could not submit render commands to graphics queue");
@@ -140,10 +181,10 @@ namespace Storytime {
         device.end_queue_label(graphics_queue);
 
         //
-        // Present the rendered swapchain image to the surface (screen).
+        // Present the rendered image to the surface (screen).
         //
 
-        VulkanQueue present_queue = device.get_present_queue();
+        device.begin_queue_label(present_queue, "PresentQueue");
 
         VkPresentInfoKHR present_info{};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -154,34 +195,27 @@ namespace Storytime {
         present_info.pImageIndices = &current_image_index;
         present_info.pResults = nullptr;
 
-        VkDebugUtilsLabelEXT present_queue_label{};
-        present_queue_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        present_queue_label.pLabelName = "PresentQueue";
-        device.begin_queue_label(present_queue, present_queue_label);
-
-        VkDebugUtilsLabelEXT present_swapchain_image_label{};
-        present_swapchain_image_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        present_swapchain_image_label.pLabelName = "Present swapchain image";
-        device.insert_queue_label(present_queue, present_swapchain_image_label);
+        device.insert_queue_label(present_queue, "Present swapchain image");
 
         VkResult present_result = present_queue.present(present_info);
 
+        device.end_queue_label(present_queue);
+
         // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
-        if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || surface_resized) {
-            surface_resized = false;
+        if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || surface_has_been_resized) {
+            surface_has_been_resized = false;
             recreate();
         } else if (present_result != VK_SUCCESS) {
             ST_THROW("Could not present swapchain image to the surface");
         }
-
-        device.end_queue_label(present_queue);
-
-        current_image_index = (current_image_index + 1) % 2;
-#endif
     }
 
     void VulkanSwapchain::create_swapchain() {
+        const VulkanInstance& instance = *config.instance;
+        const VulkanPhysicalDevice& physical_device = *config.physical_device;
+        const VulkanDevice& device = *config.device;
+
         surface_format = find_surface_format();
         present_mode = find_present_mode();
         image_extent = find_image_extent();
@@ -189,19 +223,19 @@ namespace Storytime {
         VkSwapchainCreateInfoKHR swapchain_create_info{};
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.minImageCount = find_min_image_count();
-        swapchain_create_info.surface = config.instance->get_surface();
+        swapchain_create_info.surface = instance.get_surface();
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
         swapchain_create_info.imageExtent = image_extent;
         swapchain_create_info.imageArrayLayers = 1;
         swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        swapchain_create_info.preTransform = config.physical_device->get_surface_capabilities().currentTransform;
+        swapchain_create_info.preTransform = physical_device.get_surface_capabilities().currentTransform;
         swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         swapchain_create_info.presentMode = present_mode;
         swapchain_create_info.clipped = VK_TRUE;
         swapchain_create_info.oldSwapchain = nullptr;
 
-        const QueueFamilyIndices& queue_family_indices = config.physical_device->get_queue_family_indices();
+        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
         if (queue_family_indices.graphics_family != queue_family_indices.present_family) {
             std::vector<u32> queue_families = {
                 queue_family_indices.graphics_family.value(),
@@ -216,20 +250,20 @@ namespace Storytime {
             swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
-        if (config.device->create_swapchain(swapchain_create_info, &swapchain) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan swapchain");
+        if (device.create_swapchain(swapchain_create_info, &swapchain) != VK_SUCCESS) {
+            ST_THROW("Could not create swapchain");
         }
 
-        if (config.device->set_object_name(swapchain, VK_OBJECT_TYPE_SWAPCHAIN_KHR, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan swapchain name [" << config.name << "]");
+        if (device.set_object_name(swapchain, VK_OBJECT_TYPE_SWAPCHAIN_KHR, config.name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set swapchain name [" << config.name << "]");
         }
 
-        if (config.device->get_swapchain_images(swapchain, &images) != VK_SUCCESS) {
-            ST_THROW("Could not get Vulkan swapchain images");
+        if (device.get_swapchain_images(swapchain, &images) != VK_SUCCESS) {
+            ST_THROW("Could not get swapchain images");
         }
 
-        if (config.min_required_image_count > 0 && images.size() < config.min_required_image_count) {
-            ST_THROW("Could not create Vulkan swapchain with fewer images [" << images.size() << "] than minimum required image count [" << config.min_required_image_count << "]");
+        if (images.size() < config.max_frames_in_flight) {
+            ST_THROW("Could not create swapchain with fewer images [" << images.size() << "] than frames in flight [" << config.max_frames_in_flight << "]");
         }
     }
 
@@ -315,12 +349,12 @@ namespace Storytime {
             image_view_create_info.subresourceRange.layerCount = 1;
 
             if (config.device->create_image_view(image_view_create_info, &image_views[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create Vulkan swapchain image view [" << i + 1 << "] / [" << image_count << "]");
+                ST_THROW("Could not create swapchain image view [" << i + 1 << "] / [" << image_count << "]");
             }
 
             std::string image_view_name = std::format("{} image view {}/{}", config.name, i + 1, image_count);
             if (config.device->set_object_name(image_views[i], VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set Vulkan swapchain image view name [" << image_view_name << "]");
+                ST_THROW("Could not set swapchain image view name [" << image_view_name << "]");
             }
         }
     }
@@ -369,12 +403,12 @@ namespace Storytime {
         render_pass_create_info.pDependencies = &subpass_dependency;
 
         if (config.device->create_render_pass(render_pass_create_info, &render_pass) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan swapchain render pass");
+            ST_THROW("Could not create swapchain render pass");
         }
 
         std::string render_pass_name = std::format("{} render pass", config.name);
         if (config.device->set_object_name(render_pass, VK_OBJECT_TYPE_RENDER_PASS, render_pass_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan swapchain render pass name [" << render_pass_name << "]");
+            ST_THROW("Could not set swapchain render pass name [" << render_pass_name << "]");
         }
     }
 
@@ -401,12 +435,12 @@ namespace Storytime {
             framebuffer_create_info.layers = 1;
 
             if (config.device->create_framebuffer(framebuffer_create_info, &framebuffers[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create Vulkan swapchain framebuffer [" << i + 1 << " / " << image_count << "]");
+                ST_THROW("Could not create swapchain framebuffer [" << i + 1 << " / " << image_count << "]");
             }
 
             std::string framebuffer_name = std::format("{} framebuffer {}/{}", config.name, i + 1, image_count);
             if (config.device->set_object_name(framebuffers[i], VK_OBJECT_TYPE_FRAMEBUFFER, framebuffer_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set Vulkan swapchain framebuffer name [" << framebuffer_name << "]");
+                ST_THROW("Could not set swapchain framebuffer name [" << framebuffer_name << "]");
             }
         }
     }
@@ -417,130 +451,103 @@ namespace Storytime {
         }
     }
 
-    void VulkanSwapchain::begin_render_pass(const VulkanCommandBuffer& command_buffer) const {
-        VkClearColorValue clear_color_value = {
-            .float32 = {0.0f, 0.0f, 0.0f, 1.0f}
-        };
-        VkClearValue clear_color = {
-            .color = clear_color_value
-        };
+    void VulkanSwapchain::initialize_queues() {
+        const VulkanPhysicalDevice& physical_device = *config.physical_device;
+        const VulkanDevice& device = *config.device;
 
-        VkRenderPassBeginInfo render_pass_begin_info{};
-        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin_info.renderPass = render_pass;
-        render_pass_begin_info.framebuffer = framebuffers[current_image_index];
-        render_pass_begin_info.renderArea.offset = {0, 0};
-        render_pass_begin_info.renderArea.extent = image_extent;
-        render_pass_begin_info.clearValueCount = 1;
-        render_pass_begin_info.pClearValues = &clear_color;
+        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
+        graphics_queue = device.get_queue(queue_family_indices.graphics_family.value());
+        present_queue = device.get_queue(queue_family_indices.present_family.value());
 
-        command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
+        if (device.set_object_name(graphics_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
+        }
+
+        std::string present_queue_name = std::format("{} present queue", config.name);
+        if (device.set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
+        }
     }
 
-    void VulkanSwapchain::end_render_pass(const VulkanCommandBuffer& command_buffer) const {
-        command_buffer.end_render_pass();
-    }
+    void VulkanSwapchain::create_sync_objects() {
+        const VulkanDevice& device = *config.device;
 
-    VkRenderPassBeginInfo VulkanSwapchain::get_render_pass_begin_info(const VkClearValue& clear_color) const {
-        VkRenderPassBeginInfo render_pass_begin_info{};
-        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin_info.renderPass = render_pass;
-        render_pass_begin_info.framebuffer = framebuffers[current_image_index];
-        render_pass_begin_info.renderArea.offset = {0, 0};
-        render_pass_begin_info.renderArea.extent = image_extent;
-        render_pass_begin_info.clearValueCount = 1;
-        render_pass_begin_info.pClearValues = &clear_color;
-        return render_pass_begin_info;
-    }
+        u32 sync_object_count = config.max_frames_in_flight;
 
-    VkViewport VulkanSwapchain::get_viewport() const {
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (f32) image_extent.width;
-        viewport.height = (f32) image_extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        return viewport;
-    }
+        image_available_semaphores.resize(sync_object_count);
+        render_finished_semaphores.resize(sync_object_count);
+        in_flight_fences.resize(sync_object_count);
 
-    void VulkanSwapchain::set_viewport(const VulkanCommandBuffer& command_buffer) const {
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (f32) image_extent.width;
-        viewport.height = (f32) image_extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
+        VkSemaphoreCreateInfo semaphore_create_info{};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        u32 first_viewport = 0;
-        u32 viewport_count = 1;
-        command_buffer.set_viewports(first_viewport, viewport_count, &viewport);
-    }
+        VkFenceCreateInfo fence_create_info{};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-    VkRect2D VulkanSwapchain::get_scissor() const {
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = image_extent;
-        return scissor;
-    }
-
-    void VulkanSwapchain::set_scissor(const VulkanCommandBuffer& command_buffer) const {
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = image_extent;
-
-        u32 first_scissor = 0;
-        u32 scissor_count = 1;
-        command_buffer.set_scissors(first_scissor, scissor_count, &scissor);
-    }
-
-    VkResult VulkanSwapchain::acquire_next_image(const AcquireNextImageConfig& config) {
-        return this->config.device->acquire_next_swapchain_image(
-            swapchain,
-            config.timeout,
-            config.semaphore,
-            config.fence,
-            &current_image_index
-        );
-    }
-
-    VkResult VulkanSwapchain::acquire_next_image(u64 timeout, VkSemaphore semaphore, VkFence fence) {
-        return config.device->acquire_next_swapchain_image(
-            swapchain,
-            timeout,
-            semaphore,
-            fence,
-            &current_image_index
-        );
-    }
-
-    VkResult VulkanSwapchain::present(const PresentConfig& config) const {
-        return VK_SUCCESS;
-    }
-
-    VkResult VulkanSwapchain::present(VkSemaphore wait_semaphore) const {
-        // VulkanDevice& device = *config.device;
+        // Create the fence in the signaled state.
         //
-        // VulkanQueue present_queue = device.get_present_queue();
+        // Rendering a frame starts with waiting for the previous frame to finish rendering using vkWaitForFences(),
+        // but when rendering the very first frame, there are no previous frames and vkWaitForFences() will wait and block forever.
         //
-        // VkPresentInfoKHR present_info{};
-        // present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        // present_info.waitSemaphoreCount = 1;
-        // present_info.pWaitSemaphores = &wait_semaphore; // Wait until the image is rendered.
-        // present_info.swapchainCount = 1;
-        // present_info.pSwapchains = &swapchain;
-        // present_info.pImageIndices = &current_image_index;
-        // present_info.pResults = nullptr;
+        // We solve this by creating the fence in the signaled state, so that the first call to vkWaitForFences() returns immediately
+        // since the fence is already signaled.
         //
-        // device.begin_queue_label(present_queue, "PresentQueue");
-        // device.insert_queue_label(present_queue, "Present swapchain image");
-        //
-        // VkResult present_result = present_queue.present(present_info);
-        //
-        // device.end_queue_label(present_queue);
-        //
-        // return present_result;
-        return VK_SUCCESS;
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (u32 i = 0; i < sync_object_count; i++) {
+            if (device.create_semaphore(semaphore_create_info, &image_available_semaphores[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'image available' semaphore");
+            }
+
+            if (device.create_semaphore(semaphore_create_info, &render_finished_semaphores[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'render finished' semaphore");
+            }
+
+            if (device.create_fence(fence_create_info, &in_flight_fences[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'in flight' fence");
+            }
+
+            std::string image_available_semaphore_name = std::format("{} 'image available' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(image_available_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'image available' semaphore name [" << image_available_semaphore_name << "]");
+            }
+
+            std::string render_finished_semaphore_name = std::format("{} 'render finished' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(render_finished_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'render finished' semaphore name [" << render_finished_semaphore_name << "]");
+            }
+
+            std::string in_flight_fence_name = std::format("{} 'in flight' fence {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(in_flight_fences[i], VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'in flight' fence name [" << in_flight_fence_name << "]");
+            }
+        }
+    }
+
+    void VulkanSwapchain::destroy_sync_objects() const {
+        const VulkanDevice& device = *config.device;
+
+        for (u32 i = 0; i < image_available_semaphores.size(); i++) {
+            device.destroy_semaphore(image_available_semaphores.at(i));
+        }
+        for (u32 i = 0; i < render_finished_semaphores.size(); i++) {
+            device.destroy_semaphore(render_finished_semaphores.at(i));
+        }
+        for (u32 i = 0; i < in_flight_fences.size(); i++) {
+            device.destroy_fence(in_flight_fences.at(i));
+        }
+    }
+
+    void VulkanSwapchain::subscribe_to_events() {
+        config.dispatcher->subscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
+    }
+
+    void VulkanSwapchain::unsubscribe_from_events() {
+        config.dispatcher->unsubscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
+    }
+
+    void VulkanSwapchain::on_window_resized_event(const WindowResizedEvent&) {
+        surface_has_been_resized = true;
     }
 }
