@@ -76,6 +76,8 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_index_buffer.h
     ${ST_SRC_DIR}/graphics/st_open_gl.cpp
     ${ST_SRC_DIR}/graphics/st_open_gl.h
+    ${ST_SRC_DIR}/graphics/st_quad_vertex.cpp
+    ${ST_SRC_DIR}/graphics/st_quad_vertex.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_renderer.h
     ${ST_SRC_DIR}/graphics/st_shader.cpp
@@ -97,6 +99,8 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/graphics/st_vulkan.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
@@ -105,6 +109,8 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_device.h
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_index_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_index_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_instance.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_instance.h
     ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.cpp
@@ -117,6 +123,10 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_surface.h
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
     ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp

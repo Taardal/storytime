@@ -52,6 +52,16 @@ namespace Storytime {
         return vkCreateDevice(device_info.physical_device, &device_create_info, ST_VK_ALLOCATOR, device);
     }
 
+    VkPhysicalDeviceMemoryProperties VulkanPhysicalDevice::get_memory_properties() const {
+        VkPhysicalDeviceMemoryProperties memory_properties;
+        vkGetPhysicalDeviceMemoryProperties(device_info.physical_device, &memory_properties);
+        return memory_properties;
+    }
+
+    void VulkanPhysicalDevice::get_memory_properties(VkPhysicalDeviceMemoryProperties* memory_properties) const {
+        vkGetPhysicalDeviceMemoryProperties(device_info.physical_device, memory_properties);
+    }
+
     std::vector<const char*> VulkanPhysicalDevice::get_required_extensions() const {
         std::vector extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME // Enable VkSwapchainKHR objects so the rendered graphics can be presented to a window surface.

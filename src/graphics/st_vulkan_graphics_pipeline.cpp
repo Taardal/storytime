@@ -15,6 +15,10 @@ namespace Storytime {
         return pipeline;
     }
 
+    void VulkanGraphicsPipeline::bind(const VulkanCommandBuffer& command_buffer) const {
+        command_buffer.bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    }
+
     void VulkanGraphicsPipeline::create_pipeline() {
         //
         // Programmable stages
@@ -63,12 +67,13 @@ namespace Storytime {
         dynamic_state_create_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
         dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
+
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertex_input_state_create_info.vertexBindingDescriptionCount = 0;
-        vertex_input_state_create_info.pVertexBindingDescriptions = nullptr;
-        vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
-        vertex_input_state_create_info.pVertexAttributeDescriptions = nullptr;
+        vertex_input_state_create_info.vertexBindingDescriptionCount = 1;
+        vertex_input_state_create_info.pVertexBindingDescriptions = &config.vertex_input_binding_description;
+        vertex_input_state_create_info.vertexAttributeDescriptionCount = (u32) config.vertex_input_attribute_descriptions.size();
+        vertex_input_state_create_info.pVertexAttributeDescriptions = config.vertex_input_attribute_descriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info{};
         input_assembly_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

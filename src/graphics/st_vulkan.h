@@ -202,4 +202,68 @@ namespace Storytime {
                 return "";
         }
     }
+
+    inline VkFormat get_vk_format_from_glsl_type(std::string_view type) {
+        if (type == "float") {
+            return VK_FORMAT_R32_SFLOAT;
+        }
+        if (type == "vec2") {
+            return VK_FORMAT_R32G32_SFLOAT;
+        }
+        if (type == "vec3") {
+            return VK_FORMAT_R32G32B32_SFLOAT;
+        }
+        if (type == "vec4") {
+            return VK_FORMAT_R32G32B32A32_SFLOAT;
+        }
+        if (type == "double") {
+            return VK_FORMAT_R64_SFLOAT;
+        }
+        if (type == "dvec2") {
+            return VK_FORMAT_R64G64_SFLOAT;
+        }
+        if (type == "dvec3") {
+            return VK_FORMAT_R64G64B64_SFLOAT;
+        }
+        if (type == "dvec4") {
+            return VK_FORMAT_R64G64B64A64_SFLOAT;
+        }
+        if (type == "int") {
+            return VK_FORMAT_R32_SINT;
+        }
+        if (type == "ivec2") {
+            return VK_FORMAT_R32G32_SINT;
+        }
+        if (type == "ivec3") {
+            return VK_FORMAT_R32G32B32_SINT;
+        }
+        if (type == "ivec4") {
+            return VK_FORMAT_R32G32B32A32_SINT;
+        }
+        if (type == "uint") {
+            return VK_FORMAT_R32_UINT;
+        }
+        if (type == "uvec2") {
+            return VK_FORMAT_R32G32_UINT;
+        }
+        if (type == "uvec3") {
+            return VK_FORMAT_R32G32B32_UINT;
+        }
+        if (type == "uvec4") {
+            return VK_FORMAT_R32G32B32A32_UINT;
+        }
+        if (type == "bool") {
+            return VK_FORMAT_R8_UINT; // GLSL bool maps to int in SPIR-V, typically 32-bit, but 8-bit here for compactness
+        }
+        if (type == "bvec2") {
+            return VK_FORMAT_R8G8_UINT;
+        }
+        if (type == "bvec3") {
+            return VK_FORMAT_R8G8B8_UINT;
+        }
+        if (type == "bvec4") {
+            return VK_FORMAT_R8G8B8A8_UINT;
+        }
+        return VK_FORMAT_UNDEFINED;
+    }
 }

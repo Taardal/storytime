@@ -23,6 +23,8 @@ namespace Storytime {
 
         operator VkDevice() const;
 
+        const VulkanPhysicalDevice& get_physical_device() const;
+
         VkQueue get_queue(u32 queue_family_index, u32 queue_index = 0) const;
 
         void get_queue(u32 queue_family_index, u32 queue_index, VkQueue* queue) const;
@@ -115,6 +117,34 @@ namespace Storytime {
         void destroy_command_pool(VkCommandPool command_pool) const;
 
         VkResult allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffer) const;
+
+        VkResult create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const;
+
+        void destroy_buffer(VkBuffer buffer) const;
+
+        VkResult allocate_memory(const VkMemoryAllocateInfo& memory_allocate_info, VkDeviceMemory* memory) const;
+
+        VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset = 0) const;
+
+        void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements* memory_requirements) const;
+
+        VkMemoryRequirements get_buffer_memory_requirements(VkBuffer buffer) const;
+
+        void free_memory(VkDeviceMemory memory) const;
+
+        struct MapMemoryConfig {
+            VkDeviceMemory memory = nullptr;
+            VkDeviceSize memory_offset = 0;
+            VkDeviceSize memory_size = 0;
+            VkMemoryMapFlags flags = 0;
+            void** data = nullptr;
+        };
+
+        VkResult map_memory(const MapMemoryConfig& config) const;
+
+        VkResult map_memory(VkDeviceMemory memory, VkDeviceSize memory_offset, VkDeviceSize memory_size, VkMemoryMapFlags flags, void** data) const;
+
+        void unmap_memory(VkDeviceMemory memory) const;
 
         VkResult set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
 

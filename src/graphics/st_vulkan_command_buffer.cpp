@@ -82,4 +82,18 @@ namespace Storytime {
     void VulkanCommandBuffer::draw(u32 vertex_count, u32 instance_count, u32 first_vertex, u32 first_instance) const {
         vkCmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
+
+    void VulkanCommandBuffer::bind_vertex_buffers(const BindVertexBuffersCommand& command) const {
+        vkCmdBindVertexBuffers(command_buffer, command.first_binding, command.binding_count, command.vertex_buffers, command.offsets);
+    }
+
+    void VulkanCommandBuffer::bind_vertex_buffers(u32 first_binding, u32 binding_count, const VkBuffer* vertex_buffers, const VkDeviceSize* offsets) const {
+        vkCmdBindVertexBuffers(command_buffer, first_binding, binding_count, vertex_buffers, offsets);
+    }
+
+    void VulkanCommandBuffer::bind_vertex_buffer(VkBuffer vertex_buffer, const VkDeviceSize* offsets) const {
+        u32 first_binding = 0;
+        u32 binding_count = 1;
+        vkCmdBindVertexBuffers(command_buffer, first_binding, binding_count, &vertex_buffer, offsets);
+    }
 }

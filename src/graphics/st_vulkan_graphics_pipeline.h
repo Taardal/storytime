@@ -10,6 +10,8 @@ namespace Storytime {
         std::string name = "Pipeline";
         std::filesystem::path vertex_shader_path;
         std::filesystem::path fragment_shader_path;
+        VkVertexInputBindingDescription vertex_input_binding_description{};
+        std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions{};
     };
 
     class VulkanGraphicsPipeline {
@@ -27,6 +29,8 @@ namespace Storytime {
         ~VulkanGraphicsPipeline();
 
         operator VkPipeline() const;
+
+        void bind(const VulkanCommandBuffer& command_buffer) const;
 
     private:
         void create_pipeline();

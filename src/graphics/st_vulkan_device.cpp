@@ -13,6 +13,11 @@ namespace Storytime {
         return device;
     }
 
+    const VulkanPhysicalDevice& VulkanDevice::get_physical_device() const {
+        ST_ASSERT_NOT_NULL(config.physical_device);
+        return *config.physical_device;
+    }
+
     VkQueue VulkanDevice::get_queue(u32 queue_family_index, u32 queue_index) const {
         VkQueue queue;
         vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
@@ -153,6 +158,48 @@ namespace Storytime {
 
     VkResult VulkanDevice::allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffer) const {
         return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffer);
+    }
+
+    VkResult VulkanDevice::create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const {
+        return vkCreateBuffer(device, &buffer_create_info, ST_VK_ALLOCATOR, buffer);
+    }
+
+    void VulkanDevice::destroy_buffer(VkBuffer buffer) const {
+        vkDestroyBuffer(device, buffer, ST_VK_ALLOCATOR);
+    }
+
+    VkResult VulkanDevice::allocate_memory(const VkMemoryAllocateInfo& memory_allocate_info, VkDeviceMemory* memory) const {
+        return vkAllocateMemory(device, &memory_allocate_info, ST_VK_ALLOCATOR, memory);
+    }
+
+    VkResult VulkanDevice::bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
+        return vkBindBufferMemory(device, buffer, memory, memory_offset);
+    }
+
+    void VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements* memory_requirements) const {
+        return vkGetBufferMemoryRequirements(device, buffer, memory_requirements);
+    }
+
+    VkMemoryRequirements VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer) const {
+        VkMemoryRequirements memory_requirements{};
+        vkGetBufferMemoryRequirements(device, buffer, &memory_requirements);
+        return memory_requirements;
+    }
+
+    void VulkanDevice::free_memory(VkDeviceMemory memory) const {
+        vkFreeMemory(device, memory, ST_VK_ALLOCATOR);
+    }
+
+    VkResult VulkanDevice::map_memory(const MapMemoryConfig& config) const {
+        return vkMapMemory(device, config.memory, config.memory_offset, config.memory_size, config.flags, config.data);
+    }
+
+    VkResult VulkanDevice::map_memory(VkDeviceMemory memory, VkDeviceSize memory_offset, VkDeviceSize memory_size, VkMemoryMapFlags flags, void** data) const {
+        return vkMapMemory(device, memory, memory_offset, memory_size, flags, data);
+    }
+
+    void VulkanDevice::unmap_memory(VkDeviceMemory memory) const {
+        return vkUnmapMemory(device, memory);
     }
 
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {

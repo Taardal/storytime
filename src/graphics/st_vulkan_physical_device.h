@@ -53,6 +53,10 @@ namespace Storytime {
 
         VkResult create_device(const VkDeviceCreateInfo& device_create_info, VkDevice* device) const;
 
+        VkPhysicalDeviceMemoryProperties get_memory_properties() const;
+
+        void get_memory_properties(VkPhysicalDeviceMemoryProperties* memory_properties) const;
+
     private:
         std::vector<const char*> get_required_extensions() const;
 

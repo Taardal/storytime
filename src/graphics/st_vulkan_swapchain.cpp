@@ -212,7 +212,6 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::create_swapchain() {
-        const VulkanInstance& instance = *config.instance;
         const VulkanPhysicalDevice& physical_device = *config.physical_device;
         const VulkanDevice& device = *config.device;
 
@@ -223,7 +222,7 @@ namespace Storytime {
         VkSwapchainCreateInfoKHR swapchain_create_info{};
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.minImageCount = find_min_image_count();
-        swapchain_create_info.surface = instance.get_surface();
+        swapchain_create_info.surface = config.surface;
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
         swapchain_create_info.imageExtent = image_extent;

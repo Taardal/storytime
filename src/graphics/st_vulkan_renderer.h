@@ -5,6 +5,7 @@
 #include "st_vulkan_graphics_pipeline.h"
 #include "st_vulkan_physical_device.h"
 #include "st_vulkan_swapchain.h"
+#include "st_vulkan_vertex_buffer.h"
 #include "graphics/st_vulkan_instance.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
@@ -29,12 +30,15 @@ namespace Storytime {
         VulkanDevice device;
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
+        VulkanVertexBuffer vertex_buffer;
         VulkanCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
         u32 current_frame_index = 0;
 
     public:
         VulkanRenderer(const Config& config);
+
+        ~VulkanRenderer();
 
         void begin_frame();
 
