@@ -15,6 +15,12 @@ namespace Storytime {
         0, 1, 2, 2, 3, 0
     };
 
+    struct UniformBufferObject {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     VulkanRenderer::VulkanRenderer(const Config& config)
         : config(config),
           instance({
@@ -43,10 +49,11 @@ namespace Storytime {
               .device = &device,
               .swapchain = &swapchain,
               .name = std::format("{} graphics pipeline", config.name),
-              .vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/triangle.vert.spv"),
-              .fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/triangle.frag.spv"),
+              .vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/simple.vert.spv"),
+              .fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/simple.frag.spv"),
               .vertex_input_binding_description = QuadVertex::getBindingDescription(),
               .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
+              .descriptor_set_layout_bindings = get_descriptor_set_layout_bindings(),
           }),
           render_command_pool({
               .device = &device,
@@ -73,6 +80,7 @@ namespace Storytime {
     {
         allocate_command_buffers();
         initialize_queues();
+        create_uniform_buffers();
         do_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
@@ -123,6 +131,29 @@ namespace Storytime {
         i32 vertex_offset = 0; // Specifies an offset to add to the indices in the index buffer
         u32 first_instance = 0; // Specifies an offset for instancing, which we're not using.
         command_buffer.draw_indexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+
+        //
+        // Update uniform buffer
+        //
+
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
+
+        UniformBufferObject ubo{};
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
+
+        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted. The easiest way to
+        // compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix. If we don't do this,
+        // then the image will be rendered upside down.
+        ubo.proj[1][1] *= -1;
+
+        uniform_buffers.at(current_frame_index).set_uniforms(&ubo);
     }
 
     void VulkanRenderer::allocate_command_buffers() {
@@ -150,6 +181,17 @@ namespace Storytime {
         std::string present_queue_name = std::format("{} present queue", config.name);
         if (device.set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
+        }
+    }
+
+    void VulkanRenderer::create_uniform_buffers() {
+        uniform_buffers.reserve(config.max_frames_in_flight);
+        for (int i = 0; i < config.max_frames_in_flight; ++i) {
+            uniform_buffers.push_back(VulkanUniformBuffer({
+                .device = &device,
+                .name = std::format("{} uniform buffer {}/{}", config.name, i + 1, uniform_buffers.size()),
+                .size = sizeof(UniformBufferObject),
+            }));
         }
     }
 
@@ -197,5 +239,17 @@ namespace Storytime {
         if (command_buffer.end() != VK_SUCCESS) {
             ST_THROW("Could not end command buffer");
         }
+    }
+
+    std::vector<VkDescriptorSetLayoutBinding> VulkanRenderer::get_descriptor_set_layout_bindings() const {
+        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(1);
+
+        descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
+        descriptor_set_layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_set_layout_bindings[0].descriptorCount = 1;
+        descriptor_set_layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Specifies in which shader stages the descriptor is going to be referenced.
+        descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
+
+        return descriptor_set_layout_bindings;
     }
 }

@@ -30,6 +30,12 @@ namespace Storytime {
 
         void set_data(const void* src) const;
 
+        void map_memory(void** dst) const;
+
+        void set_memory_data(const void* src, void* dst) const;
+
+        void unmap_memory() const;
+
         void copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const;
 
     private:

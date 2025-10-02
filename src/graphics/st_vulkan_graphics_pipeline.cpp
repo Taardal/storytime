@@ -20,6 +20,8 @@ namespace Storytime {
     }
 
     void VulkanGraphicsPipeline::create_pipeline() {
+        const VulkanDevice& device = *config.device;
+
         //
         // Programmable stages
         //
@@ -28,12 +30,12 @@ namespace Storytime {
         VkShaderModule fragment_shader = create_shader_module(config.fragment_shader_path);
 
         std::string vertex_shader_name = std::format("{} vertex shader [{}]", config.name.c_str(), config.vertex_shader_path.c_str());
-        if (config.device->set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str())) {
-            ST_THROW("Could not set Vulkan pipeline vertex shader name [" << vertex_shader_name << "]");
+        if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str())) {
+            ST_THROW("Could not set pipeline vertex shader name [" << vertex_shader_name << "]");
         }
         std::string fragment_shader_name = std::format("{} fragment shader [{}]", config.name.c_str(), config.fragment_shader_path.c_str());
-        if (config.device->set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str())) {
-            ST_THROW("Could not set Vulkan pipeline fragment shader name [" << fragment_shader_name << "]");
+        if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str())) {
+            ST_THROW("Could not set pipeline fragment shader name [" << fragment_shader_name << "]");
         }
 
         VkPipelineShaderStageCreateInfo vertex_shader_stage_create_info{};
@@ -67,7 +69,6 @@ namespace Storytime {
         dynamic_state_create_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
         dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
-
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_state_create_info.vertexBindingDescriptionCount = 1;
@@ -80,26 +81,26 @@ namespace Storytime {
         input_assembly_state_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         input_assembly_state_create_info.primitiveRestartEnable = VK_FALSE;
 
-        const VkExtent2D& swapchain_image_extent = config.swapchain->get_image_extent();
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (f32) swapchain_image_extent.width;
-        viewport.height = (f32) swapchain_image_extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = swapchain_image_extent;
-
+        // const VkExtent2D& swapchain_image_extent = config.swapchain->get_image_extent();
+        //
+        // VkViewport viewport{};
+        // viewport.x = 0.0f;
+        // viewport.y = 0.0f;
+        // viewport.width = (f32) swapchain_image_extent.width;
+        // viewport.height = (f32) swapchain_image_extent.height;
+        // viewport.minDepth = 0.0f;
+        // viewport.maxDepth = 1.0f;
+        //
+        // VkRect2D scissor{};
+        // scissor.offset = {0, 0};
+        // scissor.extent = swapchain_image_extent;
+        //
         VkPipelineViewportStateCreateInfo viewport_state_create_info{};
         viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports = &viewport;
+        // viewport_state_create_info.pViewports = &viewport;
         viewport_state_create_info.scissorCount = 1;
-        viewport_state_create_info.pScissors = &scissor;
+        // viewport_state_create_info.pScissors = &scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
         rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -153,20 +154,29 @@ namespace Storytime {
         // Creation
         //
 
+        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
+        descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptor_set_layout_create_info.bindingCount = config.descriptor_set_layout_bindings.size();
+        descriptor_set_layout_create_info.pBindings = config.descriptor_set_layout_bindings.data();
+
+        if (device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout) != VK_SUCCESS) {
+            ST_THROW("Could not create graphics pipeline descriptor set layout");
+        }
+
         VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = 0;
-        pipeline_layout_create_info.pSetLayouts = nullptr;
+        pipeline_layout_create_info.setLayoutCount = 1;
+        pipeline_layout_create_info.pSetLayouts = &descriptor_set_layout;
         pipeline_layout_create_info.pushConstantRangeCount = 0;
         pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
-        if (config.device->create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan graohics pipeline layout");
+        if (device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout) != VK_SUCCESS) {
+            ST_THROW("Could not create graphics pipeline layout");
         }
 
         std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
-        if (config.device->set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str())) {
-            ST_THROW("Could not set Vulkan graphics pipeline layout name [" << pipeline_layout_name << "]");
+        if (device.set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str())) {
+            ST_THROW("Could not set graphics pipeline layout name [" << pipeline_layout_name << "]");
         }
 
         VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};
@@ -187,12 +197,12 @@ namespace Storytime {
         graphics_pipeline_create_info.basePipelineHandle = nullptr;
         graphics_pipeline_create_info.basePipelineIndex = -1;
 
-        if (config.device->create_graphics_pipeline(graphics_pipeline_create_info, &pipeline) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan graphics pipeline");
+        if (device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline) != VK_SUCCESS) {
+            ST_THROW("Could not create graphics pipeline");
         }
 
-        if (config.device->set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str())) {
-            ST_THROW("Could not set Vulkan graphics pipeline name [" << config.name << "]");
+        if (device.set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str())) {
+            ST_THROW("Could not set graphics pipeline name [" << config.name << "]");
         }
 
         //
@@ -207,6 +217,7 @@ namespace Storytime {
     }
 
     void VulkanGraphicsPipeline::destroy_pipeline() const {
+        config.device->destroy_descriptor_set_layout(descriptor_set_layout);
         config.device->destroy_pipeline_layout(pipeline_layout);
         config.device->destroy_graphics_pipeline(pipeline);
     }
@@ -214,7 +225,7 @@ namespace Storytime {
     VkShaderModule VulkanGraphicsPipeline::create_shader_module(const std::filesystem::path& path) const {
         std::vector<char> shader_bytes = FileReader::read_bytes(path);
         if (shader_bytes.empty()) {
-            ST_THROW("Could not read Vulkan graphics pipeline shader [" << path << "]");
+            ST_THROW("Could not read graphics pipeline shader [" << path << "]");
         }
 
         VkShaderModuleCreateInfo shader_module_create_info{};
@@ -224,7 +235,7 @@ namespace Storytime {
 
         VkShaderModule shader_module;
         if (config.device->create_shader_module(shader_module_create_info, &shader_module) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan graphics shader module");
+            ST_THROW("Could not create graphics shader module");
         }
         return shader_module;
     }

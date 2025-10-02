@@ -6,6 +6,7 @@
 #include "st_vulkan_index_buffer.h"
 #include "st_vulkan_physical_device.h"
 #include "st_vulkan_swapchain.h"
+#include "st_vulkan_uniform_buffer.h"
 #include "st_vulkan_vertex_buffer.h"
 #include "graphics/st_vulkan_instance.h"
 #include "system/st_dispatcher.h"
@@ -31,10 +32,11 @@ namespace Storytime {
         VulkanDevice device;
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
-        VulkanVertexBuffer vertex_buffer;
-        VulkanIndexBuffer index_buffer;
         VulkanCommandPool render_command_pool;
         VulkanCommandPool transient_command_pool;
+        VulkanVertexBuffer vertex_buffer;
+        VulkanIndexBuffer index_buffer;
+        std::vector<VulkanUniformBuffer> uniform_buffers;
         std::vector<VkCommandBuffer> command_buffers;
         VulkanQueue graphics_queue = nullptr;
         VulkanQueue present_queue = nullptr;
@@ -56,10 +58,16 @@ namespace Storytime {
 
         void initialize_queues();
 
+        void create_uniform_buffers();
+
+        void destroy_uniform_buffers();
+
         void do_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const;
 
         void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
         void end_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        std::vector<VkDescriptorSetLayoutBinding> get_descriptor_set_layout_bindings() const;
     };
 }

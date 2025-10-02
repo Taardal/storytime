@@ -12,6 +12,7 @@ namespace Storytime {
         std::filesystem::path fragment_shader_path;
         VkVertexInputBindingDescription vertex_input_binding_description{};
         std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions{};
+        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings{};
     };
 
     class VulkanGraphicsPipeline {
@@ -22,6 +23,7 @@ namespace Storytime {
         Config config;
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;
+        VkDescriptorSetLayout descriptor_set_layout = nullptr;
 
     public:
         VulkanGraphicsPipeline(const Config& config);

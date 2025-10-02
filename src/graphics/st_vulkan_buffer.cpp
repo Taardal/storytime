@@ -34,6 +34,25 @@ namespace Storytime {
         device.unmap_memory(memory);
     }
 
+    // Map the buffer memory (graphics card memory) into the destination memory (CPU accessible memory)
+    void VulkanBuffer::map_memory(void** dst) const {
+        VkDeviceSize offset = 0;
+        VkMemoryMapFlags flags = 0;
+        if (config.device->map_memory(memory, offset, config.size, flags, dst) != VK_SUCCESS) {
+            ST_THROW("Could not map memory");
+        }
+    }
+
+    // Copy the data to the buffer memory (graphics card memory) which is now accessible by the CPU.
+    void VulkanBuffer::set_memory_data(const void* src, void* dst) const {
+        memcpy(dst, src, config.size);
+    }
+
+    // Unmap the memory when the data has been copied.
+    void VulkanBuffer::unmap_memory() const {
+        config.device->unmap_memory(memory);
+    }
+
     void VulkanBuffer::copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const {
         VkBufferCopy copy_region{};
         copy_region.size = config.size;

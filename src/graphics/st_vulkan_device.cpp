@@ -206,6 +206,14 @@ namespace Storytime {
         return vkUnmapMemory(device, memory);
     }
 
+    VkResult VulkanDevice::create_descriptor_set_layout(const VkDescriptorSetLayoutCreateInfo& descriptor_set_layout_create_info, VkDescriptorSetLayout* descriptor_set_layout) const {
+        return vkCreateDescriptorSetLayout(device, &descriptor_set_layout_create_info, ST_VK_ALLOCATOR, descriptor_set_layout);
+    }
+
+    void VulkanDevice::destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) const {
+        vkDestroyDescriptorSetLayout(device, descriptor_set_layout, ST_VK_ALLOCATOR);
+    }
+
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {
         VkDebugUtilsObjectNameInfoEXT object_name_info{};
         object_name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;

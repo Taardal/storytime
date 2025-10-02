@@ -148,6 +148,10 @@ namespace Storytime {
 
         void unmap_memory(VkDeviceMemory memory) const;
 
+        VkResult create_descriptor_set_layout(const VkDescriptorSetLayoutCreateInfo& descriptor_set_layout_create_info, VkDescriptorSetLayout* descriptor_set_layout) const;
+
+        void destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) const;
+
         VkResult set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
 
         VkResult set_object_name(const VkDebugUtilsObjectNameInfoEXT& object_name_info) const;
