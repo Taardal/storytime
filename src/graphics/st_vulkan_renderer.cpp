@@ -48,14 +48,22 @@ namespace Storytime {
               .name = std::format("{} vertex buffer", config.name),
               .size = sizeof(vertices[0]) * vertices.size(),
           }),
-          command_pool({
-              .physical_device = &physical_device,
+          render_command_pool({
               .device = &device,
-              .name = std::format("{} command pool", config.name),
+              .name = std::format("{} render command pool", config.name),
+              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
+              .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+          }),
+          transient_command_pool({
+              .device = &device,
+              .name = std::format("{} transient command pool", config.name),
+              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
+              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
           })
     {
         allocate_command_buffers();
-        vertex_buffer.set_data(vertices.data());
+        initialize_queues();
+        load_vertices();
     }
 
     VulkanRenderer::~VulkanRenderer() {
@@ -103,7 +111,7 @@ namespace Storytime {
 
     void VulkanRenderer::allocate_command_buffers() {
         command_buffers.resize(config.max_frames_in_flight);
-        command_pool.allocate_command_buffers(command_buffers.size(), command_buffers.data());
+        render_command_pool.allocate_command_buffers(command_buffers.size(), command_buffers.data());
 
         for (u32 i = 0; i < command_buffers.size(); ++i) {
             std::string command_buffer_name = std::format("{} command buffer {}/{}", config.name, i + 1, command_buffers.size());
@@ -111,6 +119,51 @@ namespace Storytime {
                 ST_THROW("Could not set command buffer name [" << command_buffer_name << "]");
             }
         }
+    }
+
+    void VulkanRenderer::initialize_queues() {
+        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
+        graphics_queue = device.get_queue(queue_family_indices.graphics_family.value());
+        present_queue = device.get_queue(queue_family_indices.present_family.value());
+
+        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
+        if (device.set_object_name(graphics_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
+        }
+
+        std::string present_queue_name = std::format("{} present queue", config.name);
+        if (device.set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
+        }
+    }
+
+    void VulkanRenderer::load_vertices() const {
+        VulkanCommandBuffer command_buffer = transient_command_pool.allocate_command_buffer();
+
+        if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
+            ST_THROW("Could not begin command buffer to set vertex buffer data");
+        }
+
+        vertex_buffer.set_data(vertices.data(), command_buffer);
+
+        if (command_buffer.end() != VK_SUCCESS) {
+            ST_THROW("Could not end command buffer to set vertex buffer data");
+        }
+
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
+
+        if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
+            ST_THROW("Could not submit command buffer to graphics queue to set vertex buffer data");
+        }
+
+        if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
+            ST_THROW("Could not wait for graphics queue to be idle to set vertex buffer data");
+        }
+
+        transient_command_pool.free_command_buffer(command_buffer);
     }
 
     void VulkanRenderer::begin_command_buffer(const VulkanCommandBuffer& command_buffer) const {

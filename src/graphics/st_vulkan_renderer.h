@@ -31,8 +31,11 @@ namespace Storytime {
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
         VulkanVertexBuffer vertex_buffer;
-        VulkanCommandPool command_pool;
+        VulkanCommandPool render_command_pool;
+        VulkanCommandPool transient_command_pool;
         std::vector<VkCommandBuffer> command_buffers;
+        VulkanQueue graphics_queue = nullptr;
+        VulkanQueue present_queue = nullptr;
         u32 current_frame_index = 0;
 
     public:
@@ -48,6 +51,10 @@ namespace Storytime {
 
     private:
         void allocate_command_buffers();
+
+        void initialize_queues();
+
+        void load_vertices() const;
 
         void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 

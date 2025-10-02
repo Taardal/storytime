@@ -1,5 +1,8 @@
 #include "st_vulkan_buffer.h"
 
+#include "st_vulkan_command_buffer.h"
+#include "st_vulkan_queue.h"
+
 namespace Storytime {
     VulkanBuffer::VulkanBuffer(const Config& config) : config(config) {
         create_buffer();
@@ -29,6 +32,16 @@ namespace Storytime {
 
         // Unmap the memory when the data has been copied.
         device.unmap_memory(memory);
+    }
+
+    void VulkanBuffer::copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const {
+        VkBufferCopy copy_region{};
+        copy_region.size = config.size;
+        copy_region.srcOffset = 0;
+        copy_region.dstOffset = 0;
+
+        u32 copy_region_count = 1;
+        command_buffer.copy_buffer(buffer, destination_buffer, copy_region_count, &copy_region);
     }
 
     void VulkanBuffer::create_buffer() {

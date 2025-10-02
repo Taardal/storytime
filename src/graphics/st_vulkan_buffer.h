@@ -1,5 +1,6 @@
 #pragma once
 
+#include "st_vulkan_command_buffer.h"
 #include "st_vulkan_device.h"
 
 namespace Storytime {
@@ -28,6 +29,8 @@ namespace Storytime {
         operator VkBuffer() const;
 
         void set_data(const void* src) const;
+
+        void copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const;
 
     private:
         void create_buffer();

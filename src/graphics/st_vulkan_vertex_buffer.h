@@ -18,6 +18,7 @@ namespace Storytime {
     private:
         Config config;
         VulkanBuffer buffer;
+        VulkanBuffer staging_buffer;
 
     public:
         VulkanVertexBuffer(const Config& config);
@@ -26,6 +27,6 @@ namespace Storytime {
 
         void bind(const VulkanCommandBuffer& command_buffer) const;
 
-        void set_data(const void* data) const;
+        void set_data(const void* data, const VulkanCommandBuffer& command_buffer) const;
     };
 }

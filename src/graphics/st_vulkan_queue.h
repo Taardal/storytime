@@ -1,7 +1,5 @@
 #pragma once
 
-#include "st_vulkan_device.h"
-
 namespace Storytime {
     class VulkanQueue {
     private:
@@ -23,9 +21,9 @@ namespace Storytime {
 
         VkResult submit(const SubmitConfig& config) const;
 
-        VkResult submit(const VkSubmitInfo& submit_info, VkFence fence) const;
+        VkResult submit(const VkSubmitInfo& submit_info, VkFence fence = nullptr) const;
 
-        VkResult submit(u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence) const;
+        VkResult submit(u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence = nullptr) const;
 
         VkResult present(const VkPresentInfoKHR& present_info) const;
     };

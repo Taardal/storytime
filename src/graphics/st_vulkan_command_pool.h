@@ -5,9 +5,10 @@
 
 namespace Storytime {
     struct VulkanCommandPoolConfig {
-        VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         std::string name = "VulkanCommandPool";
+        u32 queue_family_index = 0;
+        VkCommandPoolCreateFlags flags = 0;
     };
 
     class VulkanCommandPool {
@@ -31,6 +32,14 @@ namespace Storytime {
         void allocate_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
 
         std::vector<VkCommandBuffer> allocate_command_buffers(u32 command_buffer_count) const;
+
+        void allocate_command_buffer(VkCommandBuffer* command_buffer) const;
+
+        VkCommandBuffer allocate_command_buffer() const;
+
+        void free_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
+
+        void free_command_buffer(VkCommandBuffer command_buffer) const;
 
     private:
         void create_command_pool();

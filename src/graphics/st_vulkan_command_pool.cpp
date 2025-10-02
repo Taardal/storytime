@@ -27,13 +27,29 @@ namespace Storytime {
         return command_buffers;
     }
 
-    void VulkanCommandPool::create_command_pool() {
-        const QueueFamilyIndices& queue_family_indices = config.physical_device->get_queue_family_indices();
+    void VulkanCommandPool::allocate_command_buffer(VkCommandBuffer* command_buffer) const {
+        allocate_command_buffers(1, command_buffer);
+    }
 
+    VkCommandBuffer VulkanCommandPool::allocate_command_buffer() const {
+        VkCommandBuffer command_buffer;
+        allocate_command_buffers(1, &command_buffer);
+        return command_buffer;
+    }
+
+    void VulkanCommandPool::free_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const {
+        config.device->free_command_buffers(command_pool, command_buffer_count, command_buffers);
+    }
+
+    void VulkanCommandPool::free_command_buffer(VkCommandBuffer command_buffer) const {
+        free_command_buffers(1, &command_buffer);
+    }
+
+    void VulkanCommandPool::create_command_pool() {
         VkCommandPoolCreateInfo command_pool_create_info{};
         command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        command_pool_create_info.queueFamilyIndex = queue_family_indices.graphics_family.value();
+        command_pool_create_info.flags = config.flags;
+        command_pool_create_info.queueFamilyIndex = config.queue_family_index;
 
         if (config.device->create_command_pool(command_pool_create_info, &command_pool) != VK_SUCCESS) {
             ST_THROW("Could not create Vulkan command pool");

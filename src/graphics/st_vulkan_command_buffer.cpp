@@ -96,4 +96,12 @@ namespace Storytime {
         u32 binding_count = 1;
         vkCmdBindVertexBuffers(command_buffer, first_binding, binding_count, &vertex_buffer, offsets);
     }
+
+    void VulkanCommandBuffer::copy_buffer(const CopyBufferCommand& command) const {
+        vkCmdCopyBuffer(command_buffer, command.src_buffer, command.dst_buffer, command.region_count, command.regions);
+    }
+
+    void VulkanCommandBuffer::copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, u32 region_count, const VkBufferCopy* regions) const {
+        vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, region_count, regions);
+    }
 }

@@ -156,8 +156,12 @@ namespace Storytime {
         vkDestroyCommandPool(device, command_pool, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffer) const {
-        return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffer);
+    VkResult VulkanDevice::allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffers) const {
+        return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers);
+    }
+
+    void VulkanDevice::free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, VkCommandBuffer* command_buffers) const {
+        vkFreeCommandBuffers(device, command_pool, command_buffer_count, command_buffers);
     }
 
     VkResult VulkanDevice::create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const {
@@ -309,6 +313,10 @@ namespace Storytime {
 
     VkResult VulkanDevice::wait_until_idle() const {
         return vkDeviceWaitIdle(device);
+    }
+
+    VkResult VulkanDevice::wait_until_queue_idle(VkQueue queue) const {
+        return vkQueueWaitIdle(queue);
     }
 
     void VulkanDevice::create_device() {

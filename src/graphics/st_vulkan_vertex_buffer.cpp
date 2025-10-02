@@ -7,10 +7,17 @@ namespace Storytime {
         : config(config),
           buffer({
               .device = config.device,
-              .name = std::format("{} (internal)", config.name),
+              .name = std::format("{} buffer", config.name),
               .size = config.size,
-              .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-              .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+              .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+              .memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+          }),
+          staging_buffer({
+            .device = config.device,
+            .name = std::format("{} staging buffer", config.name),
+            .size = config.size,
+            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
           })
     {
     }
@@ -24,7 +31,8 @@ namespace Storytime {
         command_buffer.bind_vertex_buffer(buffer, offsets);
     }
 
-    void VulkanVertexBuffer::set_data(const void* data) const {
-        buffer.set_data(data);
+    void VulkanVertexBuffer::set_data(const void* data, const VulkanCommandBuffer& command_buffer) const {
+        staging_buffer.set_data(data);
+        staging_buffer.copy_to(buffer, command_buffer);
     }
 }

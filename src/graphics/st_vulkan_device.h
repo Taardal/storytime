@@ -116,7 +116,9 @@ namespace Storytime {
 
         void destroy_command_pool(VkCommandPool command_pool) const;
 
-        VkResult allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffer) const;
+        VkResult allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffers) const;
+
+        void free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
 
         VkResult create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const;
 
@@ -173,6 +175,8 @@ namespace Storytime {
         void end_queue_label(VkQueue queue) const;
 
         VkResult wait_until_idle() const;
+
+        VkResult wait_until_queue_idle(VkQueue queue) const;
 
     private:
         void create_device();

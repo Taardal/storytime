@@ -85,10 +85,17 @@ namespace Storytime {
 
         void bind_vertex_buffers(u32 first_binding, u32 binding_count, const VkBuffer* vertex_buffers, const VkDeviceSize* offsets = nullptr) const;
 
-        // void bind_vertex_buffers(u32 first_binding, u32 binding_count, const VkBuffer* vertex_buffers, const std::vector<VkDeviceSize>& offsets = {0}) const;
-
         void bind_vertex_buffer(VkBuffer vertex_buffer, const VkDeviceSize* offsets = nullptr) const;
 
-        // void bind_vertex_buffer(VkBuffer vertex_buffer, const std::vector<VkDeviceSize>& offsets = {0}) const;
+        struct CopyBufferCommand {
+            VkBuffer src_buffer = nullptr;
+            VkBuffer dst_buffer = nullptr;
+            u32 region_count = 0;
+            const VkBufferCopy* regions = nullptr;
+        };
+
+        void copy_buffer(const CopyBufferCommand& command) const;
+
+        void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, u32 region_count, const VkBufferCopy* regions) const;
     };
 }
