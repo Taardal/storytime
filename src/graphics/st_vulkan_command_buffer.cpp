@@ -120,4 +120,12 @@ namespace Storytime {
     void VulkanCommandBuffer::copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, u32 region_count, const VkBufferCopy* regions) const {
         vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, region_count, regions);
     }
+
+    void VulkanCommandBuffer::bind_descriptor_sets(const BindDescriptorSetsCommand& command) const {
+        vkCmdBindDescriptorSets(command_buffer, command.pipeline_bind_point, command.pipeline_layout, command.first_set, command.descriptor_set_count, command.descriptor_sets, command.dynamic_offset_count, command.dynamic_offsets);
+    }
+
+    void VulkanCommandBuffer::bind_descriptor_sets(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets, u32 dynamic_offset_count, const u32* dynamic_offsets) const {
+        vkCmdBindDescriptorSets(command_buffer, pipeline_bind_point, pipeline_layout, first_set, descriptor_set_count, descriptor_sets, dynamic_offset_count, dynamic_offsets);
+    }
 }

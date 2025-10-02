@@ -160,7 +160,7 @@ namespace Storytime {
         return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers);
     }
 
-    void VulkanDevice::free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, VkCommandBuffer* command_buffers) const {
+    void VulkanDevice::free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, const VkCommandBuffer* command_buffers) const {
         vkFreeCommandBuffers(device, command_pool, command_buffer_count, command_buffers);
     }
 
@@ -212,6 +212,26 @@ namespace Storytime {
 
     void VulkanDevice::destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) const {
         vkDestroyDescriptorSetLayout(device, descriptor_set_layout, ST_VK_ALLOCATOR);
+    }
+
+    VkResult VulkanDevice::create_descriptor_pool(const VkDescriptorPoolCreateInfo& descriptor_pool_create_info, VkDescriptorPool* descriptor_pool) const {
+        return vkCreateDescriptorPool(device, &descriptor_pool_create_info, ST_VK_ALLOCATOR, descriptor_pool);
+    }
+
+    void VulkanDevice::destroy_descriptor_pool(VkDescriptorPool descriptor_pool) const {
+        vkDestroyDescriptorPool(device, descriptor_pool, ST_VK_ALLOCATOR);
+    }
+
+    VkResult VulkanDevice::allocate_descriptor_sets(const VkDescriptorSetAllocateInfo& descriptor_set_allocate_info, VkDescriptorSet* descriptor_sets) const {
+        return vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
+    }
+
+    void VulkanDevice::free_descriptor_sets(VkDescriptorPool descriptor_pool, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets) const {
+        vkFreeDescriptorSets(device, descriptor_pool, descriptor_set_count, descriptor_sets);
+    }
+
+    void VulkanDevice::update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const {
+        vkUpdateDescriptorSets(device, descriptor_write_count, descriptor_writes, descriptor_copy_count, descriptor_copies);
     }
 
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {

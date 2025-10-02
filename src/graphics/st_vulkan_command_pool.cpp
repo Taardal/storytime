@@ -17,7 +17,7 @@ namespace Storytime {
         command_buffer_allocate_info.commandBufferCount = command_buffer_count;
 
         if (config.device->allocate_command_buffers(command_buffer_allocate_info, command_buffers) != VK_SUCCESS) {
-            ST_THROW("Could not allocate Vulkan command buffers");
+            ST_THROW("Could not allocate [" << command_buffer_count << "] command buffers");
         }
     }
 

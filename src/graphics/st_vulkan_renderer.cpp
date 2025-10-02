@@ -16,9 +16,9 @@ namespace Storytime {
     };
 
     struct UniformBufferObject {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
+        alignas(16) glm::mat4 model;
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
     };
 
     VulkanRenderer::VulkanRenderer(const Config& config)
@@ -81,10 +81,34 @@ namespace Storytime {
         allocate_command_buffers();
         initialize_queues();
         create_uniform_buffers();
+
         do_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
         });
+
+        for (size_t i = 0; i < config.max_frames_in_flight; i++) {
+            VkDescriptorBufferInfo descriptor_buffer_info{};
+            descriptor_buffer_info.buffer = uniform_buffers.at(i);
+            descriptor_buffer_info.offset = 0;
+            descriptor_buffer_info.range = sizeof(UniformBufferObject);
+
+            VkWriteDescriptorSet descriptor_write{};
+            descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptor_write.dstSet = descriptor_sets[i];
+            descriptor_write.dstBinding = 0;
+            descriptor_write.dstArrayElement = 0;
+            descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptor_write.descriptorCount = 1;
+            descriptor_write.pBufferInfo = &descriptor_buffer_info;
+            descriptor_write.pImageInfo = nullptr;
+            descriptor_write.pTexelBufferView = nullptr;
+
+            u32 descriptor_write_count = 1;
+            u32 descriptor_copy_count = 0;
+            VkCopyDescriptorSet* descriptor_copies = nullptr;
+            device.update_descriptor_sets(descriptor_write_count, &descriptor_write, descriptor_copy_count, descriptor_copies);
+        }
     }
 
     VulkanRenderer::~VulkanRenderer() {
@@ -123,6 +147,27 @@ namespace Storytime {
 
         device.insert_cmd_label(command_buffer, "Bind index buffer");
         index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
+
+        //
+        // Bind descriptor sets
+        //
+
+        VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        VkPipelineLayout pipeline_layout = graphics_pipeline.get_layout();
+        u32 first_set = 0;
+        u32 descriptor_set_count = 1;
+        const VkDescriptorSet* descriptor_sets = &descriptor_sets.at(current_frame_index);
+        u32 dynamic_offset_count = 0;
+        const u32* dynamic_offsets = nullptr;
+        command_buffer.bind_descriptor_sets(
+            pipeline_bind_point,
+            pipeline_layout,
+            first_set,
+            descriptor_set_count,
+            descriptor_sets,
+            dynamic_offset_count,
+            dynamic_offsets
+        );
 
         device.insert_cmd_label(command_buffer, "Draw indexed");
         u32 index_count = indices.size();

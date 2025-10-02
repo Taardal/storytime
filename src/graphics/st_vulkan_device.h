@@ -118,7 +118,7 @@ namespace Storytime {
 
         VkResult allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffers) const;
 
-        void free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
+        void free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, const VkCommandBuffer* command_buffers) const;
 
         VkResult create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const;
 
@@ -151,6 +151,16 @@ namespace Storytime {
         VkResult create_descriptor_set_layout(const VkDescriptorSetLayoutCreateInfo& descriptor_set_layout_create_info, VkDescriptorSetLayout* descriptor_set_layout) const;
 
         void destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) const;
+
+        VkResult create_descriptor_pool(const VkDescriptorPoolCreateInfo& descriptor_pool_create_info, VkDescriptorPool* descriptor_pool) const;
+
+        void destroy_descriptor_pool(VkDescriptorPool descriptor_pool) const;
+
+        VkResult allocate_descriptor_sets(const VkDescriptorSetAllocateInfo& descriptor_set_allocate_info, VkDescriptorSet* descriptor_sets) const;
+
+        void free_descriptor_sets(VkDescriptorPool descriptor_pool, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets) const;
+
+        void update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const;
 
         VkResult set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
 

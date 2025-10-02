@@ -105,6 +105,8 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.h
     ${ST_SRC_DIR}/graphics/st_vulkan_device.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_device.h
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp

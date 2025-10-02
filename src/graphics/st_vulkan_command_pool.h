@@ -1,7 +1,6 @@
 #pragma once
 
 #include "st_vulkan_device.h"
-#include "st_vulkan_physical_device.h"
 
 namespace Storytime {
     struct VulkanCommandPoolConfig {

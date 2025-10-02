@@ -119,5 +119,19 @@ namespace Storytime {
         void copy_buffer(const CopyBufferCommand& command) const;
 
         void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, u32 region_count, const VkBufferCopy* regions) const;
+
+        struct BindDescriptorSetsCommand {
+            VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_MAX_ENUM;
+            VkPipelineLayout pipeline_layout = nullptr;
+            u32 first_set = 0;
+            u32 descriptor_set_count = 0;
+            const VkDescriptorSet* descriptor_sets = nullptr;
+            u32 dynamic_offset_count = 0;
+            const u32* dynamic_offsets = nullptr;
+        };
+
+        void bind_descriptor_sets(const BindDescriptorSetsCommand& command) const;
+
+        void bind_descriptor_sets(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets, u32 dynamic_offset_count, const u32* dynamic_offsets) const;
     };
 }
