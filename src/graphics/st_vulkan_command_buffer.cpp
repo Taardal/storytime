@@ -83,6 +83,14 @@ namespace Storytime {
         vkCmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
+    void VulkanCommandBuffer::draw_indexed(const DrawIndexedCommand& command) const {
+        vkCmdDrawIndexed(command_buffer, command.index_count, command.instance_count, command.first_index, command.vertex_offset, command.first_instance);
+    }
+
+    void VulkanCommandBuffer::draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset, u32 first_instance) const {
+        vkCmdDrawIndexed(command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
+    }
+
     void VulkanCommandBuffer::bind_vertex_buffers(const BindVertexBuffersCommand& command) const {
         vkCmdBindVertexBuffers(command_buffer, command.first_binding, command.binding_count, command.vertex_buffers, command.offsets);
     }
@@ -95,6 +103,14 @@ namespace Storytime {
         u32 first_binding = 0;
         u32 binding_count = 1;
         vkCmdBindVertexBuffers(command_buffer, first_binding, binding_count, &vertex_buffer, offsets);
+    }
+
+    void VulkanCommandBuffer::bind_index_buffer(const BindIndexBufferCommand& command) const {
+        vkCmdBindIndexBuffer(command_buffer, command.index_buffer, command.offset, command.index_type);
+    }
+
+    void VulkanCommandBuffer::bind_index_buffer(VkBuffer index_buffer, VkDeviceSize offset, VkIndexType index_type) const {
+        vkCmdBindIndexBuffer(command_buffer, index_buffer, offset, index_type);
     }
 
     void VulkanCommandBuffer::copy_buffer(const CopyBufferCommand& command) const {

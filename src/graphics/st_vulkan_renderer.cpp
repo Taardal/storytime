@@ -5,9 +5,14 @@
 namespace Storytime {
 
     const std::vector<QuadVertex> vertices = {
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    };
+
+    const std::vector<u16> indices = {
+        0, 1, 2, 2, 3, 0
     };
 
     VulkanRenderer::VulkanRenderer(const Config& config)
@@ -43,11 +48,6 @@ namespace Storytime {
               .vertex_input_binding_description = QuadVertex::getBindingDescription(),
               .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
           }),
-          vertex_buffer({
-              .device = &device,
-              .name = std::format("{} vertex buffer", config.name),
-              .size = sizeof(vertices[0]) * vertices.size(),
-          }),
           render_command_pool({
               .device = &device,
               .name = std::format("{} render command pool", config.name),
@@ -59,11 +59,24 @@ namespace Storytime {
               .name = std::format("{} transient command pool", config.name),
               .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
               .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          }),
+          vertex_buffer({
+              .device = &device,
+              .name = std::format("{} vertex buffer", config.name),
+              .size = sizeof(vertices[0]) * vertices.size(),
+          }),
+          index_buffer({
+              .device = &device,
+              .name = std::format("{} index buffer", config.name),
+              .size = sizeof(indices[0]) * indices.size(),
           })
     {
         allocate_command_buffers();
         initialize_queues();
-        load_vertices();
+        do_commands([&](const VulkanCommandBuffer& command_buffer) {
+            vertex_buffer.set_vertices(vertices.data(), command_buffer);
+            index_buffer.set_indices(indices.data(), command_buffer);
+        });
     }
 
     VulkanRenderer::~VulkanRenderer() {
@@ -100,13 +113,16 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "Bind vertex buffer");
         vertex_buffer.bind(command_buffer);
 
-        device.insert_cmd_label(command_buffer, "Draw");
+        device.insert_cmd_label(command_buffer, "Bind index buffer");
+        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
 
-        u32 vertex_count = vertices.size(); // Even though we don't have a vertex buffer, we technically still have 3 vertices to draw.
-        u32 instance_count = 1; // Used for instanced rendering, use 1 if you're not doing that.
-        u32 first_vertex = 0; // Used as an offset into the vertex buffer, defines the lowest value of gl_VertexIndex.
-        u32 first_instance = 0; // Used as an offset for instanced rendering, defines the lowest value of gl_InstanceIndex.
-        command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
+        device.insert_cmd_label(command_buffer, "Draw indexed");
+        u32 index_count = indices.size();
+        u32 instance_count = 1; // Used for instanced rendering. We are not using instanced rendering so we specify 1 instance.
+        u32 first_index = 0; // Specifies an offset into the index buffer, using a value of 1 would cause the graphics card to start reading at the second index.
+        i32 vertex_offset = 0; // Specifies an offset to add to the indices in the index buffer
+        u32 first_instance = 0; // Specifies an offset for instancing, which we're not using.
+        command_buffer.draw_indexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void VulkanRenderer::allocate_command_buffers() {
@@ -137,14 +153,14 @@ namespace Storytime {
         }
     }
 
-    void VulkanRenderer::load_vertices() const {
+    void VulkanRenderer::do_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const {
         VulkanCommandBuffer command_buffer = transient_command_pool.allocate_command_buffer();
 
         if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
             ST_THROW("Could not begin command buffer to set vertex buffer data");
         }
 
-        vertex_buffer.set_data(vertices.data(), command_buffer);
+        on_record_commands(command_buffer);
 
         if (command_buffer.end() != VK_SUCCESS) {
             ST_THROW("Could not end command buffer to set vertex buffer data");

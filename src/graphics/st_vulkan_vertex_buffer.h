@@ -25,8 +25,8 @@ namespace Storytime {
 
         operator VkBuffer() const;
 
-        void bind(const VulkanCommandBuffer& command_buffer) const;
+        void bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets = nullptr) const;
 
-        void set_data(const void* data, const VulkanCommandBuffer& command_buffer) const;
+        void set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) const;
     };
 }

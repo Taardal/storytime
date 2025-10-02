@@ -27,7 +27,7 @@ namespace Storytime {
             ST_THROW("Could not map memory");
         }
 
-        // Copy the vertex data to the buffer memory (graphics card memory) which is now accessible by the CPU.
+        // Copy the data to the buffer memory (graphics card memory) which is now accessible by the CPU.
         memcpy(dst, src, config.size);
 
         // Unmap the memory when the data has been copied.

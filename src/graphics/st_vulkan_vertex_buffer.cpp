@@ -26,13 +26,13 @@ namespace Storytime {
         return buffer;
     }
 
-    void VulkanVertexBuffer::bind(const VulkanCommandBuffer& command_buffer) const {
-        VkDeviceSize offsets[] = {0};
-        command_buffer.bind_vertex_buffer(buffer, offsets);
+    void VulkanVertexBuffer::bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets) const {
+        static VkDeviceSize default_offsets[] = {0};
+        command_buffer.bind_vertex_buffer(buffer, offsets == nullptr ? default_offsets : offsets);
     }
 
-    void VulkanVertexBuffer::set_data(const void* data, const VulkanCommandBuffer& command_buffer) const {
-        staging_buffer.set_data(data);
+    void VulkanVertexBuffer::set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) const {
+        staging_buffer.set_data(vertices);
         staging_buffer.copy_to(buffer, command_buffer);
     }
 }

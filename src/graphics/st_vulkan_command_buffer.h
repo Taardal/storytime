@@ -74,6 +74,18 @@ namespace Storytime {
 
         void draw(u32 vertex_count, u32 instance_count, u32 first_vertex, u32 first_instance) const;
 
+        struct DrawIndexedCommand {
+            u32 index_count = 0;
+            u32 instance_count = 0;
+            u32 first_index = 0;
+            i32 vertex_offset = 0;
+            u32 first_instance = 0;
+        };
+
+        void draw_indexed(const DrawIndexedCommand& command) const;
+
+        void draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset, u32 first_instance) const;
+
         struct BindVertexBuffersCommand {
             u32 first_binding = 0;
             u32 binding_count = 0;
@@ -86,6 +98,16 @@ namespace Storytime {
         void bind_vertex_buffers(u32 first_binding, u32 binding_count, const VkBuffer* vertex_buffers, const VkDeviceSize* offsets = nullptr) const;
 
         void bind_vertex_buffer(VkBuffer vertex_buffer, const VkDeviceSize* offsets = nullptr) const;
+
+        struct BindIndexBufferCommand {
+            VkBuffer index_buffer = nullptr;
+            VkDeviceSize offset = 0;
+            VkIndexType index_type = VK_INDEX_TYPE_MAX_ENUM;
+        };
+
+        void bind_index_buffer(const BindIndexBufferCommand& command) const;
+
+        void bind_index_buffer(VkBuffer index_buffer, VkDeviceSize offset, VkIndexType index_type) const;
 
         struct CopyBufferCommand {
             VkBuffer src_buffer = nullptr;

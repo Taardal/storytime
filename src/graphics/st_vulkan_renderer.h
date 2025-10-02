@@ -3,6 +3,7 @@
 #include "st_vulkan_command_pool.h"
 #include "st_vulkan_device.h"
 #include "st_vulkan_graphics_pipeline.h"
+#include "st_vulkan_index_buffer.h"
 #include "st_vulkan_physical_device.h"
 #include "st_vulkan_swapchain.h"
 #include "st_vulkan_vertex_buffer.h"
@@ -31,6 +32,7 @@ namespace Storytime {
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
         VulkanVertexBuffer vertex_buffer;
+        VulkanIndexBuffer index_buffer;
         VulkanCommandPool render_command_pool;
         VulkanCommandPool transient_command_pool;
         std::vector<VkCommandBuffer> command_buffers;
@@ -54,7 +56,7 @@ namespace Storytime {
 
         void initialize_queues();
 
-        void load_vertices() const;
+        void do_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const;
 
         void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
