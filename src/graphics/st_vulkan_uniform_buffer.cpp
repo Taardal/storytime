@@ -1,4 +1,4 @@
-#include "st_vulkan_uniform_buffer.h"
+#include "graphics/st_vulkan_uniform_buffer.h"
 
 namespace Storytime {
     VulkanUniformBuffer::VulkanUniformBuffer(const Config& config)
@@ -11,12 +11,21 @@ namespace Storytime {
               .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
           })
     {
-        buffer.map_memory(&dst);
-        ST_LOG_C("CREATED UNIFORM BUFFER");
+        // Keep the memory mapped for the uniform buffer's whole lifetime (a.k.a. "persistent mapping")
+        // Not having to map the buffer every time we need to update it increases performances, as mapping is not free.
+        buffer.map_memory();
     }
 
-    VulkanUniformBuffer::~VulkanUniformBuffer() {
-        // buffer.unmap_memory();
+    VulkanUniformBuffer::VulkanUniformBuffer(VulkanUniformBuffer&& other) noexcept
+        : config(std::move(other.config)),
+          buffer(std::move(other.buffer)) {}
+
+    VulkanUniformBuffer& VulkanUniformBuffer::operator=(VulkanUniformBuffer&& other) noexcept {
+        if (this != &other) {
+            config = std::move(other.config);
+            buffer = std::move(other.buffer);
+        }
+        return *this;
     }
 
     VulkanUniformBuffer::operator VkBuffer() const {
@@ -24,6 +33,6 @@ namespace Storytime {
     }
 
     void VulkanUniformBuffer::set_uniforms(const void* uniforms) const {
-        buffer.set_memory_data(uniforms, dst);
+        buffer.set_data(uniforms);
     }
 }

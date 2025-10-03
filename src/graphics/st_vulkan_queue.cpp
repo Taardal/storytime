@@ -1,4 +1,4 @@
-#include "st_vulkan_queue.h"
+#include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
     VulkanQueue::VulkanQueue(VkQueue queue) : queue(queue) {}

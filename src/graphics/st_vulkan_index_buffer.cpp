@@ -1,6 +1,6 @@
-#include "st_vulkan_index_buffer.h"
+#include "graphics/st_vulkan_index_buffer.h"
 
-#include "st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
     VulkanIndexBuffer::VulkanIndexBuffer(const Config& config)
@@ -22,6 +22,20 @@ namespace Storytime {
     {
     }
 
+    VulkanIndexBuffer::VulkanIndexBuffer(VulkanIndexBuffer&& other) noexcept
+        : config(std::move(other.config)),
+          buffer(std::move(other.buffer)),
+          staging_buffer(std::move(other.staging_buffer)) {}
+
+    VulkanIndexBuffer& VulkanIndexBuffer::operator=(VulkanIndexBuffer&& other) noexcept {
+        if (this != &other) {
+            config = std::move(other.config);
+            buffer = std::move(other.buffer);
+            staging_buffer = std::move(other.staging_buffer);
+        }
+        return *this;
+    }
+
     VulkanIndexBuffer::operator VkBuffer() const {
         return buffer;
     }
@@ -30,8 +44,10 @@ namespace Storytime {
         command_buffer.bind_index_buffer(buffer, offset, index_type);
     }
 
-    void VulkanIndexBuffer::set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) const {
+    void VulkanIndexBuffer::set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) {
+        staging_buffer.map_memory();
         staging_buffer.set_data(indices);
+        staging_buffer.unmap_memory();
         staging_buffer.copy_to(buffer, command_buffer);
     }
 }

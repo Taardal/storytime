@@ -1,6 +1,6 @@
 #pragma once
 
-#include "st_vulkan_instance.h"
+#include "graphics/st_vulkan_instance.h"
 
 namespace Storytime {
     struct VulkanSurfaceConfig {

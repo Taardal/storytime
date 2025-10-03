@@ -133,5 +133,7 @@ namespace Storytime {
         void bind_descriptor_sets(const BindDescriptorSetsCommand& command) const;
 
         void bind_descriptor_sets(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets, u32 dynamic_offset_count, const u32* dynamic_offsets) const;
+
+        void bind_descriptor_set(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, VkDescriptorSet descriptor_set, u32 dynamic_offset_count, const u32* dynamic_offsets) const;
     };
 }

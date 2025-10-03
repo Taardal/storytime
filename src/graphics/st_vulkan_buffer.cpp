@@ -1,65 +1,68 @@
-#include "st_vulkan_buffer.h"
+#include "graphics/st_vulkan_buffer.h"
 
-#include "st_vulkan_command_buffer.h"
-#include "st_vulkan_queue.h"
+#include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
     VulkanBuffer::VulkanBuffer(const Config& config) : config(config) {
         create_buffer();
+        allocate_memory();
     }
 
     VulkanBuffer::~VulkanBuffer() {
+        free_memory();
         destroy_buffer();
+    }
+
+    VulkanBuffer::VulkanBuffer(VulkanBuffer&& other) noexcept
+        : config(std::move(other.config)),
+          buffer(other.buffer),
+          memory(other.memory),
+          data(other.data)
+    {
+        other.buffer = nullptr; // Prevent buffer from being destroyed by the other buffer's destructor.
+        other.memory = nullptr; // Prevent memory from being destroyed by the other buffer's destructor.
+    }
+
+    VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& other) noexcept {
+        if (this != &other) {
+            config = std::move(other.config);
+            buffer = other.buffer;
+            memory = other.memory;
+            data = other.data;
+            other.buffer = nullptr; // Prevent buffer from being destroyed by the other buffer's destructor.
+            other.memory = nullptr; // Prevent memory from being destroyed by the other buffer's destructor.
+        }
+        return *this;
     }
 
     VulkanBuffer::operator VkBuffer() const {
         return buffer;
     }
 
+    void VulkanBuffer::map_memory() {
+        VkDeviceSize offset = 0;
+        VkMemoryMapFlags flags = 0;
+        if (config.device->map_memory(memory, offset, config.size, flags, &data) != VK_SUCCESS) {
+            ST_THROW("Could not map memory");
+        }
+    }
+
     void VulkanBuffer::set_data(const void* src) const {
-        const VulkanDevice& device = *config.device;
-
-        // Map the buffer memory (graphics card memory) into CPU accessible memory
-        void* dst;
-        VkDeviceSize offset = 0;
-        VkMemoryMapFlags flags = 0;
-        if (device.map_memory(memory, offset, config.size, flags, &dst) != VK_SUCCESS) {
-            ST_THROW("Could not map memory");
-        }
-
-        // Copy the data to the buffer memory (graphics card memory) which is now accessible by the CPU.
-        memcpy(dst, src, config.size);
-
-        // Unmap the memory when the data has been copied.
-        device.unmap_memory(memory);
+        memcpy(data, src, config.size);
     }
 
-    // Map the buffer memory (graphics card memory) into the destination memory (CPU accessible memory)
-    void VulkanBuffer::map_memory(void** dst) const {
-        VkDeviceSize offset = 0;
-        VkMemoryMapFlags flags = 0;
-        if (config.device->map_memory(memory, offset, config.size, flags, dst) != VK_SUCCESS) {
-            ST_THROW("Could not map memory");
-        }
-    }
-
-    // Copy the data to the buffer memory (graphics card memory) which is now accessible by the CPU.
-    void VulkanBuffer::set_memory_data(const void* src, void* dst) const {
-        memcpy(dst, src, config.size);
-    }
-
-    // Unmap the memory when the data has been copied.
     void VulkanBuffer::unmap_memory() const {
         config.device->unmap_memory(memory);
     }
 
     void VulkanBuffer::copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const {
+        u32 copy_region_count = 1;
+
         VkBufferCopy copy_region{};
         copy_region.size = config.size;
         copy_region.srcOffset = 0;
         copy_region.dstOffset = 0;
 
-        u32 copy_region_count = 1;
         command_buffer.copy_buffer(buffer, destination_buffer, copy_region_count, &copy_region);
     }
 
@@ -79,18 +82,31 @@ namespace Storytime {
         if (device.set_object_name(buffer, VK_OBJECT_TYPE_BUFFER, config.name.c_str())) {
             ST_THROW("Could not set buffer name [" << config.name << "]");
         }
+    }
+
+    void VulkanBuffer::destroy_buffer() const {
+        if (buffer != nullptr) {
+            config.device->destroy_buffer(buffer);
+        }
+    }
+
+    void VulkanBuffer::allocate_memory() {
+        const VulkanDevice& device = *config.device;
 
         VkMemoryRequirements buffer_memory_requirements = device.get_buffer_memory_requirements(buffer);
-
-        u32 memory_type_index = get_memory_type_index(buffer_memory_requirements, config.memory_properties);
 
         VkMemoryAllocateInfo memory_allocate_info{};
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.allocationSize = buffer_memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = memory_type_index;
+        memory_allocate_info.memoryTypeIndex = get_memory_type_index(buffer_memory_requirements, config.memory_properties);
 
         if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
             ST_THROW("Could not allocate buffer memory");
+        }
+
+        std::string memory_name = std::format("{} memory", config.name);
+        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str())) {
+            ST_THROW("Could not set buffer memory name [" << memory_name << "]");
         }
 
         if (device.bind_buffer_memory(buffer, memory) != VK_SUCCESS) {
@@ -98,10 +114,10 @@ namespace Storytime {
         }
     }
 
-    void VulkanBuffer::destroy_buffer() const {
-        const VulkanDevice& device = *config.device;
-        device.destroy_buffer(buffer);
-        device.free_memory(memory); // Memory that is bound to a buffer object may be freed once the buffer is no longer used.
+    void VulkanBuffer::free_memory() const {
+        if (memory != nullptr) {
+            config.device->free_memory(memory);
+        }
     }
 
     // Graphics cards can offer different types of memory to allocate from. Each type of memory varies in terms of allowed operations
@@ -111,11 +127,11 @@ namespace Storytime {
         const VulkanDevice& device = *config.device;
         const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
-        VkPhysicalDeviceMemoryProperties physical_device_memory_properties = physical_device.get_memory_properties();
+        VkPhysicalDeviceMemoryProperties memory_properties = physical_device.get_memory_properties();
 
         // The VkPhysicalDeviceMemoryProperties structure has two arrays memoryTypes and memoryHeaps. Memory heaps are distinct memory
         // resources like dedicated VRAM and swap space in RAM for when VRAM runs out. The different types of memory exist within these heaps.
-        for (u32 memory_type_index = 0; memory_type_index < physical_device_memory_properties.memoryTypeCount; memory_type_index++) {
+        for (u32 memory_type_index = 0; memory_type_index < memory_properties.memoryTypeCount; memory_type_index++) {
 
             // Check if the memory type is suitable for the buffer by checking if the corresponding bit is set to 1.
             bool memory_type_is_suitable = (memory_requirements.memoryTypeBits & 1 << memory_type_index) > 0;
@@ -129,7 +145,7 @@ namespace Storytime {
             // The memoryTypes array consists of VkMemoryType structs that specify the heap and properties of each type of memory.
             // The properties define special features of the memory, like being able to map it so we can write to it from the CPU.
             //
-            const VkMemoryType& memory_type = physical_device_memory_properties.memoryTypes[memory_type_index];
+            const VkMemoryType& memory_type = memory_properties.memoryTypes[memory_type_index];
             bool memory_type_has_required_properties = (memory_type.propertyFlags & required_memory_properties) == required_memory_properties;
             if (!memory_type_has_required_properties) {
                 continue;

@@ -1,14 +1,16 @@
 #pragma once
 
-#include "st_vulkan_command_pool.h"
-#include "st_vulkan_device.h"
-#include "st_vulkan_graphics_pipeline.h"
-#include "st_vulkan_index_buffer.h"
-#include "st_vulkan_physical_device.h"
-#include "st_vulkan_swapchain.h"
-#include "st_vulkan_uniform_buffer.h"
-#include "st_vulkan_vertex_buffer.h"
+#include "st_vulkan_descriptor_set.h"
+#include "graphics/st_vulkan_command_pool.h"
+#include "graphics/st_vulkan_descriptor_pool.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_graphics_pipeline.h"
+#include "graphics/st_vulkan_index_buffer.h"
 #include "graphics/st_vulkan_instance.h"
+#include "graphics/st_vulkan_physical_device.h"
+#include "graphics/st_vulkan_swapchain.h"
+#include "graphics/st_vulkan_uniform_buffer.h"
+#include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -30,16 +32,18 @@ namespace Storytime {
         VulkanInstance instance;
         VulkanPhysicalDevice physical_device;
         VulkanDevice device;
+        VulkanQueue graphics_queue;
+        VulkanQueue present_queue;
         VulkanSwapchain swapchain;
         VulkanGraphicsPipeline graphics_pipeline;
-        VulkanCommandPool render_command_pool;
-        VulkanCommandPool transient_command_pool;
+        VulkanCommandPool runtime_command_pool;
+        VulkanCommandPool initialization_command_pool;
+        VulkanDescriptorPool descriptor_pool;
         VulkanVertexBuffer vertex_buffer;
         VulkanIndexBuffer index_buffer;
-        std::vector<VulkanUniformBuffer> uniform_buffers;
-        std::vector<VkCommandBuffer> command_buffers;
-        VulkanQueue graphics_queue = nullptr;
-        VulkanQueue present_queue = nullptr;
+        std::vector<VulkanUniformBuffer> uniform_buffers{};
+        std::vector<VkCommandBuffer> command_buffers{};
+        std::vector<VkDescriptorSet> descriptor_sets{};
         u32 current_frame_index = 0;
 
     public:
@@ -54,20 +58,20 @@ namespace Storytime {
         void render();
 
     private:
+        std::vector<VulkanUniformBuffer> get_uniform_buffers();
+
         void allocate_command_buffers();
 
-        void initialize_queues();
+        void allocate_descriptor_sets();
 
-        void create_uniform_buffers();
-
-        void destroy_uniform_buffers();
-
-        void do_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const;
+        void do_init_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const;
 
         void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
         void end_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
         std::vector<VkDescriptorSetLayoutBinding> get_descriptor_set_layout_bindings() const;
+
+        std::vector<VkDescriptorPoolSize> get_descriptor_pool_sizes() const;
     };
 }

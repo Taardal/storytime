@@ -1,4 +1,4 @@
-#include "st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
     VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer command_buffer) : command_buffer(command_buffer) {}
@@ -127,5 +127,11 @@ namespace Storytime {
 
     void VulkanCommandBuffer::bind_descriptor_sets(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets, u32 dynamic_offset_count, const u32* dynamic_offsets) const {
         vkCmdBindDescriptorSets(command_buffer, pipeline_bind_point, pipeline_layout, first_set, descriptor_set_count, descriptor_sets, dynamic_offset_count, dynamic_offsets);
+    }
+
+    void VulkanCommandBuffer::bind_descriptor_set(VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, VkDescriptorSet descriptor_set, u32 dynamic_offset_count, const u32* dynamic_offsets) const {
+        u32 first_set = 0;
+        u32 descriptor_set_count = 1;
+        vkCmdBindDescriptorSets(command_buffer, pipeline_bind_point, pipeline_layout, first_set, descriptor_set_count, &descriptor_set, dynamic_offset_count, dynamic_offsets);
     }
 }

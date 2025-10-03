@@ -1,6 +1,6 @@
-#include "st_vulkan_swapchain.h"
+#include "graphics/st_vulkan_swapchain.h"
 
-#include "st_vulkan_queue.h"
+#include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
     VulkanSwapchain::VulkanSwapchain(const Config& config) : config(config) {
@@ -143,7 +143,7 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::end_frame(const VulkanCommandBuffer& command_buffer) const {
-        config.device->insert_cmd_label(command_buffer, "End render pass");
+        config.device->insert_cmd_label(command_buffer, "End swapchain render pass");
         command_buffer.end_render_pass();
     }
 

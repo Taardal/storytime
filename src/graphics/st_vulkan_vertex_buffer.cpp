@@ -1,6 +1,6 @@
-#include "st_vulkan_vertex_buffer.h"
+#include "graphics/st_vulkan_vertex_buffer.h"
 
-#include "st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
     VulkanVertexBuffer::VulkanVertexBuffer(const Config& config)
@@ -18,8 +18,20 @@ namespace Storytime {
             .size = config.size,
             .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-          })
-    {
+          }) {}
+
+    VulkanVertexBuffer::VulkanVertexBuffer(VulkanVertexBuffer&& other) noexcept
+        : config(std::move(other.config)),
+          buffer(std::move(other.buffer)),
+          staging_buffer(std::move(other.staging_buffer)) {}
+
+    VulkanVertexBuffer& VulkanVertexBuffer::operator=(VulkanVertexBuffer&& other) noexcept {
+        if (this != &other) {
+            config = std::move(other.config);
+            buffer = std::move(other.buffer);
+            staging_buffer = std::move(other.staging_buffer);
+        }
+        return *this;
     }
 
     VulkanVertexBuffer::operator VkBuffer() const {
@@ -31,8 +43,10 @@ namespace Storytime {
         command_buffer.bind_vertex_buffer(buffer, offsets == nullptr ? default_offsets : offsets);
     }
 
-    void VulkanVertexBuffer::set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) const {
+    void VulkanVertexBuffer::set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) {
+        staging_buffer.map_memory();
         staging_buffer.set_data(vertices);
+        staging_buffer.unmap_memory();
         staging_buffer.copy_to(buffer, command_buffer);
     }
 }

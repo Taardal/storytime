@@ -1,8 +1,8 @@
 #pragma once
 
-#include "st_vulkan_command_buffer.h"
-#include "st_vulkan_device.h"
-#include "st_vulkan_queue.h"
+#include "graphics/st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_queue.h"
 #include "event/st_window_resized_event.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"

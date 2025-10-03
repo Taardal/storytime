@@ -1,4 +1,4 @@
-#include "st_vulkan_graphics_pipeline.h"
+#include "graphics/st_vulkan_graphics_pipeline.h"
 
 #include "system/st_file_reader.h"
 
@@ -15,8 +15,16 @@ namespace Storytime {
         return pipeline;
     }
 
-    void VulkanGraphicsPipeline::bind(const VulkanCommandBuffer& command_buffer) const {
-        command_buffer.bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    VkPipelineLayout VulkanGraphicsPipeline::get_pipeline_layout() const {
+        return pipeline_layout;
+    }
+
+    VkDescriptorSetLayout VulkanGraphicsPipeline::get_descriptor_set_layout() const {
+        return descriptor_set_layout;
+    }
+
+    void VulkanGraphicsPipeline::bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point) const {
+        command_buffer.bind_pipeline(pipeline_bind_point, pipeline);
     }
 
     void VulkanGraphicsPipeline::create_pipeline() {

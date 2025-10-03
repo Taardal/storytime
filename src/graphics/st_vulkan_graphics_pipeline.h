@@ -1,7 +1,7 @@
 #pragma once
 
-#include "st_vulkan_device.h"
-#include "st_vulkan_swapchain.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_swapchain.h"
 
 namespace Storytime {
     struct VulkanGraphicsPipelineConfig {
@@ -32,7 +32,11 @@ namespace Storytime {
 
         operator VkPipeline() const;
 
-        void bind(const VulkanCommandBuffer& command_buffer) const;
+        VkPipelineLayout get_pipeline_layout() const;
+
+        VkDescriptorSetLayout get_descriptor_set_layout() const;
+
+        void bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS) const;
 
     private:
         void create_pipeline();

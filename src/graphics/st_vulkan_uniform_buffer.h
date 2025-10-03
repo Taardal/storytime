@@ -1,7 +1,7 @@
 #pragma once
 
-#include "st_vulkan_buffer.h"
-#include "st_vulkan_device.h"
+#include "graphics/st_vulkan_buffer.h"
+#include "graphics/st_vulkan_device.h"
 
 namespace Storytime {
     struct VulkanUniformBufferConfig {
@@ -17,12 +17,17 @@ namespace Storytime {
     private:
         Config config;
         VulkanBuffer buffer;
-        void* dst;
 
     public:
         VulkanUniformBuffer(const Config& config);
 
-        ~VulkanUniformBuffer();
+        VulkanUniformBuffer(VulkanUniformBuffer&& other) noexcept;
+
+        VulkanUniformBuffer(const VulkanUniformBuffer& other) = delete;
+
+        VulkanUniformBuffer& operator=(VulkanUniformBuffer&& other) noexcept;
+
+        VulkanUniformBuffer& operator=(const VulkanUniformBuffer& other) = delete;
 
         operator VkBuffer() const;
 

@@ -1,4 +1,4 @@
-#include "st_vulkan_device.h"
+#include "graphics/st_vulkan_device.h"
 
 namespace Storytime {
     VulkanDevice::VulkanDevice(const Config& config) : config(config) {

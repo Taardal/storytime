@@ -1,4 +1,4 @@
-#include "st_vulkan_renderer.h"
+#include "graphics/st_vulkan_renderer.h"
 
 #include "st_quad_vertex.h"
 
@@ -36,6 +36,8 @@ namespace Storytime {
               .physical_device = &physical_device,
               .name = std::format("{} device", config.name),
           }),
+          graphics_queue(device.get_queue(physical_device.get_queue_family_indices().graphics_family.value())),
+          present_queue(device.get_queue(physical_device.get_queue_family_indices().present_family.value())),
           swapchain({
               .dispatcher = config.dispatcher,
               .window = config.window,
@@ -49,23 +51,29 @@ namespace Storytime {
               .device = &device,
               .swapchain = &swapchain,
               .name = std::format("{} graphics pipeline", config.name),
-              .vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/simple.vert.spv"),
-              .fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/simple.frag.spv"),
+              .vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.vert.spv"),
+              .fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.frag.spv"),
               .vertex_input_binding_description = QuadVertex::getBindingDescription(),
               .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
               .descriptor_set_layout_bindings = get_descriptor_set_layout_bindings(),
           }),
-          render_command_pool({
+          runtime_command_pool({
               .device = &device,
               .name = std::format("{} render command pool", config.name),
               .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
               .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
           }),
-          transient_command_pool({
+          initialization_command_pool({
               .device = &device,
-              .name = std::format("{} transient command pool", config.name),
+              .name = std::format("{} initialization command pool", config.name),
               .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
               .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          }),
+          descriptor_pool({
+              .device = &device,
+              .name = std::format("{} descriptor pool", config.name),
+              .max_descriptor_sets = config.max_frames_in_flight,
+              .descriptor_pool_sizes = get_descriptor_pool_sizes(),
           }),
           vertex_buffer({
               .device = &device,
@@ -76,39 +84,16 @@ namespace Storytime {
               .device = &device,
               .name = std::format("{} index buffer", config.name),
               .size = sizeof(indices[0]) * indices.size(),
-          })
+          }),
+          uniform_buffers(get_uniform_buffers())
     {
         allocate_command_buffers();
-        initialize_queues();
-        create_uniform_buffers();
+        allocate_descriptor_sets();
 
-        do_commands([&](const VulkanCommandBuffer& command_buffer) {
+        do_init_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
         });
-
-        for (size_t i = 0; i < config.max_frames_in_flight; i++) {
-            VkDescriptorBufferInfo descriptor_buffer_info{};
-            descriptor_buffer_info.buffer = uniform_buffers.at(i);
-            descriptor_buffer_info.offset = 0;
-            descriptor_buffer_info.range = sizeof(UniformBufferObject);
-
-            VkWriteDescriptorSet descriptor_write{};
-            descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptor_write.dstSet = descriptor_sets[i];
-            descriptor_write.dstBinding = 0;
-            descriptor_write.dstArrayElement = 0;
-            descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptor_write.descriptorCount = 1;
-            descriptor_write.pBufferInfo = &descriptor_buffer_info;
-            descriptor_write.pImageInfo = nullptr;
-            descriptor_write.pTexelBufferView = nullptr;
-
-            u32 descriptor_write_count = 1;
-            u32 descriptor_copy_count = 0;
-            VkCopyDescriptorSet* descriptor_copies = nullptr;
-            device.update_descriptor_sets(descriptor_write_count, &descriptor_write, descriptor_copy_count, descriptor_copies);
-        }
     }
 
     VulkanRenderer::~VulkanRenderer() {
@@ -123,13 +108,16 @@ namespace Storytime {
         VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
         begin_command_buffer(command_buffer);
 
+        device.insert_cmd_label(command_buffer, "Begin swapchain frame");
         swapchain.begin_frame(command_buffer);
     }
 
     void VulkanRenderer::end_frame() {
         VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
 
+        device.insert_cmd_label(command_buffer, "End swapchain frame");
         swapchain.end_frame(command_buffer);
+
         end_command_buffer(command_buffer);
 
         swapchain.present_frame(current_frame_index, command_buffer);
@@ -140,7 +128,7 @@ namespace Storytime {
         VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
 
         device.insert_cmd_label(command_buffer, "Bind pipeline");
-        graphics_pipeline.bind(command_buffer);
+        graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
 
         device.insert_cmd_label(command_buffer, "Bind vertex buffer");
         vertex_buffer.bind(command_buffer);
@@ -148,26 +136,9 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "Bind index buffer");
         index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
 
-        //
-        // Bind descriptor sets
-        //
-
-        VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        VkPipelineLayout pipeline_layout = graphics_pipeline.get_layout();
-        u32 first_set = 0;
-        u32 descriptor_set_count = 1;
-        const VkDescriptorSet* descriptor_sets = &descriptor_sets.at(current_frame_index);
-        u32 dynamic_offset_count = 0;
-        const u32* dynamic_offsets = nullptr;
-        command_buffer.bind_descriptor_sets(
-            pipeline_bind_point,
-            pipeline_layout,
-            first_set,
-            descriptor_set_count,
-            descriptor_sets,
-            dynamic_offset_count,
-            dynamic_offsets
-        );
+        device.insert_cmd_label(command_buffer, "Bind descriptor set");
+        VulkanDescriptorSet descriptor_set = descriptor_sets.at(current_frame_index);
+        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
         device.insert_cmd_label(command_buffer, "Draw indexed");
         u32 index_count = indices.size();
@@ -193,55 +164,87 @@ namespace Storytime {
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
 
-        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted. The easiest way to
-        // compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix. If we don't do this,
-        // then the image will be rendered upside down.
+        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted compared to Vulkan.
+        // The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
+        // If we don't do this, then the image will be rendered upside down.
         ubo.proj[1][1] *= -1;
 
-        uniform_buffers.at(current_frame_index).set_uniforms(&ubo);
+        const VulkanUniformBuffer& uniform_buffer = uniform_buffers.at(current_frame_index);
+        uniform_buffer.set_uniforms(&ubo);
+    }
+
+    std::vector<VulkanUniformBuffer> VulkanRenderer::get_uniform_buffers() {
+        u32 uniform_buffer_count = config.max_frames_in_flight;
+
+        std::vector<VulkanUniformBuffer> uniform_buffers;
+        uniform_buffers.reserve(uniform_buffer_count);
+
+        for (int i = 0; i < uniform_buffer_count; ++i) {
+            uniform_buffers.emplace_back(VulkanUniformBuffer({
+                .device = &device,
+                .name = std::format("{} uniform buffer {}/{}", config.name, i + 1, uniform_buffer_count),
+                .size = sizeof(UniformBufferObject),
+            }));
+        }
+
+        return uniform_buffers;
     }
 
     void VulkanRenderer::allocate_command_buffers() {
-        command_buffers.resize(config.max_frames_in_flight);
-        render_command_pool.allocate_command_buffers(command_buffers.size(), command_buffers.data());
+        u32 command_buffer_count = config.max_frames_in_flight;
+        command_buffers.resize(command_buffer_count);
 
-        for (u32 i = 0; i < command_buffers.size(); ++i) {
-            std::string command_buffer_name = std::format("{} command buffer {}/{}", config.name, i + 1, command_buffers.size());
+        runtime_command_pool.allocate_command_buffers(command_buffers.size(), command_buffers.data());
+
+        for (u32 i = 0; i < command_buffer_count; ++i) {
+            std::string command_buffer_name = std::format("{} command buffer {}/{}", config.name, i + 1, command_buffer_count);
             if (device.set_object_name(command_buffers.at(i), VK_OBJECT_TYPE_COMMAND_BUFFER, command_buffer_name.c_str()) != VK_SUCCESS) {
                 ST_THROW("Could not set command buffer name [" << command_buffer_name << "]");
             }
         }
     }
 
-    void VulkanRenderer::initialize_queues() {
-        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
-        graphics_queue = device.get_queue(queue_family_indices.graphics_family.value());
-        present_queue = device.get_queue(queue_family_indices.present_family.value());
+    void VulkanRenderer::allocate_descriptor_sets() {
+        u32 descriptor_set_count = config.max_frames_in_flight;
+        descriptor_sets.resize(descriptor_set_count);
 
-        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
-        if (device.set_object_name(graphics_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
-        }
+        VkDescriptorSetLayout descriptor_set_layout = graphics_pipeline.get_descriptor_set_layout();
+        std::vector<VkDescriptorSetLayout> descriptor_set_layouts(descriptor_set_count, descriptor_set_layout);
+        descriptor_pool.allocate_descriptor_sets(descriptor_sets.size(), descriptor_sets.data(), descriptor_set_layouts.data());
 
-        std::string present_queue_name = std::format("{} present queue", config.name);
-        if (device.set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
+        for (size_t i = 0; i < descriptor_set_count; i++) {
+            const VulkanDescriptorSet& descriptor_set = descriptor_sets.at(i);
+            const VulkanUniformBuffer& uniform_buffer = uniform_buffers.at(i);
+
+            std::string descriptor_set_name = std::format("{} descriptor set {}/{}", config.name.c_str(), i + 1, descriptor_set_count);
+            if (device.set_object_name(descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, descriptor_set_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'image available' semaphore name [" << descriptor_set_name << "]");
+            }
+
+            // Specifies the buffer and the region within it that will be bound to the descriptor.
+            VkDescriptorBufferInfo descriptor_buffer_info{};
+            descriptor_buffer_info.buffer = uniform_buffer;
+            descriptor_buffer_info.offset = 0;
+            descriptor_buffer_info.range = sizeof(UniformBufferObject);
+
+            // Specifies how to update a descriptor set. We are writing the buffer info to the descriptor set.
+            VkWriteDescriptorSet descriptor_write{};
+            descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptor_write.dstSet = descriptor_set; // The descriptor set being updated
+            descriptor_write.dstBinding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`).
+            descriptor_write.dstArrayElement = 0; // This descriptor is not an array, so just use start index.
+            descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // Must match descriptor set layout
+            descriptor_write.descriptorCount = 1; // How many descriptors to write to.
+            descriptor_write.pBufferInfo = &descriptor_buffer_info; // The buffer the descriptor will use.
+            descriptor_write.pImageInfo = nullptr; // Used if descriptor is an image/sampler
+            descriptor_write.pTexelBufferView = nullptr; // Used if descriptor is a texel buffer
+
+            descriptor_set.write(device, descriptor_write);
         }
     }
 
-    void VulkanRenderer::create_uniform_buffers() {
-        uniform_buffers.reserve(config.max_frames_in_flight);
-        for (int i = 0; i < config.max_frames_in_flight; ++i) {
-            uniform_buffers.push_back(VulkanUniformBuffer({
-                .device = &device,
-                .name = std::format("{} uniform buffer {}/{}", config.name, i + 1, uniform_buffers.size()),
-                .size = sizeof(UniformBufferObject),
-            }));
-        }
-    }
-
-    void VulkanRenderer::do_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const {
-        VulkanCommandBuffer command_buffer = transient_command_pool.allocate_command_buffer();
+    void VulkanRenderer::do_init_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const {
+        VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
 
         if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
             ST_THROW("Could not begin command buffer to set vertex buffer data");
@@ -266,7 +269,7 @@ namespace Storytime {
             ST_THROW("Could not wait for graphics queue to be idle to set vertex buffer data");
         }
 
-        transient_command_pool.free_command_buffer(command_buffer);
+        initialization_command_pool.free_command_buffer(command_buffer);
     }
 
     void VulkanRenderer::begin_command_buffer(const VulkanCommandBuffer& command_buffer) const {
@@ -296,5 +299,14 @@ namespace Storytime {
         descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
 
         return descriptor_set_layout_bindings;
+    }
+
+    std::vector<VkDescriptorPoolSize> VulkanRenderer::get_descriptor_pool_sizes() const {
+        std::vector<VkDescriptorPoolSize> descriptor_pool_sizes(1);
+
+        descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
+
+        return descriptor_pool_sizes;
     }
 }

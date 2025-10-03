@@ -1,7 +1,7 @@
 #pragma once
 
-#include "st_vulkan_command_buffer.h"
-#include "st_vulkan_device.h"
+#include "graphics/st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_device.h"
 
 namespace Storytime {
     struct VulkanBufferConfig {
@@ -20,19 +20,26 @@ namespace Storytime {
         Config config;
         VkBuffer buffer = nullptr;
         VkDeviceMemory memory = nullptr;
+        void* data = nullptr;
 
     public:
         VulkanBuffer(const Config& config);
 
         ~VulkanBuffer();
 
+        VulkanBuffer(VulkanBuffer&& other) noexcept;
+
+        VulkanBuffer(const VulkanBuffer& other) = delete;
+
+        VulkanBuffer& operator=(VulkanBuffer&& other) noexcept;
+
+        VulkanBuffer& operator=(const VulkanBuffer& other) = delete;
+
         operator VkBuffer() const;
 
+        void map_memory();
+
         void set_data(const void* src) const;
-
-        void map_memory(void** dst) const;
-
-        void set_memory_data(const void* src, void* dst) const;
 
         void unmap_memory() const;
 
@@ -42,6 +49,10 @@ namespace Storytime {
         void create_buffer();
 
         void destroy_buffer() const;
+
+        void allocate_memory();
+
+        void free_memory() const;
 
         i32 get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const;
     };

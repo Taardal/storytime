@@ -1,4 +1,4 @@
-#include "st_vulkan_surface.h"
+#include "graphics/st_vulkan_surface.h"
 
 namespace Storytime {
     VulkanSurface::VulkanSurface(const Config& config) : config(config) {
