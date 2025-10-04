@@ -35,6 +35,7 @@ namespace Storytime {
 
         create_image();
         allocate_memory();
+        create_image_view();
 
         //
         // Copy staging buffer to image
@@ -46,6 +47,7 @@ namespace Storytime {
     }
 
     VulkanTexture::~VulkanTexture() {
+        destroy_image_view();
         free_memory();
         destroy_image();
     }
@@ -54,6 +56,7 @@ namespace Storytime {
         : config(std::move(other.config)),
           staging_buffer(std::move(other.staging_buffer)),
           image(other.image),
+          image_view(other.image_view),
           memory(other.memory),
           layout(other.layout),
           width(other.width),
@@ -61,6 +64,7 @@ namespace Storytime {
           channels(other.channels)
     {
         other.image = nullptr;
+        other.image_view = nullptr;
         other.memory = nullptr;
     }
 
@@ -69,15 +73,25 @@ namespace Storytime {
             config = std::move(other.config);
             staging_buffer = std::move(other.staging_buffer);
             image = other.image;
+            image_view = other.image_view;
             memory = other.memory;
             layout = other.layout;
             width = other.width;
             height = other.height;
             channels = other.channels;
             other.image = nullptr;
+            other.image_view = nullptr;
             other.memory = nullptr;
         }
         return *this;
+    }
+
+    VulkanTexture::operator VkImage() const {
+        return image;
+    }
+
+    VkImageView VulkanTexture::get_view() const {
+        return image_view;
     }
 
     void VulkanTexture::set_layout(VkImageLayout new_layout, const VulkanCommandBuffer& command_buffer) {
@@ -207,6 +221,34 @@ namespace Storytime {
     void VulkanTexture::destroy_image() const {
         if (image != nullptr) {
             config.device->destroy_image(image);
+        }
+    }
+
+    void VulkanTexture::create_image_view() {
+        VkImageViewCreateInfo image_view_create_info{};
+        image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        image_view_create_info.image = image;
+        image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_create_info.format = VK_FORMAT_R8G8B8A8_SRGB;
+        image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_view_create_info.subresourceRange.baseMipLevel = 0;
+        image_view_create_info.subresourceRange.levelCount = 1;
+        image_view_create_info.subresourceRange.baseArrayLayer = 0;
+        image_view_create_info.subresourceRange.layerCount = 1;
+
+        if (config.device->create_image_view(image_view_create_info, &image_view) != VK_SUCCESS) {
+            ST_THROW("Could not create image view for image [" << config.name << "]");
+        }
+
+        std::string image_view_name = std::format("{} view", config.name);
+        if (config.device->set_object_name(image_view, VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not create image view name [" << image_view_name << "]");
+        }
+    }
+
+    void VulkanTexture::destroy_image_view() const {
+        if (image_view != nullptr) {
+            config.device->destroy_image_view(image_view);
         }
     }
 

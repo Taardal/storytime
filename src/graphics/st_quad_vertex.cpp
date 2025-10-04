@@ -29,7 +29,7 @@ namespace Storytime {
     // [offset] The number of bytes since the start of the per-vertex data to read from.
     //
     std::vector<VkVertexInputAttributeDescription> QuadVertex::getAttributeDescriptions() {
-        std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions(2);
+        std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions(3);
 
         vertex_input_attribute_descriptions[0].binding = 0;
         vertex_input_attribute_descriptions[0].location = 0;
@@ -40,6 +40,11 @@ namespace Storytime {
         vertex_input_attribute_descriptions[1].location = 1;
         vertex_input_attribute_descriptions[1].format = get_vk_format("vec3");
         vertex_input_attribute_descriptions[1].offset = offsetof(QuadVertex, color);
+
+        vertex_input_attribute_descriptions[2].binding = 0;
+        vertex_input_attribute_descriptions[2].location = 2;
+        vertex_input_attribute_descriptions[2].format = get_vk_format("vec2");
+        vertex_input_attribute_descriptions[2].offset = offsetof(QuadVertex, texture_coordinate);
 
         return vertex_input_attribute_descriptions;
     }

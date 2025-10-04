@@ -172,6 +172,10 @@ namespace Storytime {
 
         void update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const;
 
+        VkResult create_sampler(const VkSamplerCreateInfo& sampler_create_info, VkSampler* sampler) const;
+
+        void destroy_sampler(VkSampler sampler) const;
+
         VkResult set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
 
         VkResult set_object_name(const VkDebugUtilsObjectNameInfoEXT& object_name_info) const;

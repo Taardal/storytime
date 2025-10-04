@@ -4,13 +4,17 @@
 
 #include <stb_image.h>
 
+#include "st_vulkan_descriptor_set.h"
+#include "st_vulkan_device.h"
+#include "st_vulkan_texture.h"
+
 namespace Storytime {
 
     const std::vector<QuadVertex> vertices = {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
     };
 
     const std::vector<u16> indices = {
@@ -87,51 +91,13 @@ namespace Storytime {
               .name = std::format("{} index buffer", config.name),
               .size = sizeof(indices[0]) * indices.size(),
           }),
-          uniform_buffers(get_uniform_buffers())
+          uniform_buffers(create_uniform_buffers())
     {
         allocate_command_buffers();
-        allocate_descriptor_sets();
-
-        // {
-        //     VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
-        //
-        //     if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
-        //         ST_THROW("Could not begin command buffer to set vertex buffer data");
-        //     }
-        //
-        //     VulkanTexture texture({
-        //         .device = &device,
-        //         .command_buffer = command_buffer,
-        //         .name = "FooTexture",
-        //         .path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png"),
-        //     });
-        //
-        //     if (command_buffer.end() != VK_SUCCESS) {
-        //         ST_THROW("Could not end command buffer to set vertex buffer data");
-        //     }
-        //
-        //     VkSubmitInfo submit_info{};
-        //     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        //     submit_info.commandBufferCount = 1;
-        //     submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
-        //
-        //     if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
-        //         ST_THROW("Could not submit command buffer to graphics queue to set vertex buffer data");
-        //     }
-        //
-        //     if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
-        //         ST_THROW("Could not wait for graphics queue to be idle to set vertex buffer data");
-        //     }
-        //
-        //     initialization_command_pool.free_command_buffer(command_buffer);
-        // }
-
-        VulkanTexture texture;
 
         do_init_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
-
             texture = VulkanTexture({
                 .device = &device,
                 .command_buffer = command_buffer,
@@ -139,10 +105,15 @@ namespace Storytime {
                 .path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png"),
             });
         });
+
+        create_sampler();
+
+        allocate_descriptor_sets();
     }
 
     VulkanRenderer::~VulkanRenderer() {
         ST_ASSERT_VK(device.wait_until_idle(), "Device must be able to wait until idle");
+        destroy_sampler();
     }
 
     void VulkanRenderer::begin_frame() {
@@ -218,7 +189,7 @@ namespace Storytime {
         uniform_buffer.set_uniforms(&ubo);
     }
 
-    std::vector<VulkanUniformBuffer> VulkanRenderer::get_uniform_buffers() {
+    std::vector<VulkanUniformBuffer> VulkanRenderer::create_uniform_buffers() {
         u32 uniform_buffer_count = config.max_frames_in_flight;
 
         std::vector<VulkanUniformBuffer> uniform_buffers;
@@ -233,6 +204,46 @@ namespace Storytime {
         }
 
         return uniform_buffers;
+    }
+
+    void VulkanRenderer::create_sampler() {
+        VkSamplerCreateInfo sampler_create_info{};
+        sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        sampler_create_info.magFilter = VK_FILTER_LINEAR;
+        sampler_create_info.minFilter = VK_FILTER_LINEAR;
+        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler_create_info.anisotropyEnable = VK_TRUE;
+
+        // Max quality
+        sampler_create_info.maxAnisotropy = physical_device.get_properties().limits.maxSamplerAnisotropy;
+
+        // Specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
+        sampler_create_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+        // Specifies which coordinate system you want to use to address texels in an image.
+        // If this field is VK_TRUE, then you can simply use coordinates within the [0, texWidth) and [0, texHeight) range.
+        // If this field is VK_FALSE, then the texels are addressed using the [0, 1) range on all axes.
+        // Real-world applications almost always use normalized coordinates, because then it's possible to use textures of varying resolutions with the exact same coordinates.
+        sampler_create_info.unnormalizedCoordinates = VK_FALSE;
+
+        // If a comparison function is enabled, then texels will first be compared to a value, and the result of that comparison is used in filtering operations.
+        sampler_create_info.compareEnable = VK_FALSE;
+        sampler_create_info.compareOp = VK_COMPARE_OP_ALWAYS;
+
+        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        sampler_create_info.mipLodBias = 0.0f;
+        sampler_create_info.minLod = 0.0f;
+        sampler_create_info.maxLod = 0.0f;
+
+        if (device.create_sampler(sampler_create_info, &sampler) != VK_SUCCESS) {
+            ST_THROW("Could not create sampler");
+        }
+    }
+
+    void VulkanRenderer::destroy_sampler() const {
+        device.destroy_sampler(sampler);
     }
 
     void VulkanRenderer::allocate_command_buffers() {
@@ -267,24 +278,36 @@ namespace Storytime {
             }
 
             // Specifies the buffer and the region within it that will be bound to the descriptor.
-            VkDescriptorBufferInfo descriptor_buffer_info{};
-            descriptor_buffer_info.buffer = uniform_buffer;
-            descriptor_buffer_info.offset = 0;
-            descriptor_buffer_info.range = sizeof(UniformBufferObject);
+            VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
+            uniform_buffer_descriptor_info.buffer = uniform_buffer;
+            uniform_buffer_descriptor_info.offset = 0;
+            uniform_buffer_descriptor_info.range = sizeof(UniformBufferObject);
+
+            VkDescriptorImageInfo image_descriptor_info{};
+            image_descriptor_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_descriptor_info.imageView = texture.get_view();
+            image_descriptor_info.sampler = sampler;
 
             // Specifies how to update a descriptor set. We are writing the buffer info to the descriptor set.
-            VkWriteDescriptorSet descriptor_write{};
-            descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptor_write.dstSet = descriptor_set; // The descriptor set being updated
-            descriptor_write.dstBinding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`).
-            descriptor_write.dstArrayElement = 0; // This descriptor is not an array, so just use start index.
-            descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // Must match descriptor set layout
-            descriptor_write.descriptorCount = 1; // How many descriptors to write to.
-            descriptor_write.pBufferInfo = &descriptor_buffer_info; // The buffer the descriptor will use.
-            descriptor_write.pImageInfo = nullptr; // Used if descriptor is an image/sampler
-            descriptor_write.pTexelBufferView = nullptr; // Used if descriptor is a texel buffer
+            std::vector<VkWriteDescriptorSet> descriptor_writes(2);
 
-            descriptor_set.write(device, descriptor_write);
+            descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptor_writes[0].dstSet = descriptor_set; // The descriptor set being updated
+            descriptor_writes[0].dstBinding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`).
+            descriptor_writes[0].dstArrayElement = 0; // This descriptor is not an array, so just use start index.
+            descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // Must match descriptor set layout
+            descriptor_writes[0].descriptorCount = 1; // How many descriptors to write to.
+            descriptor_writes[0].pBufferInfo = &uniform_buffer_descriptor_info; // The buffer the descriptor will use.
+
+            descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptor_writes[1].dstSet = descriptor_set;
+            descriptor_writes[1].dstBinding = 1;
+            descriptor_writes[1].dstArrayElement = 0;
+            descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptor_writes[1].descriptorCount = 1;
+            descriptor_writes[1].pImageInfo = &image_descriptor_info;
+
+            descriptor_set.write(device, descriptor_writes);
         }
     }
 
@@ -335,7 +358,7 @@ namespace Storytime {
     }
 
     std::vector<VkDescriptorSetLayoutBinding> VulkanRenderer::get_descriptor_set_layout_bindings() const {
-        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(1);
+        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
 
         descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
         descriptor_set_layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -343,14 +366,23 @@ namespace Storytime {
         descriptor_set_layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Specifies in which shader stages the descriptor is going to be referenced.
         descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
 
+        descriptor_set_layout_bindings[1].binding = 1;
+        descriptor_set_layout_bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_bindings[1].descriptorCount = 1;
+        descriptor_set_layout_bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_bindings[1].pImmutableSamplers = nullptr;
+
         return descriptor_set_layout_bindings;
     }
 
     std::vector<VkDescriptorPoolSize> VulkanRenderer::get_descriptor_pool_sizes() const {
-        std::vector<VkDescriptorPoolSize> descriptor_pool_sizes(1);
+        std::vector<VkDescriptorPoolSize> descriptor_pool_sizes(2);
 
         descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
+
+        descriptor_pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
 
         return descriptor_pool_sizes;
     }

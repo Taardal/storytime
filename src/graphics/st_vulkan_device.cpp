@@ -256,6 +256,14 @@ namespace Storytime {
         vkUpdateDescriptorSets(device, descriptor_write_count, descriptor_writes, descriptor_copy_count, descriptor_copies);
     }
 
+    VkResult VulkanDevice::create_sampler(const VkSamplerCreateInfo& sampler_create_info, VkSampler* sampler) const {
+        return vkCreateSampler(device, &sampler_create_info, ST_VK_ALLOCATOR, sampler);
+    }
+
+    void VulkanDevice::destroy_sampler(VkSampler sampler) const {
+        vkDestroySampler(device, sampler, ST_VK_ALLOCATOR);
+    }
+
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {
         VkDebugUtilsObjectNameInfoEXT object_name_info{};
         object_name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;

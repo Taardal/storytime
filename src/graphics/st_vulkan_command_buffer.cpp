@@ -1,5 +1,7 @@
 #include "st_vulkan_command_buffer.h"
 
+#include "graphics/st_vulkan_device.h"
+
 namespace Storytime {
     VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer command_buffer) : command_buffer(command_buffer) {}
 

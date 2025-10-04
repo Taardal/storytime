@@ -19,6 +19,8 @@ namespace Storytime {
 
         void write(const VulkanDevice& device, u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes) const;
 
+        void write(const VulkanDevice& device, const std::vector<VkWriteDescriptorSet>& descriptor_writes) const;
+
         void write(const VulkanDevice& device, const VkWriteDescriptorSet& descriptor_write) const;
 
         void copy(const VulkanDevice& device, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const;

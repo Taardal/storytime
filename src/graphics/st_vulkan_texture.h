@@ -20,6 +20,7 @@ namespace Storytime {
         Config config{};
         VulkanBuffer staging_buffer{};
         VkImage image = nullptr;
+        VkImageView image_view = nullptr;
         VkDeviceMemory memory = nullptr;
         VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
         i32 width = 0;
@@ -41,6 +42,10 @@ namespace Storytime {
 
         VulkanTexture& operator=(const VulkanTexture& other) = delete;
 
+        operator VkImage() const;
+
+        VkImageView get_view() const;
+
         void set_layout(VkImageLayout image_layout, const VulkanCommandBuffer& command_buffer);
 
         void copy_to_image(const VulkanBuffer& buffer, const VulkanCommandBuffer& command_buffer) const;
@@ -49,6 +54,10 @@ namespace Storytime {
         void create_image();
 
         void destroy_image() const;
+
+        void create_image_view();
+
+        void destroy_image_view() const;
 
         void allocate_memory();
 

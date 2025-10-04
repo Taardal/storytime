@@ -1,6 +1,5 @@
 #pragma once
 
-#include "st_vulkan_descriptor_set.h"
 #include "st_vulkan_texture.h"
 #include "graphics/st_vulkan_command_pool.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
@@ -45,6 +44,8 @@ namespace Storytime {
         std::vector<VulkanUniformBuffer> uniform_buffers{};
         std::vector<VkCommandBuffer> command_buffers{};
         std::vector<VkDescriptorSet> descriptor_sets{};
+        VkSampler sampler = nullptr;
+        VulkanTexture texture;
         u32 current_frame_index = 0;
 
     public:
@@ -59,7 +60,11 @@ namespace Storytime {
         void render();
 
     private:
-        std::vector<VulkanUniformBuffer> get_uniform_buffers();
+        std::vector<VulkanUniformBuffer> create_uniform_buffers();
+
+        void create_sampler();
+
+        void destroy_sampler() const;
 
         void allocate_command_buffers();
 
