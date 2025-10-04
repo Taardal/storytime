@@ -35,6 +35,6 @@ namespace Storytime {
 
         void bind(const VulkanCommandBuffer& command_buffer, VkIndexType index_type, VkDeviceSize offset = 0) const;
 
-        void set_indices(const void* indices, const VulkanCommandBuffer& command_buffer);
+        void set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) const;
     };
 }

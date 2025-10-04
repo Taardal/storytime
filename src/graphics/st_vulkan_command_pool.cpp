@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_command_pool.h"
+#include "st_vulkan_command_pool.h"
 
 namespace Storytime {
     VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {

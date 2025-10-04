@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_swapchain.h"
+#include "st_vulkan_swapchain.h"
 
 #include "graphics/st_vulkan_queue.h"
 

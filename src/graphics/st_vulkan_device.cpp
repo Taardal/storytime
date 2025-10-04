@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_device.h"
+#include "st_vulkan_device.h"
 
 namespace Storytime {
     VulkanDevice::VulkanDevice(const Config& config) : config(config) {
@@ -64,6 +64,14 @@ namespace Storytime {
 
     VkResult VulkanDevice::acquire_next_swapchain_image(VkSwapchainKHR swapchain, u64 timeout, VkSemaphore semaphore, VkFence fence, u32* image_index) const {
         return vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image_index);
+    }
+
+    VkResult VulkanDevice::create_image(const VkImageCreateInfo& image_create_info, VkImage* image) const {
+        return vkCreateImage(device, &image_create_info, ST_VK_ALLOCATOR, image);
+    }
+
+    void VulkanDevice::destroy_image(VkImage image) const {
+        vkDestroyImage(device, image, ST_VK_ALLOCATOR);
     }
 
     VkResult VulkanDevice::create_image_view(const VkImageViewCreateInfo& image_view_create_info, VkImageView* image_view) const {
@@ -180,13 +188,27 @@ namespace Storytime {
         return vkBindBufferMemory(device, buffer, memory, memory_offset);
     }
 
+    VkResult VulkanDevice::bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
+        return vkBindImageMemory(device, image, memory, memory_offset);
+    }
+
     void VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements* memory_requirements) const {
-        return vkGetBufferMemoryRequirements(device, buffer, memory_requirements);
+        vkGetBufferMemoryRequirements(device, buffer, memory_requirements);
     }
 
     VkMemoryRequirements VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer) const {
         VkMemoryRequirements memory_requirements{};
         vkGetBufferMemoryRequirements(device, buffer, &memory_requirements);
+        return memory_requirements;
+    }
+
+    void VulkanDevice::get_image_memory_requirements(VkImage image, VkMemoryRequirements* memory_requirements) const {
+        vkGetImageMemoryRequirements(device, image, memory_requirements);
+    }
+
+    VkMemoryRequirements VulkanDevice::get_image_memory_requirements(VkImage image) const {
+        VkMemoryRequirements memory_requirements{};
+        vkGetImageMemoryRequirements(device, image, &memory_requirements);
         return memory_requirements;
     }
 

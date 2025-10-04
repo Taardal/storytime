@@ -57,6 +57,8 @@ namespace Storytime {
 
         void get_memory_properties(VkPhysicalDeviceMemoryProperties* memory_properties) const;
 
+        i32 get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const;
+
     private:
         std::vector<const char*> get_required_extensions() const;
 

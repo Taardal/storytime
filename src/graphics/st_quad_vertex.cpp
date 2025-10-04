@@ -33,12 +33,12 @@ namespace Storytime {
 
         vertex_input_attribute_descriptions[0].binding = 0;
         vertex_input_attribute_descriptions[0].location = 0;
-        vertex_input_attribute_descriptions[0].format = get_vk_format_from_glsl_type("vec2");
+        vertex_input_attribute_descriptions[0].format = get_vk_format("vec2");
         vertex_input_attribute_descriptions[0].offset = offsetof(QuadVertex, position);
 
         vertex_input_attribute_descriptions[1].binding = 0;
         vertex_input_attribute_descriptions[1].location = 1;
-        vertex_input_attribute_descriptions[1].format = get_vk_format_from_glsl_type("vec3");
+        vertex_input_attribute_descriptions[1].format = get_vk_format("vec3");
         vertex_input_attribute_descriptions[1].offset = offsetof(QuadVertex, color);
 
         return vertex_input_attribute_descriptions;

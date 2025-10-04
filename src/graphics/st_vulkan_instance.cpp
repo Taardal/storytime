@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_instance.h"
+#include "st_vulkan_instance.h"
 
 namespace Storytime {
     std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {

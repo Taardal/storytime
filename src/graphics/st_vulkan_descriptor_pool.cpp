@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_descriptor_pool.h"
+#include "st_vulkan_descriptor_pool.h"
 
 namespace Storytime {
     VulkanDescriptorPool::VulkanDescriptorPool(const Config& config) : config(config) {

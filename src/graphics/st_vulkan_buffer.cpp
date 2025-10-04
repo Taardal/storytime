@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_buffer.h"
+#include "st_vulkan_buffer.h"
 
 #include "graphics/st_vulkan_command_buffer.h"
 
@@ -92,13 +92,14 @@ namespace Storytime {
 
     void VulkanBuffer::allocate_memory() {
         const VulkanDevice& device = *config.device;
+        const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
-        VkMemoryRequirements buffer_memory_requirements = device.get_buffer_memory_requirements(buffer);
+        VkMemoryRequirements memory_requirements = device.get_buffer_memory_requirements(buffer);
 
         VkMemoryAllocateInfo memory_allocate_info{};
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        memory_allocate_info.allocationSize = buffer_memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = get_memory_type_index(buffer_memory_requirements, config.memory_properties);
+        memory_allocate_info.allocationSize = memory_requirements.size;
+        memory_allocate_info.memoryTypeIndex = physical_device.get_memory_type_index(memory_requirements, config.memory_properties);
 
         if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
             ST_THROW("Could not allocate buffer memory");
@@ -118,41 +119,5 @@ namespace Storytime {
         if (memory != nullptr) {
             config.device->free_memory(memory);
         }
-    }
-
-    // Graphics cards can offer different types of memory to allocate from. Each type of memory varies in terms of allowed operations
-    // and performance characteristics. We need to combine the requirements of the buffer and our own application requirements to find
-    // the right type of memory to use.
-    i32 VulkanBuffer::get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const {
-        const VulkanDevice& device = *config.device;
-        const VulkanPhysicalDevice& physical_device = device.get_physical_device();
-
-        VkPhysicalDeviceMemoryProperties memory_properties = physical_device.get_memory_properties();
-
-        // The VkPhysicalDeviceMemoryProperties structure has two arrays memoryTypes and memoryHeaps. Memory heaps are distinct memory
-        // resources like dedicated VRAM and swap space in RAM for when VRAM runs out. The different types of memory exist within these heaps.
-        for (u32 memory_type_index = 0; memory_type_index < memory_properties.memoryTypeCount; memory_type_index++) {
-
-            // Check if the memory type is suitable for the buffer by checking if the corresponding bit is set to 1.
-            bool memory_type_is_suitable = (memory_requirements.memoryTypeBits & 1 << memory_type_index) > 0;
-            if (!memory_type_is_suitable) {
-                continue;
-            }
-
-            // Check if the memory type has all required properties by doing a bitwise AND between the candidate and required properties,
-            // and checking if the result is not just non-zero, but equal to the required properties bit field.
-            //
-            // The memoryTypes array consists of VkMemoryType structs that specify the heap and properties of each type of memory.
-            // The properties define special features of the memory, like being able to map it so we can write to it from the CPU.
-            //
-            const VkMemoryType& memory_type = memory_properties.memoryTypes[memory_type_index];
-            bool memory_type_has_required_properties = (memory_type.propertyFlags & required_memory_properties) == required_memory_properties;
-            if (!memory_type_has_required_properties) {
-                continue;
-            }
-
-            return memory_type_index;
-        }
-        return -1;
     }
 }

@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_graphics_pipeline.h"
+#include "st_vulkan_graphics_pipeline.h"
 
 #include "system/st_file_reader.h"
 

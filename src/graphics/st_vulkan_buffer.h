@@ -17,12 +17,14 @@ namespace Storytime {
         typedef VulkanBufferConfig Config;
 
     private:
-        Config config;
+        Config config{};
         VkBuffer buffer = nullptr;
         VkDeviceMemory memory = nullptr;
         void* data = nullptr;
 
     public:
+        VulkanBuffer() = default;
+
         VulkanBuffer(const Config& config);
 
         ~VulkanBuffer();
@@ -53,7 +55,5 @@ namespace Storytime {
         void allocate_memory();
 
         void free_memory() const;
-
-        i32 get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const;
     };
 }

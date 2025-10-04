@@ -13,13 +13,14 @@ namespace Storytime {
               .memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
           }),
           staging_buffer({
-            .device = config.device,
-            .name = std::format("{} staging buffer", config.name),
-            .size = config.size,
-            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+              .device = config.device,
+              .name = std::format("{} staging buffer", config.name),
+              .size = config.size,
+              .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+              .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
           })
     {
+        staging_buffer.map_memory();
     }
 
     VulkanIndexBuffer::VulkanIndexBuffer(VulkanIndexBuffer&& other) noexcept
@@ -44,10 +45,8 @@ namespace Storytime {
         command_buffer.bind_index_buffer(buffer, offset, index_type);
     }
 
-    void VulkanIndexBuffer::set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) {
-        staging_buffer.map_memory();
+    void VulkanIndexBuffer::set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) const {
         staging_buffer.set_data(indices);
-        staging_buffer.unmap_memory();
         staging_buffer.copy_to(buffer, command_buffer);
     }
 }

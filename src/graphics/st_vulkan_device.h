@@ -60,6 +60,10 @@ namespace Storytime {
 
         VkResult acquire_next_swapchain_image(VkSwapchainKHR swapchain, u64 timeout, VkSemaphore semaphore, VkFence fence, u32* image_index) const;
 
+        VkResult create_image(const VkImageCreateInfo& image_create_info, VkImage* image) const;
+
+        void destroy_image(VkImage image) const;
+
         VkResult create_image_view(const VkImageViewCreateInfo& image_view_create_info, VkImageView* image_view) const;
 
         void destroy_image_view(VkImageView image_view) const;
@@ -128,9 +132,15 @@ namespace Storytime {
 
         VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset = 0) const;
 
+        VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset = 0) const;
+
         void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements* memory_requirements) const;
 
         VkMemoryRequirements get_buffer_memory_requirements(VkBuffer buffer) const;
+
+        void get_image_memory_requirements(VkImage image, VkMemoryRequirements* memory_requirements) const;
+
+        VkMemoryRequirements get_image_memory_requirements(VkImage image) const;
 
         void free_memory(VkDeviceMemory memory) const;
 

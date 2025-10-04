@@ -1,6 +1,8 @@
-#include "graphics/st_vulkan_renderer.h"
+#include "st_vulkan_renderer.h"
 
-#include "st_quad_vertex.h"
+#include "graphics/st_quad_vertex.h"
+
+#include <stb_image.h>
 
 namespace Storytime {
 
@@ -90,9 +92,52 @@ namespace Storytime {
         allocate_command_buffers();
         allocate_descriptor_sets();
 
+        // {
+        //     VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
+        //
+        //     if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
+        //         ST_THROW("Could not begin command buffer to set vertex buffer data");
+        //     }
+        //
+        //     VulkanTexture texture({
+        //         .device = &device,
+        //         .command_buffer = command_buffer,
+        //         .name = "FooTexture",
+        //         .path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png"),
+        //     });
+        //
+        //     if (command_buffer.end() != VK_SUCCESS) {
+        //         ST_THROW("Could not end command buffer to set vertex buffer data");
+        //     }
+        //
+        //     VkSubmitInfo submit_info{};
+        //     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        //     submit_info.commandBufferCount = 1;
+        //     submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
+        //
+        //     if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
+        //         ST_THROW("Could not submit command buffer to graphics queue to set vertex buffer data");
+        //     }
+        //
+        //     if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
+        //         ST_THROW("Could not wait for graphics queue to be idle to set vertex buffer data");
+        //     }
+        //
+        //     initialization_command_pool.free_command_buffer(command_buffer);
+        // }
+
+        VulkanTexture texture;
+
         do_init_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
+
+            texture = VulkanTexture({
+                .device = &device,
+                .command_buffer = command_buffer,
+                .name = "FooTexture",
+                .path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png"),
+            });
         });
     }
 

@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_command_buffer.h"
+#include "st_vulkan_command_buffer.h"
 
 namespace Storytime {
     VulkanCommandBuffer::VulkanCommandBuffer(VkCommandBuffer command_buffer) : command_buffer(command_buffer) {}
@@ -133,5 +133,67 @@ namespace Storytime {
         u32 first_set = 0;
         u32 descriptor_set_count = 1;
         vkCmdBindDescriptorSets(command_buffer, pipeline_bind_point, pipeline_layout, first_set, descriptor_set_count, &descriptor_set, dynamic_offset_count, dynamic_offsets);
+    }
+
+    void VulkanCommandBuffer::pipeline_barrier(const PipelineBarrierCommand& command) const {
+        vkCmdPipelineBarrier(
+            command_buffer,
+            command.src_stage_mask,
+            command.dst_stage_mask,
+            command.dependency_flags,
+            command.memory_barrier_count,
+            command.memory_barriers,
+            command.buffer_memory_barrier_count,
+            command.buffer_memory_barriers,
+            command.image_memory_barrier_count,
+            command.image_memory_barriers
+        );
+    }
+
+    void VulkanCommandBuffer::pipeline_barrier(
+        VkPipelineStageFlags src_stage_mask,
+        VkPipelineStageFlags dst_stage_mask,
+        VkDependencyFlags dependency_flags,
+        u32 memory_barrier_count,
+        const VkMemoryBarrier* memory_barriers,
+        u32 buffer_memory_barrier_count,
+        const VkBufferMemoryBarrier* buffer_memory_barriers,
+        u32 image_memory_barrier_count,
+        const VkImageMemoryBarrier* image_memory_barriers
+    ) const {
+        vkCmdPipelineBarrier(
+            command_buffer,
+            src_stage_mask,
+            dst_stage_mask,
+            dependency_flags,
+            memory_barrier_count,
+            memory_barriers,
+            buffer_memory_barrier_count,
+            buffer_memory_barriers,
+            image_memory_barrier_count,
+            image_memory_barriers
+        );
+    }
+
+    void VulkanCommandBuffer::copy_buffer_to_image(const CopyBufferToImageCommand& command) const {
+        vkCmdCopyBufferToImage(
+            command_buffer,
+            command.src_buffer,
+            command.dst_image,
+            command.dst_image_layout,
+            command.copy_region_count,
+            command.copy_region
+        );
+    }
+
+    void VulkanCommandBuffer::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, u32 copy_region_count, const VkBufferImageCopy* copy_region) const {
+        vkCmdCopyBufferToImage(
+            command_buffer,
+            src_buffer,
+            dst_image,
+            dst_image_layout,
+            copy_region_count,
+            copy_region
+        );
     }
 }

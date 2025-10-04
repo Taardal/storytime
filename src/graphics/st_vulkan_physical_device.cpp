@@ -1,4 +1,4 @@
-#include "graphics/st_vulkan_physical_device.h"
+#include "st_vulkan_physical_device.h"
 
 namespace Storytime {
     VulkanPhysicalDevice::VulkanPhysicalDevice(const Config& config) : config(config) {
@@ -60,6 +60,38 @@ namespace Storytime {
 
     void VulkanPhysicalDevice::get_memory_properties(VkPhysicalDeviceMemoryProperties* memory_properties) const {
         vkGetPhysicalDeviceMemoryProperties(device_info.physical_device, memory_properties);
+    }
+
+    // Graphics cards can offer different types of memory to allocate from. Each type of memory varies in terms of allowed operations
+    // and performance characteristics. This function returns the index memory type that fulfills the given requirements.
+    i32 VulkanPhysicalDevice::get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const {
+        VkPhysicalDeviceMemoryProperties memory_properties = get_memory_properties();
+
+        // The VkPhysicalDeviceMemoryProperties structure has two arrays memoryTypes and memoryHeaps. Memory heaps are distinct memory
+        // resources like dedicated VRAM and swap space in RAM for when VRAM runs out. The different types of memory exist within these heaps.
+        for (u32 memory_type_index = 0; memory_type_index < memory_properties.memoryTypeCount; memory_type_index++) {
+
+            // Check if the memory type is suitable for the buffer by checking if the corresponding bit is set to 1.
+            bool memory_type_is_suitable = (memory_requirements.memoryTypeBits & 1 << memory_type_index) > 0;
+            if (!memory_type_is_suitable) {
+                continue;
+            }
+
+            // Check if the memory type has all required properties by doing a bitwise AND between the candidate and required properties,
+            // and checking if the result is not just non-zero, but equal to the required properties bit field.
+            //
+            // The memoryTypes array consists of VkMemoryType structs that specify the heap and properties of each type of memory.
+            // The properties define special features of the memory, like being able to map it so we can write to it from the CPU.
+            //
+            const VkMemoryType& memory_type = memory_properties.memoryTypes[memory_type_index];
+            bool memory_type_has_required_properties = (memory_type.propertyFlags & required_memory_properties) == required_memory_properties;
+            if (!memory_type_has_required_properties) {
+                continue;
+            }
+
+            return memory_type_index;
+        }
+        return -1;
     }
 
     std::vector<const char*> VulkanPhysicalDevice::get_required_extensions() const {

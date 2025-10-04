@@ -1,6 +1,7 @@
 #pragma once
 
 #include "st_vulkan_descriptor_set.h"
+#include "st_vulkan_texture.h"
 #include "graphics/st_vulkan_command_pool.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
 #include "graphics/st_vulkan_device.h"

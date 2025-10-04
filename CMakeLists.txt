@@ -105,6 +105,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_commands.h
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.h
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_set.cpp
@@ -127,8 +128,12 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_surface.h
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_texture.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_texture.h
     ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_utils.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_utils.h
     ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
