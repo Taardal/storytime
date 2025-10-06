@@ -95,11 +95,12 @@ namespace Storytime {
         const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
         VkMemoryRequirements memory_requirements = device.get_buffer_memory_requirements(buffer);
+        i32 memory_type_index = physical_device.find_supported_memory_type(memory_requirements, config.memory_properties);
 
         VkMemoryAllocateInfo memory_allocate_info{};
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.allocationSize = memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = physical_device.get_memory_type_index(memory_requirements, config.memory_properties);
+        memory_allocate_info.memoryTypeIndex = memory_type_index;
 
         if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
             ST_THROW("Could not allocate buffer memory");

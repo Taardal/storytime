@@ -16,10 +16,6 @@ namespace Storytime {
         device_info = most_suitable_device_info;
     }
 
-    VkFormat VulkanPhysicalDevice::get_depth_format() const {
-        return device_info.depth_format;
-    }
-
     const std::vector<VkExtensionProperties>& VulkanPhysicalDevice::get_extensions() const {
         return device_info.extensions;
     }
@@ -63,8 +59,8 @@ namespace Storytime {
     }
 
     // Graphics cards can offer different types of memory to allocate from. Each type of memory varies in terms of allowed operations
-    // and performance characteristics. This function returns the index memory type that fulfills the given requirements.
-    i32 VulkanPhysicalDevice::get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const {
+    // and performance characteristics. This function returns the index of the memory type that fulfills the given requirements.
+    i32 VulkanPhysicalDevice::find_supported_memory_type(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const {
         VkPhysicalDeviceMemoryProperties memory_properties = get_memory_properties();
 
         // The VkPhysicalDeviceMemoryProperties structure has two arrays memoryTypes and memoryHeaps. Memory heaps are distinct memory
@@ -92,6 +88,29 @@ namespace Storytime {
             return memory_type_index;
         }
         return -1;
+    }
+
+    VkFormatProperties VulkanPhysicalDevice::get_format_properties(VkFormat format) const {
+        VkFormatProperties format_properties;
+        vkGetPhysicalDeviceFormatProperties(device_info.physical_device, format, &format_properties);
+        return format_properties;
+    }
+
+    void VulkanPhysicalDevice::get_format_properties(VkFormat format, VkFormatProperties* format_properties) const {
+        vkGetPhysicalDeviceFormatProperties(device_info.physical_device, format, format_properties);
+    }
+
+    VkFormat VulkanPhysicalDevice::find_supported_format(const std::vector<VkFormat>& format_candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
+        for (VkFormat format : format_candidates) {
+            VkFormatProperties format_properties = get_format_properties(format);
+            if (tiling == VK_IMAGE_TILING_LINEAR && (format_properties.linearTilingFeatures & features) == features) {
+                return format;
+            }
+            if (tiling == VK_IMAGE_TILING_OPTIMAL && (format_properties.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+        return VK_FORMAT_UNDEFINED;
     }
 
     std::vector<const char*> VulkanPhysicalDevice::get_required_extensions() const {
@@ -129,7 +148,6 @@ namespace Storytime {
     ) const {
         PhysicalDeviceInfo physical_device_info{};
         physical_device_info.physical_device = physical_device;
-        physical_device_info.depth_format = find_depth_format(physical_device);
         physical_device_info.extensions = find_extensions(physical_device, required_extensions);
         physical_device_info.features = find_features(physical_device);
         physical_device_info.present_modes = find_present_modes(physical_device);
@@ -139,48 +157,6 @@ namespace Storytime {
         physical_device_info.surface_formats = find_surface_formats(physical_device);
         return physical_device_info;
     }
-
-    VkFormat VulkanPhysicalDevice::find_depth_format(VkPhysicalDevice physical_device) const {
-        std::vector depth_formats = {
-            VK_FORMAT_D32_SFLOAT_S8_UINT,
-            VK_FORMAT_D32_SFLOAT,
-            VK_FORMAT_D24_UNORM_S8_UINT
-        };
-        VkFormatFeatureFlagBits required_features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        for (VkFormat depth_format : depth_formats) {
-            VkFormatProperties format_properties;
-            vkGetPhysicalDeviceFormatProperties(physical_device, depth_format, &format_properties);
-            if ((format_properties.optimalTilingFeatures & required_features) == required_features) {
-                return depth_format;
-            }
-        }
-        return VK_FORMAT_UNDEFINED;
-    }
-
-    // VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
-    //     for (VkFormat format : candidates) {
-    //         VkFormatProperties props;
-    //         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
-    //         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
-    //             return format;
-    //         } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
-    //             return format;
-    //         }
-    //     }
-    //     throw std::runtime_error("failed to find supported format!");
-    // }
-    //
-    // VkFormat findDepthFormat() {
-    //     return findSupportedFormat(
-    //         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-    //         VK_IMAGE_TILING_OPTIMAL,
-    //         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-    //     );
-    // }
-    //
-    // bool hasStencilComponent(VkFormat format) {
-    //     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-    // }
 
     std::vector<VkExtensionProperties> VulkanPhysicalDevice::find_extensions(
         VkPhysicalDevice physical_device,
@@ -286,10 +262,6 @@ namespace Storytime {
         const PhysicalDeviceInfo& physical_device_info,
         const std::vector<const char*>& required_extensions
     ) const {
-        if (!has_required_depth_format(physical_device_info)) {
-            ST_LOG_DEBUG("[{}] does not have a suitable depth format", physical_device_info.properties.deviceName);
-            return 0;
-        }
         if (!has_required_extensions(physical_device_info, required_extensions)) {
             ST_LOG_DEBUG("[{}] does not have required device extensions", physical_device_info.properties.deviceName);
             return 0;
@@ -318,10 +290,6 @@ namespace Storytime {
         rating += physical_device_info.properties.limits.maxImageDimension2D;
 
         return rating;
-    }
-
-    bool VulkanPhysicalDevice::has_required_depth_format(const PhysicalDeviceInfo& physical_device_info) const {
-        return physical_device_info.depth_format != VK_FORMAT_UNDEFINED;
     }
 
     bool VulkanPhysicalDevice::has_required_extensions(

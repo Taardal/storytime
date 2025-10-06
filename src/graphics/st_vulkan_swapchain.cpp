@@ -3,13 +3,17 @@
 #include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    VulkanSwapchain::VulkanSwapchain(const Config& config) : config(config) {
+    VulkanSwapchain::VulkanSwapchain(const Config& config)
+        : config(config),
+          graphics_queue(config.device->get_graphics_queue()),
+          present_queue(config.device->get_present_queue())
+    {
         create_swapchain();
         create_image_views();
+        create_depth_image();
         create_render_pass();
         create_framebuffers();
         create_sync_objects();
-        initialize_queues();
         subscribe_to_events();
     }
 
@@ -18,6 +22,7 @@ namespace Storytime {
         destroy_sync_objects();
         destroy_framebuffers();
         destroy_render_pass();
+        destroy_depth_image();
         destroy_image_views();
         destroy_swapchain();
     }
@@ -30,11 +35,13 @@ namespace Storytime {
         }
 
         destroy_framebuffers();
+        destroy_depth_image();
         destroy_image_views();
         destroy_swapchain();
 
         create_swapchain();
         create_image_views();
+        create_depth_image();
         create_framebuffers();
     }
 
@@ -108,9 +115,17 @@ namespace Storytime {
         VkClearColorValue clear_color_value = {
             .float32 = {0.0f, 0.0f, 0.0f, 1.0f}
         };
-        VkClearValue clear_color = {
-            .color = clear_color_value
+
+        // The range of depths in the depth buffer is 0.0 to 1.0 in Vulkan, where 1.0 lies at the far view plane and 0.0 at the near view plane.
+        // The initial value at each point in the depth buffer should be the furthest possible depth, which is 1.0.
+        VkClearDepthStencilValue clear_depth_stencil_value = {
+            .depth = 1.0f,
+            .stencil = 0,
         };
+
+        std::array<VkClearValue, 2> clear_values{};
+        clear_values[0].color = clear_color_value;
+        clear_values[1].depthStencil = clear_depth_stencil_value;
 
         VkRenderPassBeginInfo render_pass_begin_info{};
         render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -118,8 +133,8 @@ namespace Storytime {
         render_pass_begin_info.framebuffer = framebuffers[current_image_index];
         render_pass_begin_info.renderArea.offset = {0, 0};
         render_pass_begin_info.renderArea.extent = image_extent;
-        render_pass_begin_info.clearValueCount = 1;
-        render_pass_begin_info.pClearValues = &clear_color;
+        render_pass_begin_info.clearValueCount = (u32) clear_values.size();
+        render_pass_begin_info.pClearValues = clear_values.data();
 
         command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -132,6 +147,7 @@ namespace Storytime {
         viewport.height = (f32) image_extent.height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
+
         command_buffer.set_viewport(viewport);
 
         device.insert_cmd_label(command_buffer, "Set swapchain scissor");
@@ -139,6 +155,7 @@ namespace Storytime {
         VkRect2D scissor{};
         scissor.offset = {0, 0};
         scissor.extent = image_extent;
+
         command_buffer.set_scissor(scissor);
     }
 
@@ -375,14 +392,34 @@ namespace Storytime {
         color_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+        VkAttachmentDescription depth_attachment_description{};
+        depth_attachment_description.format = depth_image->get_format();
+        depth_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+        depth_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depth_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // Don't care about storing the depth data because it will not be used after rendering has finished.
+        depth_attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depth_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depth_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depth_attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        std::array<VkAttachmentDescription, 2> attachment_descriptions = {
+            color_attachment_description,
+            depth_attachment_description
+        };
+
         VkAttachmentReference color_attachment_reference{};
         color_attachment_reference.attachment = 0;
         color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depth_attachment_reference{};
+        depth_attachment_reference.attachment = 1;
+        depth_attachment_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpass_description{};
         subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass_description.colorAttachmentCount = 1;
         subpass_description.pColorAttachments = &color_attachment_reference;
+        subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
 
         VkSubpassDependency subpass_dependency{};
         subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -394,8 +431,8 @@ namespace Storytime {
 
         VkRenderPassCreateInfo render_pass_create_info{};
         render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        render_pass_create_info.attachmentCount = 1;
-        render_pass_create_info.pAttachments = &color_attachment_description;
+        render_pass_create_info.attachmentCount = (u32) attachment_descriptions.size();
+        render_pass_create_info.pAttachments = attachment_descriptions.data();
         render_pass_create_info.subpassCount = 1;
         render_pass_create_info.pSubpasses = &subpass_description;
         render_pass_create_info.dependencyCount = 1;
@@ -420,15 +457,16 @@ namespace Storytime {
         framebuffers.resize(image_count);
 
         for (size_t i = 0; i < image_count; i++) {
-            VkImageView attachments[] = {
-                color_image_views[i]
+            std::array<VkImageView, 2> attachments = {
+                color_image_views[i],
+                depth_image->get_view(),
             };
 
             VkFramebufferCreateInfo framebuffer_create_info{};
             framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = 1;
-            framebuffer_create_info.pAttachments = attachments;
+            framebuffer_create_info.attachmentCount = (u32) attachments.size();
+            framebuffer_create_info.pAttachments = attachments.data();
             framebuffer_create_info.width = image_extent.width;
             framebuffer_create_info.height = image_extent.height;
             framebuffer_create_info.layers = 1;
@@ -447,25 +485,6 @@ namespace Storytime {
     void VulkanSwapchain::destroy_framebuffers() const {
         for (VkFramebuffer framebuffer : framebuffers) {
             config.device->destroy_framebuffer(framebuffer);
-        }
-    }
-
-    void VulkanSwapchain::initialize_queues() {
-        const VulkanPhysicalDevice& physical_device = *config.physical_device;
-        const VulkanDevice& device = *config.device;
-
-        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
-        graphics_queue = device.get_queue(queue_family_indices.graphics_family.value());
-        present_queue = device.get_queue(queue_family_indices.present_family.value());
-
-        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
-        if (device.set_object_name(graphics_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
-        }
-
-        std::string present_queue_name = std::format("{} present queue", config.name);
-        if (device.set_object_name(present_queue, VK_OBJECT_TYPE_QUEUE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
         }
     }
 
@@ -539,21 +558,44 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::create_depth_image() {
-        depth_image = VulkanTexture({
+        VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
+
+        const std::vector<VkFormat> format_candidates = {
+            VK_FORMAT_D32_SFLOAT,
+            VK_FORMAT_D32_SFLOAT_S8_UINT,
+            VK_FORMAT_D24_UNORM_S8_UINT
+        };
+        VkFormatFeatureFlags features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        VkFormat format = config.physical_device->find_supported_format(format_candidates, tiling, features);
+
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+        bool format_has_stencil_component = format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+        if (format_has_stencil_component) {
+            aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+
+        depth_image = ST_NEW VulkanImage({
             .device = config.device,
             .name = std::format("{} depth image", config.name),
             .width = image_extent.width,
             .height = image_extent.height,
-            // .tiling = VK_IMAGE_TILING_OPTIMAL,
-            // .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            // .memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            // .aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT,
+            .format = format,
+            .layout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .tiling = tiling,
+            .aspect = aspect,
+            .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         });
-        // depth_image.set_layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, command_buffer);
+
+        // We don't need to explicitly transition the layout of the image to VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL here
+        // because it will be done by the render pass. The transition is specified in the depth attachment's VkAttachmentDescription object.
+        // ```
+        // depth_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        // depth_attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        // ```
     }
 
     void VulkanSwapchain::destroy_depth_image() const {
-
+        delete depth_image;
     }
 
     void VulkanSwapchain::subscribe_to_events() {

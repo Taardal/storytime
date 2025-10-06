@@ -129,13 +129,17 @@ namespace Storytime {
         multisample_state_create_info.alphaToCoverageEnable = VK_FALSE;
         multisample_state_create_info.alphaToOneEnable = VK_FALSE;
 
-        // VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo{};
-        // depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        // depthStencilStateCreateInfo.depthTestEnable = config.depthTestEnabled;
-        // depthStencilStateCreateInfo.depthWriteEnable = config.depthTestEnabled;
-        // depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-        // depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
-        // depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+        VkPipelineDepthStencilStateCreateInfo depth_stencil_state_create_info{};
+        depth_stencil_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depth_stencil_state_create_info.depthTestEnable = VK_TRUE; // Specifies if the depth of new fragments should be compared to the depth buffer to see if they should be discarded
+        depth_stencil_state_create_info.depthWriteEnable = VK_TRUE; // Specifies if the new depth of fragments that pass the depth test should actually be written to the depth buffer.
+        depth_stencil_state_create_info.depthCompareOp = VK_COMPARE_OP_LESS; // Specifies the comparison that is performed to keep or discard fragments. We are using lower depth = closer, so the depth of new fragments should be less.
+        depth_stencil_state_create_info.depthBoundsTestEnable = VK_FALSE; // Allows us to only keep fragments that fall within the specified depth range.
+        depth_stencil_state_create_info.minDepthBounds = 0.0f; // Used for the optional depth bound test.
+        depth_stencil_state_create_info.maxDepthBounds = 1.0f; // Used for the optional depth bound test.
+        depth_stencil_state_create_info.stencilTestEnable = VK_FALSE; // Used to configure stencil buffer operations.
+        depth_stencil_state_create_info.front = {}; // Used for the optional stencil test.
+        depth_stencil_state_create_info.back = {}; // Used for the optional stencil test.
 
         VkPipelineColorBlendAttachmentState color_blend_attachment_state{};
         color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -196,7 +200,7 @@ namespace Storytime {
         graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
         graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
         graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
-        graphics_pipeline_create_info.pDepthStencilState = nullptr;
+        graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
         graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
         graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         graphics_pipeline_create_info.layout = pipeline_layout;

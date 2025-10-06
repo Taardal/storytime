@@ -3,7 +3,10 @@
 #include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
-    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {
+    VulkanCommandPool::VulkanCommandPool(const Config& config)
+        : config(config),
+          queue(config.device->get_queue(config.queue_family_index))
+    {
         create_command_pool();
     }
 
@@ -34,12 +37,12 @@ namespace Storytime {
     }
 
     VkCommandBuffer VulkanCommandPool::allocate_command_buffer() const {
-        VkCommandBuffer command_buffer;
+        VkCommandBuffer command_buffer = nullptr;
         allocate_command_buffers(1, &command_buffer);
         return command_buffer;
     }
 
-    void VulkanCommandPool::free_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const {
+    void VulkanCommandPool::free_command_buffers(u32 command_buffer_count, const VkCommandBuffer* command_buffers) const {
         config.device->free_command_buffers(command_pool, command_buffer_count, command_buffers);
     }
 
@@ -59,22 +62,22 @@ namespace Storytime {
         return command_buffer;
     }
 
-    void VulkanCommandPool::end_one_time_submit_command_buffer(VkCommandBuffer command_buffer, VkQueue queue) const {
+    void VulkanCommandPool::end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const {
         VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, *config.device);
         free_command_buffer(command_buffer);
     }
 
-    void VulkanCommandPool::record_and_submit(VkQueue queue, const RecordCommandsFn& record_commands) const {
+    void VulkanCommandPool::record_and_submit_commands(const RecordCommandsFn& record_commands) const {
         VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
         record_commands(command_buffer);
-        end_one_time_submit_command_buffer(command_buffer, queue);
+        end_one_time_submit_command_buffer(command_buffer);
     }
 
-    void VulkanCommandPool::record_and_submit(VkQueue queue, const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
+    void VulkanCommandPool::record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
         record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
             VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
             record_commands(command_buffer);
-            end_one_time_submit_command_buffer(command_buffer, queue);
+            end_one_time_submit_command_buffer(command_buffer);
         });
     }
 

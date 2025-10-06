@@ -1,10 +1,11 @@
 #pragma once
 
+#include "st_vulkan_command_pool.h"
 #include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
 #include "graphics/st_vulkan_device.h"
 #include "graphics/st_vulkan_queue.h"
-#include "graphics/st_vulkan_texture.h"
+#include "graphics/st_vulkan_image.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -14,6 +15,7 @@ namespace Storytime {
         Window* window = nullptr;
         VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
+        VulkanCommandPool* command_pool = nullptr;
         VkSurfaceKHR surface = nullptr;
         std::string name = "SwapChain";
         u32 max_frames_in_flight = 0;
@@ -31,8 +33,9 @@ namespace Storytime {
         VkExtent2D image_extent{};
         std::vector<VkImage> color_images;
         std::vector<VkImageView> color_image_views;
-        std::vector<VkFramebuffer> framebuffers;
+        VulkanImage* depth_image = nullptr;
         VkRenderPass render_pass = nullptr;
+        std::vector<VkFramebuffer> framebuffers;
         std::vector<VkFence> in_flight_fences;
         std::vector<VkSemaphore> image_available_semaphores;
         std::vector<VkSemaphore> render_finished_semaphores;
@@ -40,7 +43,6 @@ namespace Storytime {
         VulkanQueue present_queue;
         u32 current_image_index = 0;
         bool surface_has_been_resized = false;
-        VulkanTexture depth_image{};
 
     public:
         VulkanSwapchain(const Config& config);
@@ -80,6 +82,10 @@ namespace Storytime {
 
         void destroy_image_views() const;
 
+        void create_depth_image();
+
+        void destroy_depth_image() const;
+
         void create_render_pass();
 
         void destroy_render_pass() const;
@@ -91,12 +97,6 @@ namespace Storytime {
         void create_sync_objects();
 
         void destroy_sync_objects() const;
-
-        void create_depth_image();
-
-        void destroy_depth_image() const;
-
-        void initialize_queues();
 
         void subscribe_to_events();
 

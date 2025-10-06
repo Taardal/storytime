@@ -17,7 +17,6 @@ namespace Storytime {
         std::vector<VkSurfaceFormatKHR> surface_formats;
         std::vector<VkPresentModeKHR> present_modes;
         QueueFamilyIndices queue_family_indices{};
-        VkFormat depth_format = VK_FORMAT_UNDEFINED;
     };
 
     struct VulkanPhysicalDeviceConfig {
@@ -34,8 +33,6 @@ namespace Storytime {
 
     public:
         VulkanPhysicalDevice(const Config& config);
-
-        VkFormat get_depth_format() const;
 
         const std::vector<VkExtensionProperties>& get_extensions() const;
 
@@ -57,7 +54,13 @@ namespace Storytime {
 
         void get_memory_properties(VkPhysicalDeviceMemoryProperties* memory_properties) const;
 
-        i32 get_memory_type_index(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const;
+        i32 find_supported_memory_type(const VkMemoryRequirements& memory_requirements, VkMemoryPropertyFlags required_memory_properties) const;
+
+        VkFormatProperties get_format_properties(VkFormat format) const;
+
+        void get_format_properties(VkFormat format, VkFormatProperties* format_properties) const;
+
+        VkFormat find_supported_format(const std::vector<VkFormat>& format_candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
     private:
         std::vector<const char*> get_required_extensions() const;
@@ -65,8 +68,6 @@ namespace Storytime {
         PhysicalDeviceInfo get_most_suitable_physical_device(const std::vector<VkPhysicalDevice>& available_devices,const std::vector<const char*>& required_extensions) const;
 
         PhysicalDeviceInfo find_physical_device_info(VkPhysicalDevice physical_device, const std::vector<const char*>& required_extensions) const;
-
-        VkFormat find_depth_format(VkPhysicalDevice physical_device) const;
 
         std::vector<VkExtensionProperties> find_extensions(VkPhysicalDevice physical_device, const std::vector<const char*>& required_extensions) const;
 
@@ -85,8 +86,6 @@ namespace Storytime {
         QueueFamilyIndices find_queue_family_indices(VkPhysicalDevice physical_device) const;
 
         u32 get_suitability_rating(const PhysicalDeviceInfo& physical_device_info, const std::vector<const char*>& required_extensions) const;
-
-        bool has_required_depth_format(const PhysicalDeviceInfo& physical_device_info) const;
 
         bool has_required_extensions(const PhysicalDeviceInfo& physical_device_info, const std::vector<const char*>& required_extensions) const;
 

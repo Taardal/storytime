@@ -1,42 +1,39 @@
-#include "st_vulkan_texture.h"
+#include "st_vulkan_image.h"
 
 #include "graphics/st_vulkan_buffer.h"
 
 #include <stb_image.h>
 
 namespace Storytime {
-    VulkanTexture::VulkanTexture(const Config& config) : config(config) {
-        config.assert_valid();
+    VulkanImage::VulkanImage(const Config& config) : config(config) {
         create_image();
         allocate_memory();
         create_image_view();
     }
 
-    VulkanTexture::~VulkanTexture() {
+    VulkanImage::~VulkanImage() {
         destroy_image_view();
         free_memory();
         destroy_image();
     }
 
-    VulkanTexture::VulkanTexture(VulkanTexture&& other) noexcept
+    VulkanImage::VulkanImage(VulkanImage&& other) noexcept
         : config(std::move(other.config)),
           image(other.image),
           image_view(other.image_view),
-          memory(other.memory),
-          layout(other.layout)
+          memory(other.memory)
     {
         other.image = nullptr;
         other.image_view = nullptr;
         other.memory = nullptr;
     }
 
-    VulkanTexture& VulkanTexture::operator=(VulkanTexture&& other) noexcept {
+    VulkanImage& VulkanImage::operator=(VulkanImage&& other) noexcept {
         if (this != &other) {
             config = std::move(other.config);
             image = other.image;
             image_view = other.image_view;
             memory = other.memory;
-            layout = other.layout;
             other.image = nullptr;
             other.image_view = nullptr;
             other.memory = nullptr;
@@ -44,25 +41,29 @@ namespace Storytime {
         return *this;
     }
 
-    VulkanTexture::operator VkImage() const {
+    VulkanImage::operator VkImage() const {
         return image;
     }
 
-    VkImageView VulkanTexture::get_view() const {
+    VkImageView VulkanImage::get_view() const {
         return image_view;
     }
 
-    void VulkanTexture::set_pixels(const void* pixel_data, u64 pixel_data_size, const OnRecordCommandsFn& on_record_commands) {
+    VkFormat VulkanImage::get_format() const {
+        return config.format;
+    }
+
+    void VulkanImage::set_data(const void* data, u64 data_size, const OnRecordCommandsFn& on_record_commands) {
         VulkanBuffer staging_buffer({
             .device = config.device,
             .name = std::format("{} staging buffer", config.name),
-            .size = pixel_data_size,
+            .size = data_size,
             .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         });
 
         staging_buffer.map_memory();
-        staging_buffer.set_data(pixel_data);
+        staging_buffer.set_data(data);
         staging_buffer.unmap_memory();
 
         on_record_commands([&](const VulkanCommandBuffer& command_buffer) {
@@ -72,7 +73,9 @@ namespace Storytime {
         });
     }
 
-    void VulkanTexture::set_layout(VkImageLayout new_layout, const VulkanCommandBuffer& command_buffer) {
+    void VulkanImage::set_layout(VkImageLayout layout, const VulkanCommandBuffer& command_buffer) {
+        VkImageLayout old_layout = config.layout;
+        VkImageLayout new_layout = layout;
 
         // Memory access masks:
         // - Specify which types of memory operations must be synchronized.
@@ -86,37 +89,40 @@ namespace Storytime {
         VkPipelineStageFlags src_stage; // Earliest pipeline stage that could have performed `src_access` operations.
         VkPipelineStageFlags dst_stage; // Earliest pipeline stage that will perform `dst_access` operations.
 
-        // [Undefined → Transfer]
+        // [Undefined → Transfer destination]
         // Transition for uploading data into the image.
-        if (layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            src_access = 0;                                     // Nothing to wait on.
-            src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;      // Nothing to wait on, so start in earlies possible stage.
-            dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;          // The image will be written to.
-            dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;         // Make the image writable by the transfer stage.
+        if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            src_access = 0; // Nothing to wait on.
+            src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT; // Nothing to wait on, so start in earlies possible stage.
+            dst_access = VK_ACCESS_TRANSFER_WRITE_BIT; // The image will be written to.
+            dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT; // Make the image writable by the transfer stage.
 
-        // [Transfer → Shader]
+        // [Transfer → Shader read]
         // Transition for preparing the image for shader reads after uploading data into the image.
-        } else if (layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            src_access = VK_ACCESS_TRANSFER_WRITE_BIT;          // Wait until all writes to this image are complete.
-            src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;         // Wait for writes to complete in the transfer stage.
-            dst_access = VK_ACCESS_SHADER_READ_BIT;             // The image will be read (sampled) by shaders.
-            dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;  // Make the image visible to fragment shaders reads (sampling).
+        } else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            src_access = VK_ACCESS_TRANSFER_WRITE_BIT; // Wait until all writes to this image are complete.
+            src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT; // Wait for writes to complete in the transfer stage.
+            dst_access = VK_ACCESS_SHADER_READ_BIT; // The image will be read (sampled) by shaders.
+            dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Make the image visible to fragment shaders reads (sampling).
 
         // All other transitions are unsupported.
         } else {
             ST_THROW("Unsupported image layout transition: [" << get_vk_image_layout_name(layout) << "] -> [" << get_vk_image_layout_name(new_layout) << "]");
         }
 
+        // Use a pipeline barrier to perform the layout transition.
+        // - Ensure all reads/writes to the old layout finish before starting any access in the new layout.
+        // - Change the layout metadata so that subsequent accesses interpret the image correctly.
         VkImageMemoryBarrier image_memory_barrier{};
         image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        image_memory_barrier.oldLayout = layout;
+        image_memory_barrier.oldLayout = old_layout;
         image_memory_barrier.newLayout = new_layout;
         image_memory_barrier.image = image;
         image_memory_barrier.srcAccessMask = src_access;
         image_memory_barrier.dstAccessMask = dst_access;
-        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // Do not transfer queue family ownership.
+        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // Do not transfer queue family ownership.
+        image_memory_barrier.subresourceRange.aspectMask = config.aspect;
         image_memory_barrier.subresourceRange.baseMipLevel = 0;
         image_memory_barrier.subresourceRange.levelCount = 1;
         image_memory_barrier.subresourceRange.baseArrayLayer = 0;
@@ -134,10 +140,10 @@ namespace Storytime {
             .image_memory_barriers = &image_memory_barrier,
         });
 
-        layout = new_layout;
+        config.layout = new_layout;
     }
 
-    void VulkanTexture::copy_to_image(const VulkanBuffer& buffer, const VulkanCommandBuffer& command_buffer) const {
+    void VulkanImage::copy_to_image(const VulkanBuffer& buffer, const VulkanCommandBuffer& command_buffer) const {
         VkOffset3D image_offset{};
         image_offset.x = 0;
         image_offset.y = 0;
@@ -152,7 +158,7 @@ namespace Storytime {
         copy_region.bufferOffset = 0;
         copy_region.bufferRowLength = 0;
         copy_region.bufferImageHeight = 0;
-        copy_region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_region.imageSubresource.aspectMask = config.aspect;
         copy_region.imageSubresource.mipLevel = 0;
         copy_region.imageSubresource.baseArrayLayer = 0;
         copy_region.imageSubresource.layerCount = 1;
@@ -168,7 +174,7 @@ namespace Storytime {
         });
     }
 
-    void VulkanTexture::create_image() {
+    void VulkanImage::create_image() {
         const VulkanDevice& device = *config.device;
 
         VkImageCreateInfo image_create_info{};
@@ -179,10 +185,10 @@ namespace Storytime {
         image_create_info.extent.depth = 1;
         image_create_info.mipLevels = 1;
         image_create_info.arrayLayers = 1;
-        image_create_info.format = VK_FORMAT_R8G8B8A8_SRGB;
+        image_create_info.format = config.format;
         image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        image_create_info.usage = config.usage;
         image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
         image_create_info.flags = 0;
@@ -196,19 +202,19 @@ namespace Storytime {
         }
     }
 
-    void VulkanTexture::destroy_image() const {
+    void VulkanImage::destroy_image() const {
         if (image != nullptr) {
             config.device->destroy_image(image);
         }
     }
 
-    void VulkanTexture::create_image_view() {
+    void VulkanImage::create_image_view() {
         VkImageViewCreateInfo image_view_create_info{};
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         image_view_create_info.image = image;
         image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        image_view_create_info.format = VK_FORMAT_R8G8B8A8_SRGB;
-        image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_view_create_info.format = config.format;
+        image_view_create_info.subresourceRange.aspectMask = config.aspect;
         image_view_create_info.subresourceRange.baseMipLevel = 0;
         image_view_create_info.subresourceRange.levelCount = 1;
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
@@ -224,22 +230,24 @@ namespace Storytime {
         }
     }
 
-    void VulkanTexture::destroy_image_view() const {
+    void VulkanImage::destroy_image_view() const {
         if (image_view != nullptr) {
             config.device->destroy_image_view(image_view);
         }
     }
 
-    void VulkanTexture::allocate_memory() {
+    void VulkanImage::allocate_memory() {
         const VulkanDevice& device = *config.device;
         const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
         VkMemoryRequirements memory_requirements = device.get_image_memory_requirements(image);
+        VkMemoryPropertyFlags required_memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        i32 memory_type_index = physical_device.find_supported_memory_type(memory_requirements, required_memory_properties);
 
         VkMemoryAllocateInfo memory_allocate_info{};
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.allocationSize = memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = physical_device.get_memory_type_index(memory_requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        memory_allocate_info.memoryTypeIndex = memory_type_index;
 
         if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
             ST_THROW("Could not allocate buffer memory");
@@ -255,7 +263,7 @@ namespace Storytime {
         }
     }
 
-    void VulkanTexture::free_memory() const {
+    void VulkanImage::free_memory() const {
         if (memory != nullptr) {
             config.device->free_memory(memory);
         }

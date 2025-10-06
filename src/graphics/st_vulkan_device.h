@@ -25,6 +25,10 @@ namespace Storytime {
 
         const VulkanPhysicalDevice& get_physical_device() const;
 
+        VkQueue get_graphics_queue() const;
+
+        VkQueue get_present_queue() const;
+
         VkQueue get_queue(u32 queue_family_index, u32 queue_index = 0) const;
 
         void get_queue(u32 queue_family_index, u32 queue_index, VkQueue* queue) const;

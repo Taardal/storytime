@@ -47,11 +47,24 @@ namespace Storytime {
           }),
           graphics_queue(device.get_queue(physical_device.get_queue_family_indices().graphics_family.value())),
           present_queue(device.get_queue(physical_device.get_queue_family_indices().present_family.value())),
+          runtime_command_pool({
+              .device = &device,
+              .name = std::format("{} render command pool", config.name),
+              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
+              .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+          }),
+          initialization_command_pool({
+              .device = &device,
+              .name = std::format("{} initialization command pool", config.name),
+              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
+              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          }),
           swapchain({
               .dispatcher = config.dispatcher,
               .window = config.window,
               .physical_device = &physical_device,
               .device = &device,
+              .command_pool = &initialization_command_pool,
               .surface = instance.get_surface(),
               .name = std::format("{} swapchain", config.name),
               .max_frames_in_flight = config.max_frames_in_flight,
@@ -65,18 +78,6 @@ namespace Storytime {
               .vertex_input_binding_description = QuadVertex::getBindingDescription(),
               .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
               .descriptor_set_layout_bindings = get_descriptor_set_layout_bindings(),
-          }),
-          runtime_command_pool({
-              .device = &device,
-              .name = std::format("{} render command pool", config.name),
-              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
-              .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-          }),
-          initialization_command_pool({
-              .device = &device,
-              .name = std::format("{} initialization command pool", config.name),
-              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
-              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
           }),
           descriptor_pool({
               .device = &device,
@@ -112,15 +113,19 @@ namespace Storytime {
         }
         u64 pixel_data_size = (u64) (width * height * channels);
 
-        texture = VulkanTexture({
+        texture = VulkanImage({
             .device = &device,
             .name = "FooTexture",
             .width = (u32) width,
             .height = (u32) height,
+            .format = VK_FORMAT_R8G8B8A8_SRGB,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         });
 
-        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            texture.set_pixels(pixel_data, pixel_data_size, on_record_commands_fn);
+        initialization_command_pool.record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+            texture.set_data(pixel_data, pixel_data_size, on_record_commands_fn);
         });
 
         stbi_image_free(pixel_data);
@@ -133,7 +138,7 @@ namespace Storytime {
         allocate_descriptor_sets();
         allocate_command_buffers();
 
-        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+        initialization_command_pool.record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
         });

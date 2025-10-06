@@ -14,8 +14,15 @@ namespace Storytime {
     }
 
     const VulkanPhysicalDevice& VulkanDevice::get_physical_device() const {
-        ST_ASSERT_NOT_NULL(config.physical_device);
         return *config.physical_device;
+    }
+
+    VkQueue VulkanDevice::get_graphics_queue() const {
+        return get_queue(config.physical_device->get_queue_family_indices().graphics_family.value());
+    }
+
+    VkQueue VulkanDevice::get_present_queue() const {
+        return get_queue(config.physical_device->get_queue_family_indices().present_family.value());
     }
 
     VkQueue VulkanDevice::get_queue(u32 queue_family_index, u32 queue_index) const {

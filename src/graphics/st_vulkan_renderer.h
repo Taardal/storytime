@@ -8,7 +8,7 @@
 #include "graphics/st_vulkan_instance.h"
 #include "graphics/st_vulkan_physical_device.h"
 #include "graphics/st_vulkan_swapchain.h"
-#include "graphics/st_vulkan_texture.h"
+#include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_uniform_buffer.h"
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_dispatcher.h"
@@ -34,10 +34,10 @@ namespace Storytime {
         VulkanDevice device;
         VulkanQueue graphics_queue;
         VulkanQueue present_queue;
-        VulkanSwapchain swapchain;
-        VulkanGraphicsPipeline graphics_pipeline;
         VulkanCommandPool runtime_command_pool;
         VulkanCommandPool initialization_command_pool;
+        VulkanSwapchain swapchain;
+        VulkanGraphicsPipeline graphics_pipeline;
         VulkanDescriptorPool descriptor_pool;
         VulkanVertexBuffer vertex_buffer;
         VulkanIndexBuffer index_buffer;
@@ -45,7 +45,7 @@ namespace Storytime {
         std::vector<VkCommandBuffer> command_buffers{};
         std::vector<VkDescriptorSet> descriptor_sets{};
         VkSampler sampler = nullptr;
-        VulkanTexture texture;
+        VulkanImage texture;
         u32 current_frame_index = 0;
 
     public:

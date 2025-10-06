@@ -18,8 +18,9 @@ namespace Storytime {
         typedef VulkanCommandPoolConfig Config;
 
     private:
-        Config config;
-        VkCommandPool command_pool;
+        Config config{};
+        VkCommandPool command_pool = nullptr;
+        VkQueue queue = nullptr;
 
     public:
         VulkanCommandPool(const Config& config);
@@ -39,7 +40,7 @@ namespace Storytime {
 
         VkCommandBuffer allocate_command_buffer() const;
 
-        void free_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
+        void free_command_buffers(u32 command_buffer_count, const VkCommandBuffer* command_buffers) const;
 
         void free_command_buffer(VkCommandBuffer command_buffer) const;
 
@@ -47,11 +48,11 @@ namespace Storytime {
 
         VkCommandBuffer begin_one_time_submit_command_buffer() const;
 
-        void end_one_time_submit_command_buffer(VkCommandBuffer command_buffer, VkQueue queue) const;
+        void end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const;
 
-        void record_and_submit(VkQueue queue, const RecordCommandsFn& record_commands) const;
+        void record_and_submit_commands(const RecordCommandsFn& record_commands) const;
 
-        void record_and_submit(VkQueue queue, const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
+        void record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
 
     private:
         void create_command_pool();
