@@ -20,6 +20,14 @@ namespace Storytime {
         return vkQueueSubmit(queue, submit_count, submit_info, fence);
     }
 
+    VkResult VulkanQueue::submit(VkCommandBuffer command_buffer) const {
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffer;
+        return submit(submit_info);
+    }
+
     VkResult VulkanQueue::present(const VkPresentInfoKHR& present_info) const {
         return vkQueuePresentKHR(queue, &present_info);
     }

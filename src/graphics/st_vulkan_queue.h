@@ -25,6 +25,8 @@ namespace Storytime {
 
         VkResult submit(u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence = nullptr) const;
 
+        VkResult submit(VkCommandBuffer command_buffer) const;
+
         VkResult present(const VkPresentInfoKHR& present_info) const;
     };
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "st_vulkan_texture.h"
 #include "graphics/st_vulkan_command_pool.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
 #include "graphics/st_vulkan_device.h"
@@ -9,6 +8,7 @@
 #include "graphics/st_vulkan_instance.h"
 #include "graphics/st_vulkan_physical_device.h"
 #include "graphics/st_vulkan_swapchain.h"
+#include "graphics/st_vulkan_texture.h"
 #include "graphics/st_vulkan_uniform_buffer.h"
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_dispatcher.h"
@@ -70,14 +70,20 @@ namespace Storytime {
 
         void allocate_descriptor_sets();
 
-        void do_init_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const;
-
-        void begin_command_buffer(const VulkanCommandBuffer& command_buffer) const;
-
-        void end_command_buffer(const VulkanCommandBuffer& command_buffer) const;
-
         std::vector<VkDescriptorSetLayoutBinding> get_descriptor_set_layout_bindings() const;
 
         std::vector<VkDescriptorPoolSize> get_descriptor_pool_sizes() const;
+
+        void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        VulkanCommandBuffer begin_one_time_submit_command_buffer() const;
+
+        void end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void record_and_submit_commands(const RecordCommandsFn& record_commands) const;
+
+        void record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
     };
 }

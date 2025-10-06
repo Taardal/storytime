@@ -435,7 +435,7 @@ namespace Storytime {
 
         // Vulkan lets you assign priorities to queues to influence the scheduling of command buffer execution using
         // floating point numbers between 0.0 and 1.0. This is required even if there is only a single queue.
-        float queue_priority = 1.0f;
+        static constexpr f32 queue_priority = 1.0f;
 
         for (u32 queue_family : queue_families) {
             VkDeviceQueueCreateInfo create_info{};

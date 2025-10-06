@@ -9,6 +9,48 @@ namespace Storytime {
         return command_buffer;
     }
 
+    void VulkanCommandBuffer::with_commands(const WithCommandsFn& with_commands) const {
+        if (begin() != VK_SUCCESS) {
+            ST_THROW("Could not begin command buffer");
+        }
+        with_commands(command_buffer);
+        if (end() != VK_SUCCESS) {
+            ST_THROW("Could not end command buffer");
+        }
+    }
+
+    void VulkanCommandBuffer::begin_one_time_submit() const {
+        if (begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
+            ST_THROW("Could not begin command buffer");
+        }
+    }
+
+    void VulkanCommandBuffer::end_one_time_submit(const VulkanQueue& queue, const VulkanDevice& device) const {
+        if (end() != VK_SUCCESS) {
+            ST_THROW("Could not end command buffer");
+        }
+        if (queue.submit(command_buffer) != VK_SUCCESS) {
+            ST_THROW("Could not submit command buffer to queue");
+        }
+        if (device.wait_until_queue_idle(queue) != VK_SUCCESS) {
+            ST_THROW("Could not wait for queue to become idle");
+        }
+    }
+
+    void VulkanCommandBuffer::record_and_submit(const VulkanQueue& queue, const VulkanDevice& device, const RecordCommandsFn& record_commands) const {
+        begin_one_time_submit();
+        record_commands(command_buffer);
+        end_one_time_submit(queue, device);
+    }
+
+    void VulkanCommandBuffer::record_and_submit(const VulkanQueue& queue, const VulkanDevice& device, const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
+        record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
+            begin_one_time_submit();
+            record_commands(command_buffer);
+            end_one_time_submit(queue, device);
+        });
+    }
+
     VkResult VulkanCommandBuffer::begin(VkCommandBufferUsageFlags usage_flags) const {
         VkCommandBufferBeginInfo command_buffer_begin_info{};
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

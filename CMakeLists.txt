@@ -103,6 +103,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_fns.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
     ${ST_SRC_DIR}/graphics/st_vulkan_commands.h

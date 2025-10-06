@@ -1,24 +1,27 @@
 #include "st_vulkan_renderer.h"
 
 #include "graphics/st_quad_vertex.h"
+#include "graphics/st_vulkan_descriptor_set.h"
 
 #include <stb_image.h>
-
-#include "st_vulkan_descriptor_set.h"
-#include "st_vulkan_device.h"
-#include "st_vulkan_texture.h"
 
 namespace Storytime {
 
     const std::vector<QuadVertex> vertices = {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     };
 
-    const std::vector<u16> indices = {
-        0, 1, 2, 2, 3, 0
+    const std::vector<uint16_t> indices = {
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
     };
 
     struct UniformBufferObject {
@@ -93,22 +96,47 @@ namespace Storytime {
           }),
           uniform_buffers(create_uniform_buffers())
     {
-        allocate_command_buffers();
+        //
+        // Load texture
+        //
 
-        do_init_commands([&](const VulkanCommandBuffer& command_buffer) {
-            vertex_buffer.set_vertices(vertices.data(), command_buffer);
-            index_buffer.set_indices(indices.data(), command_buffer);
-            texture = VulkanTexture({
-                .device = &device,
-                .command_buffer = command_buffer,
-                .name = "FooTexture",
-                .path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png"),
-            });
+        auto texture_path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png");
+
+        int32_t width = 0;
+        int32_t height = 0;
+        int32_t channels = 0;
+        int32_t desired_channels = STBI_rgb_alpha;
+        stbi_uc* pixel_data = stbi_load(texture_path.c_str(), &width, &height, &channels, desired_channels);
+        if (pixel_data == nullptr) {
+            ST_THROW("Could not load texture image [" << texture_path << "]");
+        }
+        u64 pixel_data_size = (u64) (width * height * channels);
+
+        texture = VulkanTexture({
+            .device = &device,
+            .name = "FooTexture",
+            .width = (u32) width,
+            .height = (u32) height,
         });
 
-        create_sampler();
+        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+            texture.set_pixels(pixel_data, pixel_data_size, on_record_commands_fn);
+        });
 
+        stbi_image_free(pixel_data);
+
+        //
+        // Init
+        //
+
+        create_sampler();
         allocate_descriptor_sets();
+        allocate_command_buffers();
+
+        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+            vertex_buffer.set_vertices(vertices.data(), command_buffer);
+            index_buffer.set_indices(indices.data(), command_buffer);
+        });
     }
 
     VulkanRenderer::~VulkanRenderer() {
@@ -122,7 +150,8 @@ namespace Storytime {
         }
 
         VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
-        begin_command_buffer(command_buffer);
+        begin_frame_command_buffer(command_buffer);
+        device.begin_cmd_label(command_buffer, "CommandBuffer");
 
         device.insert_cmd_label(command_buffer, "Begin swapchain frame");
         swapchain.begin_frame(command_buffer);
@@ -134,7 +163,8 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "End swapchain frame");
         swapchain.end_frame(command_buffer);
 
-        end_command_buffer(command_buffer);
+        device.end_cmd_label(command_buffer);
+        end_frame_command_buffer(command_buffer);
 
         swapchain.present_frame(current_frame_index, command_buffer);
         current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
@@ -311,52 +341,6 @@ namespace Storytime {
         }
     }
 
-    void VulkanRenderer::do_init_commands(const std::function<void(const VulkanCommandBuffer&)>& on_record_commands) const {
-        VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
-
-        if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer to set vertex buffer data");
-        }
-
-        on_record_commands(command_buffer);
-
-        if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer to set vertex buffer data");
-        }
-
-        VkSubmitInfo submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
-
-        if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
-            ST_THROW("Could not submit command buffer to graphics queue to set vertex buffer data");
-        }
-
-        if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
-            ST_THROW("Could not wait for graphics queue to be idle to set vertex buffer data");
-        }
-
-        initialization_command_pool.free_command_buffer(command_buffer);
-    }
-
-    void VulkanRenderer::begin_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        if (command_buffer.reset() != VK_SUCCESS) {
-            ST_THROW("Could not reset command buffer");
-        }
-        if (command_buffer.begin() != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer");
-        }
-        device.begin_cmd_label(command_buffer, "CommandBuffer");
-    }
-
-    void VulkanRenderer::end_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        device.end_cmd_label(command_buffer);
-        if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer");
-        }
-    }
-
     std::vector<VkDescriptorSetLayoutBinding> VulkanRenderer::get_descriptor_set_layout_bindings() const {
         std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
 
@@ -385,5 +369,65 @@ namespace Storytime {
         descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
 
         return descriptor_pool_sizes;
+    }
+
+    void VulkanRenderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        if (command_buffer.reset() != VK_SUCCESS) {
+            ST_THROW("Could not reset command buffer");
+        }
+        if (command_buffer.begin() != VK_SUCCESS) {
+            ST_THROW("Could not begin command buffer");
+        }
+    }
+
+    void VulkanRenderer::end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        if (command_buffer.end() != VK_SUCCESS) {
+            ST_THROW("Could not end command buffer");
+        }
+    }
+
+    VulkanCommandBuffer VulkanRenderer::begin_one_time_submit_command_buffer() const {
+        VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
+
+        if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
+            ST_THROW("Could not begin command buffer");
+        }
+
+        return command_buffer;
+    }
+
+    void VulkanRenderer::end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        if (command_buffer.end() != VK_SUCCESS) {
+            ST_THROW("Could not end command buffer");
+        }
+
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
+
+        if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
+            ST_THROW("Could not submit command buffer to graphics queue");
+        }
+
+        if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
+            ST_THROW("Could not wait for graphics queue to become idle");
+        }
+
+        initialization_command_pool.free_command_buffer(command_buffer);
+    }
+
+    void VulkanRenderer::record_and_submit_commands(const RecordCommandsFn& record_commands) const {
+        VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
+        record_commands(command_buffer);
+        end_one_time_submit_command_buffer(command_buffer);
+    }
+
+    void VulkanRenderer::record_and_submit_commands(const RecordAndSubmitCommandsFn& on_record_and_submit_commands) const {
+        on_record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
+            VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
+            record_commands(command_buffer);
+            end_one_time_submit_command_buffer(command_buffer);
+        });
     }
 }

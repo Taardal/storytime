@@ -257,12 +257,12 @@ namespace Storytime {
             ST_THROW("Could not set swapchain name [" << config.name << "]");
         }
 
-        if (device.get_swapchain_images(swapchain, &images) != VK_SUCCESS) {
+        if (device.get_swapchain_images(swapchain, &color_images) != VK_SUCCESS) {
             ST_THROW("Could not get swapchain images");
         }
 
-        if (images.size() < config.max_frames_in_flight) {
-            ST_THROW("Could not create swapchain with fewer images [" << images.size() << "] than frames in flight [" << config.max_frames_in_flight << "]");
+        if (color_images.size() < config.max_frames_in_flight) {
+            ST_THROW("Could not create swapchain with fewer images [" << color_images.size() << "] than frames in flight [" << config.max_frames_in_flight << "]");
         }
     }
 
@@ -328,13 +328,13 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::create_image_views() {
-        u32 image_count = images.size();
-        image_views.resize(image_count);
+        u32 image_count = color_images.size();
+        color_image_views.resize(image_count);
 
         for (u32 i = 0; i < image_count; ++i) {
             VkImageViewCreateInfo image_view_create_info{};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            image_view_create_info.image = images[i];
+            image_view_create_info.image = color_images[i];
             image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
             image_view_create_info.format = surface_format.format;
             image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -347,19 +347,19 @@ namespace Storytime {
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
             image_view_create_info.subresourceRange.layerCount = 1;
 
-            if (config.device->create_image_view(image_view_create_info, &image_views[i]) != VK_SUCCESS) {
+            if (config.device->create_image_view(image_view_create_info, &color_image_views[i]) != VK_SUCCESS) {
                 ST_THROW("Could not create swapchain image view [" << i + 1 << "] / [" << image_count << "]");
             }
 
             std::string image_view_name = std::format("{} image view {}/{}", config.name, i + 1, image_count);
-            if (config.device->set_object_name(image_views[i], VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
+            if (config.device->set_object_name(color_image_views[i], VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
                 ST_THROW("Could not set swapchain image view name [" << image_view_name << "]");
             }
         }
     }
 
     void VulkanSwapchain::destroy_image_views() const {
-        for (VkImageView image_view : image_views) {
+        for (VkImageView image_view : color_image_views) {
             config.device->destroy_image_view(image_view);
         }
     }
@@ -416,12 +416,12 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::create_framebuffers() {
-        u32 image_count = images.size();
+        u32 image_count = color_images.size();
         framebuffers.resize(image_count);
 
         for (size_t i = 0; i < image_count; i++) {
             VkImageView attachments[] = {
-                image_views[i]
+                color_image_views[i]
             };
 
             VkFramebufferCreateInfo framebuffer_create_info{};
@@ -536,6 +536,24 @@ namespace Storytime {
         for (u32 i = 0; i < in_flight_fences.size(); i++) {
             device.destroy_fence(in_flight_fences.at(i));
         }
+    }
+
+    void VulkanSwapchain::create_depth_image() {
+        depth_image = VulkanTexture({
+            .device = config.device,
+            .name = std::format("{} depth image", config.name),
+            .width = image_extent.width,
+            .height = image_extent.height,
+            // .tiling = VK_IMAGE_TILING_OPTIMAL,
+            // .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            // .memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            // .aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT,
+        });
+        // depth_image.set_layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, command_buffer);
+    }
+
+    void VulkanSwapchain::destroy_depth_image() const {
+
     }
 
     void VulkanSwapchain::subscribe_to_events() {

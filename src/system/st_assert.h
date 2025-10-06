@@ -21,24 +21,29 @@
 #endif
 
 #ifdef ST_ENABLE_ASSERT
-    #define ST_ASSERT(expression, message) \
+    #define ST_ASSERT(expression, message)\
         if (expression) {\
             /* Continue */\
         } else {\
+            std::string tag = ST_TAG;\
             std::stringstream ss;\
             ss << message;\
             std::string message_string = ss.str();\
-            ST_LOG_CRITICAL("Assertion failed: {}, {}", #expression, message_string); \
-            ST_BREAK(); \
+            fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
+            fprintf(stderr, "[ASSERT] %s\n", tag.c_str());\
+            fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
+            fprintf(stderr, "- Assertion: %s\n", #expression);\
+            fprintf(stderr, "- Message:   %s\n", message_string.c_str());\
+            ST_BREAK();\
         }
 
-    #define ST_ASSERT_NOT_NULL(pointer) \
+    #define ST_ASSERT_NOT_NULL(pointer)\
         ST_ASSERT(pointer != nullptr, "Pointer [" << #pointer << "] cannot be null")
 
-    #define ST_ASSERT_NOT_EMPTY(value) \
+    #define ST_ASSERT_NOT_EMPTY(value)\
         ST_ASSERT(!value.empty(), "Value [" << #value << "] cannot be empty")
 
-    #define ST_ASSERT_NOT_CEMPTY(value) \
+    #define ST_ASSERT_NOT_CEMPTY(value)\
         ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
 #else
     #define ST_ASSERT(expression, message)

@@ -79,7 +79,7 @@ namespace Storytime {
             ST_THROW("Could not create buffer");
         }
 
-        if (device.set_object_name(buffer, VK_OBJECT_TYPE_BUFFER, config.name.c_str())) {
+        if (device.set_object_name(buffer, VK_OBJECT_TYPE_BUFFER, config.name.c_str()) != VK_SUCCESS)  {
             ST_THROW("Could not set buffer name [" << config.name << "]");
         }
     }
@@ -106,7 +106,7 @@ namespace Storytime {
         }
 
         std::string memory_name = std::format("{} memory", config.name);
-        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str())) {
+        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set buffer memory name [" << memory_name << "]");
         }
 

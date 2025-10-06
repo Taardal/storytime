@@ -6,44 +6,10 @@
 
 namespace Storytime {
     VulkanTexture::VulkanTexture(const Config& config) : config(config) {
-
-        //
-        // Load image pixels into staging buffer
-        //
-
-        int32_t desired_channels = STBI_rgb_alpha;
-        stbi_uc* pixels = stbi_load(config.path.c_str(), &width, &height, &channels, desired_channels);
-        if (pixels == nullptr) {
-            ST_THROW("Could not load texture image [" << config.path << "]");
-        }
-
-        staging_buffer = VulkanBuffer({
-            .device = config.device,
-            .name = std::format("{} staging buffer", config.name),
-            .size = (u64) (width * height * channels),
-            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        });
-        staging_buffer.map_memory();
-        staging_buffer.set_data(pixels);
-
-        stbi_image_free(pixels);
-
-        //
-        // Create image
-        //
-
+        config.assert_valid();
         create_image();
         allocate_memory();
         create_image_view();
-
-        //
-        // Copy staging buffer to image
-        //
-
-        set_layout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, config.command_buffer);
-        copy_to_image(staging_buffer, config.command_buffer);
-        set_layout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, config.command_buffer);
     }
 
     VulkanTexture::~VulkanTexture() {
@@ -54,14 +20,10 @@ namespace Storytime {
 
     VulkanTexture::VulkanTexture(VulkanTexture&& other) noexcept
         : config(std::move(other.config)),
-          staging_buffer(std::move(other.staging_buffer)),
           image(other.image),
           image_view(other.image_view),
           memory(other.memory),
-          layout(other.layout),
-          width(other.width),
-          height(other.height),
-          channels(other.channels)
+          layout(other.layout)
     {
         other.image = nullptr;
         other.image_view = nullptr;
@@ -71,14 +33,10 @@ namespace Storytime {
     VulkanTexture& VulkanTexture::operator=(VulkanTexture&& other) noexcept {
         if (this != &other) {
             config = std::move(other.config);
-            staging_buffer = std::move(other.staging_buffer);
             image = other.image;
             image_view = other.image_view;
             memory = other.memory;
             layout = other.layout;
-            width = other.width;
-            height = other.height;
-            channels = other.channels;
             other.image = nullptr;
             other.image_view = nullptr;
             other.memory = nullptr;
@@ -92,6 +50,26 @@ namespace Storytime {
 
     VkImageView VulkanTexture::get_view() const {
         return image_view;
+    }
+
+    void VulkanTexture::set_pixels(const void* pixel_data, u64 pixel_data_size, const OnRecordCommandsFn& on_record_commands) {
+        VulkanBuffer staging_buffer({
+            .device = config.device,
+            .name = std::format("{} staging buffer", config.name),
+            .size = pixel_data_size,
+            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        });
+
+        staging_buffer.map_memory();
+        staging_buffer.set_data(pixel_data);
+        staging_buffer.unmap_memory();
+
+        on_record_commands([&](const VulkanCommandBuffer& command_buffer) {
+            set_layout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_buffer);
+            copy_to_image(staging_buffer, command_buffer);
+            set_layout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, command_buffer);
+        });
     }
 
     void VulkanTexture::set_layout(VkImageLayout new_layout, const VulkanCommandBuffer& command_buffer) {
@@ -166,8 +144,8 @@ namespace Storytime {
         image_offset.z = 0;
 
         VkExtent3D image_extent{};
-        image_extent.width = width;
-        image_extent.height = height;
+        image_extent.width = config.width;
+        image_extent.height = config.height;
         image_extent.depth = 1;
 
         VkBufferImageCopy copy_region{};
@@ -196,8 +174,8 @@ namespace Storytime {
         VkImageCreateInfo image_create_info{};
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
-        image_create_info.extent.width = width;
-        image_create_info.extent.height = height;
+        image_create_info.extent.width = config.width;
+        image_create_info.extent.height = config.height;
         image_create_info.extent.depth = 1;
         image_create_info.mipLevels = 1;
         image_create_info.arrayLayers = 1;
@@ -268,7 +246,7 @@ namespace Storytime {
         }
 
         std::string memory_name = std::format("{} memory", config.name);
-        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str())) {
+        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set buffer memory name [" << memory_name << "]");
         }
 

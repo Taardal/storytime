@@ -1,5 +1,7 @@
 #include "st_vulkan_command_pool.h"
 
+#include "graphics/st_vulkan_command_buffer.h"
+
 namespace Storytime {
     VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {
         create_command_pool();
@@ -45,6 +47,37 @@ namespace Storytime {
         free_command_buffers(1, &command_buffer);
     }
 
+    void VulkanCommandPool::with_command_buffer(const WithCommandBufferFn& with_command_buffer) const {
+        VulkanCommandBuffer command_buffer = allocate_command_buffer();
+        with_command_buffer(command_buffer);
+        free_command_buffer(command_buffer);
+    }
+
+    VkCommandBuffer VulkanCommandPool::begin_one_time_submit_command_buffer() const {
+        VulkanCommandBuffer command_buffer = allocate_command_buffer();
+        command_buffer.begin_one_time_submit();
+        return command_buffer;
+    }
+
+    void VulkanCommandPool::end_one_time_submit_command_buffer(VkCommandBuffer command_buffer, VkQueue queue) const {
+        VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, *config.device);
+        free_command_buffer(command_buffer);
+    }
+
+    void VulkanCommandPool::record_and_submit(VkQueue queue, const RecordCommandsFn& record_commands) const {
+        VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
+        record_commands(command_buffer);
+        end_one_time_submit_command_buffer(command_buffer, queue);
+    }
+
+    void VulkanCommandPool::record_and_submit(VkQueue queue, const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
+        record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
+            VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
+            record_commands(command_buffer);
+            end_one_time_submit_command_buffer(command_buffer, queue);
+        });
+    }
+
     void VulkanCommandPool::create_command_pool() {
         VkCommandPoolCreateInfo command_pool_create_info{};
         command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -55,7 +88,7 @@ namespace Storytime {
             ST_THROW("Could not create Vulkan command pool");
         }
 
-        if (config.device->set_object_name(command_pool, VK_OBJECT_TYPE_COMMAND_POOL, config.name.c_str())) {
+        if (config.device->set_object_name(command_pool, VK_OBJECT_TYPE_COMMAND_POOL, config.name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set Vulkan command pool name [" << config.name << "]");
         }
     }

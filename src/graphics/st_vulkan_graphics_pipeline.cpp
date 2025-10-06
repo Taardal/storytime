@@ -38,11 +38,11 @@ namespace Storytime {
         VkShaderModule fragment_shader = create_shader_module(config.fragment_shader_path);
 
         std::string vertex_shader_name = std::format("{} vertex shader [{}]", config.name.c_str(), config.vertex_shader_path.c_str());
-        if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str())) {
+        if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set pipeline vertex shader name [" << vertex_shader_name << "]");
         }
         std::string fragment_shader_name = std::format("{} fragment shader [{}]", config.name.c_str(), config.fragment_shader_path.c_str());
-        if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str())) {
+        if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set pipeline fragment shader name [" << fragment_shader_name << "]");
         }
 
@@ -183,7 +183,7 @@ namespace Storytime {
         }
 
         std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
-        if (device.set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str())) {
+        if (device.set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set graphics pipeline layout name [" << pipeline_layout_name << "]");
         }
 
@@ -209,7 +209,7 @@ namespace Storytime {
             ST_THROW("Could not create graphics pipeline");
         }
 
-        if (device.set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str())) {
+        if (device.set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set graphics pipeline name [" << config.name << "]");
         }
 

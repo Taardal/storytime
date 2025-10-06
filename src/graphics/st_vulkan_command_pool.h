@@ -1,8 +1,11 @@
 #pragma once
 
+#include "graphics/st_vulkan_command_fns.h"
 #include "graphics/st_vulkan_device.h"
 
 namespace Storytime {
+    using WithCommandBufferFn = const std::function<void(VkCommandBuffer)>;
+
     struct VulkanCommandPoolConfig {
         VulkanDevice* device = nullptr;
         std::string name = "VulkanCommandPool";
@@ -39,6 +42,16 @@ namespace Storytime {
         void free_command_buffers(u32 command_buffer_count, VkCommandBuffer* command_buffers) const;
 
         void free_command_buffer(VkCommandBuffer command_buffer) const;
+
+        void with_command_buffer(const WithCommandBufferFn& with_command_buffer) const;
+
+        VkCommandBuffer begin_one_time_submit_command_buffer() const;
+
+        void end_one_time_submit_command_buffer(VkCommandBuffer command_buffer, VkQueue queue) const;
+
+        void record_and_submit(VkQueue queue, const RecordCommandsFn& record_commands) const;
+
+        void record_and_submit(VkQueue queue, const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
 
     private:
         void create_command_pool();

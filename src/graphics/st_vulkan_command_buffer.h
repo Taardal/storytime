@@ -1,8 +1,13 @@
 #pragma once
 
 #include "graphics/st_vulkan_commands.h"
+#include "graphics/st_vulkan_command_fns.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
+    using WithCommandsFn = std::function<void(VkCommandBuffer)>;
+
     class VulkanCommandBuffer {
         VkCommandBuffer command_buffer = nullptr;
 
@@ -20,6 +25,16 @@ namespace Storytime {
         VkResult end() const;
 
         VkResult reset(VkCommandBufferResetFlags reset_flags = 0) const;
+
+        void with_commands(const WithCommandsFn& with_commands) const;
+
+        void begin_one_time_submit() const;
+
+        void end_one_time_submit(const VulkanQueue& queue, const VulkanDevice& device) const;
+
+        void record_and_submit(const VulkanQueue& queue, const VulkanDevice& device, const RecordCommandsFn& record_commands) const;
+
+        void record_and_submit(const VulkanQueue& queue, const VulkanDevice& device, const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
 
         void begin_render_pass(const BeginRenderPassCommand& command) const;
 

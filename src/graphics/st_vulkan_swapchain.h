@@ -1,9 +1,10 @@
 #pragma once
 
+#include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
 #include "graphics/st_vulkan_device.h"
 #include "graphics/st_vulkan_queue.h"
-#include "event/st_window_resized_event.h"
+#include "graphics/st_vulkan_texture.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
@@ -28,8 +29,8 @@ namespace Storytime {
         VkSurfaceFormatKHR surface_format{};
         VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
         VkExtent2D image_extent{};
-        std::vector<VkImage> images;
-        std::vector<VkImageView> image_views;
+        std::vector<VkImage> color_images;
+        std::vector<VkImageView> color_image_views;
         std::vector<VkFramebuffer> framebuffers;
         VkRenderPass render_pass = nullptr;
         std::vector<VkFence> in_flight_fences;
@@ -39,6 +40,7 @@ namespace Storytime {
         VulkanQueue present_queue;
         u32 current_image_index = 0;
         bool surface_has_been_resized = false;
+        VulkanTexture depth_image{};
 
     public:
         VulkanSwapchain(const Config& config);
@@ -89,6 +91,10 @@ namespace Storytime {
         void create_sync_objects();
 
         void destroy_sync_objects() const;
+
+        void create_depth_image();
+
+        void destroy_depth_image() const;
 
         void initialize_queues();
 
