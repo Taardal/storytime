@@ -1,14 +1,14 @@
 #pragma once
 
 #include "graphics/st_vulkan_command_pool.h"
+#include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
 #include "graphics/st_vulkan_device.h"
 #include "graphics/st_vulkan_graphics_pipeline.h"
+#include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_index_buffer.h"
-#include "graphics/st_vulkan_instance.h"
 #include "graphics/st_vulkan_physical_device.h"
 #include "graphics/st_vulkan_swapchain.h"
-#include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_uniform_buffer.h"
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_dispatcher.h"
@@ -29,22 +29,21 @@ namespace Storytime {
 
     private:
         Config config;
-        VulkanInstance instance;
+        VulkanContext context;
         VulkanPhysicalDevice physical_device;
         VulkanDevice device;
-        VulkanQueue graphics_queue;
-        VulkanQueue present_queue;
-        VulkanCommandPool runtime_command_pool;
-        VulkanCommandPool initialization_command_pool;
         VulkanSwapchain swapchain;
-        VulkanGraphicsPipeline graphics_pipeline;
-        VulkanDescriptorPool descriptor_pool;
+        VulkanCommandPool initialization_command_pool;
+        VulkanCommandPool runtime_command_pool;
         VulkanVertexBuffer vertex_buffer;
         VulkanIndexBuffer index_buffer;
         std::vector<VulkanUniformBuffer> uniform_buffers{};
+        VulkanDescriptorPool descriptor_pool;
+        VkDescriptorSetLayout descriptor_set_layout;
+        VulkanGraphicsPipeline graphics_pipeline;
+        VkSampler sampler;
         std::vector<VkCommandBuffer> command_buffers{};
         std::vector<VkDescriptorSet> descriptor_sets{};
-        VkSampler sampler = nullptr;
         VulkanImage texture;
         u32 current_frame_index = 0;
 
@@ -62,7 +61,19 @@ namespace Storytime {
     private:
         std::vector<VulkanUniformBuffer> create_uniform_buffers();
 
-        void create_sampler();
+        VulkanDescriptorPool create_descriptor_pool();
+
+        VkDescriptorSetLayout create_descriptor_set_layout();
+
+        void destroy_descriptor_set_layout() const;
+
+        VulkanGraphicsPipeline create_graphics_pipeline();
+
+        VkShaderModule create_shader_module(const std::filesystem::path& path) const;
+
+        void destroy_shader_module(VkShaderModule shader_module) const;
+
+        VkSampler create_sampler();
 
         void destroy_sampler() const;
 
@@ -70,9 +81,7 @@ namespace Storytime {
 
         void allocate_descriptor_sets();
 
-        std::vector<VkDescriptorSetLayoutBinding> get_descriptor_set_layout_bindings() const;
-
-        std::vector<VkDescriptorPoolSize> get_descriptor_pool_sizes() const;
+        void write_descriptors();
 
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 

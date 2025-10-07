@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/st_vulkan_instance.h"
+#include "graphics/st_vulkan_context.h"
 
 namespace Storytime {
     struct QueueFamilyIndices {
@@ -20,7 +20,7 @@ namespace Storytime {
     };
 
     struct VulkanPhysicalDeviceConfig {
-        VulkanInstance* instance = nullptr;
+        VulkanContext* context = nullptr;
     };
 
     class VulkanPhysicalDevice {

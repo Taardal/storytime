@@ -6,13 +6,13 @@
 namespace Storytime {
     struct VulkanGraphicsPipelineConfig {
         VulkanDevice* device = nullptr;
-        VulkanSwapchain* swapchain = nullptr;
         std::string name = "Pipeline";
-        std::filesystem::path vertex_shader_path;
-        std::filesystem::path fragment_shader_path;
-        VkVertexInputBindingDescription vertex_input_binding_description{};
+        VkRenderPass render_pass = nullptr;
+        std::vector<VkDescriptorSetLayout> descriptor_set_layouts{};
+        std::vector<VkPushConstantRange> push_constant_ranges{};
+        std::vector<VkPipelineShaderStageCreateInfo> shader_stage_create_infos{};
+        std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions{};
         std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions{};
-        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings{};
     };
 
     class VulkanGraphicsPipeline {
@@ -23,7 +23,6 @@ namespace Storytime {
         Config config;
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;
-        VkDescriptorSetLayout descriptor_set_layout = nullptr;
 
     public:
         VulkanGraphicsPipeline(const Config& config);
@@ -34,8 +33,6 @@ namespace Storytime {
 
         VkPipelineLayout get_pipeline_layout() const;
 
-        VkDescriptorSetLayout get_descriptor_set_layout() const;
-
         void bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS) const;
 
     private:
@@ -43,8 +40,8 @@ namespace Storytime {
 
         void destroy_pipeline() const;
 
-        VkShaderModule create_shader_module(const std::filesystem::path& path) const;
+        void create_pipeline_layout();
 
-        void destroy_shader_module(VkShaderModule shader_module) const;
+        void destroy_pipeline_layout() const;
     };
 }

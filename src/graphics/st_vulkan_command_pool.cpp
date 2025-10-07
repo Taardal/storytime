@@ -3,10 +3,7 @@
 #include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
-    VulkanCommandPool::VulkanCommandPool(const Config& config)
-        : config(config),
-          queue(config.device->get_queue(config.queue_family_index))
-    {
+    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {
         create_command_pool();
     }
 
@@ -63,7 +60,9 @@ namespace Storytime {
     }
 
     void VulkanCommandPool::end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const {
-        VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, *config.device);
+        const VulkanDevice& device = *config.device;
+        VkQueue queue = device.get_queue(config.queue_family_index);
+        VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, device);
         free_command_buffer(command_buffer);
     }
 

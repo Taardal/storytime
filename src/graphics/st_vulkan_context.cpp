@@ -1,4 +1,4 @@
-#include "st_vulkan_instance.h"
+#include "st_vulkan_context.h"
 
 namespace Storytime {
     std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {
@@ -38,7 +38,7 @@ namespace Storytime {
 }
 
 namespace Storytime {
-    VulkanInstance::VulkanInstance(const Config& config) : config(config) {
+    VulkanContext::VulkanContext(const Config& config) : config(config) {
         std::vector<const char*> extensions = get_required_extensions();
         if (!has_extensions(extensions)) {
             ST_THROW("System does not have required Vulkan extensions");
@@ -66,7 +66,7 @@ namespace Storytime {
         create_surface();
     }
 
-    VulkanInstance::~VulkanInstance() {
+    VulkanContext::~VulkanContext() {
         destroy_surface();
         if (config.validation_layers_enabled) {
             destroy_debug_messenger();
@@ -74,15 +74,11 @@ namespace Storytime {
         destroy_instance();
     }
 
-    VulkanInstance::operator VkInstance() const {
-        return instance;
-    }
-
-    VkSurfaceKHR VulkanInstance::get_surface() const {
+    VkSurfaceKHR VulkanContext::get_surface() const {
         return surface;
     }
 
-    std::vector<VkPhysicalDevice> VulkanInstance::get_physical_devices() const {
+    std::vector<VkPhysicalDevice> VulkanContext::get_physical_devices() const {
         u32 device_count = 0;
         if (vkEnumeratePhysicalDevices(instance, &device_count, nullptr) != VK_SUCCESS) {
             ST_THROW("Could not get physical device count");
@@ -94,7 +90,7 @@ namespace Storytime {
         return devices;
     }
 
-    void VulkanInstance::create_instance(
+    void VulkanContext::create_instance(
         const std::vector<const char*>& extensions,
         const std::vector<const char*>& validation_layers,
         const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info
@@ -128,11 +124,11 @@ namespace Storytime {
         }
     }
 
-    void VulkanInstance::destroy_instance() const {
+    void VulkanContext::destroy_instance() const {
         vkDestroyInstance(instance, ST_VK_ALLOCATOR);
     }
 
-    std::vector<const char*> VulkanInstance::get_required_extensions() const {
+    std::vector<const char*> VulkanContext::get_required_extensions() const {
         u32 glfw_extension_count = 0;
         const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
         std::vector extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
@@ -145,7 +141,7 @@ namespace Storytime {
         return extensions;
     }
 
-    std::vector<VkExtensionProperties> VulkanInstance::get_available_extensions() const {
+    std::vector<VkExtensionProperties> VulkanContext::get_available_extensions() const {
         u32 extension_count = 0;
         const char* layer_name = nullptr;
         if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, nullptr) != VK_SUCCESS) {
@@ -158,7 +154,7 @@ namespace Storytime {
         return extensions;
     }
 
-    bool VulkanInstance::has_extensions(const std::vector<const char*>& extensions) const {
+    bool VulkanContext::has_extensions(const std::vector<const char*>& extensions) const {
         std::vector<VkExtensionProperties> available_extensions = get_available_extensions();
         for (const char* extension: extensions) {
             bool extensionFound = false;
@@ -176,11 +172,11 @@ namespace Storytime {
         return true;
     }
 
-    std::vector<const char*> VulkanInstance::get_required_validation_layers() const {
+    std::vector<const char*> VulkanContext::get_required_validation_layers() const {
         return { "VK_LAYER_KHRONOS_validation" };
     }
 
-    std::vector<VkLayerProperties> VulkanInstance::get_available_validation_layers() const {
+    std::vector<VkLayerProperties> VulkanContext::get_available_validation_layers() const {
         u32 count = 0;
         VkLayerProperties* properties = nullptr;
         if (vkEnumerateInstanceLayerProperties(&count, properties) != VK_SUCCESS) {
@@ -193,7 +189,7 @@ namespace Storytime {
         return layers;
     }
 
-    bool VulkanInstance::has_validation_layers(const std::vector<const char*>& validation_layers) const {
+    bool VulkanContext::has_validation_layers(const std::vector<const char*>& validation_layers) const {
         std::vector<VkLayerProperties> available_validation_layers = get_available_validation_layers();
         for (const char* layer_name: validation_layers) {
             bool layer_found = false;
@@ -211,7 +207,7 @@ namespace Storytime {
         return true;
     }
 
-    void VulkanInstance::create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info) {
+    void VulkanContext::create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info) {
         auto create_debug_messenger_fn = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (!create_debug_messenger_fn) {
             ST_THROW("Could not get Vulkan debug messenger create function");
@@ -221,7 +217,7 @@ namespace Storytime {
         }
     }
 
-    void VulkanInstance::destroy_debug_messenger() const {
+    void VulkanContext::destroy_debug_messenger() const {
         auto destroy_debug_messenger_fn = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (!destroy_debug_messenger_fn) {
             ST_THROW("Could not get Vulkan debug messenger destroy function");
@@ -229,7 +225,7 @@ namespace Storytime {
         destroy_debug_messenger_fn(instance, debug_messenger, ST_VK_ALLOCATOR);
     }
 
-    VkDebugUtilsMessengerCreateInfoEXT VulkanInstance::get_debug_messenger_create_info() const {
+    VkDebugUtilsMessengerCreateInfoEXT VulkanContext::get_debug_messenger_create_info() const {
         VkDebugUtilsMessengerCreateInfoEXT create_info{};
         create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
@@ -245,13 +241,13 @@ namespace Storytime {
         return create_info;
     }
 
-    void VulkanInstance::create_surface() {
+    void VulkanContext::create_surface() {
         if (glfwCreateWindowSurface(instance, *config.window, ST_VK_ALLOCATOR, &surface) != VK_SUCCESS) {
             ST_THROW("Could not create Vulkan surface");
         }
     }
 
-    void VulkanInstance::destroy_surface() const {
+    void VulkanContext::destroy_surface() const {
         vkDestroySurfaceKHR(instance, surface, ST_VK_ALLOCATOR);
     }
 }

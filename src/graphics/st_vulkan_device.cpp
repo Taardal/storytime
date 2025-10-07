@@ -17,12 +17,20 @@ namespace Storytime {
         return *config.physical_device;
     }
 
+    u32 VulkanDevice::get_graphics_queue_family_index() const {
+        return config.physical_device->get_queue_family_indices().graphics_family.value();
+    }
+
+    u32 VulkanDevice::get_present_queue_family_index() const {
+        return config.physical_device->get_queue_family_indices().present_family.value();
+    }
+
     VkQueue VulkanDevice::get_graphics_queue() const {
-        return get_queue(config.physical_device->get_queue_family_indices().graphics_family.value());
+        return get_queue(get_graphics_queue_family_index());
     }
 
     VkQueue VulkanDevice::get_present_queue() const {
-        return get_queue(config.physical_device->get_queue_family_indices().present_family.value());
+        return get_queue(get_present_queue_family_index());
     }
 
     VkQueue VulkanDevice::get_queue(u32 queue_family_index, u32 queue_index) const {
@@ -403,6 +411,16 @@ namespace Storytime {
 
         if (set_object_name(device, VK_OBJECT_TYPE_DEVICE, config.name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set Vulkan device name [" << config.name << "]");
+        }
+
+        std::string graphics_queue_name = std::format("{} graphics queue", config.name);
+        if (set_object_name(get_graphics_queue(), VK_OBJECT_TYPE_QUEUE, graphics_queue_name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
+        }
+
+        std::string present_queue_name = std::format("{} present queue", config.name);
+        if (set_object_name(get_present_queue(), VK_OBJECT_TYPE_QUEUE, present_queue_name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
         }
     }
 

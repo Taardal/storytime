@@ -2,6 +2,7 @@
 
 #include "graphics/st_quad_vertex.h"
 #include "graphics/st_vulkan_descriptor_set.h"
+#include "st_quad_vertex.h"
 
 #include <stb_image.h>
 
@@ -32,58 +33,40 @@ namespace Storytime {
 
     VulkanRenderer::VulkanRenderer(const Config& config)
         : config(config),
-          instance({
+          context({
               .window = config.window,
               .app_name = config.name,
               .engine_name = std::format("{} engine", config.name),
               .validation_layers_enabled = config.validation_layers_enabled,
           }),
           physical_device({
-              .instance = &instance,
+              .context = &context,
           }),
           device({
               .physical_device = &physical_device,
               .name = std::format("{} device", config.name),
           }),
-          graphics_queue(device.get_queue(physical_device.get_queue_family_indices().graphics_family.value())),
-          present_queue(device.get_queue(physical_device.get_queue_family_indices().present_family.value())),
-          runtime_command_pool({
+          swapchain({
+              .dispatcher = config.dispatcher,
+              .window = config.window,
+              .context = &context,
+              .physical_device = &physical_device,
               .device = &device,
-              .name = std::format("{} render command pool", config.name),
-              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
-              .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+              .command_pool = &initialization_command_pool,
+              .name = std::format("{} swapchain", config.name),
+              .max_frames_in_flight = config.max_frames_in_flight,
           }),
           initialization_command_pool({
               .device = &device,
               .name = std::format("{} initialization command pool", config.name),
-              .queue_family_index = physical_device.get_queue_family_indices().graphics_family.value(),
+              .queue_family_index = device.get_graphics_queue_family_index(),
               .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
           }),
-          swapchain({
-              .dispatcher = config.dispatcher,
-              .window = config.window,
-              .physical_device = &physical_device,
+          runtime_command_pool({
               .device = &device,
-              .command_pool = &initialization_command_pool,
-              .surface = instance.get_surface(),
-              .name = std::format("{} swapchain", config.name),
-              .max_frames_in_flight = config.max_frames_in_flight,
-          }),
-          graphics_pipeline({
-              .device = &device,
-              .swapchain = &swapchain,
-              .name = std::format("{} graphics pipeline", config.name),
-              .vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.vert.spv"),
-              .fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.frag.spv"),
-              .vertex_input_binding_description = QuadVertex::getBindingDescription(),
-              .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
-              .descriptor_set_layout_bindings = get_descriptor_set_layout_bindings(),
-          }),
-          descriptor_pool({
-              .device = &device,
-              .name = std::format("{} descriptor pool", config.name),
-              .max_descriptor_sets = config.max_frames_in_flight,
-              .descriptor_pool_sizes = get_descriptor_pool_sizes(),
+              .name = std::format("{} render command pool", config.name),
+              .queue_family_index = device.get_graphics_queue_family_index(),
+              .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
           }),
           vertex_buffer({
               .device = &device,
@@ -95,7 +78,11 @@ namespace Storytime {
               .name = std::format("{} index buffer", config.name),
               .size = sizeof(indices[0]) * indices.size(),
           }),
-          uniform_buffers(create_uniform_buffers())
+          uniform_buffers(create_uniform_buffers()),
+          descriptor_pool(create_descriptor_pool()),
+          descriptor_set_layout(create_descriptor_set_layout()),
+          graphics_pipeline(create_graphics_pipeline()),
+          sampler(create_sampler())
     {
         //
         // Load texture
@@ -134,9 +121,9 @@ namespace Storytime {
         // Init
         //
 
-        create_sampler();
-        allocate_descriptor_sets();
         allocate_command_buffers();
+        allocate_descriptor_sets();
+        write_descriptors();
 
         initialization_command_pool.record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
@@ -147,6 +134,7 @@ namespace Storytime {
     VulkanRenderer::~VulkanRenderer() {
         ST_ASSERT_VK(device.wait_until_idle(), "Device must be able to wait until idle");
         destroy_sampler();
+        destroy_descriptor_set_layout();
     }
 
     void VulkanRenderer::begin_frame() {
@@ -241,7 +229,128 @@ namespace Storytime {
         return uniform_buffers;
     }
 
-    void VulkanRenderer::create_sampler() {
+    VulkanGraphicsPipeline VulkanRenderer::create_graphics_pipeline() {
+        auto vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.vert.spv");
+        auto fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.frag.spv");
+
+        VkShaderModule vertex_shader = create_shader_module(vertex_shader_path);
+        VkShaderModule fragment_shader = create_shader_module(fragment_shader_path);
+
+        std::string vertex_shader_name = std::format("{} vertex shader [{}]", config.name.c_str(), vertex_shader_path.c_str());
+        if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set pipeline vertex shader name [" << vertex_shader_name << "]");
+        }
+
+        std::string fragment_shader_name = std::format("{} fragment shader [{}]", config.name.c_str(), fragment_shader_path.c_str());
+        if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str()) != VK_SUCCESS) {
+            ST_THROW("Could not set pipeline fragment shader name [" << fragment_shader_name << "]");
+        }
+
+        VkPipelineShaderStageCreateInfo vertex_shader_stage_create_info{};
+        vertex_shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertex_shader_stage_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertex_shader_stage_create_info.module = vertex_shader;
+        vertex_shader_stage_create_info.pName = "main";
+
+        VkPipelineShaderStageCreateInfo fragment_shader_stage_create_info{};
+        fragment_shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragment_shader_stage_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragment_shader_stage_create_info.module = fragment_shader;
+        fragment_shader_stage_create_info.pName = "main";
+
+        std::vector<VkPipelineShaderStageCreateInfo> shader_stage_create_infos = {
+            vertex_shader_stage_create_info,
+            fragment_shader_stage_create_info,
+        };
+
+        ST_DEFER([&] {
+            destroy_shader_module(vertex_shader);
+            destroy_shader_module(fragment_shader);
+        });
+
+        return VulkanGraphicsPipeline({
+            .device = &device,
+            .name = std::format("{} graphics pipeline", config.name),
+            .render_pass = swapchain.get_render_pass(),
+            .descriptor_set_layouts = { descriptor_set_layout },
+            .shader_stage_create_infos = shader_stage_create_infos,
+            .vertex_input_binding_descriptions = { QuadVertex::getBindingDescription() },
+            .vertex_input_attribute_descriptions = QuadVertex::getAttributeDescriptions(),
+        });
+    }
+
+    VulkanDescriptorPool VulkanRenderer::create_descriptor_pool() {
+        std::vector<VkDescriptorPoolSize> descriptor_pool_sizes(2);
+
+        descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
+
+        descriptor_pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
+
+        return VulkanDescriptorPool({
+            .device = &device,
+            .name = std::format("{} descriptor pool", config.name),
+            .max_descriptor_sets = config.max_frames_in_flight,
+            .descriptor_pool_sizes = descriptor_pool_sizes,
+        });
+    }
+
+    VkDescriptorSetLayout VulkanRenderer::create_descriptor_set_layout() {
+        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
+
+        descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
+        descriptor_set_layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_set_layout_bindings[0].descriptorCount = 1;
+        descriptor_set_layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Specifies in which shader stages the descriptor is going to be referenced.
+        descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
+
+        descriptor_set_layout_bindings[1].binding = 1;
+        descriptor_set_layout_bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_bindings[1].descriptorCount = 1;
+        descriptor_set_layout_bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_bindings[1].pImmutableSamplers = nullptr;
+
+        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
+        descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptor_set_layout_create_info.bindingCount = descriptor_set_layout_bindings.size();
+        descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
+
+        VkDescriptorSetLayout descriptor_set_layout;
+        if (device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout) != VK_SUCCESS) {
+            ST_THROW("Could not create graphics pipeline descriptor set layout");
+        }
+
+        return descriptor_set_layout;
+    }
+
+    void VulkanRenderer::destroy_descriptor_set_layout() const {
+        device.destroy_descriptor_set_layout(descriptor_set_layout);
+    }
+
+    VkShaderModule VulkanRenderer::create_shader_module(const std::filesystem::path& path) const {
+        std::vector<char> shader_bytes = FileReader::read_bytes(path);
+        if (shader_bytes.empty()) {
+            ST_THROW("Could not read graphics pipeline shader [" << path << "]");
+        }
+
+        VkShaderModuleCreateInfo shader_module_create_info{};
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.codeSize = shader_bytes.size();
+        shader_module_create_info.pCode = (const u32*) shader_bytes.data();
+
+        VkShaderModule shader_module;
+        if (device.create_shader_module(shader_module_create_info, &shader_module) != VK_SUCCESS) {
+            ST_THROW("Could not create graphics shader module");
+        }
+        return shader_module;
+    }
+
+    void VulkanRenderer::destroy_shader_module(VkShaderModule shader_module) const {
+        device.destroy_shader_module(shader_module);
+    }
+
+    VkSampler VulkanRenderer::create_sampler() {
         VkSamplerCreateInfo sampler_create_info{};
         sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         sampler_create_info.magFilter = VK_FILTER_LINEAR;
@@ -272,9 +381,12 @@ namespace Storytime {
         sampler_create_info.minLod = 0.0f;
         sampler_create_info.maxLod = 0.0f;
 
+        VkSampler sampler;
         if (device.create_sampler(sampler_create_info, &sampler) != VK_SUCCESS) {
             ST_THROW("Could not create sampler");
         }
+
+        return sampler;
     }
 
     void VulkanRenderer::destroy_sampler() const {
@@ -299,22 +411,25 @@ namespace Storytime {
         u32 descriptor_set_count = config.max_frames_in_flight;
         descriptor_sets.resize(descriptor_set_count);
 
-        VkDescriptorSetLayout descriptor_set_layout = graphics_pipeline.get_descriptor_set_layout();
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts(descriptor_set_count, descriptor_set_layout);
         descriptor_pool.allocate_descriptor_sets(descriptor_sets.size(), descriptor_sets.data(), descriptor_set_layouts.data());
 
-        for (size_t i = 0; i < descriptor_set_count; i++) {
-            const VulkanDescriptorSet& descriptor_set = descriptor_sets.at(i);
-            const VulkanUniformBuffer& uniform_buffer = uniform_buffers.at(i);
-
+        for (size_t i = 0; i < descriptor_sets.size(); i++) {
             std::string descriptor_set_name = std::format("{} descriptor set {}/{}", config.name.c_str(), i + 1, descriptor_set_count);
-            if (device.set_object_name(descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, descriptor_set_name.c_str()) != VK_SUCCESS) {
+            if (device.set_object_name(descriptor_sets.at(i), VK_OBJECT_TYPE_DESCRIPTOR_SET, descriptor_set_name.c_str()) != VK_SUCCESS) {
                 ST_THROW("Could not set 'image available' semaphore name [" << descriptor_set_name << "]");
             }
+        }
+    }
 
-            // Specifies the buffer and the region within it that will be bound to the descriptor.
+    void VulkanRenderer::write_descriptors() {
+        for (size_t i = 0; i < descriptor_sets.size(); i++) {
+            const VulkanDescriptorSet& descriptor_set = descriptor_sets.at(i);
+
+            // Specify the buffers that will be bound to the descriptors.
+
             VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
-            uniform_buffer_descriptor_info.buffer = uniform_buffer;
+            uniform_buffer_descriptor_info.buffer = uniform_buffers.at(i);
             uniform_buffer_descriptor_info.offset = 0;
             uniform_buffer_descriptor_info.range = sizeof(UniformBufferObject);
 
@@ -323,7 +438,8 @@ namespace Storytime {
             image_descriptor_info.imageView = texture.get_view();
             image_descriptor_info.sampler = sampler;
 
-            // Specifies how to update a descriptor set. We are writing the buffer info to the descriptor set.
+            // Bind the buffers to the descriptors by writing to the desriptor set
+
             std::vector<VkWriteDescriptorSet> descriptor_writes(2);
 
             descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -344,36 +460,6 @@ namespace Storytime {
 
             descriptor_set.write(device, descriptor_writes);
         }
-    }
-
-    std::vector<VkDescriptorSetLayoutBinding> VulkanRenderer::get_descriptor_set_layout_bindings() const {
-        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
-
-        descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
-        descriptor_set_layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_set_layout_bindings[0].descriptorCount = 1;
-        descriptor_set_layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Specifies in which shader stages the descriptor is going to be referenced.
-        descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
-
-        descriptor_set_layout_bindings[1].binding = 1;
-        descriptor_set_layout_bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_bindings[1].descriptorCount = 1;
-        descriptor_set_layout_bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_bindings[1].pImmutableSamplers = nullptr;
-
-        return descriptor_set_layout_bindings;
-    }
-
-    std::vector<VkDescriptorPoolSize> VulkanRenderer::get_descriptor_pool_sizes() const {
-        std::vector<VkDescriptorPoolSize> descriptor_pool_sizes(2);
-
-        descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
-
-        descriptor_pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
-
-        return descriptor_pool_sizes;
     }
 
     void VulkanRenderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
@@ -405,6 +491,8 @@ namespace Storytime {
         if (command_buffer.end() != VK_SUCCESS) {
             ST_THROW("Could not end command buffer");
         }
+
+        VulkanQueue graphics_queue = device.get_graphics_queue();
 
         VkSubmitInfo submit_info{};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

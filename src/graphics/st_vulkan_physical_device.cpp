@@ -2,7 +2,7 @@
 
 namespace Storytime {
     VulkanPhysicalDevice::VulkanPhysicalDevice(const Config& config) : config(config) {
-        std::vector<VkPhysicalDevice> available_devices = config.instance->get_physical_devices();
+        std::vector<VkPhysicalDevice> available_devices = config.context->get_physical_devices();
         if (available_devices.empty()) {
             ST_THROW("Could not find any available physical device");
         }
@@ -194,7 +194,7 @@ namespace Storytime {
     }
 
     std::vector<VkPresentModeKHR> VulkanPhysicalDevice::find_present_modes(VkPhysicalDevice physical_device) const {
-        VkSurfaceKHR surface = config.instance->get_surface();
+        VkSurfaceKHR surface = config.context->get_surface();
         u32 present_mode_count = 0;
         if (vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr) != VK_SUCCESS) {
             ST_THROW("Could not get Vulkan physical device present mode count");
@@ -226,7 +226,7 @@ namespace Storytime {
                 indices.graphics_family = queue_family_index;
             }
             VkBool32 presentation_support = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_family_index, config.instance->get_surface(), &presentation_support);
+            vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_family_index, config.context->get_surface(), &presentation_support);
             if (presentation_support) {
                 indices.present_family = queue_family_index;
             }
@@ -239,14 +239,14 @@ namespace Storytime {
 
     VkSurfaceCapabilitiesKHR VulkanPhysicalDevice::find_surface_capabilities(VkPhysicalDevice physical_device) const {
         VkSurfaceCapabilitiesKHR surface_capabilities{};
-        if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, config.instance->get_surface(), &surface_capabilities) != VK_SUCCESS) {
+        if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, config.context->get_surface(), &surface_capabilities) != VK_SUCCESS) {
             ST_THROW("Could not get Vulkan physical device surface capabilities");
         }
         return surface_capabilities;
     }
 
     std::vector<VkSurfaceFormatKHR> VulkanPhysicalDevice::find_surface_formats(VkPhysicalDevice physical_device) const {
-        VkSurfaceKHR surface = config.instance->get_surface();
+        VkSurfaceKHR surface = config.context->get_surface();
         u32 format_count = 0;
         if (vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr) != VK_SUCCESS) {
             ST_THROW("Could not get Vulkan physical device surface format count");

@@ -13,10 +13,10 @@ namespace Storytime {
     struct VulkanSwapchainConfig {
         Dispatcher* dispatcher = nullptr;
         Window* window = nullptr;
+        VulkanContext* context = nullptr;
         VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         VulkanCommandPool* command_pool = nullptr;
-        VkSurfaceKHR surface = nullptr;
         std::string name = "SwapChain";
         u32 max_frames_in_flight = 0;
     };

@@ -4,16 +4,16 @@
 #include "window/st_window.h"
 
 namespace Storytime {
-    struct VulkanInstanceConfig {
+    struct VulkanContextConfig {
         Window* window = nullptr;
         std::string app_name;
         std::string engine_name;
         bool validation_layers_enabled = false;
     };
 
-    class VulkanInstance {
+    class VulkanContext {
     public:
-        typedef VulkanInstanceConfig Config;
+        typedef VulkanContextConfig Config;
 
     private:
         Config config;
@@ -22,11 +22,9 @@ namespace Storytime {
         VkSurfaceKHR surface = nullptr;
 
     public:
-        VulkanInstance(const Config& config);
+        VulkanContext(const Config& config);
 
-        ~VulkanInstance();
-
-        operator VkInstance() const;
+        ~VulkanContext();
 
         VkSurfaceKHR get_surface() const;
 

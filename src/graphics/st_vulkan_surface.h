@@ -1,11 +1,11 @@
 #pragma once
 
-#include "graphics/st_vulkan_instance.h"
+#include "graphics/st_vulkan_context.h"
 
 namespace Storytime {
     struct VulkanSurfaceConfig {
         Window* window = nullptr;
-        VulkanInstance* instance = nullptr;
+        VulkanContext* instance = nullptr;
     };
 
     class VulkanSurface {

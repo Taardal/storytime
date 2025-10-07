@@ -15,6 +15,8 @@ namespace Storytime {
     private:
         Config config;
         VkDevice device = nullptr;
+        VkQueue graphics_queue = nullptr;
+        VkQueue present_queue = nullptr;
 
     public:
         VulkanDevice(const Config& config);
@@ -24,6 +26,10 @@ namespace Storytime {
         operator VkDevice() const;
 
         const VulkanPhysicalDevice& get_physical_device() const;
+
+        u32 get_graphics_queue_family_index() const;
+
+        u32 get_present_queue_family_index() const;
 
         VkQueue get_graphics_queue() const;
 
@@ -214,6 +220,8 @@ namespace Storytime {
         void create_device();
 
         void destroy_device() const;
+
+        void initialize_queues();
 
         std::vector<const char*> get_enabled_extensions() const;
 

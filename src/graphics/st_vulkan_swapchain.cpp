@@ -3,11 +3,7 @@
 #include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    VulkanSwapchain::VulkanSwapchain(const Config& config)
-        : config(config),
-          graphics_queue(config.device->get_graphics_queue()),
-          present_queue(config.device->get_present_queue())
-    {
+    VulkanSwapchain::VulkanSwapchain(const Config& config) : config(config) {
         create_swapchain();
         create_image_views();
         create_depth_image();
@@ -175,6 +171,7 @@ namespace Storytime {
         // Submit the render commands to the graphics queue to perform the rendering.
         //
 
+        VulkanQueue graphics_queue = device.get_graphics_queue();
         device.begin_queue_label(graphics_queue, "GraphicsQueue");
 
         constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -201,6 +198,7 @@ namespace Storytime {
         // Present the rendered image to the surface (screen).
         //
 
+        VulkanQueue present_queue = device.get_present_queue();
         device.begin_queue_label(present_queue, "PresentQueue");
 
         VkPresentInfoKHR present_info{};
@@ -216,8 +214,6 @@ namespace Storytime {
 
         VkResult present_result = present_queue.present(present_info);
 
-        device.end_queue_label(present_queue);
-
         // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
         if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || surface_has_been_resized) {
@@ -226,6 +222,8 @@ namespace Storytime {
         } else if (present_result != VK_SUCCESS) {
             ST_THROW("Could not present swapchain image to the surface");
         }
+
+        device.end_queue_label(present_queue);
     }
 
     void VulkanSwapchain::create_swapchain() {
@@ -239,7 +237,7 @@ namespace Storytime {
         VkSwapchainCreateInfoKHR swapchain_create_info{};
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.minImageCount = find_min_image_count();
-        swapchain_create_info.surface = config.surface;
+        swapchain_create_info.surface = config.context->get_surface();
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
         swapchain_create_info.imageExtent = image_extent;
