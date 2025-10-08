@@ -56,14 +56,14 @@ namespace Storytime {
 
         void end_frame();
 
-        void render();
+        void render() const;
 
     private:
         std::vector<VulkanUniformBuffer> create_uniform_buffers();
 
         VulkanDescriptorPool create_descriptor_pool();
 
-        VkDescriptorSetLayout create_descriptor_set_layout();
+        VkDescriptorSetLayout create_descriptor_set_layout() const;
 
         void destroy_descriptor_set_layout() const;
 
@@ -73,7 +73,7 @@ namespace Storytime {
 
         void destroy_shader_module(VkShaderModule shader_module) const;
 
-        VkSampler create_sampler();
+        VkSampler create_sampler() const;
 
         void destroy_sampler() const;
 
@@ -81,7 +81,7 @@ namespace Storytime {
 
         void allocate_descriptor_sets();
 
-        void write_descriptors();
+        void write_descriptors() const;
 
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 

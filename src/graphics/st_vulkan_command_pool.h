@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/st_vulkan_command_fns.h"
+#include "graphics/st_vulkan_command_functions.h"
 #include "graphics/st_vulkan_device.h"
 
 namespace Storytime {

@@ -2,7 +2,6 @@
 
 #include "graphics/st_quad_vertex.h"
 #include "graphics/st_vulkan_descriptor_set.h"
-#include "st_quad_vertex.h"
 
 #include <stb_image.h>
 
@@ -111,7 +110,7 @@ namespace Storytime {
             .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         });
 
-        initialization_command_pool.record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
             texture.set_data(pixel_data, pixel_data_size, on_record_commands_fn);
         });
 
@@ -125,7 +124,7 @@ namespace Storytime {
         allocate_descriptor_sets();
         write_descriptors();
 
-        initialization_command_pool.record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
         });
@@ -163,7 +162,7 @@ namespace Storytime {
         current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
     }
 
-    void VulkanRenderer::render() {
+    void VulkanRenderer::render() const {
         VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
 
         device.insert_cmd_label(command_buffer, "Bind pipeline");
@@ -296,7 +295,7 @@ namespace Storytime {
         });
     }
 
-    VkDescriptorSetLayout VulkanRenderer::create_descriptor_set_layout() {
+    VkDescriptorSetLayout VulkanRenderer::create_descriptor_set_layout() const {
         std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
 
         descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
@@ -350,7 +349,7 @@ namespace Storytime {
         device.destroy_shader_module(shader_module);
     }
 
-    VkSampler VulkanRenderer::create_sampler() {
+    VkSampler VulkanRenderer::create_sampler() const {
         VkSamplerCreateInfo sampler_create_info{};
         sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         sampler_create_info.magFilter = VK_FILTER_LINEAR;
@@ -382,6 +381,7 @@ namespace Storytime {
         sampler_create_info.maxLod = 0.0f;
 
         VkSampler sampler;
+
         if (device.create_sampler(sampler_create_info, &sampler) != VK_SUCCESS) {
             ST_THROW("Could not create sampler");
         }
@@ -422,7 +422,7 @@ namespace Storytime {
         }
     }
 
-    void VulkanRenderer::write_descriptors() {
+    void VulkanRenderer::write_descriptors() const {
         for (size_t i = 0; i < descriptor_sets.size(); i++) {
             const VulkanDescriptorSet& descriptor_set = descriptor_sets.at(i);
 
@@ -493,13 +493,7 @@ namespace Storytime {
         }
 
         VulkanQueue graphics_queue = device.get_graphics_queue();
-
-        VkSubmitInfo submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = (VkCommandBuffer*) &command_buffer;
-
-        if (graphics_queue.submit(submit_info) != VK_SUCCESS) {
+        if (graphics_queue.submit(command_buffer) != VK_SUCCESS) {
             ST_THROW("Could not submit command buffer to graphics queue");
         }
 
@@ -516,8 +510,8 @@ namespace Storytime {
         end_one_time_submit_command_buffer(command_buffer);
     }
 
-    void VulkanRenderer::record_and_submit_commands(const RecordAndSubmitCommandsFn& on_record_and_submit_commands) const {
-        on_record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
+    void VulkanRenderer::record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
+        record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
             VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
             record_commands(command_buffer);
             end_one_time_submit_command_buffer(command_buffer);

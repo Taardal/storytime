@@ -9,8 +9,6 @@ namespace Storytime {
         VkDescriptorSet descriptor_set = nullptr;
 
     public:
-        VulkanDescriptorSet() = default;
-
         VulkanDescriptorSet(VkDescriptorSet descriptor_set);
 
         operator VkDescriptorSet() const;

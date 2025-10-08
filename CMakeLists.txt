@@ -98,15 +98,13 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
-    ${ST_SRC_DIR}/graphics/st_vulkan.h
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_command_fns.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_functions.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_commands.h
     ${ST_SRC_DIR}/graphics/st_vulkan_context.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_context.h
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.cpp
@@ -127,8 +125,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_queue.h
     ${ST_SRC_DIR}/graphics/st_vulkan_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_renderer.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_surface.cpp
-    ${ST_SRC_DIR}/graphics/st_vulkan_surface.h
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
     ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.cpp
@@ -284,8 +280,29 @@ option(ST_USE_VULKAN "Use Vulkan renderer" ON)
 target_compile_definitions(${ST_TARGET} PUBLIC ST_USE_VULKAN=${ST_USE_VULKAN})
 
 # --------------------------------------------------------------------------------------------------------------
+# Clang compiler flags
+# --------------------------------------------------------------------------------------------------------------
+
+target_compile_options(${ST_TARGET} PRIVATE -Wno-shadow)
+
+# --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
+
+#
+# Copy compile_commands.json file to project root
+#
+
+set(ST_COPY_COMPILE_COMMANDS_TARGET st_copy_compile_commands)
+if (CMAKE_EXPORT_COMPILE_COMMANDS)
+    add_custom_target(
+        ${ST_COPY_COMPILE_COMMANDS_TARGET}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/compile_commands.json
+        COMMENT "Copying compile_commands.json"
+        VERBATIM
+    )
+    add_dependencies(${ST_TARGET} ${ST_COPY_COMPILE_COMMANDS_TARGET})
+endif()
 
 #
 # Copy resource files to runtime directory
@@ -299,6 +316,7 @@ add_custom_target(
     ${ST_COPY_RESOURCES_TARGET}
     COMMENT "Copying resources"
     COMMAND ${CMAKE_COMMAND} -D SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy.cmake
+    VERBATIM
 )
 add_dependencies(${ST_TARGET} ${ST_COPY_RESOURCES_TARGET})
 
@@ -316,6 +334,7 @@ add_custom_target(
     ${ST_COMPILE_LUA_TARGET}
     COMMAND ${CMAKE_COMMAND} -D LUA_SOURCE_DIR=${ST_LUA_SOURCE_DIR} -D LUA_OUTPUT_DIR=${ST_LUA_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_lua.cmake
     COMMENT "Compiling Lua"
+    VERBATIM
 )
 add_dependencies(${ST_TARGET} ${ST_COMPILE_LUA_TARGET})
 
@@ -333,6 +352,7 @@ add_custom_target(
     ${ST_COMPILE_SHADERS_TARGET}
     COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${SHADERS_SOURCE_DIR} -D SHADERS_OUTPUT_DIR=${SHADERS_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_shaders.cmake
     COMMENT "Compiling shaders"
+    VERBATIM
 )
 add_dependencies(${ST_TARGET} ${ST_COMPILE_SHADERS_TARGET})
 

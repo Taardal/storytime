@@ -1,6 +1,5 @@
 #pragma once
 
-#include "graphics/st_vulkan.h"
 #include "window/st_window.h"
 
 namespace Storytime {

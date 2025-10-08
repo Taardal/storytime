@@ -7,25 +7,32 @@ namespace Storytime {
         return queue;
     }
 
-    VkResult VulkanQueue::submit(const SubmitConfig& config) const {
-        return vkQueueSubmit(config.queue, config.submit_count, config.submit_info, config.fence);
-    }
-
-    VkResult VulkanQueue::submit(const VkSubmitInfo& submit_info, VkFence fence) const {
-        u32 submit_count = 1;
+    VkResult VulkanQueue::submit(u32 submit_count, const VkSubmitInfo& submit_info, VkFence fence) const {
         return vkQueueSubmit(queue, submit_count, &submit_info, fence);
     }
 
-    VkResult VulkanQueue::submit(u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence) const {
-        return vkQueueSubmit(queue, submit_count, submit_info, fence);
+    VkResult VulkanQueue::submit(const SubmitConfig& config) const {
+        return submit(config.submit_count, config.submit_info, config.fence);
     }
 
-    VkResult VulkanQueue::submit(VkCommandBuffer command_buffer) const {
+    VkResult VulkanQueue::submit(const VkSubmitInfo& submit_info, VkFence fence) const {
+        return submit(1, submit_info, fence);
+    }
+
+    VkResult VulkanQueue::submit(u32 command_buffer_count, const VkCommandBuffer* command_buffers, VkFence fence) const {
         VkSubmitInfo submit_info{};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &command_buffer;
-        return submit(submit_info);
+        submit_info.commandBufferCount = command_buffer_count;
+        submit_info.pCommandBuffers = command_buffers;
+        return submit(submit_info, fence);
+    }
+
+    VkResult VulkanQueue::submit(const std::vector<VkCommandBuffer>& command_buffers, VkFence fence) const {
+        return submit(command_buffers.size(), command_buffers.data(), fence);
+    }
+
+    VkResult VulkanQueue::submit(VkCommandBuffer command_buffer, VkFence fence) const {
+        return submit(1, &command_buffer, fence);
     }
 
     VkResult VulkanQueue::present(const VkPresentInfoKHR& present_info) const {
