@@ -240,4 +240,30 @@ namespace Storytime {
             copy_region
         );
     }
+
+    void VulkanCommandBuffer::blit_image(const BlitImageCommand& command) const {
+        vkCmdBlitImage(
+            command_buffer,
+            command.src_image,
+            command.src_image_layout,
+            command.dst_image,
+            command.dst_image_layout,
+            command.image_blit_count,
+            command.image_blits,
+            command.filter
+        );
+    }
+
+    void VulkanCommandBuffer::blit_image(VkImage src_image, VkImageLayout src_image_layout, VkImage dst_image, VkImageLayout dst_image_layout, u32 image_blit_count, const VkImageBlit* image_blits, VkFilter filter) const {
+        vkCmdBlitImage(
+            command_buffer,
+            src_image,
+            src_image_layout,
+            dst_image,
+            dst_image_layout,
+            image_blit_count,
+            image_blits,
+            filter
+        );
+    }
 }

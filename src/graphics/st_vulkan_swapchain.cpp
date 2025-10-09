@@ -578,7 +578,6 @@ namespace Storytime {
             .width = image_extent.width,
             .height = image_extent.height,
             .format = format,
-            .layout = VK_IMAGE_LAYOUT_UNDEFINED,
             .tiling = tiling,
             .aspect = aspect,
             .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,

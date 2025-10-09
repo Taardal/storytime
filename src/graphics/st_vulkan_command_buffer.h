@@ -174,9 +174,9 @@ namespace Storytime {
         ) const;
 
         struct PipelineBarrierCommand {
-            VkPipelineStageFlags src_stage_mask = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
-            VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
-            VkDependencyFlags dependency_flags = VK_DEPENDENCY_FLAG_BITS_MAX_ENUM;
+            VkPipelineStageFlags src_stage_mask = 0;
+            VkPipelineStageFlags dst_stage_mask = 0;
+            VkDependencyFlags dependency_flags = 0;
             u32 memory_barrier_count = 0;
             const VkMemoryBarrier* memory_barriers = nullptr;
             u32 buffer_memory_barrier_count = 0;
@@ -215,6 +215,28 @@ namespace Storytime {
             VkImageLayout dst_image_layout,
             u32 copy_region_count,
             const VkBufferImageCopy* copy_region
+        ) const;
+
+        struct BlitImageCommand {
+            VkImage src_image;
+            VkImageLayout src_image_layout;
+            VkImage dst_image;
+            VkImageLayout dst_image_layout;
+            u32 image_blit_count;
+            const VkImageBlit* image_blits;
+            VkFilter filter;
+        };
+
+        void blit_image(const BlitImageCommand& command) const;
+
+        void blit_image(
+            VkImage src_image,
+            VkImageLayout src_image_layout,
+            VkImage dst_image,
+            VkImageLayout dst_image_layout,
+            u32 image_blit_count,
+            const VkImageBlit* image_blits,
+            VkFilter filter
         ) const;
     };
 }

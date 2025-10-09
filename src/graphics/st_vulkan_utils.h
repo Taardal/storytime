@@ -40,7 +40,11 @@ namespace Storytime {
 
     std::string get_vk_result_description(VkResult result);
 
-    std::string get_vk_image_layout_name(VkImageLayout layout);
+    std::string get_vk_image_layout_name(VkImageLayout image_layout);
+
+    std::string get_vk_image_tiling_name(VkImageTiling image_tiling);
+
+    std::string get_vk_format_name(VkFormat format);
 
     VkFormat get_vk_format(std::string_view glsl_type);
 }

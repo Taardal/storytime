@@ -93,11 +93,21 @@ namespace Storytime {
         int32_t height = 0;
         int32_t channels = 0;
         int32_t desired_channels = STBI_rgb_alpha;
+
         stbi_uc* pixel_data = stbi_load(texture_path.c_str(), &width, &height, &channels, desired_channels);
         if (pixel_data == nullptr) {
             ST_THROW("Could not load texture image [" << texture_path << "]");
         }
+
+        // Calculate the size of the image in bytes.
         u64 pixel_data_size = (u64) (width * height * channels);
+
+        // Calculate the number of levels in the mip chain.
+        // - The `max` function selects the largest dimension.
+        // - The `log2` function calculates how many times that dimension can be divided by 2.
+        // - The `floor` function handles cases where the largest dimension is not a power of 2.
+        // - 1 is added so that the original image has a mip level.
+        u32 mip_levels = (u32) std::floor(std::log2(std::max(width, height))) + 1;
 
         texture = VulkanImage({
             .device = &device,
@@ -107,7 +117,8 @@ namespace Storytime {
             .format = VK_FORMAT_R8G8B8A8_SRGB,
             .tiling = VK_IMAGE_TILING_OPTIMAL,
             .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
-            .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .mip_levels = mip_levels,
         });
 
         record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
@@ -378,7 +389,7 @@ namespace Storytime {
         sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         sampler_create_info.mipLodBias = 0.0f;
         sampler_create_info.minLod = 0.0f;
-        sampler_create_info.maxLod = 0.0f;
+        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
 
         VkSampler sampler;
 
