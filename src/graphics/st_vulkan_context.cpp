@@ -1,4 +1,5 @@
 #include "st_vulkan_context.h"
+#include "graphics/st_vulkan_utils.h"
 
 namespace Storytime {
     std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {
@@ -39,16 +40,16 @@ namespace Storytime {
 
 namespace Storytime {
     VulkanContext::VulkanContext(const Config& config) : config(config) {
-        std::vector<const char*> extensions = get_required_extensions();
-        if (!has_extensions(extensions)) {
-            ST_THROW("System does not have required Vulkan extensions");
+        std::vector<const char*> instance_extensions = get_enabled_instance_extensions();
+        if (!has_instance_extensions(instance_extensions)) {
+            ST_THROW("System does not have enabled Vulkan extensions");
         }
 
         std::vector<const char*> validation_layers;
         if (config.validation_layers_enabled) {
-            validation_layers = get_required_validation_layers();
+            validation_layers = get_enabled_validation_layers();
             if (!has_validation_layers(validation_layers)) {
-                ST_THROW("System does not have required Vulkan validation layers");
+                ST_THROW("System does not have enabled Vulkan validation layers");
             }
         }
 
@@ -57,7 +58,7 @@ namespace Storytime {
             debug_messenger_create_info = get_debug_messenger_create_info();
         }
 
-        create_instance(extensions, validation_layers, debug_messenger_create_info);
+        create_instance(instance_extensions, validation_layers, debug_messenger_create_info);
 
         if (config.validation_layers_enabled) {
             create_debug_messenger(debug_messenger_create_info);
@@ -78,16 +79,18 @@ namespace Storytime {
         return surface;
     }
 
-    std::vector<VkPhysicalDevice> VulkanContext::get_physical_devices() const {
-        u32 device_count = 0;
-        if (vkEnumeratePhysicalDevices(instance, &device_count, nullptr) != VK_SUCCESS) {
-            ST_THROW("Could not get physical device count");
+    VkResult VulkanContext::get_physical_devices(u32* physical_device_count, VkPhysicalDevice* physical_devices) const {
+        return vkEnumeratePhysicalDevices(instance, physical_device_count, physical_devices);
+    }
+
+    VkResult VulkanContext::get_physical_devices(std::vector<VkPhysicalDevice>* physical_devices) const {
+        u32 physical_device_count = 0;
+        VkResult result = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
+        if (result != VK_SUCCESS) {
+            return result;
         }
-        std::vector<VkPhysicalDevice> devices(device_count);
-        if (vkEnumeratePhysicalDevices(instance, &device_count, devices.data()) != VK_SUCCESS) {
-            ST_THROW("Could not get physical devices");
-        }
-        return devices;
+        physical_devices->resize(physical_device_count);
+        return vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices->data());
     }
 
     void VulkanContext::create_instance(
@@ -128,20 +131,22 @@ namespace Storytime {
         vkDestroyInstance(instance, ST_VK_ALLOCATOR);
     }
 
-    std::vector<const char*> VulkanContext::get_required_extensions() const {
-        u32 glfw_extension_count = 0;
-        const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
-        std::vector extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+    std::vector<const char*> VulkanContext::get_enabled_instance_extensions() const {
+        u32 extension_count = 0;
+        const char** extension_names = glfwGetRequiredInstanceExtensions(&extension_count);
+        std::vector<const char*> extensions(extension_names, extension_names + extension_count);
+
 #ifdef ST_PLATFORM_MACOS
         extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 #endif
         if (config.validation_layers_enabled) {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
+
         return extensions;
     }
 
-    std::vector<VkExtensionProperties> VulkanContext::get_available_extensions() const {
+    std::vector<VkExtensionProperties> VulkanContext::get_available_instance_extensions() const {
         u32 extension_count = 0;
         const char* layer_name = nullptr;
         if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, nullptr) != VK_SUCCESS) {
@@ -154,25 +159,24 @@ namespace Storytime {
         return extensions;
     }
 
-    bool VulkanContext::has_extensions(const std::vector<const char*>& extensions) const {
-        std::vector<VkExtensionProperties> available_extensions = get_available_extensions();
-        for (const char* extension: extensions) {
-            bool extensionFound = false;
-            for (const VkExtensionProperties& availableExtension: available_extensions) {
-                if (strcmp(extension, availableExtension.extensionName) == 0) {
-                    extensionFound = true;
+    bool VulkanContext::has_instance_extensions(const std::vector<const char*>& instance_extension_names) const {
+        std::vector<VkExtensionProperties> available_instance_extensions = get_available_instance_extensions();
+        for (const char* instance_extension_name : instance_extension_names) {
+            bool extension_found = false;
+            for (const VkExtensionProperties& available_instance_extension: available_instance_extensions) {
+                if (strcmp(instance_extension_name, available_instance_extension.extensionName) == 0) {
+                    extension_found = true;
                     break;
                 }
             }
-            if (!extensionFound) {
-                std::cerr << "Could not find extension " << extension << std::endl;
+            if (!extension_found) {
                 return false;
             }
         }
         return true;
     }
 
-    std::vector<const char*> VulkanContext::get_required_validation_layers() const {
+    std::vector<const char*> VulkanContext::get_enabled_validation_layers() const {
         return { "VK_LAYER_KHRONOS_validation" };
     }
 
@@ -228,15 +232,8 @@ namespace Storytime {
     VkDebugUtilsMessengerCreateInfoEXT VulkanContext::get_debug_messenger_create_info() const {
         VkDebugUtilsMessengerCreateInfoEXT create_info{};
         create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-
-        create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-                                      | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-                                      | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-
-        create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-                                  | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                                  | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-
+        create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         create_info.pfnUserCallback = on_debug_message;
         return create_info;
     }

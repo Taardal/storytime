@@ -18,11 +18,11 @@ namespace Storytime {
     }
 
     u32 VulkanDevice::get_graphics_queue_family_index() const {
-        return config.physical_device->get_queue_family_indices().graphics_family.value();
+        return get_physical_device().get_graphics_queue_family_index();
     }
 
     u32 VulkanDevice::get_present_queue_family_index() const {
-        return config.physical_device->get_queue_family_indices().present_family.value();
+        return get_physical_device().get_present_queue_family_index();
     }
 
     VkQueue VulkanDevice::get_graphics_queue() const {
@@ -393,8 +393,10 @@ namespace Storytime {
     }
 
     void VulkanDevice::create_device() {
-        std::vector<const char*> enabled_extensions = get_enabled_extensions();
-        const VkPhysicalDeviceFeatures& enabled_features = get_enabled_features();
+        const VulkanPhysicalDevice& physical_device = *config.physical_device;
+
+        const VkPhysicalDeviceFeatures& enabled_features = physical_device.get_features();
+        const std::vector<const char*>& enabled_extensions = physical_device.enabled_extensions;
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos = get_queue_create_infos();
 
         VkDeviceCreateInfo device_create_info{};
@@ -405,7 +407,7 @@ namespace Storytime {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.queueCreateInfoCount = (u32) queue_create_infos.size();
 
-        if (config.physical_device->create_device(device_create_info, &device) != VK_SUCCESS) {
+        if (physical_device.create_device(device_create_info, &device) != VK_SUCCESS) {
             ST_THROW("Could not create Vulkan device");
         }
 
@@ -428,49 +430,30 @@ namespace Storytime {
         vkDestroyDevice(device, ST_VK_ALLOCATOR);
     }
 
-    std::vector<const char*> VulkanDevice::get_enabled_extensions() const {
-        ST_ASSERT_NOT_NULL(config.physical_device);
-        const std::vector<VkExtensionProperties>& physical_device_extensions = config.physical_device->get_extensions();
-
-        std::vector<const char*> enabled_extension_names;
-        enabled_extension_names.reserve(physical_device_extensions.size());
-        for (const VkExtensionProperties& extension : physical_device_extensions) {
-            enabled_extension_names.push_back(extension.extensionName);
-        }
-
-        return enabled_extension_names;
-    }
-
-    const VkPhysicalDeviceFeatures& VulkanDevice::get_enabled_features() const {
-        ST_ASSERT_NOT_NULL(config.physical_device);
-        return config.physical_device->get_features();
-    }
-
     std::vector<VkDeviceQueueCreateInfo> VulkanDevice::get_queue_create_infos() const {
-        ST_ASSERT_NOT_NULL(config.physical_device);
-        const QueueFamilyIndices& queue_family_indices = config.physical_device->get_queue_family_indices();
+        const VulkanPhysicalDevice& physical_device = *config.physical_device;
 
         std::set<u32> queue_families = {
-            queue_family_indices.graphics_family.value(),
-            queue_family_indices.present_family.value()
+            physical_device.get_graphics_queue_family_index(),
+            physical_device.get_present_queue_family_index(),
         };
 
-        std::vector<VkDeviceQueueCreateInfo> device_queue_create_infos;
-        device_queue_create_infos.reserve(queue_families.size());
+        std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+        queue_create_infos.reserve(queue_families.size());
 
         // Vulkan lets you assign priorities to queues to influence the scheduling of command buffer execution using
         // floating point numbers between 0.0 and 1.0. This is required even if there is only a single queue.
         static constexpr f32 queue_priority = 1.0f;
 
         for (u32 queue_family : queue_families) {
-            VkDeviceQueueCreateInfo create_info{};
-            create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            create_info.queueFamilyIndex = queue_family;
-            create_info.queueCount = 1;
-            create_info.pQueuePriorities = &queue_priority;
-            device_queue_create_infos.push_back(create_info);
+            VkDeviceQueueCreateInfo queue_create_info{};
+            queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queue_create_info.queueFamilyIndex = queue_family;
+            queue_create_info.queueCount = 1;
+            queue_create_info.pQueuePriorities = &queue_priority;
+            queue_create_infos.push_back(queue_create_info);
         }
 
-        return device_queue_create_infos;
+        return queue_create_infos;
     }
 }

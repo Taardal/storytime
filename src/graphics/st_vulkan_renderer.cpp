@@ -49,7 +49,6 @@ namespace Storytime {
               .dispatcher = config.dispatcher,
               .window = config.window,
               .context = &context,
-              .physical_device = &physical_device,
               .device = &device,
               .command_pool = &initialization_command_pool,
               .name = std::format("{} swapchain", config.name),

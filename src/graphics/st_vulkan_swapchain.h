@@ -1,10 +1,10 @@
 #pragma once
 
-#include "st_vulkan_command_pool.h"
 #include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_command_pool.h"
+#include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_device.h"
-#include "graphics/st_vulkan_queue.h"
 #include "graphics/st_vulkan_image.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
@@ -68,13 +68,15 @@ namespace Storytime {
 
         void destroy_swapchain() const;
 
-        VkSurfaceFormatKHR find_surface_format() const;
+        VkSurfaceFormatKHR find_surface_format(const std::vector<VkSurfaceFormatKHR>& surface_formats) const;
 
-        VkPresentModeKHR find_present_mode() const;
+        VkPresentModeKHR find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const;
 
-        VkExtent2D find_image_extent() const;
+        VkExtent2D find_image_extent(const VkSurfaceCapabilitiesKHR& surface_capabilities) const;
 
-        u32 find_min_image_count() const;
+        u32 find_min_image_count(const VkSurfaceCapabilitiesKHR& surface_capabilities) const;
+
+        VkSurfaceTransformFlagsKHR find_pre_transform() const;
 
         void create_image_views();
 

@@ -227,33 +227,50 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::create_swapchain() {
-        const VulkanPhysicalDevice& physical_device = *config.physical_device;
         const VulkanDevice& device = *config.device;
+        const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
-        surface_format = find_surface_format();
-        present_mode = find_present_mode();
-        image_extent = find_image_extent();
+        std::vector<VkPresentModeKHR> present_modes;
+        if (physical_device.get_present_modes(&present_modes) != VK_SUCCESS) {
+            ST_THROW("Could not get present modes");
+        }
+
+        std::vector<VkSurfaceFormatKHR> surface_formats;
+        if (physical_device.get_surface_formats(&surface_formats) != VK_SUCCESS) {
+            ST_THROW("Could not get surface formats");
+        }
+
+        VkSurfaceCapabilitiesKHR surface_capabilities;
+        if (physical_device.get_surface_capabilities(&surface_capabilities) != VK_SUCCESS) {
+            ST_THROW("Could not get surface capabilities");
+        }
+
+        present_mode = find_present_mode(present_modes);
+        surface_format = find_surface_format(surface_formats);
+        image_extent = find_image_extent(surface_capabilities);
 
         VkSwapchainCreateInfoKHR swapchain_create_info{};
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        swapchain_create_info.minImageCount = find_min_image_count();
+        swapchain_create_info.minImageCount = find_min_image_count(surface_capabilities);
         swapchain_create_info.surface = config.context->get_surface();
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
         swapchain_create_info.imageExtent = image_extent;
         swapchain_create_info.imageArrayLayers = 1;
         swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        swapchain_create_info.preTransform = physical_device.get_surface_capabilities().currentTransform;
+        swapchain_create_info.preTransform = surface_capabilities.currentTransform;
         swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         swapchain_create_info.presentMode = present_mode;
         swapchain_create_info.clipped = VK_TRUE;
         swapchain_create_info.oldSwapchain = nullptr;
 
-        const QueueFamilyIndices& queue_family_indices = physical_device.get_queue_family_indices();
-        if (queue_family_indices.graphics_family != queue_family_indices.present_family) {
+        u32 graphics_queue_family_index = physical_device.get_graphics_queue_family_index();
+        u32 present_queue_family_index = physical_device.get_present_queue_family_index();
+
+        if (graphics_queue_family_index != present_queue_family_index) {
             std::vector<u32> queue_families = {
-                queue_family_indices.graphics_family.value(),
-                queue_family_indices.present_family.value()
+                graphics_queue_family_index,
+                present_queue_family_index,
             };
             swapchain_create_info.pQueueFamilyIndices = queue_families.data();
             swapchain_create_info.queueFamilyIndexCount = queue_families.size();
@@ -285,8 +302,7 @@ namespace Storytime {
         config.device->destroy_swapchain(swapchain);
     }
 
-    VkSurfaceFormatKHR VulkanSwapchain::find_surface_format() const {
-        const std::vector<VkSurfaceFormatKHR>& surface_formats = config.physical_device->get_surface_formats();
+    VkSurfaceFormatKHR VulkanSwapchain::find_surface_format(const std::vector<VkSurfaceFormatKHR>& surface_formats) const {
         for (const auto& surface_format : surface_formats) {
             if (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return surface_format;
@@ -295,8 +311,8 @@ namespace Storytime {
         return surface_formats[0];
     }
 
-    VkPresentModeKHR VulkanSwapchain::find_present_mode() const {
-        for (const VkPresentModeKHR& present_mode : config.physical_device->get_present_modes()) {
+    VkPresentModeKHR VulkanSwapchain::find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const {
+        for (const VkPresentModeKHR& present_mode : present_modes) {
             if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return present_mode;
             }
@@ -304,9 +320,7 @@ namespace Storytime {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapchain::find_image_extent() const {
-        const VkSurfaceCapabilitiesKHR& surface_capabilities = config.physical_device->get_surface_capabilities();
-
+    VkExtent2D VulkanSwapchain::find_image_extent(const VkSurfaceCapabilitiesKHR& surface_capabilities) const {
         bool extent_must_match_window_size = surface_capabilities.currentExtent.width != std::numeric_limits<u32>::max();
         if (extent_must_match_window_size) {
             return surface_capabilities.currentExtent;
@@ -322,9 +336,7 @@ namespace Storytime {
         return { width, height };
     }
 
-    u32 VulkanSwapchain::find_min_image_count() const {
-        const VkSurfaceCapabilitiesKHR& surface_capabilities = config.physical_device->get_surface_capabilities();
-
+    u32 VulkanSwapchain::find_min_image_count(const VkSurfaceCapabilitiesKHR& surface_capabilities) const {
         u32 min_image_count = surface_capabilities.minImageCount;
         u32 max_image_count = surface_capabilities.maxImageCount;
 
@@ -564,7 +576,7 @@ namespace Storytime {
             VK_FORMAT_D24_UNORM_S8_UINT
         };
         VkFormatFeatureFlags features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        VkFormat format = config.physical_device->find_supported_format(format_candidates, tiling, features);
+        VkFormat format = config.device->get_physical_device().find_supported_format(format_candidates, tiling, features);
 
         VkImageAspectFlags aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
         bool format_has_stencil_component = format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;

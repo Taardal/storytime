@@ -5,7 +5,7 @@ namespace Storytime {
         set_log_level(level);
 
         // https://github.com/gabime/spdlog/wiki/Custom-formatting#pattern-flags
-        spdlog::set_pattern("%^[%Y-%m-%d %H:%M:%S:%e] [%^%l%$] [%s:%#] [%!] %v%$");
+        spdlog::set_pattern("%^[%Y-%m-%d %H:%M:%S:%e] [%l%$] [%s:%#] [%!] %v%$");
     }
 
     void set_log_level(const LogLevel level) {

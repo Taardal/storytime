@@ -221,12 +221,6 @@ namespace Storytime {
 
         void destroy_device() const;
 
-        void initialize_queues();
-
-        std::vector<const char*> get_enabled_extensions() const;
-
-        const VkPhysicalDeviceFeatures& get_enabled_features() const;
-
         std::vector<VkDeviceQueueCreateInfo> get_queue_create_infos() const;
     };
 }
