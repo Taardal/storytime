@@ -53,130 +53,111 @@ namespace Storytime {
         return config.format;
     }
 
-    void VulkanImage::set_data(const void* data, u64 data_size, const OnRecordCommandsFn& on_record_commands) {
+    void VulkanImage::set_pixels(const OnRecordCommandsFn& on_record_commands, u64 pixel_data_size, const void* pixel_data) {
         VulkanBuffer staging_buffer({
             .device = config.device,
             .name = std::format("{} staging buffer", config.name),
-            .size = data_size,
+            .size = pixel_data_size,
             .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         });
 
         staging_buffer.map_memory();
-        staging_buffer.set_data(data);
+        staging_buffer.set_data(pixel_data);
         staging_buffer.unmap_memory();
 
         on_record_commands([&](const VulkanCommandBuffer& command_buffer) {
-            set_layout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_buffer);
-            copy_to_image(staging_buffer, command_buffer);
 
-            generate_mipmaps(command_buffer);
+            // Transition image to be a transfer destination so the buffer can be copied to it.
+            transition_layout(command_buffer, LayoutTransition{
+                .src_layout = VK_IMAGE_LAYOUT_UNDEFINED,
+                .dst_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .src_access = 0, // Nothing to wait on.
+                .dst_access = VK_ACCESS_TRANSFER_WRITE_BIT, // The image will be written to.
+                .src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, // Nothing to wait on, so start in earlies possible stage.
+                .dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT, // Make the image writable by the transfer stage.
+                .first_mip_level = 0,
+                .mip_level_count = config.mip_levels,
+            });
 
-            // transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
-            // set_layout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, command_buffer);
+            // Copy the staging buffer to the base image. The pixels will be copied to the mipmaps when they are generated.
+            copy_to_image(command_buffer, CopyToImage{
+                .buffer = staging_buffer,
+                .image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Promise that the image is now in this layout when the copy is executed.
+                .mip_level = 0, // Only copy to the base image.
+            });
+
+            // Generate mipmap, and transition all mip levels in it to be ready to be sampled by the fragment shader.
+            generate_mipmap(command_buffer, LayoutTransition{
+                .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .dst_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                .src_access = VK_ACCESS_TRANSFER_WRITE_BIT, // Wait until all writes to this image are complete.
+                .dst_access = VK_ACCESS_SHADER_READ_BIT, // The image will be sampled by shaders.
+                .src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT, // Wait for writes to complete in the transfer stage.
+                .dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // Make the image visible to fragment shaders.
+                .first_mip_level = 0,
+                .mip_level_count = config.mip_levels,
+            });
         });
     }
 
-    void VulkanImage::set_layout(VkImageLayout layout, const VulkanCommandBuffer& command_buffer) {
-        VkImageLayout old_layout = this->layout;
-        VkImageLayout new_layout = layout;
-
-        // Memory access masks:
-        // - Specify which types of memory operations must be synchronized.
-        // - Used to declare hazards that must be resolved before/after the transition.
-        VkAccessFlags src_access; // Operations to wait on before the transition (previous accesses).
-        VkAccessFlags dst_access; // Operations that will use the image after the transition (next accesses).
-
-        // Pipeline stage masks:
-        // - Specify where in the GPU pipeline the synchronization occurs.
-        // - Define the scope of the access masks: i.e., *when* those reads/writes are relevant.
-        VkPipelineStageFlags src_stage; // Earliest pipeline stage that could have performed `src_access` operations.
-        VkPipelineStageFlags dst_stage; // Earliest pipeline stage that will perform `dst_access` operations.
-
-        // [Undefined -> Transfer destination]
-        // Transition for uploading data into the image.
-        if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            src_access = 0; // Nothing to wait on.
-            src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT; // Nothing to wait on, so start in earlies possible stage.
-            dst_access = VK_ACCESS_TRANSFER_WRITE_BIT; // The image will be written to.
-            dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT; // Make the image writable by the transfer stage.
-
-        // [Transfer destination -> Shader read]
-        // Transition for preparing the image for shader reads after uploading data into the image.
-        } else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            src_access = VK_ACCESS_TRANSFER_WRITE_BIT; // Wait until all writes to this image are complete.
-            src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT; // Wait for writes to complete in the transfer stage.
-            dst_access = VK_ACCESS_SHADER_READ_BIT; // The image will be read (sampled) by shaders.
-            dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Make the image visible to fragment shaders reads (sampling).
-
-        // All other transitions are unsupported.
-        } else {
-            ST_THROW("Unsupported image layout transition: [" << get_vk_image_layout_name(layout) << "] -> [" << get_vk_image_layout_name(new_layout) << "]");
-        }
-
-        // Use a pipeline barrier to perform the layout transition.
-        // - Ensure all reads/writes to the old layout finish before starting any access in the new layout.
-        // - Change the layout metadata so that subsequent accesses interpret the image correctly.
+    void VulkanImage::transition_layout(const VulkanCommandBuffer& command_buffer, const LayoutTransition& layout_transition) const {
         VkImageMemoryBarrier image_memory_barrier{};
         image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         image_memory_barrier.image = image;
-        image_memory_barrier.oldLayout = old_layout;
-        image_memory_barrier.newLayout = new_layout;
-        image_memory_barrier.srcAccessMask = src_access;
-        image_memory_barrier.dstAccessMask = dst_access;
-        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // Do not transfer queue family ownership.
-        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // Do not transfer queue family ownership.
+        image_memory_barrier.oldLayout = layout_transition.src_layout;
+        image_memory_barrier.newLayout = layout_transition.dst_layout;
+        image_memory_barrier.srcAccessMask = layout_transition.src_access;
+        image_memory_barrier.dstAccessMask = layout_transition.dst_access;
         image_memory_barrier.subresourceRange.aspectMask = config.aspect;
-        image_memory_barrier.subresourceRange.baseMipLevel = 0;
-        image_memory_barrier.subresourceRange.levelCount = config.mip_levels;
+        image_memory_barrier.subresourceRange.baseMipLevel = layout_transition.first_mip_level;
+        image_memory_barrier.subresourceRange.levelCount = layout_transition.mip_level_count > 0 ? layout_transition.mip_level_count : config.mip_levels;
         image_memory_barrier.subresourceRange.baseArrayLayer = 0;
         image_memory_barrier.subresourceRange.layerCount = 1;
 
         command_buffer.pipeline_barrier({
-            .src_stage_mask = src_stage,
-            .dst_stage_mask = dst_stage,
+            .src_stage_mask = layout_transition.src_stage,
+            .dst_stage_mask = layout_transition.dst_stage,
             .image_memory_barrier_count = 1,
             .image_memory_barriers = &image_memory_barrier,
         });
-
-        this->layout = new_layout;
     }
 
-    void VulkanImage::copy_to_image(const VulkanBuffer& buffer, const VulkanCommandBuffer& command_buffer) const {
-        VkOffset3D image_offset{};
-        image_offset.x = 0;
-        image_offset.y = 0;
-        image_offset.z = 0;
-
-        VkExtent3D image_extent{};
-        image_extent.width = config.width;
-        image_extent.height = config.height;
-        image_extent.depth = 1;
-
+    void VulkanImage::copy_to_image(const VulkanCommandBuffer& command_buffer, const CopyToImage& copy_to_image) const {
         VkBufferImageCopy copy_region{};
         copy_region.bufferOffset = 0;
         copy_region.bufferRowLength = 0;
         copy_region.bufferImageHeight = 0;
+        copy_region.imageOffset = { 0, 0, 0 };
+        copy_region.imageExtent = { config.width, config.height, config.depth };
         copy_region.imageSubresource.aspectMask = config.aspect;
-        copy_region.imageSubresource.mipLevel = 0;
+        copy_region.imageSubresource.mipLevel = copy_to_image.mip_level;
         copy_region.imageSubresource.baseArrayLayer = 0;
         copy_region.imageSubresource.layerCount = 1;
-        copy_region.imageOffset = image_offset;
-        copy_region.imageExtent = image_extent;
 
         command_buffer.copy_buffer_to_image({
-            .src_buffer = buffer,
+            .src_buffer = copy_to_image.buffer,
             .dst_image = image,
-            .dst_image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .dst_image_layout = copy_to_image.image_layout, // This is not a transition, it's a promise that the image is already in this layout when the copy is executed.
             .copy_region_count = 1,
             .copy_region = &copy_region,
         });
     }
 
-    // Generate GPU mipmaps by linear blitting from level N-1 -> N.
-    void VulkanImage::generate_mipmaps(const VulkanCommandBuffer& command_buffer) const {
-        ST_ASSERT(config.aspect == VK_IMAGE_ASPECT_COLOR_BIT, "Image must have color aspect to generate mipmaps");
-        ST_ASSERT(this->layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, "Image must be transfer destination to generate mipmaps");
+    // Generate GPU mipmaps by using linear blitting.
+    //
+    // A "blit" (bit block transfer) is an operation that copies, and possibly resamples, a rectangular region of pixels from one
+    // image to another image.
+    //
+    // Therefore, using "linear blitting" to generate mipmaps means to copy the pixels of the image to every mip level in the mip chain,
+    // where the dimensions linearly scales from one mip level to the next (i.e. the every mip level is half the size of the previous level).
+    //
+    // It should be noted that it is uncommon to generate the mipmap levels at runtime like this. Usually they are pregenerated and stored
+    // in the texture file alongside the base level to improve loading speed.
+    //
+    void VulkanImage::generate_mipmap(const VulkanCommandBuffer& command_buffer, const LayoutTransition& layout_transition) const {
 
         //
         // Ensure linear blitting is supported.
@@ -184,12 +165,9 @@ namespace Storytime {
         // Generating mipmaps by doing linear blitting is not guaranteed to be supported on all platforms, and requires the image's format
         // to support linear filtering.
         //
-        // It should be noted that it is uncommon to generate the mipmap levels at runtime. Usually they are pregenerated and stored in the
-        // texture file alongside the base level to improve loading speed.
-        //
         // Fallback options:
         // - Use vkCmdCopyImage (no filtering) to generate mipmaps with nearest sampling (bad quality).
-        // - Implement mipmap generation in a shader (fragment or compute) — more flexible and often faster on modern hardware.
+        // - Implement mipmap generation in a fragment or compute shader (more flexible and often faster on modern hardware).
         // - Use a compute shader to read from higher mip and write lower mip (can be optimal on many GPUs).
         //
 
@@ -209,58 +187,42 @@ namespace Storytime {
         //
         // For each mip level...
         //
-        // 1. Transition the SRC mip level layout [Transfer destination -> Transfer source] so that it can be read from and used to create
-        //    the DST mip level.
+        // 1. Transition the SRC mip level layout to be a transfer source so it can be used to create the DST mip level.
         //
         // 2. Use the SRC mip level to "blit" the image to the DST mip level.
-        //    - A "blit" is an operation that copies, and possibly resamples, a rectangular region of pixels from one image to another
-        //      image.
+        //    - A "blit" (bit block transfer) is an operation that copies, and possibly resamples, a rectangular region of pixels from one
+        //      image to another image.
         //
-        // 3. Transition the SRC mip level layout [Transfer source -> Shader read] so that it can be read (sampled) in the fragment shader
-        //    before continuing to the next mip level in the chain.
+        // 3. Transition the SRC mip level layout to its final layout so it's ready for later use before continuing to the next mip level
+        //    in the chain.
         //
-
-        // Reuse the same image memory barrier for all layout transitions for the SRC mip level.
-        VkImageMemoryBarrier src_mip_image_memory_barrier{};
-        src_mip_image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        src_mip_image_memory_barrier.image = image;
-        src_mip_image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        src_mip_image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        src_mip_image_memory_barrier.subresourceRange.aspectMask = config.aspect;
-        src_mip_image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-        src_mip_image_memory_barrier.subresourceRange.layerCount = 1;
-        src_mip_image_memory_barrier.subresourceRange.levelCount = 1;
 
         // Determine the starting mip level dimensions.
         i32 src_mip_width = (i32) config.width;
         i32 src_mip_height = (i32) config.height;
 
-        // Start the loop at ONE.
-        for (u32 i = 1; i < config.mip_levels; i++) {
+        for (u32 i = layout_transition.first_mip_level + 1; i < layout_transition.mip_level_count; i++) {
             u32 src_mip_level = i - 1;
             u32 dst_mip_level = i;
 
             //
             // Step 1.
             //
-            // Transition the SRC mip level layout [Transfer destination -> Transfer source] so that it can be read from and used to create
-            // the DST mip level.
+            // Transition the SRC mip level layout to be a transfer source so it can be used to create the DST mip level.
             //
             // The pipeline barrier will make the program wait for the SRC mip level to be created, either from a previous blit command,
             // or from copying the staging buffer to the image (the SRC mip level is the base image on the first iteration of the loop).
             //
 
-            src_mip_image_memory_barrier.subresourceRange.baseMipLevel = src_mip_level;
-            src_mip_image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            src_mip_image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            src_mip_image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            src_mip_image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-            command_buffer.pipeline_barrier({
-                .src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT,
-                .dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT,
-                .image_memory_barrier_count = 1,
-                .image_memory_barriers = &src_mip_image_memory_barrier,
+            transition_layout(command_buffer, {
+                .src_layout = layout_transition.src_layout,
+                .dst_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                .src_access = layout_transition.src_access,
+                .dst_access = VK_ACCESS_TRANSFER_READ_BIT,
+                .src_stage = layout_transition.src_stage,
+                .dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT,
+                .first_mip_level = src_mip_level,
+                .mip_level_count = 1,
             });
 
             //
@@ -278,13 +240,13 @@ namespace Storytime {
 
             VkImageBlit image_blit{};
             image_blit.srcOffsets[0] = { 0, 0, 0 };
-            image_blit.srcOffsets[1] = { src_mip_width, src_mip_height, 1 };
+            image_blit.srcOffsets[1] = { src_mip_width, src_mip_height, (i32) config.depth };
             image_blit.srcSubresource.aspectMask = config.aspect;
             image_blit.srcSubresource.mipLevel = src_mip_level;
             image_blit.srcSubresource.baseArrayLayer = 0;
             image_blit.srcSubresource.layerCount = 1;
             image_blit.dstOffsets[0] = { 0, 0, 0 };
-            image_blit.dstOffsets[1] = { dst_mip_width, dst_mip_height, 1 };
+            image_blit.dstOffsets[1] = { dst_mip_width, dst_mip_height, (i32) config.depth };
             image_blit.dstSubresource.aspectMask = config.aspect;
             image_blit.dstSubresource.mipLevel = dst_mip_level;
             image_blit.dstSubresource.baseArrayLayer = 0;
@@ -306,62 +268,39 @@ namespace Storytime {
             //
             // Step 3.
             //
-            // Transition the SRC mip level layout [Transfer source -> Shader read] so that it can be read (sampled) in the fragment shader.
+            // Transition the SRC mip level layout to its final layout so it's ready for later use before continuing to the next mip level
+            // in the chain.
             //
 
-            src_mip_image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            src_mip_image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            src_mip_image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-            src_mip_image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            command_buffer.pipeline_barrier({
-                .src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT,
-                .dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                .image_memory_barrier_count = 1,
-                .image_memory_barriers = &src_mip_image_memory_barrier,
+            transition_layout(command_buffer, {
+                .src_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                .dst_layout = layout_transition.dst_layout,
+                .src_access = VK_ACCESS_TRANSFER_READ_BIT,
+                .dst_access = layout_transition.dst_access,
+                .src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT,
+                .dst_stage = layout_transition.dst_stage,
+                .first_mip_level = src_mip_level,
+                .mip_level_count = 1,
             });
+
         }
 
         //
-        // Transition the last mip level layout [Transfer source -> Shader read] so that it can be read (sampled) in the fragment shader.
+        // Transition the LAST mip level layout to its final layout so it's ready for later use before continuing to the next mip level
+        // in the chain.
+        //
         // This wasn't handled by the loop, since the last mip level is never blitted from.
         //
 
-        src_mip_image_memory_barrier.subresourceRange.baseMipLevel = config.mip_levels - 1;
-        src_mip_image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        src_mip_image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        src_mip_image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        src_mip_image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-        command_buffer.pipeline_barrier({
-            .src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT,
-            .dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            .image_memory_barrier_count = 1,
-            .image_memory_barriers = &src_mip_image_memory_barrier,
-        });
-    }
-
-    void VulkanImage::transition_layout(const TransitionLayoutConfig& config) const {
-        VkImageMemoryBarrier image_memory_barrier{};
-        image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        image_memory_barrier.image = image;
-        image_memory_barrier.oldLayout = config.src_layout;
-        image_memory_barrier.newLayout = config.dst_layout;
-        image_memory_barrier.srcAccessMask = config.src_access;
-        image_memory_barrier.dstAccessMask = config.dst_access;
-        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.subresourceRange.aspectMask = this->config.aspect;
-        image_memory_barrier.subresourceRange.baseMipLevel = config.mip_level;
-        image_memory_barrier.subresourceRange.levelCount = this->config.mip_levels;
-        image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-        image_memory_barrier.subresourceRange.layerCount = 1;
-
-        config.command_buffer.pipeline_barrier({
-            .src_stage_mask = config.src_stage,
-            .dst_stage_mask = config.dst_stage,
-            .image_memory_barrier_count = 1,
-            .image_memory_barriers = &image_memory_barrier,
+        transition_layout(command_buffer, {
+            .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .dst_layout = layout_transition.dst_layout,
+            .src_access = VK_ACCESS_TRANSFER_WRITE_BIT,
+            .dst_access = layout_transition.dst_access,
+            .src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT,
+            .dst_stage = layout_transition.dst_stage,
+            .first_mip_level = config.mip_levels - 1,
+            .mip_level_count = 1,
         });
     }
 
@@ -373,7 +312,7 @@ namespace Storytime {
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
         image_create_info.extent.width = config.width;
         image_create_info.extent.height = config.height;
-        image_create_info.extent.depth = 1;
+        image_create_info.extent.depth = config.depth;
         image_create_info.mipLevels = config.mip_levels;
         image_create_info.arrayLayers = 1;
         image_create_info.format = config.format;

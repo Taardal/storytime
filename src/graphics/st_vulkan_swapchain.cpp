@@ -572,6 +572,7 @@ namespace Storytime {
             aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
         }
 
+        // This must be created on the heap so it can be destroyed at the correct time to facilitate swap chain recreation.
         depth_image = ST_NEW VulkanImage({
             .device = config.device,
             .name = std::format("{} depth image", config.name),

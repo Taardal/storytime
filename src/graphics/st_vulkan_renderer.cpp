@@ -122,7 +122,7 @@ namespace Storytime {
         });
 
         record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            texture.set_data(pixel_data, pixel_data_size, on_record_commands_fn);
+            texture.set_pixels(on_record_commands_fn, pixel_data_size, pixel_data);
         });
 
         stbi_image_free(pixel_data);
