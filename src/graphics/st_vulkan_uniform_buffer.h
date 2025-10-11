@@ -5,8 +5,8 @@
 
 namespace Storytime {
     struct VulkanUniformBufferConfig {
-        VulkanDevice* device = nullptr;
         std::string name = "VulkanUniformBuffer";
+        VulkanDevice* device = nullptr;
         VkDeviceSize size = 0;
     };
 

@@ -4,6 +4,7 @@
 #include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
 #include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_frame.h"
 #include "graphics/st_vulkan_graphics_pipeline.h"
 #include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_index_buffer.h"
@@ -41,9 +42,13 @@ namespace Storytime {
         VulkanDescriptorPool descriptor_pool;
         VkDescriptorSetLayout descriptor_set_layout;
         VulkanGraphicsPipeline graphics_pipeline;
-        VkSampler sampler;
+        std::vector<VkFence> in_flight_fences;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkCommandBuffer> command_buffers{};
         std::vector<VkDescriptorSet> descriptor_sets{};
+        std::vector<Frame> frames{};
+        VkSampler sampler;
         VulkanImage texture;
         u32 current_frame_index = 0;
 
@@ -77,11 +82,17 @@ namespace Storytime {
 
         void destroy_sampler() const;
 
+        void create_sync_objects();
+
+        void destroy_sync_objects() const;
+
         void allocate_command_buffers();
 
         void allocate_descriptor_sets();
 
         void write_descriptors() const;
+
+        void prepare_frames();
 
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 

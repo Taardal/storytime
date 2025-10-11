@@ -33,47 +33,46 @@ namespace Storytime {
     VulkanRenderer::VulkanRenderer(const Config& config)
         : config(config),
           context({
-              .window = config.window,
               .app_name = config.name,
               .engine_name = std::format("{} engine", config.name),
+              .window = config.window,
               .validation_layers_enabled = config.validation_layers_enabled,
           }),
           physical_device({
               .context = &context,
           }),
           device({
-              .physical_device = &physical_device,
               .name = std::format("{} device", config.name),
+              .physical_device = &physical_device,
           }),
           swapchain({
+              .name = std::format("{} swapchain", config.name),
               .dispatcher = config.dispatcher,
               .window = config.window,
-              .context = &context,
               .device = &device,
               .command_pool = &initialization_command_pool,
-              .name = std::format("{} swapchain", config.name),
-              .max_frames_in_flight = config.max_frames_in_flight,
+              .surface = context.get_surface(),
           }),
           initialization_command_pool({
-              .device = &device,
               .name = std::format("{} initialization command pool", config.name),
+              .device = &device,
               .queue_family_index = device.get_graphics_queue_family_index(),
               .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
           }),
           runtime_command_pool({
-              .device = &device,
               .name = std::format("{} render command pool", config.name),
+              .device = &device,
               .queue_family_index = device.get_graphics_queue_family_index(),
               .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
           }),
           vertex_buffer({
-              .device = &device,
               .name = std::format("{} vertex buffer", config.name),
+              .device = &device,
               .size = sizeof(vertices[0]) * vertices.size(),
           }),
           index_buffer({
-              .device = &device,
               .name = std::format("{} index buffer", config.name),
+              .device = &device,
               .size = sizeof(indices[0]) * indices.size(),
           }),
           uniform_buffers(create_uniform_buffers()),
@@ -109,8 +108,8 @@ namespace Storytime {
         u32 mip_levels = (u32) std::floor(std::log2(std::max(width, height))) + 1;
 
         texture = VulkanImage({
-            .device = &device,
             .name = "FooTexture",
+            .device = &device,
             .width = (u32) width,
             .height = (u32) height,
             .format = VK_FORMAT_R8G8B8A8_SRGB,
@@ -130,9 +129,11 @@ namespace Storytime {
         // Init
         //
 
+        create_sync_objects();
         allocate_command_buffers();
         allocate_descriptor_sets();
         write_descriptors();
+        prepare_frames();
 
         record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
@@ -142,33 +143,35 @@ namespace Storytime {
 
     VulkanRenderer::~VulkanRenderer() {
         ST_ASSERT_VK(device.wait_until_idle(), "Device must be able to wait until idle");
+        destroy_sync_objects();
         destroy_sampler();
         destroy_descriptor_set_layout();
     }
 
     void VulkanRenderer::begin_frame() {
-        if (!swapchain.acquire_frame(current_frame_index)) {
+        const Frame& frame = frames.at(current_frame_index);
+
+        if (!swapchain.acquire_frame(frame)) {
             return;
         }
 
-        VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
-        begin_frame_command_buffer(command_buffer);
-        device.begin_cmd_label(command_buffer, "CommandBuffer");
+        begin_frame_command_buffer(frame.command_buffer);
+        device.begin_cmd_label(frame.command_buffer, "Frame commands");
 
-        device.insert_cmd_label(command_buffer, "Begin swapchain frame");
-        swapchain.begin_frame(command_buffer);
+        device.insert_cmd_label(frame.command_buffer, "Begin swapchain frame");
+        swapchain.begin_render(frame.command_buffer);
     }
 
     void VulkanRenderer::end_frame() {
-        VulkanCommandBuffer command_buffer = command_buffers.at(current_frame_index);
+        const Frame& frame = frames.at(current_frame_index);
 
-        device.insert_cmd_label(command_buffer, "End swapchain frame");
-        swapchain.end_frame(command_buffer);
+        device.insert_cmd_label(frame.command_buffer, "End swapchain frame");
+        swapchain.end_render(frame.command_buffer);
 
-        device.end_cmd_label(command_buffer);
-        end_frame_command_buffer(command_buffer);
+        device.end_cmd_label(frame.command_buffer);
+        end_frame_command_buffer(frame.command_buffer);
 
-        swapchain.present_frame(current_frame_index, command_buffer);
+        swapchain.present_frame(frame);
         current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
     }
 
@@ -229,8 +232,8 @@ namespace Storytime {
 
         for (int i = 0; i < uniform_buffer_count; ++i) {
             uniform_buffers.emplace_back(VulkanUniformBuffer({
-                .device = &device,
                 .name = std::format("{} uniform buffer {}/{}", config.name, i + 1, uniform_buffer_count),
+                .device = &device,
                 .size = sizeof(UniformBufferObject),
             }));
         }
@@ -278,8 +281,8 @@ namespace Storytime {
         });
 
         return VulkanGraphicsPipeline({
-            .device = &device,
             .name = std::format("{} graphics pipeline", config.name),
+            .device = &device,
             .render_pass = swapchain.get_render_pass(),
             .descriptor_set_layouts = { descriptor_set_layout },
             .shader_stage_create_infos = shader_stage_create_infos,
@@ -298,8 +301,8 @@ namespace Storytime {
         descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
 
         return VulkanDescriptorPool({
-            .device = &device,
             .name = std::format("{} descriptor pool", config.name),
+            .device = &device,
             .max_descriptor_sets = config.max_frames_in_flight,
             .descriptor_pool_sizes = descriptor_pool_sizes,
         });
@@ -403,6 +406,71 @@ namespace Storytime {
         device.destroy_sampler(sampler);
     }
 
+    void VulkanRenderer::create_sync_objects() {
+        u32 sync_object_count = config.max_frames_in_flight;
+
+        image_available_semaphores.resize(sync_object_count);
+        render_finished_semaphores.resize(sync_object_count);
+        in_flight_fences.resize(sync_object_count);
+
+        VkSemaphoreCreateInfo semaphore_create_info{};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fence_create_info{};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+        // Create the fence in the signaled state.
+        //
+        // Rendering a frame starts with waiting for the previous frame to finish rendering using vkWaitForFences(),
+        // but when rendering the very first frame, there are no previous frames and vkWaitForFences() will wait and block forever.
+        //
+        // We solve this by creating the fence in the signaled state, so that the first call to vkWaitForFences() returns immediately
+        // since the fence is already signaled.
+        //
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (u32 i = 0; i < sync_object_count; i++) {
+            if (device.create_semaphore(semaphore_create_info, &image_available_semaphores[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'image available' semaphore");
+            }
+
+            if (device.create_semaphore(semaphore_create_info, &render_finished_semaphores[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'render finished' semaphore");
+            }
+
+            if (device.create_fence(fence_create_info, &in_flight_fences[i]) != VK_SUCCESS) {
+                ST_THROW("Could not create 'in flight' fence");
+            }
+
+            std::string image_available_semaphore_name = std::format("{} 'image available' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(image_available_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'image available' semaphore name [" << image_available_semaphore_name << "]");
+            }
+
+            std::string render_finished_semaphore_name = std::format("{} 'render finished' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(render_finished_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'render finished' semaphore name [" << render_finished_semaphore_name << "]");
+            }
+
+            std::string in_flight_fence_name = std::format("{} 'in flight' fence {}/{}", config.name.c_str(), i + 1, sync_object_count);
+            if (device.set_object_name(in_flight_fences[i], VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str()) != VK_SUCCESS) {
+                ST_THROW("Could not set 'in flight' fence name [" << in_flight_fence_name << "]");
+            }
+        }
+    }
+
+    void VulkanRenderer::destroy_sync_objects() const {
+        for (u32 i = 0; i < image_available_semaphores.size(); i++) {
+            device.destroy_semaphore(image_available_semaphores.at(i));
+        }
+        for (u32 i = 0; i < render_finished_semaphores.size(); i++) {
+            device.destroy_semaphore(render_finished_semaphores.at(i));
+        }
+        for (u32 i = 0; i < in_flight_fences.size(); i++) {
+            device.destroy_fence(in_flight_fences.at(i));
+        }
+    }
+
     void VulkanRenderer::allocate_command_buffers() {
         u32 command_buffer_count = config.max_frames_in_flight;
         command_buffers.resize(command_buffer_count);
@@ -472,18 +540,31 @@ namespace Storytime {
         }
     }
 
+    void VulkanRenderer::prepare_frames() {
+        u32 frame_count = config.max_frames_in_flight;
+        frames.resize(frame_count);
+        for (u32 i = 0; i < frame_count; ++i) {
+            frames[i].command_buffer = command_buffers[i];
+            frames[i].in_flight_fence = in_flight_fences[i];
+            frames[i].image_available_semaphore = image_available_semaphores[i];
+            frames[i].render_finished_semaphore = render_finished_semaphores[i];
+            frames[i].graphics_queue = device.get_graphics_queue();
+            frames[i].present_queue = device.get_present_queue();
+        }
+    }
+
     void VulkanRenderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
         if (command_buffer.reset() != VK_SUCCESS) {
-            ST_THROW("Could not reset command buffer");
+            ST_THROW("Could not reset frame command buffer");
         }
         if (command_buffer.begin() != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer");
+            ST_THROW("Could not begin frame command buffer");
         }
     }
 
     void VulkanRenderer::end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
         if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer");
+            ST_THROW("Could not end frame command buffer");
         }
     }
 
@@ -491,7 +572,7 @@ namespace Storytime {
         VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
 
         if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer");
+            ST_THROW("Could not begin one-time-submit command buffer");
         }
 
         return command_buffer;
@@ -499,12 +580,12 @@ namespace Storytime {
 
     void VulkanRenderer::end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const {
         if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer");
+            ST_THROW("Could not end one-time-submit command buffer");
         }
 
         VulkanQueue graphics_queue = device.get_graphics_queue();
         if (graphics_queue.submit(command_buffer) != VK_SUCCESS) {
-            ST_THROW("Could not submit command buffer to graphics queue");
+            ST_THROW("Could not submit one-time-submit command buffer to graphics queue");
         }
 
         if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {

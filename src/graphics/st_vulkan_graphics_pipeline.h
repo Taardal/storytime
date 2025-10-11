@@ -5,8 +5,8 @@
 
 namespace Storytime {
     struct VulkanGraphicsPipelineConfig {
-        VulkanDevice* device = nullptr;
         std::string name = "Pipeline";
+        VulkanDevice* device = nullptr;
         VkRenderPass render_pass = nullptr;
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts{};
         std::vector<VkPushConstantRange> push_constant_ranges{};

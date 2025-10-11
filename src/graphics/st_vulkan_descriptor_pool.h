@@ -4,8 +4,8 @@
 
 namespace Storytime {
     struct VulkanDescriptorPoolConfig {
-        VulkanDevice* device = nullptr;
         std::string name = "VulkanDescriptorPool";
+        VulkanDevice* device = nullptr;
         u32 max_descriptor_sets = 0;
         std::vector<VkDescriptorPoolSize> descriptor_pool_sizes{};
     };

@@ -3,22 +3,20 @@
 #include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
 #include "graphics/st_vulkan_command_pool.h"
-#include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_frame.h"
 #include "graphics/st_vulkan_image.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
 
 namespace Storytime {
     struct VulkanSwapchainConfig {
+        std::string name = "SwapChain";
         Dispatcher* dispatcher = nullptr;
         Window* window = nullptr;
-        VulkanContext* context = nullptr;
-        VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         VulkanCommandPool* command_pool = nullptr;
-        std::string name = "SwapChain";
-        u32 max_frames_in_flight = 0;
+        VkSurfaceKHR surface = nullptr;
     };
 
     class VulkanSwapchain {
@@ -36,9 +34,6 @@ namespace Storytime {
         VulkanImage* depth_image = nullptr;
         VkRenderPass render_pass = nullptr;
         std::vector<VkFramebuffer> framebuffers;
-        std::vector<VkFence> in_flight_fences;
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkSemaphore> render_finished_semaphores;
         u32 current_image_index = 0;
         bool surface_has_been_resized = false;
 
@@ -55,13 +50,13 @@ namespace Storytime {
 
         const VkExtent2D& get_image_extent() const;
 
-        bool acquire_frame(u32 frame_index);
+        bool acquire_frame(const Frame& frame);
 
-        void begin_frame(const VulkanCommandBuffer& command_buffer) const;
+        void begin_render(const VulkanCommandBuffer& command_buffer) const;
 
-        void end_frame(const VulkanCommandBuffer& command_buffer) const;
+        void end_render(const VulkanCommandBuffer& command_buffer) const;
 
-        void present_frame(u32 frame_index, VkCommandBuffer command_buffer);
+        void present_frame(const Frame& frame);
 
     private:
         void create_swapchain();
@@ -75,8 +70,6 @@ namespace Storytime {
         VkExtent2D find_image_extent(const VkSurfaceCapabilitiesKHR& surface_capabilities) const;
 
         u32 find_min_image_count(const VkSurfaceCapabilitiesKHR& surface_capabilities) const;
-
-        VkSurfaceTransformFlagsKHR find_pre_transform() const;
 
         void create_image_views();
 
@@ -93,10 +86,6 @@ namespace Storytime {
         void create_framebuffers();
 
         void destroy_framebuffers() const;
-
-        void create_sync_objects();
-
-        void destroy_sync_objects() const;
 
         void subscribe_to_events();
 

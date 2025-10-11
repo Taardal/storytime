@@ -5,8 +5,8 @@
 
 namespace Storytime {
     struct VulkanImageConfig {
-        VulkanDevice* device = nullptr;
         std::string name = "VulkanImage";
+        VulkanDevice* device = nullptr;
         u32 width = 0;
         u32 height = 0;
         u32 depth = 1;

@@ -7,8 +7,8 @@ namespace Storytime {
     using WithCommandBufferFn = const std::function<void(VkCommandBuffer)>;
 
     struct VulkanCommandPoolConfig {
-        VulkanDevice* device = nullptr;
         std::string name = "VulkanCommandPool";
+        VulkanDevice* device = nullptr;
         u32 queue_family_index = 0;
         VkCommandPoolCreateFlags flags = 0;
     };

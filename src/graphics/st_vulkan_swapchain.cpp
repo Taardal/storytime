@@ -9,13 +9,11 @@ namespace Storytime {
         create_depth_image();
         create_render_pass();
         create_framebuffers();
-        create_sync_objects();
         subscribe_to_events();
     }
 
     VulkanSwapchain::~VulkanSwapchain() {
         unsubscribe_from_events();
-        destroy_sync_objects();
         destroy_framebuffers();
         destroy_render_pass();
         destroy_depth_image();
@@ -53,11 +51,11 @@ namespace Storytime {
         return image_extent;
     }
 
-    bool VulkanSwapchain::acquire_frame(u32 frame_index) {
+    bool VulkanSwapchain::acquire_frame(const Frame& frame) {
         const VulkanDevice& device = *config.device;
 
-        VkFence in_flight_fence = in_flight_fences.at(frame_index);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(frame_index);
+        VkFence in_flight_fence = frame.in_flight_fence;
+        VkSemaphore image_available_semaphore = frame.image_available_semaphore;
 
         //
         // Wait for the previous frame to finish.
@@ -103,7 +101,7 @@ namespace Storytime {
         return true;
     }
 
-    void VulkanSwapchain::begin_frame(const VulkanCommandBuffer& command_buffer) const {
+    void VulkanSwapchain::begin_render(const VulkanCommandBuffer& command_buffer) const {
         const VulkanDevice& device = *config.device;
 
         device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
@@ -155,23 +153,25 @@ namespace Storytime {
         command_buffer.set_scissor(scissor);
     }
 
-    void VulkanSwapchain::end_frame(const VulkanCommandBuffer& command_buffer) const {
+    void VulkanSwapchain::end_render(const VulkanCommandBuffer& command_buffer) const {
         config.device->insert_cmd_label(command_buffer, "End swapchain render pass");
         command_buffer.end_render_pass();
     }
 
-    void VulkanSwapchain::present_frame(u32 frame_index, VkCommandBuffer command_buffer) {
+    void VulkanSwapchain::present_frame(const Frame& frame) {
         const VulkanDevice& device = *config.device;
 
-        VkFence in_flight_fence = in_flight_fences.at(frame_index);
-        VkSemaphore image_available_semaphore = image_available_semaphores.at(frame_index);
-        VkSemaphore render_finished_semaphore = render_finished_semaphores.at(frame_index);
+        VkCommandBuffer command_buffer = frame.command_buffer;
+        VkFence in_flight_fence = frame.in_flight_fence;
+        VkSemaphore image_available_semaphore = frame.image_available_semaphore;
+        VkSemaphore render_finished_semaphore = frame.render_finished_semaphore;
+        VulkanQueue graphics_queue = frame.graphics_queue;
+        VulkanQueue present_queue = frame.present_queue;
 
         //
         // Submit the render commands to the graphics queue to perform the rendering.
         //
 
-        VulkanQueue graphics_queue = device.get_graphics_queue();
         device.begin_queue_label(graphics_queue, "GraphicsQueue");
 
         constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -198,7 +198,6 @@ namespace Storytime {
         // Present the rendered image to the surface (screen).
         //
 
-        VulkanQueue present_queue = device.get_present_queue();
         device.begin_queue_label(present_queue, "PresentQueue");
 
         VkPresentInfoKHR present_info{};
@@ -252,7 +251,7 @@ namespace Storytime {
         VkSwapchainCreateInfoKHR swapchain_create_info{};
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.minImageCount = find_min_image_count(surface_capabilities);
-        swapchain_create_info.surface = config.context->get_surface();
+        swapchain_create_info.surface = config.surface;
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
         swapchain_create_info.imageExtent = image_extent;
@@ -291,10 +290,6 @@ namespace Storytime {
 
         if (device.get_swapchain_images(swapchain, &color_images) != VK_SUCCESS) {
             ST_THROW("Could not get swapchain images");
-        }
-
-        if (color_images.size() < config.max_frames_in_flight) {
-            ST_THROW("Could not create swapchain with fewer images [" << color_images.size() << "] than frames in flight [" << config.max_frames_in_flight << "]");
         }
     }
 
@@ -495,75 +490,6 @@ namespace Storytime {
     void VulkanSwapchain::destroy_framebuffers() const {
         for (VkFramebuffer framebuffer : framebuffers) {
             config.device->destroy_framebuffer(framebuffer);
-        }
-    }
-
-    void VulkanSwapchain::create_sync_objects() {
-        const VulkanDevice& device = *config.device;
-
-        u32 sync_object_count = config.max_frames_in_flight;
-
-        image_available_semaphores.resize(sync_object_count);
-        render_finished_semaphores.resize(sync_object_count);
-        in_flight_fences.resize(sync_object_count);
-
-        VkSemaphoreCreateInfo semaphore_create_info{};
-        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        VkFenceCreateInfo fence_create_info{};
-        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-        // Create the fence in the signaled state.
-        //
-        // Rendering a frame starts with waiting for the previous frame to finish rendering using vkWaitForFences(),
-        // but when rendering the very first frame, there are no previous frames and vkWaitForFences() will wait and block forever.
-        //
-        // We solve this by creating the fence in the signaled state, so that the first call to vkWaitForFences() returns immediately
-        // since the fence is already signaled.
-        //
-        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        for (u32 i = 0; i < sync_object_count; i++) {
-            if (device.create_semaphore(semaphore_create_info, &image_available_semaphores[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create 'image available' semaphore");
-            }
-
-            if (device.create_semaphore(semaphore_create_info, &render_finished_semaphores[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create 'render finished' semaphore");
-            }
-
-            if (device.create_fence(fence_create_info, &in_flight_fences[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create 'in flight' fence");
-            }
-
-            std::string image_available_semaphore_name = std::format("{} 'image available' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
-            if (device.set_object_name(image_available_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set 'image available' semaphore name [" << image_available_semaphore_name << "]");
-            }
-
-            std::string render_finished_semaphore_name = std::format("{} 'render finished' semaphore {}/{}", config.name.c_str(), i + 1, sync_object_count);
-            if (device.set_object_name(render_finished_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set 'render finished' semaphore name [" << render_finished_semaphore_name << "]");
-            }
-
-            std::string in_flight_fence_name = std::format("{} 'in flight' fence {}/{}", config.name.c_str(), i + 1, sync_object_count);
-            if (device.set_object_name(in_flight_fences[i], VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set 'in flight' fence name [" << in_flight_fence_name << "]");
-            }
-        }
-    }
-
-    void VulkanSwapchain::destroy_sync_objects() const {
-        const VulkanDevice& device = *config.device;
-
-        for (u32 i = 0; i < image_available_semaphores.size(); i++) {
-            device.destroy_semaphore(image_available_semaphores.at(i));
-        }
-        for (u32 i = 0; i < render_finished_semaphores.size(); i++) {
-            device.destroy_semaphore(render_finished_semaphores.at(i));
-        }
-        for (u32 i = 0; i < in_flight_fences.size(); i++) {
-            device.destroy_fence(in_flight_fences.at(i));
         }
     }
 

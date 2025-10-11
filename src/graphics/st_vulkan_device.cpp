@@ -43,8 +43,8 @@ namespace Storytime {
         return vkGetDeviceQueue(device, queue_family_index, queue_index, queue);
     }
 
-    VkResult VulkanDevice::submit_queue(const SubmitQueueConfig& config) const {
-        return vkQueueSubmit(config.queue, config.submit_count, config.submit_info, config.fence);
+    VkResult VulkanDevice::submit_queue(const SubmitQueue& submit_queue) const {
+        return vkQueueSubmit(submit_queue.queue, submit_queue.submit_count, submit_queue.submit_info, submit_queue.fence);
     }
 
     VkResult VulkanDevice::submit_queue(VkQueue queue, u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence) const {
@@ -73,8 +73,8 @@ namespace Storytime {
         return vkGetSwapchainImagesKHR(device, swapchain, image_count, images);
     }
 
-    VkResult VulkanDevice::acquire_next_swapchain_image(const AquireNextSwapchainImageConfig& config) const {
-        return vkAcquireNextImageKHR(device, config.swapchain, config.timeout, config.semaphore, config.fence, config.image_index);
+    VkResult VulkanDevice::acquire_next_swapchain_image(const AcquireNextSwapchainImage& acquire_next_swapchain_image) const {
+        return vkAcquireNextImageKHR(device, acquire_next_swapchain_image.swapchain, acquire_next_swapchain_image.timeout, acquire_next_swapchain_image.semaphore, acquire_next_swapchain_image.fence, acquire_next_swapchain_image.image_index);
     }
 
     VkResult VulkanDevice::acquire_next_swapchain_image(VkSwapchainKHR swapchain, u64 timeout, VkSemaphore semaphore, VkFence fence, u32* image_index) const {
@@ -129,20 +129,31 @@ namespace Storytime {
         vkDestroyFence(device, fence, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::wait_for_fences(const WaitForFencesConfig& config) const {
-        return vkWaitForFences(device, config.fence_count, config.fences, config.wait_for_all, config.wait_timeout);
+    VkResult VulkanDevice::wait_for_fences(const WaitForFences& wait_for_fences) const {
+        return vkWaitForFences(device, wait_for_fences.fence_count, wait_for_fences.fences, wait_for_fences.wait_for_all, wait_for_fences.wait_timeout);
     }
 
     VkResult VulkanDevice::wait_for_fences(u32 fence_count, const VkFence* fences, bool wait_for_all, u64 wait_timeout) const {
         return vkWaitForFences(device, fence_count, fences, wait_for_all, wait_timeout);
     }
 
-    VkResult VulkanDevice::reset_fences(const ResetFencesConfig& config) const {
-        return vkResetFences(device, config.fence_count, config.fences);
+    VkResult VulkanDevice::wait_for_fence(VkFence fence, u64 wait_timeout) const {
+        constexpr u32 fence_count = 1;
+        constexpr bool wait_for_all = true;
+        return vkWaitForFences(device, fence_count, &fence, wait_for_all, wait_timeout);
+    }
+
+    VkResult VulkanDevice::reset_fences(const ResetFences& reset_fences) const {
+        return vkResetFences(device, reset_fences.fence_count, reset_fences.fences);
     }
 
     VkResult VulkanDevice::reset_fences(u32 fence_count, const VkFence* fences) const {
         return vkResetFences(device, fence_count, fences);
+    }
+
+    VkResult VulkanDevice::reset_fence(VkFence fence) const {
+        constexpr u32 fence_count = 1;
+        return vkResetFences(device, fence_count, &fence);
     }
 
     VkResult VulkanDevice::create_shader_module(const VkShaderModuleCreateInfo& shader_module_create_info, VkShaderModule* shader_module) const {
@@ -154,8 +165,8 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::create_graphics_pipeline(const VkGraphicsPipelineCreateInfo& graphics_pipeline_create_info, VkPipeline* graphics_pipeline) const {
-        u32 create_info_count = 1;
-        VkPipelineCache pipeline_cache = nullptr;
+        constexpr u32 create_info_count = 1;
+        constexpr VkPipelineCache pipeline_cache = nullptr;
         return vkCreateGraphicsPipelines(device, pipeline_cache, create_info_count, &graphics_pipeline_create_info, ST_VK_ALLOCATOR, graphics_pipeline);
     }
 
@@ -183,8 +194,17 @@ namespace Storytime {
         return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers);
     }
 
+    void VulkanDevice::free_command_buffers(const FreeCommandBuffers& free_command_buffers) const {
+        vkFreeCommandBuffers(device, free_command_buffers.command_pool, free_command_buffers.command_buffer_count, free_command_buffers.command_buffers);
+    }
+
     void VulkanDevice::free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, const VkCommandBuffer* command_buffers) const {
         vkFreeCommandBuffers(device, command_pool, command_buffer_count, command_buffers);
+    }
+
+    void VulkanDevice::free_command_buffer(VkCommandPool command_pool, VkCommandBuffer command_buffer) const {
+        constexpr u32 command_buffer_count = 1;
+        vkFreeCommandBuffers(device, command_pool, command_buffer_count, &command_buffer);
     }
 
     VkResult VulkanDevice::create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const {
@@ -199,8 +219,16 @@ namespace Storytime {
         return vkAllocateMemory(device, &memory_allocate_info, ST_VK_ALLOCATOR, memory);
     }
 
+    VkResult VulkanDevice::bind_buffer_memory(const BindBufferMemory& bind_buffer_memory) const {
+        return vkBindBufferMemory(device, bind_buffer_memory.buffer, bind_buffer_memory.memory, bind_buffer_memory.memory_offset);
+    }
+
     VkResult VulkanDevice::bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
         return vkBindBufferMemory(device, buffer, memory, memory_offset);
+    }
+
+    VkResult VulkanDevice::bind_image_memory(const BindImageMemory& bind_image_memory) const {
+        return vkBindImageMemory(device, bind_image_memory.image, bind_image_memory.memory, bind_image_memory.memory_offset);
     }
 
     VkResult VulkanDevice::bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
@@ -263,8 +291,21 @@ namespace Storytime {
         return vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
     }
 
+    void VulkanDevice::free_descriptor_sets(const FreeDescriptorSets& free_descriptor_sets) const {
+        vkFreeDescriptorSets(device, free_descriptor_sets.descriptor_pool, free_descriptor_sets.descriptor_set_count, free_descriptor_sets.descriptor_sets);
+    }
+
     void VulkanDevice::free_descriptor_sets(VkDescriptorPool descriptor_pool, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets) const {
         vkFreeDescriptorSets(device, descriptor_pool, descriptor_set_count, descriptor_sets);
+    }
+
+    void VulkanDevice::free_descriptor_set(VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set) const {
+        constexpr u32 descriptor_set_count = 1;
+        vkFreeDescriptorSets(device, descriptor_pool, descriptor_set_count, &descriptor_set);
+    }
+
+    void VulkanDevice::update_descriptor_sets(const UpdateDescriptorSets& update_descriptor_sets) const {
+        vkUpdateDescriptorSets(device, update_descriptor_sets.descriptor_write_count, update_descriptor_sets.descriptor_writes, update_descriptor_sets.descriptor_copy_count, update_descriptor_sets.descriptor_copies);
     }
 
     void VulkanDevice::update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const {
@@ -277,6 +318,14 @@ namespace Storytime {
 
     void VulkanDevice::destroy_sampler(VkSampler sampler) const {
         vkDestroySampler(device, sampler, ST_VK_ALLOCATOR);
+    }
+
+    VkResult VulkanDevice::wait_until_idle() const {
+        return vkDeviceWaitIdle(device);
+    }
+
+    VkResult VulkanDevice::wait_until_queue_idle(VkQueue queue) const {
+        return vkQueueWaitIdle(queue);
     }
 
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {
@@ -382,14 +431,6 @@ namespace Storytime {
             ST_THROW("Could not get function to end queue label");
         }
         end_queue_label_fn(queue);
-    }
-
-    VkResult VulkanDevice::wait_until_idle() const {
-        return vkDeviceWaitIdle(device);
-    }
-
-    VkResult VulkanDevice::wait_until_queue_idle(VkQueue queue) const {
-        return vkQueueWaitIdle(queue);
     }
 
     void VulkanDevice::create_device() {

@@ -4,8 +4,8 @@
 
 namespace Storytime {
     struct VulkanDeviceConfig {
-        VulkanPhysicalDevice* physical_device = nullptr;
         std::string name = "VulkanDevice";
+        VulkanPhysicalDevice* physical_device = nullptr;
     };
 
     class VulkanDevice {
@@ -39,14 +39,14 @@ namespace Storytime {
 
         void get_queue(u32 queue_family_index, u32 queue_index, VkQueue* queue) const;
 
-        struct SubmitQueueConfig {
+        struct SubmitQueue {
             VkQueue queue = nullptr;
             u32 submit_count = 0;
             VkSubmitInfo* submit_info = nullptr;
             VkFence fence = nullptr;
         };
 
-        VkResult submit_queue(const SubmitQueueConfig& config) const;
+        VkResult submit_queue(const SubmitQueue& submit_queue) const;
 
         VkResult submit_queue(VkQueue queue, u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence) const;
 
@@ -58,15 +58,15 @@ namespace Storytime {
 
         VkResult get_swapchain_images(VkSwapchainKHR swapchain, u32* image_count, VkImage* images) const;
 
-        struct AquireNextSwapchainImageConfig {
-            VkSwapchainKHR swapchain;
-            u32* image_index;
-            VkSemaphore semaphore;
-            VkFence fence;
-            u64 timeout;
+        struct AcquireNextSwapchainImage {
+            VkSwapchainKHR swapchain = nullptr;
+            u32* image_index = nullptr;
+            VkSemaphore semaphore = nullptr;
+            VkFence fence = nullptr;
+            u64 timeout = 0;
         };
 
-        VkResult acquire_next_swapchain_image(const AquireNextSwapchainImageConfig& config) const;
+        VkResult acquire_next_swapchain_image(const AcquireNextSwapchainImage& acquire_next_swapchain_image) const;
 
         VkResult acquire_next_swapchain_image(VkSwapchainKHR swapchain, u64 timeout, VkSemaphore semaphore, VkFence fence, u32* image_index) const;
 
@@ -94,25 +94,29 @@ namespace Storytime {
 
         void destroy_fence(VkFence fence) const;
 
-        struct WaitForFencesConfig {
+        struct WaitForFences {
             VkFence* fences = nullptr;
             u32 fence_count = 0;
-            bool wait_for_all = true;
-            u64 wait_timeout = UINT64_MAX;
+            bool wait_for_all = false;
+            u64 wait_timeout = 0;
         };
 
-        VkResult wait_for_fences(const WaitForFencesConfig& config) const;
+        VkResult wait_for_fences(const WaitForFences& wait_for_fences) const;
 
         VkResult wait_for_fences(u32 fence_count, const VkFence* fences, bool wait_for_all, u64 wait_timeout) const;
 
-        struct ResetFencesConfig {
-            u32 fence_count;
-            VkFence* fences;
+        VkResult wait_for_fence(VkFence fence, u64 wait_timeout) const;
+
+        struct ResetFences {
+            u32 fence_count = 0;
+            VkFence* fences = nullptr;
         };
 
-        VkResult reset_fences(const ResetFencesConfig& config) const;
+        VkResult reset_fences(const ResetFences& reset_fences) const;
 
         VkResult reset_fences(u32 fence_count, const VkFence* fences) const;
+
+        VkResult reset_fence(VkFence fence) const;
 
         VkResult create_shader_module(const VkShaderModuleCreateInfo& shader_module_create_info, VkShaderModule* shader_module) const;
 
@@ -132,7 +136,17 @@ namespace Storytime {
 
         VkResult allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffers) const;
 
+        struct FreeCommandBuffers {
+            VkCommandPool command_pool = nullptr;
+            u32 command_buffer_count = 0;
+            VkCommandBuffer* command_buffers = nullptr;
+        };
+
+        void free_command_buffers(const FreeCommandBuffers& free_command_buffers) const;
+
         void free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, const VkCommandBuffer* command_buffers) const;
+
+        void free_command_buffer(VkCommandPool command_pool, VkCommandBuffer command_buffer) const;
 
         VkResult create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const;
 
@@ -140,7 +154,23 @@ namespace Storytime {
 
         VkResult allocate_memory(const VkMemoryAllocateInfo& memory_allocate_info, VkDeviceMemory* memory) const;
 
+        struct BindBufferMemory {
+            VkBuffer buffer = nullptr;
+            VkDeviceMemory memory = nullptr;
+            VkDeviceSize memory_offset = 0;
+        };
+
+        VkResult bind_buffer_memory(const BindBufferMemory& bind_buffer_memory) const;
+
         VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset = 0) const;
+
+        struct BindImageMemory {
+            VkImage image = nullptr;
+            VkDeviceMemory memory = nullptr;
+            VkDeviceSize memory_offset = 0;
+        };
+
+        VkResult bind_image_memory(const BindImageMemory& bind_image_memory) const;
 
         VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset = 0) const;
 
@@ -178,13 +208,36 @@ namespace Storytime {
 
         VkResult allocate_descriptor_sets(const VkDescriptorSetAllocateInfo& descriptor_set_allocate_info, VkDescriptorSet* descriptor_sets) const;
 
+        struct FreeDescriptorSets {
+            VkDescriptorPool descriptor_pool = nullptr;
+            u32 descriptor_set_count = 0;
+            VkDescriptorSet* descriptor_sets = nullptr;
+        };
+
+        void free_descriptor_sets(const FreeDescriptorSets& free_descriptor_sets) const;
+
         void free_descriptor_sets(VkDescriptorPool descriptor_pool, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets) const;
+
+        void free_descriptor_set(VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set) const;
+
+        struct UpdateDescriptorSets {
+            u32 descriptor_write_count = 0;
+            VkWriteDescriptorSet* descriptor_writes = nullptr;
+            u32 descriptor_copy_count = 0;
+            VkCopyDescriptorSet* descriptor_copies = nullptr;
+        };
+
+        void update_descriptor_sets(const UpdateDescriptorSets& update_descriptor_sets) const;
 
         void update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const;
 
         VkResult create_sampler(const VkSamplerCreateInfo& sampler_create_info, VkSampler* sampler) const;
 
         void destroy_sampler(VkSampler sampler) const;
+
+        VkResult wait_until_idle() const;
+
+        VkResult wait_until_queue_idle(VkQueue queue) const;
 
         VkResult set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
 
@@ -211,10 +264,6 @@ namespace Storytime {
         void insert_queue_label(VkQueue queue, const VkDebugUtilsLabelEXT& label) const;
 
         void end_queue_label(VkQueue queue) const;
-
-        VkResult wait_until_idle() const;
-
-        VkResult wait_until_queue_idle(VkQueue queue) const;
 
     private:
         void create_device();

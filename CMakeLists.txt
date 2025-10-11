@@ -113,6 +113,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_set.h
     ${ST_SRC_DIR}/graphics/st_vulkan_device.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_device.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_frame.h
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.h
     ${ST_SRC_DIR}/graphics/st_vulkan_image.cpp

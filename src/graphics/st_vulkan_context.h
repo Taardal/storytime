@@ -4,9 +4,9 @@
 
 namespace Storytime {
     struct VulkanContextConfig {
-        Window* window = nullptr;
         std::string app_name;
         std::string engine_name;
+        Window* window = nullptr;
         bool validation_layers_enabled = false;
     };
 

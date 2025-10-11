@@ -17,25 +17,32 @@ namespace Storytime {
 
         VkResult begin(VkCommandBufferUsageFlags usage_flags = 0) const;
 
-        VkResult begin(const VkCommandBufferBeginInfo& command_buffer_begin_info) const;
+        VkResult begin(const VkCommandBufferBeginInfo& begin_info) const;
 
         VkResult end() const;
 
         VkResult reset(VkCommandBufferResetFlags reset_flags = 0) const;
 
-        void with_commands(const WithCommandsFn& with_commands) const;
-
         void begin_one_time_submit() const;
 
-        void end_one_time_submit(const VulkanQueue& queue, const VulkanDevice& device) const;
+        void end_one_time_submit(
+            const VulkanQueue& queue,
+            const VulkanDevice& device
+        ) const;
 
-        void record_and_submit(const VulkanQueue& queue, const VulkanDevice& device, const RecordCommandsFn& record_commands) const;
+        void record_and_submit(
+            const VulkanQueue& queue,
+            const VulkanDevice& device,
+            const RecordCommandsFn& record_commands
+        ) const;
 
         void record_and_submit(
             const VulkanQueue& queue,
             const VulkanDevice& device,
             const RecordAndSubmitCommandsFn& record_and_submit_commands
         ) const;
+
+        void with_commands(const WithCommandsFn& with_commands) const;
 
         struct BeginRenderPassCommand {
             VkRenderPassBeginInfo* render_pass_begin_info = nullptr;
@@ -44,7 +51,10 @@ namespace Storytime {
 
         void begin_render_pass(const BeginRenderPassCommand& command) const;
 
-        void begin_render_pass(const VkRenderPassBeginInfo& render_pass_begin_info, const VkSubpassContents& subpass_contents) const;
+        void begin_render_pass(
+            const VkRenderPassBeginInfo& render_pass_begin_info,
+            const VkSubpassContents& subpass_contents
+        ) const;
 
         void end_render_pass() const;
 
@@ -55,7 +65,10 @@ namespace Storytime {
 
         void bind_pipeline(const BindPipelineCommand& command) const;
 
-        void bind_pipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline) const;
+        void bind_pipeline(
+            VkPipelineBindPoint bind_point,
+            VkPipeline pipeline
+        ) const;
 
         struct SetViewportsCommand {
             VkViewport* viewports = nullptr;
@@ -65,9 +78,13 @@ namespace Storytime {
 
         void set_viewports(const SetViewportsCommand& command) const;
 
-        void set_viewport(const VkViewport& viewport) const;
+        void set_viewports(
+            u32 first_viewport,
+            u32 viewport_count,
+            const VkViewport* viewports
+        ) const;
 
-        void set_viewports(u32 first_viewport, u32 viewport_count, const VkViewport* viewports) const;
+        void set_viewport(const VkViewport& viewport) const;
 
         struct SetScissorsCommand {
             VkRect2D* scissors = nullptr;
@@ -77,9 +94,13 @@ namespace Storytime {
 
         void set_scissors(const SetScissorsCommand& command) const;
 
-        void set_scissor(const VkRect2D& scissor) const;
+        void set_scissors(
+            u32 first_scissor,
+            u32 scissor_count,
+            const VkRect2D* scissors
+        ) const;
 
-        void set_scissors(u32 first_scissor, u32 scissor_count, const VkRect2D* scissors) const;
+        void set_scissor(const VkRect2D& scissor) const;
 
         struct DrawCommand {
             u32 vertex_count = 0;
@@ -90,7 +111,12 @@ namespace Storytime {
 
         void draw(const DrawCommand& command) const;
 
-        void draw(u32 vertex_count, u32 instance_count, u32 first_vertex, u32 first_instance) const;
+        void draw(
+            u32 vertex_count,
+            u32 instance_count,
+            u32 first_vertex,
+            u32 first_instance
+        ) const;
 
         struct DrawIndexedCommand {
             u32 index_count = 0;
@@ -102,7 +128,13 @@ namespace Storytime {
 
         void draw_indexed(const DrawIndexedCommand& command) const;
 
-        void draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset, u32 first_instance) const;
+        void draw_indexed(
+            u32 index_count,
+            u32 instance_count,
+            u32 first_index,
+            i32 vertex_offset,
+            u32 first_instance
+        ) const;
 
         struct BindVertexBuffersCommand {
             u32 first_binding = 0;
@@ -120,7 +152,10 @@ namespace Storytime {
             const VkDeviceSize* offsets = nullptr
         ) const;
 
-        void bind_vertex_buffer(VkBuffer vertex_buffer, const VkDeviceSize* offsets = nullptr) const;
+        void bind_vertex_buffer(
+            VkBuffer vertex_buffer,
+            const VkDeviceSize* offsets = nullptr
+        ) const;
 
         struct BindIndexBufferCommand {
             VkBuffer index_buffer = nullptr;
@@ -130,7 +165,11 @@ namespace Storytime {
 
         void bind_index_buffer(const BindIndexBufferCommand& command) const;
 
-        void bind_index_buffer(VkBuffer index_buffer, VkDeviceSize offset, VkIndexType index_type) const;
+        void bind_index_buffer(
+            VkBuffer index_buffer,
+            VkDeviceSize offset,
+            VkIndexType index_type
+        ) const;
 
         struct CopyBufferCommand {
             VkBuffer src_buffer = nullptr;
@@ -141,7 +180,12 @@ namespace Storytime {
 
         void copy_buffer(const CopyBufferCommand& command) const;
 
-        void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, u32 region_count, const VkBufferCopy* regions) const;
+        void copy_buffer(
+            VkBuffer src_buffer,
+            VkBuffer dst_buffer,
+            u32 region_count,
+            const VkBufferCopy* regions
+        ) const;
 
         struct BindDescriptorSetsCommand {
             VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_MAX_ENUM;
