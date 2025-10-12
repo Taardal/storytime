@@ -21,19 +21,23 @@
 #endif
 
 #ifdef ST_ENABLE_ASSERT
+    #define ST_PRINT_ASSERT_ERROR(expression, message)\
+        std::string tag = ST_TAG;\
+        std::stringstream ss;\
+        ss << message;\
+        std::string message_string = ss.str();\
+        fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
+        fprintf(stderr, "[ASSERT] %s\n", message_string.c_str());\
+        fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
+        fprintf(stderr, "- Assertion: %s\n", #expression);\
+        fprintf(stderr, "- Tag: %s\n", tag.c_str());\
+        fprintf(stderr, "\n");
+
     #define ST_ASSERT(expression, message)\
         if (expression) {\
             /* Continue */\
         } else {\
-            std::string tag = ST_TAG;\
-            std::stringstream ss;\
-            ss << message;\
-            std::string message_string = ss.str();\
-            fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
-            fprintf(stderr, "[ASSERT] %s\n", tag.c_str());\
-            fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");\
-            fprintf(stderr, "- Assertion: %s\n", #expression);\
-            fprintf(stderr, "- Message:   %s\n", message_string.c_str());\
+            ST_PRINT_ASSERT_ERROR(expression, message);\
             ST_BREAK();\
         }
 
@@ -46,6 +50,7 @@
     #define ST_ASSERT_NOT_CEMPTY(value)\
         ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
 #else
+    #define ST_PRINT_ASSERT_ERROR(expression, message)
     #define ST_ASSERT(expression, message)
     #define ST_ASSERT_NOT_NULL(pointer)
     #define ST_ASSERT_NOT_EMPTY(value)

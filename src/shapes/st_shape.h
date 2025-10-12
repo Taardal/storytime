@@ -7,7 +7,6 @@
 #include "st_intersect.h"
 
 #include "system/st_variant.h"
-#include "system/st_utils.h"
 
 namespace Storytime {
     class Shape : public Variant<Ellipse, Point, Polygon, Rectangle> {

@@ -102,7 +102,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_command_functions.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_callbacks.h
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
     ${ST_SRC_DIR}/graphics/st_vulkan_context.cpp
@@ -215,8 +215,6 @@ add_library(
     ${ST_SRC_DIR}/system/st_size.h
     ${ST_SRC_DIR}/system/st_subscriber.cpp
     ${ST_SRC_DIR}/system/st_subscriber.h
-    ${ST_SRC_DIR}/system/st_utils.cpp
-    ${ST_SRC_DIR}/system/st_utils.h
     ${ST_SRC_DIR}/system/st_uuid.cpp
     ${ST_SRC_DIR}/system/st_uuid.h
     ${ST_SRC_DIR}/system/st_variant.h
@@ -242,6 +240,16 @@ add_library(
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.h
     ${ST_SRC_DIR}/tiled/st_tiled_transformation_flags.h
+    ${ST_SRC_DIR}/utils/st_glm.cpp
+    ${ST_SRC_DIR}/utils/st_glm.h
+    ${ST_SRC_DIR}/utils/st_print.h
+    ${ST_SRC_DIR}/utils/st_null_safety.h
+    ${ST_SRC_DIR}/utils/st_running_average.cpp
+    ${ST_SRC_DIR}/utils/st_running_average.h
+    ${ST_SRC_DIR}/utils/st_string.cpp
+    ${ST_SRC_DIR}/utils/st_string.h
+    ${ST_SRC_DIR}/utils/st_type_name.cpp
+    ${ST_SRC_DIR}/utils/st_type_name.h
     ${ST_SRC_DIR}/window/st_key.cpp
     ${ST_SRC_DIR}/window/st_key.h
     ${ST_SRC_DIR}/window/st_keyboard.cpp

@@ -2,6 +2,8 @@
 
 #include "window/st_window.h"
 
+#define ST_VK_ALLOCATOR nullptr
+
 namespace Storytime {
     struct VulkanContextConfig {
         std::string app_name;

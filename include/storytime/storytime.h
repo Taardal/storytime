@@ -94,6 +94,9 @@
 #include "tiled/st_tiled_tileset.h"
 #include "tiled/st_tiled_transformation_flags.h"
 
+// Utils
+#include "utils/st_running_average.h"
+
 // Window
 #include "window/st_key.h"
 #include "window/st_keyboard.h"

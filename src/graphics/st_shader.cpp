@@ -55,7 +55,7 @@ namespace Storytime {
     }
 
     u32 Shader::create_shader(const char* source, u32 type) const {
-        ST_LOG_TRACE("Creating [{0}] shader", type == GL_VERTEX_SHADER ? ST_TO_STRING(GL_VERTEX_SHADER) : ST_TO_STRING(GL_FRAGMENT_SHADER));
+        ST_LOG_TRACE("Creating [{0}] shader", type == GL_VERTEX_SHADER ? ST_STRINGIFY(GL_VERTEX_SHADER) : ST_STRINGIFY(GL_FRAGMENT_SHADER));
 
         ST_GL_CALL(u32 shader_id = glCreateShader(type));
         ST_LOG_TRACE("Created shader with id [{0}]", shader_id);

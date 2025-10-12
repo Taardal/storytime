@@ -14,6 +14,7 @@
 #include <map>
 #include <ranges>
 #include <set>
+#include <source_location>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -66,7 +67,13 @@
 #include "system/st_numbers.h"
 #include "system/st_pointers.h"
 #include "system/st_size.h"
-#include "system/st_utils.h"
+
+// Utils
+#include "utils/st_glm.h"
+#include "utils/st_null_safety.h"
+#include "utils/st_print.h"
+#include "utils/st_string.h"
+#include "utils/st_type_name.h"
 
 // Lua
 #include "lua/st_lua_error.h"
