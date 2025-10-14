@@ -1,18 +1,27 @@
 #pragma once
 
-#include "graphics/st_shader.h"
+#include "graphics/st_quad_vertex.h"
 #include "graphics/st_texture.h"
 #include "graphics/st_texture_coordinate.h"
-#include "graphics/st_vertex_array.h"
 #include "graphics/st_view_projection.h"
-#include "resource/st_resource_loader.h"
+#include "graphics/st_vulkan_command_pool.h"
+#include "graphics/st_vulkan_context.h"
+#include "graphics/st_vulkan_descriptor_pool.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_frame.h"
+#include "graphics/st_vulkan_graphics_pipeline.h"
+#include "graphics/st_vulkan_image.h"
+#include "graphics/st_vulkan_index_buffer.h"
+#include "graphics/st_vulkan_physical_device.h"
+#include "graphics/st_vulkan_swapchain.h"
+#include "graphics/st_vulkan_uniform_buffer.h"
+#include "graphics/st_vulkan_vertex_buffer.h"
+#include "system/st_clock.h"
 #include "system/st_dispatcher.h"
+#include "system/st_metrics.h"
 #include "window/st_window.h"
 
 namespace Storytime {
-
-    typedef glm::vec4 QuadOffset;
-
     struct Quad {
         Shared<Texture> texture = nullptr;
         glm::vec3 position = {0.0f, 0.0f, 0.0f};
@@ -38,72 +47,114 @@ namespace Storytime {
 
     struct RendererConfig {
         Dispatcher* dispatcher = nullptr;
-        ResourceLoader* resource_loader = nullptr;
+        Metrics* metrics = nullptr;
         Window* window = nullptr;
+        std::string name = "";
+        u32 max_frames_in_flight = 0;
+        bool validation_layers_enabled = false;
     };
 
     class Renderer {
-    private:
-        struct Vertex {
-            glm::vec3 position = {0.0f, 0.0f, 0.0f};
-            glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-            TextureCoordinate texture_coordinate = glm::vec2({0.0f, 0.0f});
-            f32 texture_index = 0.0f;
-            f32 tiling_factor = 1.0f;
-        };
+    public:
+        typedef RendererConfig Config;
 
     private:
-        static constexpr u32 VERTICES_PER_QUAD = 4;
-        static constexpr u32 INDICES_PER_QUAD = 6;
-        static constexpr u32 QUADS_PER_BATCH = 1000;
-        static constexpr u32 MAX_TEXTURE_SLOTS = 16;
-        static const u32 VERTICES_PER_BATCH;
-        static const u32 INDICES_PER_BATCH;
+        Config config;
+        VulkanContext context;
+        VulkanPhysicalDevice physical_device;
+        VulkanDevice device;
+        VulkanSwapchain swapchain;
+        VulkanCommandPool initialization_command_pool;
+        VulkanCommandPool runtime_command_pool;
+        VulkanVertexBuffer vertex_buffer;
+        VulkanVertexBuffer instance_buffer;
+        VulkanIndexBuffer index_buffer;
+        std::vector<VulkanUniformBuffer> uniform_buffers{};
+        VulkanDescriptorPool descriptor_pool;
+        VkDescriptorSetLayout descriptor_set_layout;
+        VulkanGraphicsPipeline graphics_pipeline;
+        std::vector<VkFence> in_flight_fences;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkSemaphore> render_finished_semaphores;
+        std::vector<VkCommandBuffer> command_buffers{};
+        std::vector<VkDescriptorSet> descriptor_sets{};
+        std::vector<Frame> frames{};
+        VkSampler sampler;
+        VulkanImage texture;
+        u32 current_frame_index = 0;
+        u32 previous_frame_index = 0;
+        std::vector<QuadVertex> quads{};
+        std::vector<InstanceData> batch{};
+        u32 batch_index = 0;
 
-    private:
-        RendererConfig config;
-        std::vector<SubscriptionID> event_subscriptions;
-        Shared<VertexArray> vertex_array;
-        Shared<VertexBuffer> vertex_buffer;
-        Shared<Shader> shader;
-        Shared<Texture>* textures;
-        Shared<Texture> white_texture;
-        Vertex* vertices;
-        u32* indices;
-        u32 vertex_count;
-        u32 index_count;
-        u32 texture_count;
-        u32 reserved_textures_count;
-        RendererStatistics statistics;
-        std::array<TextureCoordinate, 4> default_texture_coordinates;
-        std::array<glm::vec4, 4> origin_quad_offsets;
+        u32 frame_counter = 0;
+        f64 frame_delta = 0.0;
+        TimePoint frame_delta_time;
+        TimePoint frame_start_time;
+        TimePoint frame_end_time;
 
     public:
-        explicit Renderer(const RendererConfig& config);
+        Renderer(const Config& config);
 
         ~Renderer();
 
-        RendererStatistics get_statistics() const;
-
-        void set_viewport(const Viewport& viewport) const;
-
-        void set_clear_color(const glm::vec4& clear_color) const;
-
-        void set_view_projection(const ViewProjection& view_projection) const;
-
         void begin_frame();
-
-        void render_quad(const Quad& quad);
-
-        void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates);
 
         void end_frame();
 
+        void render() const;
+
+        void render_quad(const Quad& quad);
+
+        void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates) { ST_LOG_W("render_quad"); }
+
+        void set_viewport(const Viewport& viewport) const { ST_LOG_W("set_viewport"); }
+
+        void set_clear_color(const glm::vec4& clear_color) const { ST_LOG_W("set_clear_color"); }
+
+        void set_view_projection(const ViewProjection& view_projection) const { ST_LOG_W("set_view_projection"); }
+
     private:
-        void reset();
+        std::vector<VulkanUniformBuffer> create_uniform_buffers();
 
-        void draw_indexed();
+        VulkanDescriptorPool create_descriptor_pool();
 
-        void flush();
+        VkDescriptorSetLayout create_descriptor_set_layout() const;
+
+        void destroy_descriptor_set_layout() const;
+
+        VulkanGraphicsPipeline create_graphics_pipeline();
+
+        VkShaderModule create_shader_module(const std::filesystem::path& path) const;
+
+        void destroy_shader_module(VkShaderModule shader_module) const;
+
+        VkSampler create_sampler() const;
+
+        void destroy_sampler() const;
+
+        void create_sync_objects();
+
+        void destroy_sync_objects() const;
+
+        void allocate_command_buffers();
+
+        void allocate_descriptor_sets();
+
+        void write_descriptors() const;
+
+        void prepare_frames();
+
+        void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        VulkanCommandBuffer begin_one_time_submit_command_buffer() const;
+
+        void end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void record_and_submit_commands(const RecordCommandsFn& record_commands) const;
+
+        void record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
     };
 }

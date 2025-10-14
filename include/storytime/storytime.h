@@ -75,7 +75,7 @@
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
-#include "system/st_game_loop_metrics.h"
+#include "system/st_metrics.h"
 #include "system/st_random.h"
 #include "system/st_subscriber.h"
 #include "system/st_variant.h"

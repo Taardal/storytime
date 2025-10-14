@@ -1,11 +1,14 @@
 #include "st_imgui_renderer.h"
 
+#ifndef ST_USE_VULKAN
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#endif
 
 namespace Storytime {
     ImGuiRenderer::ImGuiRenderer(const ImGuiRendererConfig& config) : config(config) {
+#ifndef ST_USE_VULKAN
         ST_LOG_TRACE("Initializing ImGui");
 
         ST_ASSERT(IMGUI_CHECKVERSION(), "Invalid ImGui version");
@@ -26,17 +29,21 @@ namespace Storytime {
         }
 
         ST_LOG_DEBUG("Initialized ImGui");
+#endif
     }
 
     ImGuiRenderer::~ImGuiRenderer() {
+#ifndef ST_USE_VULKAN
         ST_LOG_TRACE("Terminating ImGui");
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
         ST_LOG_DEBUG("Terminated ImGui");
+#endif
     }
 
     void ImGuiRenderer::begin_frame() const {
+#ifndef ST_USE_VULKAN
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -50,9 +57,11 @@ namespace Storytime {
         config.keyboard->set_enabled(application_keyboard_enabled);
         config.window->set_mouse_events_enabled(application_mouse_enabled);
         config.window->set_keyboard_events_enabled(application_keyboard_enabled);
+#endif
     }
 
     void ImGuiRenderer::end_frame() const {
+#ifndef ST_USE_VULKAN
         // Prepare ImGui rendering data for the current frame
         ImGui::Render();
 
@@ -73,5 +82,6 @@ namespace Storytime {
 
         // Restore the OpenGL context to our main application window
         glfwMakeContextCurrent(*config.window);
+#endif
     }
 }

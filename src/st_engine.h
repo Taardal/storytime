@@ -4,14 +4,12 @@
 #include "st_app.h"
 #include "audio/st_audio_engine.h"
 #include "graphics/st_imgui_renderer.h"
-#include "graphics/st_open_gl.h"
 #include "graphics/st_renderer.h"
-#include "graphics/st_vulkan_renderer.h"
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
-#include "system/st_game_loop_metrics.h"
+#include "system/st_metrics.h"
 #include "system/st_service_locator.h"
 #include "window/st_keyboard.h"
 #include "window/st_mouse.h"
@@ -30,15 +28,13 @@ namespace Storytime {
         ResourceLoader resource_loader;
         Window window;
 #ifndef ST_USE_VULKAN
-        OpenGL open_gl;
-        Renderer renderer;
         ImGuiRenderer imgui_renderer;
 #endif
         Keyboard keyboard;
         Mouse mouse;
         ProcessManager process_manager;
-        GameLoopMetrics game_loop_metrics;
-        VulkanRenderer vulkan_renderer;
+        Metrics metrics;
+        Renderer vulkan_renderer;
 
     public:
         Engine(const Config& config);

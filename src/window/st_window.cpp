@@ -29,13 +29,7 @@ namespace Storytime {
         glfwSetErrorCallback(on_glfw_error);
 
         ST_LOG_TRACE("Setting GLFW window hints");
-#ifndef ST_USE_VULKAN
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.context_version_minor);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-#endif
         glfwWindowHint(GLFW_MAXIMIZED, config.maximized);
         glfwWindowHint(GLFW_RESIZABLE, config.resizable);
 
@@ -63,11 +57,6 @@ namespace Storytime {
             ST_THROW("Could not create GLFW window");
         }
         ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, width, height);
-
-#ifndef ST_USE_VULKAN
-        glfwMakeContextCurrent(glfw_window);
-        glfwSwapInterval(config.vsync ? 1 : 0);
-#endif
 
         glfwSetWindowUserPointer(glfw_window, this);
         glfwSetCursorPosCallback(glfw_window, on_cursor_position_change);

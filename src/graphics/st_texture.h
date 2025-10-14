@@ -1,61 +1,38 @@
 #pragma once
 
-namespace Storytime {
-    struct Image {
-        unsigned char* pixels;
-        i32 width;
-        i32 height;
-        i32 channels;
-    };
+#include "graphics/st_vulkan_image.h"
+#include "resource/st_image_file.h"
 
+namespace Storytime {
     struct TextureConfig {
-        u32 width = 0;
-        u32 height = 0;
-        i32 format = 0;
-        i32 internal_format = 0;
-        i32 level_of_detail = 0;
-        i32 border = 0;
+        ImageFile image_file{};
+        std::shared_ptr<VulkanImage> vulkan_image = nullptr;
     };
 
     class Texture {
-    private:
-        static const i32 TARGET;
+    public:
+        typedef TextureConfig Config;
 
     private:
-        u32 id;
-        u32 width;
-        u32 height;
-        i32 format;
-        i32 internal_format;
-        i32 level_of_detail;
-        i32 border;
+        Config config{};
 
     public:
-        explicit Texture(const TextureConfig& config);
-
-        explicit Texture(const Image& image);
-
-        Texture(u32 width, u32 height);
-
-        ~Texture();
-
-        std::pair<u32, u32> get_size() const;
+        Texture(const Config& config);
 
         u32 get_width() const;
 
         u32 get_height() const;
 
-        u32 get_id() const;
-
-        i32 get_level_of_detail() const;
-
-        void set_pixels(const void* data) const;
-
-        void bind(u32 texture_slot = 0) const;
-
-        void unbind() const;
-
-    private:
-        void initialize();
+        // std::pair<u32, u32> get_size() const;
+        //
+        // u32 get_id() const;
+        //
+        // i32 get_level_of_detail() const;
+        //
+        // void set_pixels(const void* data) const;
+        //
+        // void bind(u32 texture_slot = 0) const;
+        //
+        // void unbind() const;
     };
 }

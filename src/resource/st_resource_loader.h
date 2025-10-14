@@ -2,9 +2,8 @@
 
 #include "audio/st_audio.h"
 #include "audio/st_audio_engine.h"
-#include "graphics/st_shader.h"
 #include "graphics/st_spritesheet.h"
-#include "graphics/st_texture.h"
+#include "resource/st_image_file.h"
 #include "system/st_file_reader.h"
 #include "tiled/st_tiled_map.h"
 #include "tiled/st_tiled_project.h"
@@ -25,8 +24,6 @@ namespace Storytime {
     public:
         explicit ResourceLoader(ResourceLoaderConfig config);
 
-        Shared<Shader> load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const;
-
         Shared<Texture> load_texture(const std::filesystem::path& path) const;
 
         Shared<Audio> load_audio(const std::filesystem::path& path) const;
@@ -42,8 +39,8 @@ namespace Storytime {
         Shared<TiledObjectTemplate> load_tiled_object_template(const std::filesystem::path& path) const;
 
     private:
-        Image load_image(const std::filesystem::path& path) const;
+        ImageFile load_image(const std::filesystem::path& path) const;
 
-        void free_image(const Image& image) const;
+        void free_image(const ImageFile& image) const;
     };
 }

@@ -7,28 +7,14 @@ namespace Storytime {
     ResourceLoader::ResourceLoader(ResourceLoaderConfig config) : config(std::move(config)) {
     }
 
-    Shared<Shader> ResourceLoader::load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const {
-        ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-
-        const std::string& vertex_shader_source = config.file_reader->read_string(vertex_shader_path.c_str());
-        ST_ASSERT(!vertex_shader_source.empty(), "Could not read vertex shader file [" << vertex_shader_path.c_str() << "]");
-
-        const std::string& fragment_shader_source = config.file_reader->read_string(fragment_shader_path.c_str());
-        ST_ASSERT(!fragment_shader_source.empty(), "Could not read fragment shader file [" << vertex_shader_path.c_str() << "]");
-
-        auto shader = std::make_shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
-        ST_LOG_DEBUG("Loaded shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-        return shader;
-    }
-
     Shared<Texture> ResourceLoader::load_texture(const std::filesystem::path& path) const {
-        ST_LOG_TRACE("Loading texture [{}]", path.c_str());
-
         ST_ASSERT(!path.empty(), "Texture path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Texture must exist on path [" << path << "]");
 
-        Image image = load_image(path);
-        auto texture = std::make_shared<Texture>(image);
+        ST_LOG_TRACE("Loading texture [{}]", path.c_str());
+
+        ImageFile image = load_image(path);
+        auto texture = std::make_shared<Texture>(TextureConfig{ .image_file = image });
         free_image(image);
 
         ST_LOG_DEBUG("Loaded texture [{}]", path.c_str());
@@ -116,16 +102,16 @@ namespace Storytime {
         }, "Could not load Tiled template [" << path << "]");
     }
 
-    Image ResourceLoader::load_image(const std::filesystem::path& path) const {
-        int32_t width = 0;
-        int32_t height = 0;
-        int32_t channels = 0;
-        int32_t desiredChannels = STBI_default;
-        unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
-        return {pixels, width, height, channels};
+    ImageFile ResourceLoader::load_image(const std::filesystem::path& path) const {
+        ImageFile image_file{};
+        image_file.width = 0;
+        image_file.height = 0;
+        image_file.channels = 0;
+        image_file.pixels = stbi_load(path.c_str(), &image_file.width, &image_file.height, &image_file.channels, STBI_rgb_alpha);
+        return image_file;
     }
 
-    void ResourceLoader::free_image(const Image& image) const {
+    void ResourceLoader::free_image(const ImageFile& image) const {
         if (image.pixels) {
             stbi_image_free(image.pixels);
         }

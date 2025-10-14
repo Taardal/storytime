@@ -28,9 +28,6 @@
 // Vulkan
 #include <vulkan/vulkan.h> // Vulkan must be included before GLFW
 
-// GLAD
-#include <glad/glad.h> // Include GLAD before GLFW to let GLAD include the OpenGL header (gl.h)
-
 // GLFW
 #define GLFW_INCLUDE_NONE // Explicitly prevent GLFW from including the OpenGL header (gl.h)
 #include <GLFW/glfw3.h>
@@ -49,9 +46,11 @@
 // Lua
 #include <lua.hpp>
 
+#ifndef ST_USE_VULKAN
 // ImGui
 #include <imgui.h>
 #include <imgui_internal.h>
+#endif
 
 // --------------------------------------------------------------------------------------------------------------
 // App

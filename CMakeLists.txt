@@ -68,20 +68,12 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
     ${ST_SRC_DIR}/graphics/st_camera.h
-    ${ST_SRC_DIR}/graphics/st_framebuffer.cpp
-    ${ST_SRC_DIR}/graphics/st_framebuffer.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
-    ${ST_SRC_DIR}/graphics/st_index_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_index_buffer.h
-    ${ST_SRC_DIR}/graphics/st_open_gl.cpp
-    ${ST_SRC_DIR}/graphics/st_open_gl.h
     ${ST_SRC_DIR}/graphics/st_quad_vertex.cpp
     ${ST_SRC_DIR}/graphics/st_quad_vertex.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_renderer.h
-    ${ST_SRC_DIR}/graphics/st_shader.cpp
-    ${ST_SRC_DIR}/graphics/st_shader.h
     ${ST_SRC_DIR}/graphics/st_sprite.cpp
     ${ST_SRC_DIR}/graphics/st_sprite.h
     ${ST_SRC_DIR}/graphics/st_spritesheet.cpp
@@ -90,12 +82,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_texture.h
     ${ST_SRC_DIR}/graphics/st_texture_coordinate.cpp
     ${ST_SRC_DIR}/graphics/st_texture_coordinate.h
-    ${ST_SRC_DIR}/graphics/st_vertex_array.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_array.h
-    ${ST_SRC_DIR}/graphics/st_vertex_attribute.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_attribute.h
-    ${ST_SRC_DIR}/graphics/st_vertex_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.cpp
@@ -124,8 +110,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.h
     ${ST_SRC_DIR}/graphics/st_vulkan_queue.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_queue.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_renderer.cpp
-    ${ST_SRC_DIR}/graphics/st_vulkan_renderer.h
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
     ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.cpp
@@ -134,8 +118,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_utils.h
     ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.h
-    ${ST_SRC_DIR}/resource/st_resource_loader.cpp
-    ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
@@ -169,6 +151,10 @@ add_library(
     ${ST_SRC_DIR}/process/st_process.h
     ${ST_SRC_DIR}/process/st_process_manager.cpp
     ${ST_SRC_DIR}/process/st_process_manager.h
+    ${ST_SRC_DIR}/resource/st_image_file.cpp
+    ${ST_SRC_DIR}/resource/st_image_file.h
+    ${ST_SRC_DIR}/resource/st_resource_loader.cpp
+    ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/scene/st_entity.cpp
     ${ST_SRC_DIR}/scene/st_entity.h
     ${ST_SRC_DIR}/scene/st_scene.cpp
@@ -200,7 +186,7 @@ add_library(
     ${ST_SRC_DIR}/system/st_error_signal.h
     ${ST_SRC_DIR}/system/st_file_reader.cpp
     ${ST_SRC_DIR}/system/st_file_reader.h
-    ${ST_SRC_DIR}/system/st_game_loop_metrics.h
+    ${ST_SRC_DIR}/system/st_metrics.h
     ${ST_SRC_DIR}/system/st_json_to_from.h
     ${ST_SRC_DIR}/system/st_log.cpp
     ${ST_SRC_DIR}/system/st_log.h
@@ -390,14 +376,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 target_link_libraries(${ST_TARGET} glm::glm)
 
-# GLAD
-set(GLAD_NAME glad)
-set(GLAD_DIR ${ST_LIB_DIR}/glad-0.1.33)
-add_library(${GLAD_NAME} ${GLAD_DIR}/src/glad.c)
-target_include_directories(${GLAD_NAME} PRIVATE ${GLAD_DIR}/include)
-target_include_directories(${ST_TARGET} PUBLIC ${GLAD_DIR}/include)
-target_link_libraries(${ST_TARGET} glad ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
-
 # GLFW
 set(GLFW_INSTALL OFF CACHE INTERNAL Generate installation target)
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL Build the GLFW documentation)
@@ -411,6 +389,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 target_link_libraries(${ST_TARGET} glfw)
 
+if (${ST_USE_VULKAN})
 # ImGui
 set(IMGUI_NAME imgui)
 set(IMGUI_DIR ${ST_LIB_DIR}/imgui-docking-1.77)
@@ -435,6 +414,7 @@ target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
 target_link_libraries(${IMGUI_NAME} glfw)
 target_include_directories(${ST_TARGET} PUBLIC ${IMGUI_DIR})
 target_link_libraries(${ST_TARGET} ${IMGUI_NAME})
+endif ()
 
 # JSON
 FetchContent_Declare(
