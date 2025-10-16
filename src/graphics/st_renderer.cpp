@@ -1,5 +1,6 @@
 #include "st_renderer.h"
 
+#include "graphics/st_view_projection.h"
 #include "graphics/st_vulkan_descriptor_set.h"
 
 #include <stb_image.h>
@@ -13,6 +14,7 @@ namespace Storytime {
     static constexpr u32 indices_per_quad = 6;
     static constexpr u32 quads_per_batch = 10'000;
     static constexpr u32 vertices_per_batch = quads_per_batch * vertices_per_quad;
+    static constexpr u32 textures_per_batch = 16;
 
     static constexpr std::array<glm::vec2, vertices_per_quad> texture_coordinates = {
         glm::vec2(0.0f, 0.0f), // Top left
@@ -116,7 +118,7 @@ namespace Storytime {
         // - 1 is added so that the original image has a mip level.
         u32 mip_levels = (u32) std::floor(std::log2(std::max(width, height))) + 1;
 
-        texture = VulkanImage({
+        texture = std::make_shared<VulkanImage>(VulkanImage({
             .name = "FooTexture",
             .device = &device,
             .width = (u32) width,
@@ -126,23 +128,13 @@ namespace Storytime {
             .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
             .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             .mip_levels = mip_levels,
-        });
+        }));
 
         record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            texture.set_pixels(on_record_commands_fn, pixel_data_size, pixel_data);
+            texture->set_pixels(on_record_commands_fn, pixel_data_size, pixel_data);
         });
 
         stbi_image_free(pixel_data);
-
-        //
-        // Init
-        //
-
-        create_sync_objects();
-        allocate_command_buffers();
-        allocate_descriptor_sets();
-        write_descriptors();
-        prepare_frames();
 
         batch.resize(quads_per_batch);
         {
@@ -158,6 +150,7 @@ namespace Storytime {
 
             batch[batch_index].model = translation * rotation * scale;
             batch[batch_index].color = color;
+            batch[batch_index].texture_index = texture_index;
             batch_index++;
         }
         {
@@ -173,14 +166,25 @@ namespace Storytime {
 
             batch[batch_index].model = translation * rotation * scale;
             batch[batch_index].color = color;
+            batch[batch_index].texture_index = texture_index;
             batch_index++;
         }
 
-        // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        batch_textures.resize(textures_per_batch);
+        {
+            batch_textures[texture_index] = texture;
+            texture_index++;
+        }
 
-        // transform_component.translation = glm::translate(glm::mat4(1.0f), transform_component.position);
-        // transform_component.rotation = glm::rotate(glm::mat4(1.0f), glm::radians(transform_component.rotation_deg), POSITIVE_Z_AXIS);
-        // transform_component.scale = glm::scale(glm::mat4(1.0f), transform_component.size);
+        //
+        // Init
+        //
+
+        create_sync_objects();
+        allocate_command_buffers();
+        allocate_descriptor_sets();
+        write_descriptors();
+        prepare_frames();
 
         record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
@@ -202,56 +206,28 @@ namespace Storytime {
         }
 
         const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
 
         if (!swapchain.acquire_frame(frame)) {
             return;
         }
 
-        begin_frame_command_buffer(frame.command_buffer);
-        device.begin_cmd_label(frame.command_buffer, "Frame commands");
+        begin_frame_command_buffer(command_buffer);
+        device.begin_cmd_label(command_buffer, "Frame commands");
 
-        device.insert_cmd_label(frame.command_buffer, "Begin swapchain frame");
-        swapchain.begin_render(frame.command_buffer);
-    }
-
-    void Renderer::end_frame() {
-        const Frame& frame = frames.at(current_frame_index);
-
-        device.insert_cmd_label(frame.command_buffer, "End swapchain frame");
-        swapchain.end_render(frame.command_buffer);
-
-        device.end_cmd_label(frame.command_buffer);
-        end_frame_command_buffer(frame.command_buffer);
-
-        swapchain.present_frame(frame);
-        frame_end_time = Time::now();
-
-        previous_frame_index = current_frame_index;
-        current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
-
-        config.metrics->frame_duration_ms = Time::as<Microseconds>(frame_end_time - frame_start_time).count() / 1000.0;
-        config.metrics->fps = 1.0 / (config.metrics->frame_duration_ms / 1000.0);
-
-        frame_counter++;
-        frame_delta += Time::as<Microseconds>(frame_end_time - frame_start_time).count();
-        if (frame_delta / 1000.0 > 1.0) {
-            config.metrics->fpss = frame_counter;
-            frame_delta = 0.0;
-            frame_counter = 0;
-        }
-    }
-
-#define FOO
-
-    void Renderer::render() const {
-#ifdef FOO
-        const Frame& frame = frames.at(current_frame_index);
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+        device.insert_cmd_label(command_buffer, "Begin swapchain frame");
+        swapchain.begin_render(command_buffer);
 
         device.insert_cmd_label(command_buffer, "Bind pipeline");
         graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        device.insert_cmd_label(command_buffer, "Bind descriptor set");
+        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        device.insert_cmd_label(command_buffer, "Bind index buffer");
+        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
 
         device.insert_cmd_label(command_buffer, "Bind vertex buffers");
         VkBuffer vertex_buffers[] = {
@@ -266,11 +242,107 @@ namespace Storytime {
             .offsets = offsets,
         });
 
-        device.insert_cmd_label(command_buffer, "Bind index buffer");
-        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
+        ViewProjection vp{};
+        set_view_projection1(vp);
+    }
 
-        device.insert_cmd_label(command_buffer, "Bind descriptor set");
-        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+    void Renderer::end_frame() {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+
+        render_batch();
+
+        device.insert_cmd_label(frame.command_buffer, "End swapchain frame");
+        swapchain.end_render(frame.command_buffer);
+
+        device.end_cmd_label(frame.command_buffer);
+        end_frame_command_buffer(frame.command_buffer);
+
+        swapchain.present_frame(frame);
+        frame_end_time = Time::now();
+
+        previous_frame_index = current_frame_index;
+        current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
+
+        // Metrics
+
+        config.metrics->frame_duration_ms = Time::as<Microseconds>(frame_end_time - frame_start_time).count() / 1000.0;
+        config.metrics->fps = 1.0 / (config.metrics->frame_duration_ms / 1000.0);
+
+        frame_counter++;
+        frame_delta += Time::as<Microseconds>(frame_end_time - frame_start_time).count();
+        if (frame_delta / 1000.0 > 1.0) {
+            config.metrics->fpss = frame_counter;
+            frame_delta = 0.0;
+            frame_counter = 0;
+        }
+
+        config.metrics->draw_calls = 0;
+        config.metrics->quad_count = 0;
+        config.metrics->index_count = 0;
+        config.metrics->vertex_count = 0;
+    }
+
+    void Renderer::set_view_projection1(ViewProjection& view_projection) {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+
+        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
+
+        view_projection.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        view_projection.projection = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
+
+        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted compared to Vulkan.
+        // The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
+        // If we don't do this, then the image will be rendered upside down.
+        view_projection.projection[1][1] *= -1;
+
+        uniform_buffer.set_uniforms(&view_projection);
+    }
+
+#define FOO
+
+    void Renderer::render() const {
+#ifdef FOO
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+
+        device.insert_cmd_label(command_buffer, "Draw indexed");
+        command_buffer.draw_indexed({
+            .index_count = (u32) indices.size(),
+            .instance_count = batch_index,
+            .first_index = 0,
+            .vertex_offset = 0,
+            .first_instance = 0,
+        });
+#endif
+    }
+
+    void Renderer::render_quad(const Quad& quad) {
+#ifndef FOO
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+
+        if (batch_index >= batch.size()) {
+            render_batch();
+        }
+
+        // batch[batch_index] = ...
+        // batch_index++;
+#endif
+    }
+
+    void Renderer::render_batch() {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
 
         device.insert_cmd_label(command_buffer, "Draw indexed");
         command_buffer.draw_indexed({
@@ -281,75 +353,22 @@ namespace Storytime {
             .first_instance = 0,
         });
 
-        //
-        // Update view-projection
-        //
+        config.metrics->draw_calls++;
+        config.metrics->quad_count += batch_index;
+        config.metrics->index_count += batch_index * indices_per_quad;
+        config.metrics->vertex_count += batch_index * vertices_per_quad;
 
-        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
-
-        ViewProjection view_projection{};
-        view_projection.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        view_projection.projection = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
-
-        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted compared to Vulkan.
-        // The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
-        // If we don't do this, then the image will be rendered upside down.
-        view_projection.projection[1][1] *= -1;
-
-        uniform_buffer.set_uniforms(&view_projection);
-#endif
+        // batch_index = 0;
+        // texture_index = 0;
     }
 
-    void Renderer::render_quad(const Quad& quad) {
-#ifndef FOO
-        const Frame& frame = frames.at(current_frame_index);
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-
-        quads[0].color = { 1.0f, 0.0f, 0.0f }; // quad.color
-        quads[0].position = { -0.5f, -0.5f, 0.0f }; // quad.position;
-        quads[0].texture_coordinate = { 0.0f, 0.0f };
-
-        // vertex_buffer.set_vertices(vertices.data(), command_buffer);
-
-        device.insert_cmd_label(command_buffer, "Bind pipeline");
-        graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-        device.insert_cmd_label(command_buffer, "Bind vertex buffer");
-        vertex_buffer.bind(command_buffer);
-
-        device.insert_cmd_label(command_buffer, "Bind index buffer");
-        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
-
-        device.insert_cmd_label(command_buffer, "Bind descriptor set");
-        VulkanDescriptorSet descriptor_set = descriptor_sets.at(current_frame_index);
-        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-        device.insert_cmd_label(command_buffer, "Draw indexed");
-        command_buffer.draw_indexed({
-            .index_count = (u32) indices.size(),
-            .instance_count = 1,
-        });
-
-        static auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
-
-        UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
-
-        // GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted compared to Vulkan.
-        // The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
-        // If we don't do this, then the image will be rendered upside down.
-        ubo.proj[1][1] *= -1;
-
-        const VulkanUniformBuffer& uniform_buffer = uniform_buffers.at(current_frame_index);
-        uniform_buffer.set_uniforms(&ubo);
-#endif
+    void Renderer::reset_metrics() {
+    #if 0
+        config.metrics->draw_calls = 0;
+        config.metrics->quad_count = 0;
+        config.metrics->index_count = 0;
+        config.metrics->vertex_count = 0;
+    #endif
     }
 
     std::vector<VulkanUniformBuffer> Renderer::create_uniform_buffers() {
@@ -426,31 +445,37 @@ namespace Storytime {
                 .location = 2,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, color) + 0 * sizeof(glm::vec4),
+                .offset = offsetof(InstanceData, model) + 0 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 3,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 0 * sizeof(glm::vec4),
+                .offset = offsetof(InstanceData, model) + 1 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 4,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 1 * sizeof(glm::vec4),
+                .offset = offsetof(InstanceData, model) + 2 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 5,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 2 * sizeof(glm::vec4),
+                .offset = offsetof(InstanceData, model) + 3 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 6,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 3 * sizeof(glm::vec4),
+                .offset = offsetof(InstanceData, color) + 0 * sizeof(glm::vec4),
+            },
+            VkVertexInputAttributeDescription{
+                .location = 7,
+                .binding = 1,
+                .format = get_vk_format("float"),
+                .offset = offsetof(InstanceData, texture_index) + 0 * sizeof(f32),
             },
         };
 
@@ -472,7 +497,7 @@ namespace Storytime {
         descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
 
         descriptor_pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight;
+        descriptor_pool_sizes[1].descriptorCount = config.max_frames_in_flight * textures_per_batch;
 
         return VulkanDescriptorPool({
             .name = std::format("{} descriptor pool", config.name),
@@ -493,7 +518,7 @@ namespace Storytime {
 
         descriptor_set_layout_bindings[1].binding = 1;
         descriptor_set_layout_bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_bindings[1].descriptorCount = 1;
+        descriptor_set_layout_bindings[1].descriptorCount = textures_per_batch;
         descriptor_set_layout_bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         descriptor_set_layout_bindings[1].pImmutableSamplers = nullptr;
 
@@ -685,10 +710,13 @@ namespace Storytime {
             uniform_buffer_descriptor_info.offset = 0;
             uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
 
-            VkDescriptorImageInfo image_descriptor_info{};
-            image_descriptor_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            image_descriptor_info.imageView = texture.get_view();
-            image_descriptor_info.sampler = sampler;
+            std::vector<VkDescriptorImageInfo> image_descriptor_infos{};
+            image_descriptor_infos.resize(textures_per_batch);
+            for (u32 j = 0; j < textures_per_batch; j++) {
+                image_descriptor_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                image_descriptor_infos[j].imageView = batch_textures.at(0)->get_view();
+                image_descriptor_infos[j].sampler = sampler;
+            }
 
             // Bind the buffers to the descriptors by writing to the desriptor set
 
@@ -707,8 +735,8 @@ namespace Storytime {
             descriptor_writes[1].dstBinding = 1;
             descriptor_writes[1].dstArrayElement = 0;
             descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptor_writes[1].descriptorCount = 1;
-            descriptor_writes[1].pImageInfo = &image_descriptor_info;
+            descriptor_writes[1].descriptorCount = image_descriptor_infos.size();
+            descriptor_writes[1].pImageInfo = image_descriptor_infos.data();
 
             descriptor_set.write(device, descriptor_writes);
         }

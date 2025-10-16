@@ -18,6 +18,7 @@
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_clock.h"
 #include "system/st_dispatcher.h"
+#include "system/st_log.h"
 #include "system/st_metrics.h"
 #include "window/st_window.h"
 
@@ -26,23 +27,9 @@ namespace Storytime {
         Shared<Texture> texture = nullptr;
         glm::vec3 position = {0.0f, 0.0f, 0.0f};
         glm::vec2 size = {0.0f, 0.0f};
-        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-        f32 rotation_in_degrees = 0.0f;
+        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; 
+        f32 rotation_in_degrees = 0.0f;             
         f32 tiling_factor = 1.0f;
-    };
-
-    struct Viewport {
-        i32 x = 0;
-        i32 y = 0;
-        i32 width = 0;
-        i32 height = 0;
-    };
-
-    struct RendererStatistics {
-        u32 draw_calls = 0;
-        u32 quad_count = 0;
-        u32 vertex_count = 0;
-        u32 index_count = 0;
     };
 
     struct RendererConfig {
@@ -80,12 +67,13 @@ namespace Storytime {
         std::vector<VkDescriptorSet> descriptor_sets{};
         std::vector<Frame> frames{};
         VkSampler sampler;
-        VulkanImage texture;
+        std::shared_ptr<VulkanImage> texture = nullptr;
         u32 current_frame_index = 0;
         u32 previous_frame_index = 0;
-        std::vector<QuadVertex> quads{};
         std::vector<InstanceData> batch{};
         u32 batch_index = 0;
+        std::vector<std::shared_ptr<VulkanImage>> batch_textures{};
+        u32 texture_index = 0;
 
         u32 frame_counter = 0;
         f64 frame_delta = 0.0;
@@ -108,13 +96,15 @@ namespace Storytime {
 
         void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates) { ST_LOG_W("render_quad"); }
 
-        void set_viewport(const Viewport& viewport) const { ST_LOG_W("set_viewport"); }
+        void set_view_projection1(ViewProjection& view_projection);
 
-        void set_clear_color(const glm::vec4& clear_color) const { ST_LOG_W("set_clear_color"); }
-
-        void set_view_projection(const ViewProjection& view_projection) const { ST_LOG_W("set_view_projection"); }
+        void set_view_projection(const ViewProjection& view_projection) const { ST_LOG_W("viewproj"); };
 
     private:
+        void render_batch();
+
+        void reset_metrics();
+
         std::vector<VulkanUniformBuffer> create_uniform_buffers();
 
         VulkanDescriptorPool create_descriptor_pool();

@@ -13,5 +13,6 @@ namespace Storytime {
     struct InstanceData {
         glm::mat4 model = glm::mat4(1.0f);
         glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+        f32 texture_index = 0.0f;
     };
 }

@@ -1,0 +1,24 @@
+# Use the latest supported style base — start from LLVM or Google, then customize.
+BasedOnStyle: LLVM
+
+# Use C++20 standard (affects things like concepts, requires, etc.)
+Standard: c++20
+
+# 4 spaces per indentation level
+IndentWidth: 4              
+
+# Tab width when used
+TabWidth: 4                 
+
+# Always use spaces, not tabs
+UseTab: Never               
+
+# Puts braces on the same line as control statements
+BreakBeforeBraces: Attach
+
+# Only empty functions may be one-liners
+AllowShortFunctionsOnASingleLine: Empty 
+
+# Max line length before wrapping
+ColumnLimit: 120
+
