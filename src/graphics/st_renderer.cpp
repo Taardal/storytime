@@ -129,12 +129,39 @@ namespace Storytime {
             .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             .mip_levels = mip_levels,
         }));
-
         record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
             texture->set_pixels(on_record_commands_fn, pixel_data_size, pixel_data);
         });
 
+
+        white_texture = std::make_shared<VulkanImage>(VulkanImage({
+            .name = "WhiteTexture",
+            .device = &device,
+            .width = 1,
+            .height = 1,
+            .format = VK_FORMAT_R8G8B8A8_SRGB,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .mip_levels = 1,
+        }));
+        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+            u32 white_texture_pixels = 0xffffffff;
+            white_texture->set_pixels(on_record_commands_fn, sizeof(white_texture_pixels), &white_texture_pixels);
+        });
+
+
         stbi_image_free(pixel_data);
+
+        batch_textures.resize(textures_per_batch);
+        {
+            for (u32 i = 0; i < textures_per_batch; i++) {
+                batch_textures[i] = white_texture;
+            }
+
+            batch_textures[texture_index] = texture;
+            texture_index++;
+        }
 
         batch.resize(quads_per_batch);
         {
@@ -150,7 +177,7 @@ namespace Storytime {
 
             batch[batch_index].model = translation * rotation * scale;
             batch[batch_index].color = color;
-            batch[batch_index].texture_index = texture_index;
+            batch[batch_index].texture_index = 1;
             batch_index++;
         }
         {
@@ -166,15 +193,10 @@ namespace Storytime {
 
             batch[batch_index].model = translation * rotation * scale;
             batch[batch_index].color = color;
-            batch[batch_index].texture_index = texture_index;
+            batch[batch_index].texture_index = 0;
             batch_index++;
         }
 
-        batch_textures.resize(textures_per_batch);
-        {
-            batch_textures[texture_index] = texture;
-            texture_index++;
-        }
 
         //
         // Init
@@ -714,7 +736,7 @@ namespace Storytime {
             image_descriptor_infos.resize(textures_per_batch);
             for (u32 j = 0; j < textures_per_batch; j++) {
                 image_descriptor_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                image_descriptor_infos[j].imageView = batch_textures.at(0)->get_view();
+                image_descriptor_infos[j].imageView = batch_textures.at(j)->get_view();
                 image_descriptor_infos[j].sampler = sampler;
             }
 

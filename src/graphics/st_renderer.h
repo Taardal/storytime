@@ -67,11 +67,14 @@ namespace Storytime {
         std::vector<VkDescriptorSet> descriptor_sets{};
         std::vector<Frame> frames{};
         VkSampler sampler;
-        std::shared_ptr<VulkanImage> texture = nullptr;
         u32 current_frame_index = 0;
         u32 previous_frame_index = 0;
+
         std::vector<InstanceData> batch{};
         u32 batch_index = 0;
+
+        std::shared_ptr<VulkanImage> texture = nullptr;
+        std::shared_ptr<VulkanImage> white_texture = nullptr;
         std::vector<std::shared_ptr<VulkanImage>> batch_textures{};
         u32 texture_index = 0;
 
