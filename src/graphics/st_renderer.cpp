@@ -10,193 +10,93 @@
 
 namespace Storytime {
 
-    static constexpr u32 vertices_per_quad = 4;
-    static constexpr u32 indices_per_quad = 6;
-    static constexpr u32 quads_per_batch = 10'000;
-    static constexpr u32 vertices_per_batch = quads_per_batch * vertices_per_quad;
-    static constexpr u32 textures_per_batch = 16;
-
-    static constexpr std::array<glm::vec2, vertices_per_quad> texture_coordinates = {
-        glm::vec2(0.0f, 0.0f), // Top left
-        glm::vec2(1.0f, 0.0f), // Top right
-        glm::vec2(1.0f, 1.0f), // Bottom right
-        glm::vec2(0.0f, 1.0f), // Bottom left
-    };
-
-    static constexpr std::array<QuadVertex, vertices_per_quad> vertices = {
-        QuadVertex{{ -0.5f, -0.5f, 0.0f, 1.0f }, texture_coordinates[0]},
-        QuadVertex{{  0.5f, -0.5f, 0.0f, 1.0f }, texture_coordinates[1]},
-        QuadVertex{{  0.5f,  0.5f, 0.0f, 1.0f }, texture_coordinates[2]},
-        QuadVertex{{ -0.5f,  0.5f, 0.0f, 1.0f }, texture_coordinates[3]},
-    };
-
-    typedef u16 Index;
-
-    static constexpr std::array<Index, indices_per_quad> indices = {
-        0, 1, 2, 2, 3, 0
-    };
-
     Renderer::Renderer(const Config& config)
         : config(config),
-          context({
-              .app_name = config.name,
-              .engine_name = std::format("{} engine", config.name),
-              .window = config.window,
-              .validation_layers_enabled = config.validation_layers_enabled,
-          }),
-          physical_device({
-              .context = &context,
-          }),
-          device({
-              .name = std::format("{} device", config.name),
-              .physical_device = &physical_device,
-          }),
+          // context({
+          //     .app_name = config.name,
+          //     .engine_name = std::format("{} engine", config.name),
+          //     .window = config.window,
+          //     .validation_layers_enabled = config.validation_layers_enabled,
+          // }),
+          // physical_device({
+          //     .context = &context,
+          // }),
+          // device({
+          //     .name = std::format("{} device", config.name),
+          //     .physical_device = &physical_device,
+          // }),
           swapchain({
               .name = std::format("{} swapchain", config.name),
               .dispatcher = config.dispatcher,
               .window = config.window,
-              .device = &device,
-              .command_pool = &initialization_command_pool,
-              .surface = context.get_surface(),
+              .device = config.device,
+              .command_pool = config.command_pool,
+              .surface = config.context->get_surface(),
           }),
-          initialization_command_pool({
-              .name = std::format("{} initialization command pool", config.name),
-              .device = &device,
-              .queue_family_index = device.get_graphics_queue_family_index(),
-              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-          }),
+          // initialization_command_pool({
+          //     .name = std::format("{} initialization command pool", config.name),
+          //     .device = &device,
+          //     .queue_family_index = device.get_graphics_queue_family_index(),
+          //     .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          // }),
           runtime_command_pool({
               .name = std::format("{} render command pool", config.name),
-              .device = &device,
-              .queue_family_index = device.get_graphics_queue_family_index(),
+              .device = config.device,
+              .queue_family_index = config.device->get_graphics_queue_family_index(),
               .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
           }),
           vertex_buffer({
               .name = std::format("{} vertex buffer", config.name),
-              .device = &device,
+              .device = config.device,
               .size = sizeof(QuadVertex) * vertices.size(),
           }),
           instance_buffer({
               .name = std::format("{} instance buffer", config.name),
-              .device = &device,
+              .device = config.device,
               .size = sizeof(InstanceData) * quads_per_batch,
           }),
           index_buffer({
               .name = std::format("{} index buffer", config.name),
-              .device = &device,
+              .device = config.device,
               .size = sizeof(Index) * indices.size(),
           }),
           uniform_buffers(create_uniform_buffers()),
           descriptor_pool(create_descriptor_pool()),
           descriptor_set_layout(create_descriptor_set_layout()),
           graphics_pipeline(create_graphics_pipeline()),
-          sampler(create_sampler())
+          sampler(create_sampler()),
+          white_texture(std::make_shared<VulkanImage>(VulkanImage({
+              .name = "WhiteTexture",
+              .device = config.device,
+              .width = 1,
+              .height = 1,
+              .format = VK_FORMAT_R8G8B8A8_SRGB,
+              .tiling = VK_IMAGE_TILING_OPTIMAL,
+              .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+              .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+              .mip_levels = 1,
+          })))
     {
-        //
-        // Load texture
-        //
-
-        auto texture_path = ST_RES_DIR / std::filesystem::path("textures/vulkan_texture.png");
-
-        int32_t width = 0;
-        int32_t height = 0;
-        int32_t channels = 0;
-        int32_t desired_channels = STBI_rgb_alpha;
-
-        stbi_uc* pixel_data = stbi_load(texture_path.c_str(), &width, &height, &channels, desired_channels);
-        if (pixel_data == nullptr) {
-            ST_THROW("Could not load texture image [" << texture_path << "]");
-        }
-
-        // Calculate the size of the image in bytes.
-        u64 pixel_data_size = (u64) (width * height * channels);
-
-        // Calculate the number of levels in the mip chain.
-        // - The `max` function selects the largest dimension.
-        // - The `log2` function calculates how many times that dimension can be divided by 2.
-        // - The `floor` function handles cases where the largest dimension is not a power of 2.
-        // - 1 is added so that the original image has a mip level.
-        u32 mip_levels = (u32) std::floor(std::log2(std::max(width, height))) + 1;
-
-        texture = std::make_shared<VulkanImage>(VulkanImage({
-            .name = "FooTexture",
-            .device = &device,
-            .width = (u32) width,
-            .height = (u32) height,
-            .format = VK_FORMAT_R8G8B8A8_SRGB,
-            .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
-            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .mip_levels = mip_levels,
-        }));
-        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            texture->set_pixels(on_record_commands_fn, pixel_data_size, pixel_data);
+        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+            vertex_buffer.set_vertices(vertices.data(), command_buffer);
+            index_buffer.set_indices(indices.data(), command_buffer);
         });
 
-
-        white_texture = std::make_shared<VulkanImage>(VulkanImage({
-            .name = "WhiteTexture",
-            .device = &device,
-            .width = 1,
-            .height = 1,
-            .format = VK_FORMAT_R8G8B8A8_SRGB,
-            .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
-            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .mip_levels = 1,
-        }));
         record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            u32 white_texture_pixels = 0xffffffff;
+            u32 white_texture_pixels = 0xFFFFFFFF;
             white_texture->set_pixels(on_record_commands_fn, sizeof(white_texture_pixels), &white_texture_pixels);
         });
 
-
-        stbi_image_free(pixel_data);
-
-        batch_textures.resize(textures_per_batch);
-        {
-            for (u32 i = 0; i < textures_per_batch; i++) {
-                batch_textures[i] = white_texture;
-            }
-
-            batch_textures[texture_index] = texture;
-            texture_index++;
+        texture_batch.resize(textures_per_batch);
+        for (u32 i = 0; i < textures_per_batch; i++) {
+            texture_batch[i] = white_texture;
         }
 
-        batch.resize(quads_per_batch);
-        {
-            auto color = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+        quad_batch.resize(quads_per_batch);
 
-            auto position = glm::vec3(0.0f, 0.0f, 0.0f);
-            auto size = glm::vec3(1.0f, 1.0f, 0.0f);
-            auto rotation_deg = 0.0f;
-
-            auto translation = glm::translate(glm::mat4(1.0f), position);
-            auto rotation = glm::rotate(glm::mat4(1.0f), glm::radians(rotation_deg), glm::vec3{ 0.0f, 0.0f, 1.0f });
-            auto scale = glm::scale(glm::mat4(1.0f), size);
-
-            batch[batch_index].model = translation * rotation * scale;
-            batch[batch_index].color = color;
-            batch[batch_index].texture_index = 1;
-            batch_index++;
-        }
-        {
-            auto color = glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
-
-            auto position = glm::vec3(1.0f, 1.0f, 0.0f);
-            auto size = glm::vec3(0.5f, 0.5f, 0.0f);
-            auto rotation_deg = 90.0f;
-
-            auto translation = glm::translate(glm::mat4(1.0f), position);
-            auto rotation = glm::rotate(glm::mat4(1.0f), glm::radians(rotation_deg), glm::vec3{ 0.0f, 0.0f, 1.0f });
-            auto scale = glm::scale(glm::mat4(1.0f), size);
-
-            batch[batch_index].model = translation * rotation * scale;
-            batch[batch_index].color = color;
-            batch[batch_index].texture_index = 0;
-            batch_index++;
-        }
-
+        // record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+        //     instance_buffer.set_vertices(quad_batch.data(), command_buffer);
+        // });
 
         //
         // Init
@@ -207,22 +107,21 @@ namespace Storytime {
         allocate_descriptor_sets();
         write_descriptors();
         prepare_frames();
-
-        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
-            vertex_buffer.set_vertices(vertices.data(), command_buffer);
-            instance_buffer.set_vertices(batch.data(), command_buffer);
-            index_buffer.set_indices(indices.data(), command_buffer);
-        });
     }
 
     Renderer::~Renderer() {
-        ST_ASSERT_VK(device.wait_until_idle(), "Device must be able to wait until idle");
+        ST_ASSERT_VK(config.device->wait_until_idle(), "Device must be able to wait until idle");
+        white_texture = nullptr;
+        texture_batch.clear();
+        quad_batch.clear();
         destroy_sync_objects();
         destroy_sampler();
         destroy_descriptor_set_layout();
     }
 
     void Renderer::begin_frame() {
+        const VulkanDevice& device = *config.device;
+
         if (current_frame_index != previous_frame_index) {
             frame_start_time = Time::now();
         }
@@ -230,7 +129,6 @@ namespace Storytime {
         const Frame& frame = frames.at(current_frame_index);
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
 
         if (!swapchain.acquire_frame(frame)) {
             return;
@@ -238,37 +136,11 @@ namespace Storytime {
 
         begin_frame_command_buffer(command_buffer);
         device.begin_cmd_label(command_buffer, "Frame commands");
-
-        device.insert_cmd_label(command_buffer, "Begin swapchain frame");
-        swapchain.begin_render(command_buffer);
-
-        device.insert_cmd_label(command_buffer, "Bind pipeline");
-        graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-        device.insert_cmd_label(command_buffer, "Bind descriptor set");
-        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-        device.insert_cmd_label(command_buffer, "Bind index buffer");
-        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
-
-        device.insert_cmd_label(command_buffer, "Bind vertex buffers");
-        VkBuffer vertex_buffers[] = {
-            vertex_buffer,
-            instance_buffer,
-        };
-        VkDeviceSize offsets[] = { 0, 0 };
-        command_buffer.bind_vertex_buffers({
-            .first_binding = 0,
-            .binding_count = 2,
-            .vertex_buffers = vertex_buffers,
-            .offsets = offsets,
-        });
-
-        ViewProjection vp{};
-        set_view_projection1(vp);
     }
 
     void Renderer::end_frame() {
+        const VulkanDevice& device = *config.device;
+
         const Frame& frame = frames.at(current_frame_index);
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
@@ -294,10 +166,10 @@ namespace Storytime {
         config.metrics->fps = 1.0 / (config.metrics->frame_duration_ms / 1000.0);
 
         frame_counter++;
-        frame_delta += Time::as<Microseconds>(frame_end_time - frame_start_time).count();
-        if (frame_delta / 1000.0 > 1.0) {
+        frame_delta_ms += config.metrics->frame_duration_ms;
+        if (frame_delta_ms / 1000.0 > 1.0) {
             config.metrics->fpss = frame_counter;
-            frame_delta = 0.0;
+            frame_delta_ms = 0.0;
             frame_counter = 0;
         }
 
@@ -305,16 +177,86 @@ namespace Storytime {
         config.metrics->quad_count = 0;
         config.metrics->index_count = 0;
         config.metrics->vertex_count = 0;
+        config.metrics->texture_count = 0;
     }
 
-    void Renderer::set_view_projection1(ViewProjection& view_projection) {
+    void Renderer::render_batch() {
+        const VulkanDevice& device = *config.device;
+
         const Frame& frame = frames.at(current_frame_index);
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
         const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
 
-        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
+        write_descriptorz(); // NOT WHILE DESCRIPTOR SET IS IN USE BY A COMMAND BUFFER
+        instance_buffer.set_vertices(quad_batch.data(), command_buffer); // NOT INSIDE AN ACTIVE RENDER PASS
 
+        device.insert_cmd_label(command_buffer, "Begin swapchain frame");
+        swapchain.begin_render(command_buffer);
+
+        device.insert_cmd_label(command_buffer, "Bind pipeline");
+        graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        device.insert_cmd_label(command_buffer, "Bind descriptor set");
+        descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        device.insert_cmd_label(command_buffer, "Bind vertex buffers");
+        VkBuffer vertex_buffers[] = {
+            vertex_buffer,
+            instance_buffer,
+        };
+        VkDeviceSize offsets[] = { 0, 0 };
+        command_buffer.bind_vertex_buffers({
+            .first_binding = 0,
+            .binding_count = 2,
+            .vertex_buffers = vertex_buffers,
+            .offsets = offsets,
+        });
+
+        device.insert_cmd_label(command_buffer, "Bind index buffer");
+        index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
+
+        device.insert_cmd_label(command_buffer, "Draw indexed");
+        command_buffer.draw_indexed({
+            .index_count = (u32) indices.size(),
+            .instance_count = quad_batch_index,
+            .first_index = 0,
+            .vertex_offset = 0,
+            .first_instance = 0,
+        });
+
+        config.metrics->draw_calls++;
+        // config.metrics->quad_count += quad_batch_index;
+        // config.metrics->index_count += quad_batch_index * indices_per_quad;
+        // config.metrics->vertex_count += quad_batch_index * vertices_per_quad;
+
+        quad_batch_index = 0;
+        texture_batch_index = 0;
+    }
+
+    void Renderer::upload_batch() {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+
+        instance_buffer.set_vertices(quad_batch.data(), command_buffer);
+    }
+
+    void Renderer::upload_full_batch() {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+
+        swapchain.end_render(command_buffer);
+        upload_batch();
+        swapchain.begin_render(command_buffer);
+    }
+
+#define FOOBAR
+
+    void Renderer::set_view_projection(ViewProjection& view_projection) {
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+#if 0
+        VkExtent2D swapchain_image_extent = swapchain.get_image_extent();
         view_projection.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         view_projection.projection = glm::perspective(glm::radians(45.0f), swapchain_image_extent.width / (float) swapchain_image_extent.height, 0.1f, 10.0f);
 
@@ -322,11 +264,102 @@ namespace Storytime {
         // The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
         // If we don't do this, then the image will be rendered upside down.
         view_projection.projection[1][1] *= -1;
+#endif
+
+#if 0
+        glm::mat4 pixel_center_correction = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
+        view_projection.projection = pixel_center_correction * view_projection.projection;
+#endif
 
         uniform_buffer.set_uniforms(&view_projection);
     }
 
-#define FOO
+    void Renderer::render_quad(const Quad& quad, const glm::vec4& texture_rectangle) {
+#ifndef FOO
+        // if (quad_batch_index >= quad_batch.size() || texture_batch_index >= texture_batch.size()) {
+        //     upload_full_batch();
+        // }
+
+        // Shared<Texture> texture = quad.texture != nullptr ? quad.texture : white_texture;
+        // f32 texture_index = -1.0f;
+        // for (u32 i = 0; i < texture_count; i++) {
+        //     if (textures[i] == texture) {
+        //         texture_index = (f32) i;
+        //         break;
+        //     }
+        // }
+        // if (texture_index == -1.0f) {
+        //     texture_index = (f32) texture_count;
+        //     textures[texture_count] = texture;
+        //     texture_count++;
+        // }
+
+        i32 texture_index = -1;
+
+        // Check if the quad's texture already exists in the texture batch.
+        // If the quad has no texture, it will find the index of the first white texture.
+        auto texture = quad.texture != nullptr ? quad.texture : white_texture;
+        for (i32 i = 0; i < texture_batch.size(); i++) {
+            if (texture == texture_batch.at(i)) {
+                texture_index = i;
+                break;
+            }
+        }
+
+        // If the texture does not already exist in the texture batch, add it and increment the texture batch index.
+        if (texture_index == -1) {
+            texture_index = texture_batch_index;
+            texture_batch.at(texture_index) = quad.texture;
+            texture_batch_index++;
+            ST_ASSERT(
+                texture_batch_index < textures_per_batch,
+                "Texture index [" << texture_batch_index << "] must be lower than texture batch size [" << textures_per_batch << "]"
+            );
+            config.metrics->texture_count++;
+        }
+
+        // Assign the texture index to the quad instance data.
+        // The index will point to a new texture or an existing texture.
+        // The existing texture may be a previously submitted texture or the white placeholde texture.
+        quad_batch.at(quad_batch_index).texture_index = texture_index;
+
+        // if (quad.texture != nullptr) {
+        //     texture_batch.at(0) = quad.texture;
+        //     quad_batch.at(quad_batch_index).texture_index = 0.0f;
+        // } else {
+        //     texture_batch.at(1) = white_texture;
+        //     quad_batch.at(quad_batch_index).texture_index = 1.0f;
+        // }
+
+        // bool found_texture_in_batch = false;
+        // for (u32 i = 0; i < batch_textures.size(); i++) {
+        //     if (quad.texture == batch_textures.at(i)) {
+        //         found_texture_in_batch = true;
+        //         break;
+        //     }
+        // }
+        // if (!found_texture_in_batch) {
+        //     batch_textures.at(texture_batch_index) = quad.texture;
+        //     batch_quads.at(batch_index).texture_index = texture_batch_index;
+        //     texture_batch_index++;
+        //     ST_ASSERT(
+        //         texture_batch_index < textures_per_batch,
+        //         "Texture index [" << texture_batch_index << "] must be lower than texture batch size [" << textures_per_batch << "]"
+        //     );
+        // }
+
+        quad_batch.at(quad_batch_index).model = quad.model;
+        quad_batch.at(quad_batch_index).color = quad.color;
+        quad_batch.at(quad_batch_index).texture_rectangle = texture_rectangle;
+        quad_batch_index++;
+
+        // config.metrics->quad_count = quad_batch_index;
+        // config.metrics->texture_count = texture_batch_index;
+        config.metrics->quad_count++;
+        config.metrics->index_count = config.metrics->quad_count * indices_per_quad;
+        config.metrics->vertex_count = config.metrics->quad_count * vertices_per_quad;
+#endif
+    }
 
     void Renderer::render() const {
 #ifdef FOO
@@ -338,50 +371,12 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "Draw indexed");
         command_buffer.draw_indexed({
             .index_count = (u32) indices.size(),
-            .instance_count = batch_index,
+            .instance_count = quad_batch_index,
             .first_index = 0,
             .vertex_offset = 0,
             .first_instance = 0,
         });
 #endif
-    }
-
-    void Renderer::render_quad(const Quad& quad) {
-#ifndef FOO
-        const Frame& frame = frames.at(current_frame_index);
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-
-        if (batch_index >= batch.size()) {
-            render_batch();
-        }
-
-        // batch[batch_index] = ...
-        // batch_index++;
-#endif
-    }
-
-    void Renderer::render_batch() {
-        const Frame& frame = frames.at(current_frame_index);
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
-
-        device.insert_cmd_label(command_buffer, "Draw indexed");
-        command_buffer.draw_indexed({
-            .index_count = (u32) indices.size(),
-            .instance_count = batch_index,
-            .first_index = 0,
-            .vertex_offset = 0,
-            .first_instance = 0,
-        });
-
-        config.metrics->draw_calls++;
-        config.metrics->quad_count += batch_index;
-        config.metrics->index_count += batch_index * indices_per_quad;
-        config.metrics->vertex_count += batch_index * vertices_per_quad;
-
-        // batch_index = 0;
-        // texture_index = 0;
     }
 
     void Renderer::reset_metrics() {
@@ -402,7 +397,7 @@ namespace Storytime {
         for (int i = 0; i < uniform_buffer_count; ++i) {
             uniform_buffers.emplace_back(VulkanUniformBuffer({
                 .name = std::format("{} uniform buffer {}/{}", config.name, i + 1, uniform_buffer_count),
-                .device = &device,
+                .device = config.device,
                 .size = sizeof(ViewProjection),
             }));
         }
@@ -411,6 +406,8 @@ namespace Storytime {
     }
 
     VulkanGraphicsPipeline Renderer::create_graphics_pipeline() {
+        const VulkanDevice& device = *config.device;
+
         auto vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.vert.spv");
         auto fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.frag.spv");
 
@@ -496,6 +493,12 @@ namespace Storytime {
             VkVertexInputAttributeDescription{
                 .location = 7,
                 .binding = 1,
+                .format = get_vk_format("vec4"),
+                .offset = offsetof(InstanceData, texture_rectangle) + 0 * sizeof(glm::vec4),
+            },
+            VkVertexInputAttributeDescription{
+                .location = 8,
+                .binding = 1,
                 .format = get_vk_format("float"),
                 .offset = offsetof(InstanceData, texture_index) + 0 * sizeof(f32),
             },
@@ -503,7 +506,7 @@ namespace Storytime {
 
         return VulkanGraphicsPipeline({
             .name = std::format("{} graphics pipeline", config.name),
-            .device = &device,
+            .device = config.device,
             .render_pass = swapchain.get_render_pass(),
             .descriptor_set_layouts = { descriptor_set_layout },
             .shader_stage_create_infos = shader_stage_create_infos,
@@ -523,13 +526,15 @@ namespace Storytime {
 
         return VulkanDescriptorPool({
             .name = std::format("{} descriptor pool", config.name),
-            .device = &device,
+            .device = config.device,
             .max_descriptor_sets = config.max_frames_in_flight,
             .descriptor_pool_sizes = descriptor_pool_sizes,
         });
     }
 
     VkDescriptorSetLayout Renderer::create_descriptor_set_layout() const {
+        const VulkanDevice& device = *config.device;
+
         std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(2);
 
         descriptor_set_layout_bindings[0].binding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`)
@@ -558,10 +563,13 @@ namespace Storytime {
     }
 
     void Renderer::destroy_descriptor_set_layout() const {
+        const VulkanDevice& device = *config.device;
         device.destroy_descriptor_set_layout(descriptor_set_layout);
     }
 
     VkShaderModule Renderer::create_shader_module(const std::filesystem::path& path) const {
+        const VulkanDevice& device = *config.device;
+
         std::vector<char> shader_bytes = FileReader::read_bytes(path);
         if (shader_bytes.empty()) {
             ST_THROW("Could not read graphics pipeline shader [" << path << "]");
@@ -580,39 +588,29 @@ namespace Storytime {
     }
 
     void Renderer::destroy_shader_module(VkShaderModule shader_module) const {
+        const VulkanDevice& device = *config.device;
         device.destroy_shader_module(shader_module);
     }
 
     VkSampler Renderer::create_sampler() const {
+        const VulkanDevice& device = *config.device;
+
         VkSamplerCreateInfo sampler_create_info{};
         sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        sampler_create_info.magFilter = VK_FILTER_LINEAR;
-        sampler_create_info.minFilter = VK_FILTER_LINEAR;
-        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        sampler_create_info.anisotropyEnable = VK_TRUE;
-
-        // Max quality
-        sampler_create_info.maxAnisotropy = physical_device.get_properties().limits.maxSamplerAnisotropy;
-
-        // Specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
+        sampler_create_info.magFilter = VK_FILTER_NEAREST;
+        sampler_create_info.minFilter = VK_FILTER_NEAREST;
+        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.anisotropyEnable = VK_FALSE;
         sampler_create_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-
-        // Specifies which coordinate system you want to use to address texels in an image.
-        // If this field is VK_TRUE, then you can simply use coordinates within the [0, texWidth) and [0, texHeight) range.
-        // If this field is VK_FALSE, then the texels are addressed using the [0, 1) range on all axes.
-        // Real-world applications almost always use normalized coordinates, because then it's possible to use textures of varying resolutions with the exact same coordinates.
         sampler_create_info.unnormalizedCoordinates = VK_FALSE;
-
-        // If a comparison function is enabled, then texels will first be compared to a value, and the result of that comparison is used in filtering operations.
         sampler_create_info.compareEnable = VK_FALSE;
         sampler_create_info.compareOp = VK_COMPARE_OP_ALWAYS;
-
-        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
         sampler_create_info.mipLodBias = 0.0f;
         sampler_create_info.minLod = 0.0f;
-        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
+        sampler_create_info.maxLod = 0.0f; // VK_LOD_CLAMP_NONE
 
         VkSampler sampler;
 
@@ -624,10 +622,13 @@ namespace Storytime {
     }
 
     void Renderer::destroy_sampler() const {
+        const VulkanDevice& device = *config.device;
         device.destroy_sampler(sampler);
     }
 
     void Renderer::create_sync_objects() {
+        const VulkanDevice& device = *config.device;
+
         u32 sync_object_count = config.max_frames_in_flight;
 
         image_available_semaphores.resize(sync_object_count);
@@ -681,6 +682,7 @@ namespace Storytime {
     }
 
     void Renderer::destroy_sync_objects() const {
+        const VulkanDevice& device = *config.device;
         for (u32 i = 0; i < image_available_semaphores.size(); i++) {
             device.destroy_semaphore(image_available_semaphores.at(i));
         }
@@ -693,6 +695,8 @@ namespace Storytime {
     }
 
     void Renderer::allocate_command_buffers() {
+        const VulkanDevice& device = *config.device;
+
         u32 command_buffer_count = config.max_frames_in_flight;
         command_buffers.resize(command_buffer_count);
 
@@ -707,6 +711,8 @@ namespace Storytime {
     }
 
     void Renderer::allocate_descriptor_sets() {
+        const VulkanDevice& device = *config.device;
+
         u32 descriptor_set_count = config.max_frames_in_flight;
         descriptor_sets.resize(descriptor_set_count);
 
@@ -722,6 +728,8 @@ namespace Storytime {
     }
 
     void Renderer::write_descriptors() const {
+        const VulkanDevice& device = *config.device;
+
         for (size_t i = 0; i < descriptor_sets.size(); i++) {
             const VulkanDescriptorSet& descriptor_set = descriptor_sets.at(i);
 
@@ -732,11 +740,10 @@ namespace Storytime {
             uniform_buffer_descriptor_info.offset = 0;
             uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
 
-            std::vector<VkDescriptorImageInfo> image_descriptor_infos{};
-            image_descriptor_infos.resize(textures_per_batch);
-            for (u32 j = 0; j < textures_per_batch; j++) {
+            std::vector<VkDescriptorImageInfo> image_descriptor_infos(texture_batch.size());
+            for (u32 j = 0; j < texture_batch.size(); j++) {
                 image_descriptor_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                image_descriptor_infos[j].imageView = batch_textures.at(j)->get_view();
+                image_descriptor_infos[j].imageView = texture_batch.at(j)->get_view();
                 image_descriptor_infos[j].sampler = sampler;
             }
 
@@ -764,10 +771,52 @@ namespace Storytime {
         }
     }
 
+    void Renderer::write_descriptorz() const {
+        const VulkanDevice& device = *config.device;
+
+        const Frame& frame = frames.at(current_frame_index);
+        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
+        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
+
+        VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
+        uniform_buffer_descriptor_info.buffer = uniform_buffer;
+        uniform_buffer_descriptor_info.offset = 0;
+        uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
+
+        std::vector<VkDescriptorImageInfo> image_descriptor_infos(texture_batch.size());
+        for (u32 j = 0; j < texture_batch.size(); j++) {
+            image_descriptor_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_descriptor_infos[j].imageView = texture_batch.at(j)->get_view();
+            image_descriptor_infos[j].sampler = sampler;
+        }
+
+        // Bind the buffers to the descriptors by writing to the desriptor set
+
+        std::vector<VkWriteDescriptorSet> descriptor_writes(2);
+
+        descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_writes[0].dstSet = descriptor_set; // The descriptor set being updated
+        descriptor_writes[0].dstBinding = 0; // Specifies the binding used in the shader (i.e. `layout(binding = 0)`).
+        descriptor_writes[0].dstArrayElement = 0; // This descriptor is not an array, so just use start index.
+        descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // Must match descriptor set layout
+        descriptor_writes[0].descriptorCount = 1; // How many descriptors to write to.
+        descriptor_writes[0].pBufferInfo = &uniform_buffer_descriptor_info; // The buffer the descriptor will use.
+
+        descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_writes[1].dstSet = descriptor_set;
+        descriptor_writes[1].dstBinding = 1;
+        descriptor_writes[1].dstArrayElement = 0;
+        descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_writes[1].descriptorCount = image_descriptor_infos.size();
+        descriptor_writes[1].pImageInfo = image_descriptor_infos.data();
+
+        descriptor_set.write(device, descriptor_writes);
+    }
+
     void Renderer::prepare_frames() {
-        u32 frame_count = config.max_frames_in_flight;
-        frames.resize(frame_count);
-        for (u32 i = 0; i < frame_count; ++i) {
+        const VulkanDevice& device = *config.device;
+        frames.resize(config.max_frames_in_flight);
+        for (u32 i = 0; i < frames.size(); ++i) {
             frames[i].graphics_queue = device.get_graphics_queue();
             frames[i].present_queue = device.get_present_queue();
             frames[i].descriptor_set = descriptor_sets[i];
@@ -795,7 +844,7 @@ namespace Storytime {
     }
 
     VulkanCommandBuffer Renderer::begin_one_time_submit_command_buffer() const {
-        VulkanCommandBuffer command_buffer = initialization_command_pool.allocate_command_buffer();
+        VulkanCommandBuffer command_buffer = config.command_pool->allocate_command_buffer();
 
         if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
             ST_THROW("Could not begin one-time-submit command buffer");
@@ -805,6 +854,8 @@ namespace Storytime {
     }
 
     void Renderer::end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        const VulkanDevice& device = *config.device;
+
         if (command_buffer.end() != VK_SUCCESS) {
             ST_THROW("Could not end one-time-submit command buffer");
         }
@@ -818,7 +869,7 @@ namespace Storytime {
             ST_THROW("Could not wait for graphics queue to become idle");
         }
 
-        initialization_command_pool.free_command_buffer(command_buffer);
+        config.command_pool->free_command_buffer(command_buffer);
     }
 
     void Renderer::record_and_submit_commands(const RecordCommandsFn& record_commands) const {

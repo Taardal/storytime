@@ -18,5 +18,7 @@ namespace Storytime {
         // ImageFile& operator=(const ImageFile& other) = delete;
         //
         // ImageFile& operator=(ImageFile&& other) noexcept;
+    
+        u64 get_byte_size() const;
     };
 }

@@ -45,6 +45,14 @@ namespace Storytime {
         return image;
     }
 
+    u32 VulkanImage::get_width() const {
+        return config.width;
+    }
+
+    u32 VulkanImage::get_height() const {
+        return config.height;
+    }
+
     VkImageView VulkanImage::get_view() const {
         return image_view;
     }
@@ -86,7 +94,7 @@ namespace Storytime {
                 .image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Promise that the image is now in this layout when the copy is executed.
                 .mip_level = 0, // Only copy to the base image.
             });
-
+#if 0
             // Generate mipmap, and transition all mip levels in it to be ready to be sampled by the fragment shader.
             generate_mipmap(command_buffer, LayoutTransition{
                 .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -98,6 +106,18 @@ namespace Storytime {
                 .first_mip_level = 0,
                 .mip_level_count = config.mip_levels,
             });
+#else
+            transition_layout(command_buffer, LayoutTransition{
+                .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .dst_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                .src_access = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dst_access = VK_ACCESS_SHADER_READ_BIT,
+                .src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT, // Nothing to wait on, so start in earlies possible stage.
+                .dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // Make the image writable by the transfer stage.
+                .first_mip_level = 0,
+                .mip_level_count = config.mip_levels,
+            });
+#endif
         });
     }
 

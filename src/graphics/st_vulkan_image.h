@@ -45,6 +45,10 @@ namespace Storytime {
 
         operator VkImage() const;
 
+        u32 get_width() const;
+
+        u32 get_height() const;
+
         VkImageView get_view() const;
 
         VkFormat get_format() const;

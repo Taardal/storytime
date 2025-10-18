@@ -30,50 +30,49 @@ namespace Storytime {
     Size<u32> Sprite::get_size() const {
         return { config.width, config.height };
     }
-
+static f32 z = 0.0f;
     void Sprite::render(Renderer* renderer, const SpriteRenderConfig& render_config) const {
+        glm::vec3 position = { render_config.position.x, render_config.position.y, z };
+        glm::vec3 size = { (f32) config.width, (f32) config.height, 0.0f };
+
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(render_config.rotation_deg), { 0.0f, 0.0f, 1.0f });
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), size);
+
+        glm::mat4 model = translation * rotation * scale;
+
         Quad quad = {
             .texture = config.spritesheet_texture,
-            .position = { render_config.position.x, render_config.position.y, 0.0f },
-            .size = { (f32) config.width, (f32) config.height },
+            .model = model,
+            // .color = { 0.0f, 1.0f, 0.0f, 1.0f },
         };
+
+        renderer->render_quad(quad, config.spritesheet_texture_rectangle);
+        return;
 
         bool flipped = render_config.flipped_horizontally || render_config.flipped_vertically || render_config.flipped_diagonally;
         if (!flipped) {
-            renderer->render_quad(quad, config.spritesheet_texture_coordinates);
             return;
         }
 
         // Sprite should be flipped
         // Copy the texture coordinates to preserve the normal/unflipped ones
-        std::array<TextureCoordinate, 4> texture_coordinates = config.spritesheet_texture_coordinates;
+        glm::vec4 texture_coordinates = config.spritesheet_texture_rectangle;
 
         // Switch left and right texture coordinates to flip sprite horizontally
-        if (render_config.flipped_horizontally) {
-            f32 x_left = texture_coordinates[0].x;   // Top left
-            f32 x_right = texture_coordinates[1].x;  // Top right
-            texture_coordinates[0].x = x_right;      // Left --> Right
-            texture_coordinates[1].x = x_left;       // Right --> Left
-            texture_coordinates[2].x = x_left;       // Right --> Left
-            texture_coordinates[3].x = x_right;      // Left --> Right
+        if (render_config.flipped_horizontally || render_config.flipped_diagonally) {
+            f32 x_left = texture_coordinates.x;
+            f32 x_right = texture_coordinates.z;
+            texture_coordinates.x = x_right;
+            texture_coordinates.z = x_left;
         }
 
         // Switch top and bottom texture coordinates to flip sprite vertically
-        if (render_config.flipped_vertically) {
-            f32 y_top = texture_coordinates[1].y;    // Top right
-            f32 y_bottom = texture_coordinates[2].y; // Bottom right
-            texture_coordinates[0].y = y_bottom;     // Top --> Bottom
-            texture_coordinates[1].y = y_bottom;     // Top --> Bottom
-            texture_coordinates[2].y = y_top;        // Bottom --> Top
-            texture_coordinates[3].y = y_top;        // Bottom --> Top
-        }
-
-        // Switch top left and bottom right texture coordinates to flip sprite diagonally
-        if (render_config.flipped_diagonally) {
-            glm::vec2 top_left = texture_coordinates[0];
-            glm::vec2 bottom_right = texture_coordinates[2];
-            texture_coordinates[0] = bottom_right;
-            texture_coordinates[2] = top_left;
+        if (render_config.flipped_vertically || render_config.flipped_diagonally) {
+            f32 y_left = texture_coordinates.y;
+            f32 y_right = texture_coordinates.w;
+            texture_coordinates.x = y_right;
+            texture_coordinates.z = y_left;
         }
 
         // Render the flipped sprite

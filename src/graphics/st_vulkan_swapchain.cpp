@@ -306,6 +306,25 @@ namespace Storytime {
         return surface_formats[0];
     }
 
+    //
+    // [VK_PRESENT_MODE_IMMEDIATE_KHR]
+    // The simplest and fastest mode. The image is presented immediately, without waiting for a vertical blank. This often results in
+    // tearing, but it's the best choice for applications that don't care about tearing or are using other methods for synchronization.
+    //
+    // [VK_PRESENT_MODE_MAILBOX_KHR]
+    // Replaces the image in the queue with the newest one if the queue is full, instead of waiting. This can achieve lower latency
+    // compared to FIFO modes while still avoiding tearing. However, it is not always supported by all hardware.
+    //
+    // [VK_PRESENT_MODE_FIFO_KHR]
+    // The standard "vertical sync" mode. The application waits for the display to refresh and presents a new frame only when there is a
+    // slot in the queue. This completely prevents screen tearing but can cause stuttering or higher latency if the application cannot
+    // render frames at the same rate as the display's refresh rate.
+    //
+    // [VK_PRESENT_MODE_FIFO_RELAXED_KHR]
+    // Similar to FIFO, but if the application is late and the queue was empty at the last vertical blank, it will display the frame
+    // immediately instead of waiting for the next vertical blank. This can reduce stuttering caused by occasional frame rate drops, but
+    // it may result in tearing during those instances.
+    //
     VkPresentModeKHR VulkanSwapchain::find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const {
         for (const VkPresentModeKHR& present_mode : present_modes) {
             if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -407,9 +426,9 @@ namespace Storytime {
         depth_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depth_attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        std::array<VkAttachmentDescription, 2> attachment_descriptions = {
+        std::array<VkAttachmentDescription, 1> attachment_descriptions = {
             color_attachment_description,
-            depth_attachment_description
+            // depth_attachment_description
         };
 
         VkAttachmentReference color_attachment_reference{};
@@ -424,7 +443,7 @@ namespace Storytime {
         subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass_description.colorAttachmentCount = 1;
         subpass_description.pColorAttachments = &color_attachment_reference;
-        subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
+        // subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
 
         VkSubpassDependency subpass_dependency{};
         subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -462,9 +481,9 @@ namespace Storytime {
         framebuffers.resize(image_count);
 
         for (size_t i = 0; i < image_count; i++) {
-            std::array<VkImageView, 2> attachments = {
+            std::array<VkImageView, 1> attachments = {
                 color_image_views[i],
-                depth_image->get_view(),
+                // depth_image->get_view(),
             };
 
             VkFramebufferCreateInfo framebuffer_create_info{};
@@ -512,8 +531,8 @@ namespace Storytime {
 
         // This must be created on the heap so it can be destroyed at the correct time to facilitate swap chain recreation.
         depth_image = ST_NEW VulkanImage({
-            .device = config.device,
             .name = std::format("{} depth image", config.name),
+            .device = config.device,
             .width = image_extent.width,
             .height = image_extent.height,
             .format = format,

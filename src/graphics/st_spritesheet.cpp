@@ -11,6 +11,7 @@ namespace Storytime {
     }
 
     Sprite Spritesheet::get_sprite(u32 column, u32 row, u32 width, u32 height) const {
+
         f32 spritesheet_width = (f32) config.texture->get_width();
         f32 spritesheet_height = (f32) config.texture->get_height();
 
@@ -23,15 +24,11 @@ namespace Storytime {
         f32 y_top = y / spritesheet_height;
         f32 y_bottom = (y + (f32) height) / spritesheet_height;
 
-        std::array<TextureCoordinate, 4> texture_coordinates;
-        texture_coordinates[0] = {x_left, y_top};
-        texture_coordinates[1] = {x_right, y_top};
-        texture_coordinates[2] = {x_right, y_bottom};
-        texture_coordinates[3] = {x_left, y_bottom};
+        glm::vec4 texture_rectangle{ x_left, y_top, x_right, y_bottom };
 
         return Sprite({
             .spritesheet_texture = config.texture,
-            .spritesheet_texture_coordinates = texture_coordinates,
+            .spritesheet_texture_rectangle = texture_rectangle,
             .spritesheet_row = row,
             .spritesheet_column = column,
             .width = width,

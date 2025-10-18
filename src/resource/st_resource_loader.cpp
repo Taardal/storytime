@@ -13,9 +13,33 @@ namespace Storytime {
 
         ST_LOG_TRACE("Loading texture [{}]", path.c_str());
 
-        ImageFile image = load_image(path);
-        auto texture = std::make_shared<Texture>(TextureConfig{ .image_file = image });
-        free_image(image);
+        ImageFile image_file = load_image(path);
+
+        // Calculate the number of levels in the mip chain.
+        // - The `max` function selects the largest dimension.
+        // - The `log2` function calculates how many times that dimension can be divided by 2.
+        // - The `floor` function handles cases where the largest dimension is not a power of 2.
+        // - 1 is added so that the original image has a mip level.
+        u32 mip_levels = (u32) std::floor(std::log2(std::max(image_file.width, image_file.height))) + 1;
+
+        TextureConfig texture_config{
+            .name = path.string(),
+            .device = config.vulkan_device,
+            .width = (u32) image_file.width,
+            .height = (u32) image_file.height,
+            .format = VK_FORMAT_R8G8B8A8_SRGB,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .mip_levels = mip_levels,
+        };
+        auto texture = std::make_shared<Texture>(texture_config);
+
+        config.vulkan_command_pool->record_and_submit_commands([&texture, &image_file](const OnRecordCommandsFn &on_record_commands) {
+            texture->set_pixels(on_record_commands, image_file.get_byte_size(), image_file.pixels);
+        });
+
+        free_image(image_file);
 
         ST_LOG_DEBUG("Loaded texture [{}]", path.c_str());
         return texture;
@@ -103,6 +127,7 @@ namespace Storytime {
     }
 
     ImageFile ResourceLoader::load_image(const std::filesystem::path& path) const {
+        // stbi_set_flip_vertically_on_load(1);
         ImageFile image_file{};
         image_file.width = 0;
         image_file.height = 0;

@@ -17,9 +17,10 @@ namespace Storytime {
         u64 quads = 0;
         f64 frame_duration_ms = 0.0;
 
-        u32 draw_calls = 0;
-        u32 quad_count = 0;
-        u32 vertex_count = 0;
-        u32 index_count = 0;
+        u64 draw_calls = 0;
+        u64 quad_count = 0;
+        u64 vertex_count = 0;
+        u64 index_count = 0;
+        u64 texture_count = 0;
     };
 }

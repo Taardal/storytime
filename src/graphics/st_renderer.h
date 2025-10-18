@@ -25,18 +25,19 @@
 namespace Storytime {
     struct Quad {
         Shared<Texture> texture = nullptr;
-        glm::vec3 position = {0.0f, 0.0f, 0.0f};
-        glm::vec2 size = {0.0f, 0.0f};
-        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}; 
-        f32 rotation_in_degrees = 0.0f;             
-        f32 tiling_factor = 1.0f;
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
     };
 
     struct RendererConfig {
-        Dispatcher* dispatcher = nullptr;
-        Metrics* metrics = nullptr;
-        Window* window = nullptr;
         std::string name = "";
+        Dispatcher* dispatcher = nullptr;
+        Window* window = nullptr;
+        Metrics* metrics = nullptr;
+        VulkanContext* context = nullptr;
+        VulkanPhysicalDevice* physical_device = nullptr;
+        VulkanDevice* device = nullptr;
+        VulkanCommandPool* command_pool = nullptr;
         u32 max_frames_in_flight = 0;
         bool validation_layers_enabled = false;
     };
@@ -46,12 +47,39 @@ namespace Storytime {
         typedef RendererConfig Config;
 
     private:
+        static constexpr u32 vertices_per_quad = 4;
+        static constexpr u32 indices_per_quad = 6;
+        static constexpr u32 quads_per_batch = 10'000;
+        static constexpr u32 vertices_per_batch = quads_per_batch * vertices_per_quad;
+        static constexpr u32 textures_per_batch = 16;
+
+        static constexpr std::array<glm::vec2, vertices_per_quad> texture_coordinates = {
+            glm::vec2(0.0f, 0.0f), // Top left
+            glm::vec2(1.0f, 0.0f), // Top right
+            glm::vec2(1.0f, 1.0f), // Bottom right
+            glm::vec2(0.0f, 1.0f), // Bottom left
+        };
+
+        static constexpr std::array<QuadVertex, vertices_per_quad> vertices = {
+            QuadVertex{{ 0.0f, 0.0f, 0.0f, 1.0f }, glm::vec2(0.0f, 0.0f)},
+            QuadVertex{{ 1.0f, 0.0f, 0.0f, 1.0f }, glm::vec2(1.0f, 0.0f)},
+            QuadVertex{{ 1.0f, 1.0f, 0.0f, 1.0f }, glm::vec2(1.0f, 1.0f)},
+            QuadVertex{{ 0.0f, 1.0f, 0.0f, 1.0f }, glm::vec2(0.0f, 1.0f)},
+        };
+
+        typedef u16 Index;
+
+        static constexpr std::array<Index, indices_per_quad> indices = {
+            0, 1, 2, 2, 3, 0
+        };
+
+    private:
         Config config;
-        VulkanContext context;
-        VulkanPhysicalDevice physical_device;
-        VulkanDevice device;
+        // VulkanContext context;
+        // VulkanPhysicalDevice physical_device;
+        // VulkanDevice device;
         VulkanSwapchain swapchain;
-        VulkanCommandPool initialization_command_pool;
+        // VulkanCommandPool initialization_command_pool;
         VulkanCommandPool runtime_command_pool;
         VulkanVertexBuffer vertex_buffer;
         VulkanVertexBuffer instance_buffer;
@@ -70,16 +98,15 @@ namespace Storytime {
         u32 current_frame_index = 0;
         u32 previous_frame_index = 0;
 
-        std::vector<InstanceData> batch{};
-        u32 batch_index = 0;
+        std::vector<InstanceData> quad_batch{};
+        u32 quad_batch_index = 0;
 
-        std::shared_ptr<VulkanImage> texture = nullptr;
         std::shared_ptr<VulkanImage> white_texture = nullptr;
-        std::vector<std::shared_ptr<VulkanImage>> batch_textures{};
-        u32 texture_index = 0;
+        std::vector<std::shared_ptr<VulkanImage>> texture_batch{};
+        u32 texture_batch_index = 0;
 
         u32 frame_counter = 0;
-        f64 frame_delta = 0.0;
+        f64 frame_delta_ms = 0.0;
         TimePoint frame_delta_time;
         TimePoint frame_start_time;
         TimePoint frame_end_time;
@@ -93,18 +120,18 @@ namespace Storytime {
 
         void end_frame();
 
+        void upload_batch();
+
         void render() const;
 
-        void render_quad(const Quad& quad);
+        void render_quad(const Quad& quad, const glm::vec4& texture_rectangle = glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f });
 
-        void render_quad(const Quad& quad, const std::array<TextureCoordinate, 4>& texture_coordinates) { ST_LOG_W("render_quad"); }
-
-        void set_view_projection1(ViewProjection& view_projection);
-
-        void set_view_projection(const ViewProjection& view_projection) const { ST_LOG_W("viewproj"); };
+        void set_view_projection(ViewProjection& view_projection);
 
     private:
         void render_batch();
+
+        void upload_full_batch();
 
         void reset_metrics();
 
@@ -135,6 +162,8 @@ namespace Storytime {
         void allocate_descriptor_sets();
 
         void write_descriptors() const;
+
+        void write_descriptorz() const;
 
         void prepare_frames();
 

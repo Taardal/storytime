@@ -64,7 +64,7 @@ namespace Storytime {
         rasterization_state_create_info.polygonMode = VK_POLYGON_MODE_FILL;
         rasterization_state_create_info.lineWidth = 1.0f;
         rasterization_state_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterization_state_create_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rasterization_state_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterization_state_create_info.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisample_state_create_info{};
@@ -118,7 +118,7 @@ namespace Storytime {
         graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
         graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
         graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
-        graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+        // graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
         graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
         graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         graphics_pipeline_create_info.layout = pipeline_layout;

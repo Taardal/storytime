@@ -5,6 +5,9 @@
 #include "audio/st_audio_engine.h"
 #include "graphics/st_imgui_renderer.h"
 #include "graphics/st_renderer.h"
+#include "graphics/st_vulkan_context.h"
+#include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_command_pool.h"
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_dispatcher.h"
@@ -23,18 +26,22 @@ namespace Storytime {
         bool running = false;
         ServiceLocator service_locator;
         Dispatcher dispatcher;
-        FileReader file_reader;
-        AudioEngine audio_engine;
-        ResourceLoader resource_loader;
         Window window;
+        Keyboard keyboard;
+        Mouse mouse;
+        VulkanContext vulkan_context;
+        VulkanPhysicalDevice vulkan_physical_device;
+        VulkanDevice vulkan_device;
+        VulkanCommandPool vulkan_command_pool;
+        Metrics metrics;
+        Renderer renderer;
 #ifndef ST_USE_VULKAN
         ImGuiRenderer imgui_renderer;
 #endif
-        Keyboard keyboard;
-        Mouse mouse;
+        FileReader file_reader;
+        AudioEngine audio_engine;
+        ResourceLoader resource_loader;
         ProcessManager process_manager;
-        Metrics metrics;
-        Renderer vulkan_renderer;
 
     public:
         Engine(const Config& config);

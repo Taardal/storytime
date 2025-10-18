@@ -10,12 +10,6 @@ namespace Storytime {
     Engine::Engine(const Config& config)
         : service_locator(),
           dispatcher(),
-          file_reader(),
-          audio_engine(),
-          resource_loader({
-              .file_reader = &file_reader,
-              .audio_engine = &audio_engine
-          }),
           window({
               .dispatcher = &dispatcher,
               .title = config.app_name,
@@ -29,6 +23,44 @@ namespace Storytime {
               .context_version_major = config.open_gl_version_major,
               .context_version_minor = config.open_gl_version_minor,
           }),
+          keyboard({
+              .window = &window,
+              .dispatcher = &dispatcher,
+          }),
+          mouse({
+              .window = &window,
+          }),
+          vulkan_context({
+              .app_name = config.app_name,
+              .engine_name = std::format("{} engine", config.app_name),
+              .window = &window,
+              .validation_layers_enabled = config.vulkan_validation_layers_enabled,
+          }),
+          vulkan_physical_device({
+              .context = &vulkan_context,
+          }),
+          vulkan_device({
+              .name = std::format("{} device", config.app_name),
+              .physical_device = &vulkan_physical_device,
+          }),
+          vulkan_command_pool({
+              .name = std::format("{} initialization command pool", config.app_name),
+              .device = &vulkan_device,
+              .queue_family_index = vulkan_device.get_graphics_queue_family_index(),
+              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          }),
+          metrics(),
+          renderer({
+              .name = config.app_name,
+              .dispatcher = &dispatcher,
+              .window = &window,
+              .metrics = &metrics,
+              .context = &vulkan_context,
+              .physical_device = &vulkan_physical_device,
+              .device = &vulkan_device,
+              .command_pool = &vulkan_command_pool,
+              .max_frames_in_flight = config.rendering_buffer_count,
+          }),
 #ifndef ST_USE_VULKAN
           imgui_renderer({
             .window = &window,
@@ -38,23 +70,15 @@ namespace Storytime {
             .glsl_version = config.glsl_version,
           }),
 #endif
-          keyboard({
-              .window = &window,
-              .dispatcher = &dispatcher,
+          file_reader(),
+          audio_engine(),
+          resource_loader({
+              .file_reader = &file_reader,
+              .audio_engine = &audio_engine,
+              .vulkan_device = &vulkan_device,
+              .vulkan_command_pool = &vulkan_command_pool,
           }),
-          mouse({
-              .window = &window,
-          }),
-          process_manager(),
-          metrics(),
-          vulkan_renderer({
-              .dispatcher = &dispatcher,
-              .metrics = &metrics,
-              .window = &window,
-              .name = config.app_name,
-              .max_frames_in_flight = config.rendering_buffer_count,
-              .validation_layers_enabled = config.vulkan_validation_layers_enabled,
-          })
+          process_manager()
     {
         service_locator.set<Dispatcher>(&dispatcher);
         service_locator.set<Window>(&window);
@@ -62,7 +86,7 @@ namespace Storytime {
         service_locator.set<Mouse>(&mouse);
         service_locator.set<FileReader>(&file_reader);
         service_locator.set<ResourceLoader>(&resource_loader);
-        service_locator.set<Renderer>(&vulkan_renderer);
+        service_locator.set<Renderer>(&renderer);
         service_locator.set<ProcessManager>(&process_manager);
         service_locator.set<Metrics>(&metrics);
 
@@ -142,13 +166,13 @@ namespace Storytime {
             //
 
             TimePoint render_start_time = Time::now();
-            vulkan_renderer.begin_frame();
-#if 1
-            vulkan_renderer.render();
+            renderer.begin_frame();
+#if 0
+            renderer.render();
 #else
             app.render();
 #endif
-            vulkan_renderer.end_frame();
+            renderer.end_frame();
             TimePoint render_end_time = Time::now();
 
 #ifndef ST_USE_VULKAN

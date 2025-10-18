@@ -18,7 +18,7 @@ namespace Storytime {
 
     struct SpriteConfig {
         Shared<Texture> spritesheet_texture = nullptr;
-        std::array<TextureCoordinate, 4> spritesheet_texture_coordinates;
+        glm::vec4 spritesheet_texture_rectangle{};
         u32 spritesheet_row = 0;
         u32 spritesheet_column = 0;
         u32 width = 0;

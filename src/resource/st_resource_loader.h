@@ -3,6 +3,7 @@
 #include "audio/st_audio.h"
 #include "audio/st_audio_engine.h"
 #include "graphics/st_spritesheet.h"
+#include "graphics/st_vulkan_command_pool.h"
 #include "resource/st_image_file.h"
 #include "system/st_file_reader.h"
 #include "tiled/st_tiled_map.h"
@@ -15,6 +16,8 @@ namespace Storytime {
     struct ResourceLoaderConfig {
         FileReader* file_reader = nullptr;
         AudioEngine* audio_engine = nullptr;
+        VulkanDevice* vulkan_device = nullptr;
+        VulkanCommandPool* vulkan_command_pool = nullptr;
     };
 
     class ResourceLoader {

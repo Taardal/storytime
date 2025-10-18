@@ -3,6 +3,9 @@
 #include <stb_image.h>
 
 namespace Storytime {
+    u64 ImageFile::get_byte_size() const {
+        return width * height * channels;
+    }
     // ImageFile::~ImageFile() {
     //     if (pixels == nullptr) {
     //         return;
