@@ -9,5 +9,5 @@ layout(location = 2) in float texture_index;
 layout(location = 0) out vec4 fragment_color;
 
 void main() {
-    fragment_color = texture(texture_samplers[int(texture_index)], texture_coordinate) * color;
+    fragment_color = texture(texture_samplers[int(texture_index)], texture_coordinate, 0.0) * color;
 }

@@ -109,13 +109,13 @@ namespace Storytime {
         TimePoint frame_end_time;
 
         // Per-batch
-        std::vector<VulkanInstanceBuffer> batch_vertex_buffers;
+        std::vector<std::vector<VulkanInstanceBuffer>> batch_vertex_buffers;
         u32 batch_vertex_buffer_index = 0;
         std::vector<std::vector<VkDescriptorSet>> batch_descriptor_sets{};
         u32 batch_descriptor_set_index = 0;
-        std::vector<InstanceData> quad_batch{};
+        std::vector<std::vector<InstanceData>> quad_batch{};
         u32 quad_batch_index = 0;
-        std::vector<std::shared_ptr<VulkanImage>> texture_batch{};
+        std::vector<std::vector<std::shared_ptr<VulkanImage>>> texture_batch{};
         u32 texture_batch_index = 0;
         std::shared_ptr<VulkanImage> white_texture = nullptr;
 
@@ -131,6 +131,8 @@ namespace Storytime {
         void render_quad(const Quad& quad);
 
         void set_view_projection(const ViewProjection& view_projection) const;
+
+        void wait_until_idle() const;
 
     private:
         void flush_batch();
@@ -171,7 +173,7 @@ namespace Storytime {
 
         void prepare_frames();
 
-        std::vector<VulkanInstanceBuffer> create_batch_vertex_buffers();
+        void create_batch_vertex_buffers();
 
         void allocate_batch_descriptor_sets();
 

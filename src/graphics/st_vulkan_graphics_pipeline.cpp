@@ -80,7 +80,7 @@ namespace Storytime {
         depth_stencil_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depth_stencil_state_create_info.depthTestEnable = VK_TRUE; // Specifies if the depth of new fragments should be compared to the depth buffer to see if they should be discarded
         depth_stencil_state_create_info.depthWriteEnable = VK_TRUE; // Specifies if the new depth of fragments that pass the depth test should actually be written to the depth buffer.
-        depth_stencil_state_create_info.depthCompareOp = VK_COMPARE_OP_LESS; // Specifies the comparison that is performed to keep or discard fragments. We are using lower depth = closer, so the depth of new fragments should be less.
+        depth_stencil_state_create_info.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL; // Specifies the comparison that is performed to keep or discard fragments. We are using lower depth = closer, so the depth of new fragments should be less.
         depth_stencil_state_create_info.depthBoundsTestEnable = VK_FALSE; // Allows us to only keep fragments that fall within the specified depth range.
         depth_stencil_state_create_info.minDepthBounds = 0.0f; // Used for the optional depth bound test.
         depth_stencil_state_create_info.maxDepthBounds = 1.0f; // Used for the optional depth bound test.
@@ -118,7 +118,7 @@ namespace Storytime {
         graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
         graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
         graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
-        // graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+        graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
         graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
         graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         graphics_pipeline_create_info.layout = pipeline_layout;

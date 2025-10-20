@@ -6,7 +6,6 @@
 
 namespace Storytime {
     VulkanImage::VulkanImage(const Config& config) : config(config) {
-        this->config.mip_levels = 1;
         create_image();
         allocate_memory();
         create_image_view();
@@ -95,7 +94,7 @@ namespace Storytime {
                 .image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Promise that the image is now in this layout when the copy is executed.
                 .mip_level = 0, // Only copy to the base image.
             });
-#if 0
+#if 1
             // Generate mipmap, and transition all mip levels in it to be ready to be sampled by the fragment shader.
             generate_mipmap(command_buffer, LayoutTransition{
                 .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,

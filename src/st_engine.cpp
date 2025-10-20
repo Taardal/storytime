@@ -98,6 +98,7 @@ namespace Storytime {
     void Engine::run(App& app) {
         running = true;
         run_game_loop(app);
+        renderer.wait_until_idle();
     }
 
     void Engine::stop() {
@@ -105,7 +106,7 @@ namespace Storytime {
     }
 
     void Engine::run_game_loop(App& app) {
-        // Update game at fixed timesteps to have game systems update at a predictable rate
+// Update game at fixed timesteps to have game systems update at a predictable rate
         constexpr f64 timestep_sec = 1.0 / 60.0;
         constexpr f64 timestep_ms = timestep_sec * 1000.0;
 
@@ -145,7 +146,7 @@ namespace Storytime {
             // UPDATE
             //
 
-            i32 update_count = 0;
+            u32 update_count = 0;
             f64 update_start_lag_ms = game_clock_lag_ms;
             TimePoint update_start_time = Time::now();
 
@@ -165,14 +166,12 @@ namespace Storytime {
             // RENDER
             //
 
+            bool rendered_frame = false;
             TimePoint render_start_time = Time::now();
             if (renderer.begin_frame()) {
-#if 0
-            renderer.render();
-#else
-            app.render();
-#endif
-            renderer.end_frame();
+                app.render();
+                renderer.end_frame();
+                rendered_frame = true;
             }
             TimePoint render_end_time = Time::now();
 
@@ -199,16 +198,27 @@ namespace Storytime {
                 metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
                 metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
             }
-            metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
-            metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
+            if (rendered_frame) {
+                metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
+                metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
+            }
 #ifndef ST_USE_VULKAN
             metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
 #endif
             metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
-#ifndef ST_USE_VULKAN
-            metrics.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
-#endif
             metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
+
+#ifdef ST_DEBUG
+            static double window_title_update_lag_sec = 0.0;
+            window_title_update_lag_sec += last_cycle_duration_ms / 1000.0;
+            if (window_title_update_lag_sec >= 1.0) {
+                window_title_update_lag_sec = 0;
+                std::stringstream ss;
+                ss << "FPS: " << (u32) metrics.frames_per_second << ", UPS: " << (u32) metrics.updates_per_second;
+                std::string title = ss.str();
+                window.set_title(title.c_str());
+            }
+#endif
         }
     }
 }

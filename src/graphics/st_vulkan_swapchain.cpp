@@ -326,6 +326,7 @@ namespace Storytime {
     // it may result in tearing during those instances.
     //
     VkPresentModeKHR VulkanSwapchain::find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const {
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
         for (const VkPresentModeKHR& present_mode : present_modes) {
             if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return present_mode;
@@ -426,9 +427,9 @@ namespace Storytime {
         depth_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depth_attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        std::array<VkAttachmentDescription, 1> attachment_descriptions = {
+        std::array<VkAttachmentDescription, 2> attachment_descriptions = {
             color_attachment_description,
-            // depth_attachment_description
+            depth_attachment_description
         };
 
         VkAttachmentReference color_attachment_reference{};
@@ -443,7 +444,7 @@ namespace Storytime {
         subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass_description.colorAttachmentCount = 1;
         subpass_description.pColorAttachments = &color_attachment_reference;
-        // subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
+        subpass_description.pDepthStencilAttachment = &depth_attachment_reference;
 
         VkSubpassDependency subpass_dependency{};
         subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -481,9 +482,9 @@ namespace Storytime {
         framebuffers.resize(image_count);
 
         for (size_t i = 0; i < image_count; i++) {
-            std::array<VkImageView, 1> attachments = {
+            std::array<VkImageView, 2> attachments = {
                 color_image_views[i],
-                // depth_image->get_view(),
+                depth_image->get_view(),
             };
 
             VkFramebufferCreateInfo framebuffer_create_info{};
