@@ -53,6 +53,7 @@ namespace Storytime {
             Quad quad{};
             quad.texture = config.texture;
             quad.model = model;
+            quad.texture_rectangle = c;
 
             if (text_config.debug) {
                 Quad debug_quad = quad;
@@ -60,7 +61,7 @@ namespace Storytime {
                 config.renderer->render_quad(debug_quad);
             }
 
-            config.renderer->render_quad(quad, c);
+            config.renderer->render_quad(quad);
 
             position.x += size_x;
         }

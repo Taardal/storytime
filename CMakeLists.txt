@@ -70,6 +70,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_camera.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
+    ${ST_SRC_DIR}/graphics/st_quad.h
     ${ST_SRC_DIR}/graphics/st_quad_vertex.cpp
     ${ST_SRC_DIR}/graphics/st_quad_vertex.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
@@ -80,8 +81,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_spritesheet.h
     ${ST_SRC_DIR}/graphics/st_texture.cpp
     ${ST_SRC_DIR}/graphics/st_texture.h
-    ${ST_SRC_DIR}/graphics/st_texture_coordinate.cpp
-    ${ST_SRC_DIR}/graphics/st_texture_coordinate.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
     ${ST_SRC_DIR}/graphics/st_vulkan_buffer.cpp

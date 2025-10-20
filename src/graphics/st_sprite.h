@@ -4,7 +4,6 @@
 
 #include "st_renderer.h"
 #include "st_texture.h"
-#include "st_texture_coordinate.h"
 
 namespace Storytime {
     struct SpriteRenderConfig {

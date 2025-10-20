@@ -47,6 +47,6 @@ namespace Storytime {
 
     void VulkanIndexBuffer::set_indices(const void* indices, const VulkanCommandBuffer& command_buffer) const {
         staging_buffer.set_data(indices);
-        staging_buffer.copy_to(buffer, command_buffer);
+        staging_buffer.copy_data_to(buffer, command_buffer);
     }
 }

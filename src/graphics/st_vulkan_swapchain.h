@@ -2,7 +2,6 @@
 
 #include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
-#include "graphics/st_vulkan_command_pool.h"
 #include "graphics/st_vulkan_device.h"
 #include "graphics/st_vulkan_frame.h"
 #include "graphics/st_vulkan_image.h"
@@ -15,7 +14,6 @@ namespace Storytime {
         Dispatcher* dispatcher = nullptr;
         Window* window = nullptr;
         VulkanDevice* device = nullptr;
-        VulkanCommandPool* command_pool = nullptr;
         VkSurfaceKHR surface = nullptr;
     };
 

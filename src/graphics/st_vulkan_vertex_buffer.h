@@ -23,6 +23,8 @@ namespace Storytime {
     public:
         VulkanVertexBuffer(const Config& config);
 
+        ~VulkanVertexBuffer();
+
         VulkanVertexBuffer(VulkanVertexBuffer&& other) noexcept;
 
         VulkanVertexBuffer(const VulkanVertexBuffer& other) = delete;
@@ -36,5 +38,41 @@ namespace Storytime {
         void bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets = nullptr) const;
 
         void set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) const;
+    };
+}
+
+namespace Storytime {
+    struct VulkanInstanceBufferConfig {
+        std::string name = "VulkanInstanceBuffer";
+        VulkanDevice* device = nullptr;
+        VkDeviceSize size = 0;
+    };
+
+    class VulkanInstanceBuffer {
+    public:
+        typedef VulkanInstanceBufferConfig Config;
+
+    private:
+        Config config;
+        VulkanBuffer buffer;
+
+    public:
+        VulkanInstanceBuffer(const Config& config);
+
+        ~VulkanInstanceBuffer();
+
+        VulkanInstanceBuffer(VulkanInstanceBuffer&& other) noexcept;
+
+        VulkanInstanceBuffer(const VulkanInstanceBuffer& other) = delete;
+
+        VulkanInstanceBuffer& operator=(VulkanInstanceBuffer&& other) noexcept;
+
+        VulkanInstanceBuffer& operator=(const VulkanInstanceBuffer& other) = delete;
+
+        operator VkBuffer() const;
+
+        void bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets = nullptr) const;
+
+        void set_vertices(const void* vertices) const;
     };
 }

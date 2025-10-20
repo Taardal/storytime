@@ -166,13 +166,14 @@ namespace Storytime {
             //
 
             TimePoint render_start_time = Time::now();
-            renderer.begin_frame();
+            if (renderer.begin_frame()) {
 #if 0
             renderer.render();
 #else
             app.render();
 #endif
             renderer.end_frame();
+            }
             TimePoint render_end_time = Time::now();
 
 #ifndef ST_USE_VULKAN

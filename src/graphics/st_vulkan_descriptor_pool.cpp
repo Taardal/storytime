@@ -16,9 +16,10 @@ namespace Storytime {
         descriptor_set_allocate_info.descriptorSetCount = descriptor_set_count;
         descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts;
 
-        if (config.device->allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets) != VK_SUCCESS) {
-            ST_THROW("Could not allocate [" << descriptor_set_count << "] descriptor sets");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets),
+            "Could not allocate [" << descriptor_set_count << "] descriptor sets"
+        );
     }
 
     std::vector<VkDescriptorSet> VulkanDescriptorPool::allocate_descriptor_sets(u32 descriptor_set_count, const VkDescriptorSetLayout* descriptor_set_layouts) const {

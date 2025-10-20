@@ -40,6 +40,8 @@ namespace Storytime {
     }
 
     void VulkanBuffer::map_memory() {
+        ST_ASSERT_NOT_NULL(memory);
+
         VkDeviceSize offset = 0;
         VkMemoryMapFlags flags = 0;
         if (config.device->map_memory(memory, offset, config.size, flags, &data) != VK_SUCCESS) {
@@ -47,15 +49,18 @@ namespace Storytime {
         }
     }
 
+    void VulkanBuffer::unmap_memory() const {
+        if (memory == nullptr) {
+            return;
+        }
+        config.device->unmap_memory(memory);
+    }
+
     void VulkanBuffer::set_data(const void* src) const {
         memcpy(data, src, config.size);
     }
 
-    void VulkanBuffer::unmap_memory() const {
-        config.device->unmap_memory(memory);
-    }
-
-    void VulkanBuffer::copy_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const {
+    void VulkanBuffer::copy_data_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const {
         u32 copy_region_count = 1;
 
         VkBufferCopy copy_region{};

@@ -6,6 +6,7 @@
 
 namespace Storytime {
     VulkanImage::VulkanImage(const Config& config) : config(config) {
+        this->config.mip_levels = 1;
         create_image();
         allocate_memory();
         create_image_view();
