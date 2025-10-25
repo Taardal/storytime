@@ -49,10 +49,14 @@
 
     #define ST_ASSERT_NOT_CEMPTY(value)\
         ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
+
+    #define ST_ASSERT_IN_BOUNDS(index, collection)\
+        ST_ASSERT(index >= 0 && index < collection.size(), "Index [" << #index << " = " << index << "] must be inside collection bounds [" #collection << " = 0.." << collection.size() << "].");
 #else
     #define ST_PRINT_ASSERT_ERROR(expression, message)
     #define ST_ASSERT(expression, message)
     #define ST_ASSERT_NOT_NULL(pointer)
     #define ST_ASSERT_NOT_EMPTY(value)
     #define ST_ASSERT_NOT_CEMPTY(value)
+    #define ST_ASSERT_IN_BOUNDS(index, collection)
 #endif

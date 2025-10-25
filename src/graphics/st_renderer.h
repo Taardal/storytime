@@ -110,11 +110,8 @@ namespace Storytime {
         // Per-batch
         std::vector<std::vector<VulkanInstanceBuffer>> batch_vertex_buffers;
         std::vector<std::vector<VkDescriptorSet>> batch_descriptor_sets{};
-        u32 batch_index_in_frame = 0;
         std::vector<std::vector<std::vector<QuadInstanceData>>> quad_batches{};
-        u32 quad_index_in_batch = 0;
         std::vector<std::vector<std::vector<std::shared_ptr<VulkanImage>>>> texture_batches{};
-        u32 texture_index_in_batch = 0;
         std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
 
     public:
@@ -122,18 +119,22 @@ namespace Storytime {
 
         ~Renderer();
 
+        void wait_until_idle() const;
+
+        void set_view_projection(const ViewProjection& view_projection);
+
         bool begin_frame();
 
         void end_frame();
 
         void render_quad(const Quad& quad);
 
-        void set_view_projection(const ViewProjection& view_projection) const;
-
-        void wait_until_idle() const;
-
     private:
-        void flush_batch();
+        Frame& get_current_frame();
+
+        void reset_current_frame();
+
+        void flush_current_batch();
 
         std::vector<VulkanUniformBuffer> create_uniform_buffers();
 
@@ -179,7 +180,7 @@ namespace Storytime {
 
         void prepare_texture_batches();
 
-        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set) const;
+        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<std::shared_ptr<VulkanImage>>& textures) const;
 
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
