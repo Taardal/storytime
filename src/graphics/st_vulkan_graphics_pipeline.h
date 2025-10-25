@@ -1,11 +1,11 @@
 #pragma once
 
+#include "graphics/st_vulkan_command_buffer.h"
 #include "graphics/st_vulkan_device.h"
-#include "graphics/st_vulkan_swapchain.h"
 
 namespace Storytime {
     struct VulkanGraphicsPipelineConfig {
-        std::string name = "Pipeline";
+        std::string name = "GraphicsPipeline";
         VulkanDevice* device = nullptr;
         VkRenderPass render_pass = nullptr;
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts{};
@@ -20,11 +20,13 @@ namespace Storytime {
         typedef VulkanGraphicsPipelineConfig Config;
 
     private:
-        Config config;
+        Config config{};
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;
 
     public:
+        VulkanGraphicsPipeline() = default;
+
         VulkanGraphicsPipeline(const Config& config);
 
         ~VulkanGraphicsPipeline();

@@ -44,6 +44,8 @@ namespace Storytime {
           graphics_pipeline(create_graphics_pipeline()),
           sampler(create_sampler())
     {
+        create_sync_objects();
+
         record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
             vertex_buffer.set_vertices(vertices.data(), command_buffer);
             index_buffer.set_indices(indices.data(), command_buffer);
@@ -53,7 +55,6 @@ namespace Storytime {
         // Per-frame
         //
 
-        create_sync_objects();
         allocate_frame_command_buffers();
         allocate_frame_descriptor_sets();
         write_frame_descriptors();
@@ -65,46 +66,14 @@ namespace Storytime {
 
         create_batch_vertex_buffers();
         allocate_batch_descriptor_sets();
-
-        quad_batch.resize(config.max_frames_in_flight);
-        for (u32 frame = 0; frame < config.max_frames_in_flight; frame++) {
-            ST_ASSERT(frame < quad_batch.size(), "Index [" << frame << "] < [" << quad_batch.size() << "]" );
-            auto& qbatch = quad_batch.at(frame);
-            qbatch.resize(max_quads_per_batch);
-        }
-
-        white_texture = std::make_shared<VulkanImage>(VulkanImage({
-            .name = "WhiteTexture",
-            .device = config.device,
-            .width = 1,
-            .height = 1,
-            .format = VK_FORMAT_R8G8B8A8_SRGB,
-            .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
-            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .mip_levels = 1,
-        }));
-
-        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
-            u32 white_texture_pixels = 0xFFFFFFFF;
-            white_texture->set_pixels(on_record_commands_fn, sizeof(white_texture_pixels), &white_texture_pixels);
-        });
-
-        texture_batch.resize(config.max_frames_in_flight);
-        for (u32 frame = 0; frame < config.max_frames_in_flight; frame++) {
-            ST_ASSERT(frame < texture_batch.size(), "Index [" << frame << "] < [" << texture_batch.size() << "]" );
-            auto& tbatch = texture_batch.at(frame);
-            tbatch.resize(max_textures_per_batch);
-            for (u32 batch = 0; batch < max_textures_per_batch; batch++) {
-                tbatch[batch] = white_texture;
-            }
-        }
+        prepare_quad_batches();
+        prepare_texture_batches();
     }
 
     Renderer::~Renderer() {
-        white_texture = nullptr;
-        texture_batch.clear();
-        quad_batch.clear();
+        placeholder_texture = nullptr;
+        texture_batches.clear();
+        quad_batches.clear();
         destroy_sync_objects();
         destroy_sampler();
         destroy_batch_descriptor_set_layout();
@@ -112,10 +81,9 @@ namespace Storytime {
     }
 
     void Renderer::set_view_projection(const ViewProjection& view_projection) const {
-        ST_ASSERT(current_frame_index < frames.size(), "Index [" << current_frame_index << "] < [" << frames.size() << "]" );
-        const Frame& frame = frames.at(current_frame_index);
-        const VulkanUniformBuffer& uniform_buffer = *frame.uniform_buffer;
-        uniform_buffer.set_uniforms(&view_projection);
+        ST_ASSERT(frame_index < frames.size(), "Index [" << frame_index << "] < [" << frames.size() << "]" );
+        const Frame& frame = frames.at(frame_index);
+        frame.uniform_buffer->set_uniforms(&view_projection);
     }
 
     void Renderer::wait_until_idle() const {
@@ -125,8 +93,8 @@ namespace Storytime {
     bool Renderer::begin_frame() {
         const VulkanDevice& device = *config.device;
 
-        ST_ASSERT(current_frame_index < frames.size(), "Index [" << current_frame_index << "] < [" << frames.size() << "]" );
-        const Frame& frame = frames.at(current_frame_index);
+        ST_ASSERT(frame_index < frames.size(), "Index [" << frame_index << "] < [" << frames.size() << "]" );
+        const Frame& frame = frames.at(frame_index);
 
         if (!swapchain.acquire_frame(frame)) {
             return false;
@@ -164,8 +132,8 @@ namespace Storytime {
     void Renderer::end_frame() {
         const VulkanDevice& device = *config.device;
 
-        ST_ASSERT(current_frame_index < frames.size(), "Index [" << current_frame_index << "] < [" << frames.size() << "]" );
-        const Frame& frame = frames.at(current_frame_index);
+        ST_ASSERT(frame_index < frames.size(), "Index [" << frame_index << "] < [" << frames.size() << "]" );
+        const Frame& frame = frames.at(frame_index);
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
 
@@ -181,20 +149,18 @@ namespace Storytime {
 
         frame_end_time = Time::now();
 
-        ST_ASSERT(current_frame_index < texture_batch.size(), "Index [" << current_frame_index << "] < [" << texture_batch.size() << "]" );
-        auto& tbatch = texture_batch.at(current_frame_index);
+        ST_ASSERT(frame_index < texture_batches.size(), "Index [" << frame_index << "] < [" << texture_batches.size() << "]" );
+        auto& tbatch = texture_batches.at(frame_index);
         for (u32 batch = 0; batch < max_textures_per_batch; batch++) {
             ST_ASSERT(batch < tbatch.size(), "Index [" << batch << "] < [" << tbatch.size() << "]" );
-            tbatch.at(batch) = white_texture;
+            tbatch.at(batch) = placeholder_texture;
         }
 
-        quad_batch_index = 0;
-        texture_batch_index = 0;
-        batch_vertex_buffer_index = 0;
-        batch_descriptor_set_index = 0;
+        quad_index_in_batch = 0;
+        texture_index_in_batch = 0;
+        batch_index_in_frame = 0;
 
-        previous_frame_index = current_frame_index;
-        current_frame_index = (current_frame_index + 1) % config.max_frames_in_flight;
+        frame_index = (frame_index + 1) % config.max_frames_in_flight;
 
         //
         // Metrics
@@ -219,37 +185,39 @@ namespace Storytime {
     }
 
     void Renderer::flush_batch() {
-        ST_ASSERT(current_frame_index < quad_batch.size(), "Index [" << current_frame_index << "] < [" << quad_batch.size() << "]" );
-        auto& qbatch = quad_batch.at(current_frame_index);
 
-        if (qbatch.empty()) {
-            ST_LOG_W("Could not flush empty batch");
-            return;
-        }
+        // Set batch instance data
+
+        ST_ASSERT(frame_index < quad_batches.size(), "Index [" << frame_index << "] < [" << quad_batches.size() << "]" );
+        std::vector<QuadInstanceData>& quad_batch = quad_batches.at(frame_index);
+        ST_ASSERT(quad_batch.size() == max_quads_per_batch, "Index [" << quad_batch.size() << "] == [" << max_quads_per_batch << "]" );
+        ST_ASSERT(quad_index_in_batch < quad_batch.size(), "Index [" << quad_index_in_batch << "] < [" << quad_batch.size() << "]")
+
+        ST_ASSERT(frame_index < batch_vertex_buffers.size(), "Index [" << frame_index << "] < [" << batch_vertex_buffers.size() << "]" );
+        std::vector<VulkanInstanceBuffer>& vbatch = batch_vertex_buffers.at(frame_index);
+
+        ST_ASSERT(batch_index_in_frame < vbatch.size(), "Index [" << batch_index_in_frame << "] < [" << vbatch.size() << "]" );
+        const VulkanInstanceBuffer& batch_vertex_buffer = vbatch.at(batch_index_in_frame);
+
+        batch_vertex_buffer.set_vertices(quad_batch.data());
+
+        // Write batch descriptors
+
+        ST_ASSERT(frame_index < batch_descriptor_sets.size(), "Index [" << frame_index << "] < [" << batch_descriptor_sets.size() << "]" );
+        auto& dbatch = batch_descriptor_sets.at(frame_index);
+
+        ST_ASSERT(batch_index_in_frame < dbatch.size(), "Index [" << batch_index_in_frame << "] < [" << dbatch.size() << "]" );
+        const VulkanDescriptorSet& batch_descriptor_set = dbatch.at(batch_index_in_frame);
+
+        write_batch_descriptors(batch_descriptor_set);
+
+        // Draw
 
         const VulkanDevice& device = *config.device;
 
-        ST_ASSERT(current_frame_index < frames.size(), "Index [" << current_frame_index << "] < [" << frames.size() << "]" );
-        const Frame& frame = frames.at(current_frame_index);
-
+        ST_ASSERT(frame_index < frames.size(), "Index [" << frame_index << "] < [" << frames.size() << "]" );
+        const Frame& frame = frames.at(frame_index);
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-
-        ST_ASSERT(current_frame_index < batch_vertex_buffers.size(), "Index [" << current_frame_index << "] < [" << batch_vertex_buffers.size() << "]" );
-        auto& vbatch = batch_vertex_buffers.at(current_frame_index);
-
-        ST_ASSERT(batch_vertex_buffer_index < vbatch.size(), "Index [" << batch_vertex_buffer_index << "] < [" << vbatch.size() << "]" );
-        const VulkanInstanceBuffer& batch_vertex_buffer = vbatch.at(batch_vertex_buffer_index);
-
-        batch_vertex_buffer.set_vertices(qbatch.data());
-
-        ST_ASSERT(current_frame_index < batch_descriptor_sets.size(), "Index [" << current_frame_index << "] < [" << batch_descriptor_sets.size() << "]" );
-        auto& dbatch = batch_descriptor_sets.at(current_frame_index);
-
-        ST_ASSERT(batch_descriptor_set_index < dbatch.size(), "Index [" << batch_descriptor_set_index << "] < [" << dbatch.size() << "]" );
-        const VulkanDescriptorSet& batch_descriptor_set = dbatch.at(batch_descriptor_set_index);
-
-        write_batch_descriptors(batch_descriptor_set);
 
         device.insert_cmd_label(command_buffer, "Bind vertex buffers");
         VkBuffer vertex_buffers[] = {
@@ -282,112 +250,66 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "Draw indexed");
         command_buffer.draw_indexed({
             .index_count = (u32) indices.size(),
-            .instance_count = quad_batch_index,
+            .instance_count = quad_index_in_batch,
             .first_index = 0,
             .vertex_offset = 0,
             .first_instance = 0,
         });
+
+        quad_index_in_batch = 0;
+        texture_index_in_batch = 0;
+
+        batch_index_in_frame++;
+
+        // Metrics
+
         config.metrics->draw_calls++;
-
-        batch_vertex_buffer_index++;
-        batch_descriptor_set_index++;
-
-        quad_batch_index = 0;
-        texture_batch_index = 0;
     }
 
     void Renderer::render_quad(const Quad& quad) {
-#if 0
-        if (quad_batch_index >= max_quads_per_batch) {
-            ST_LOG_W("Could not render batch because quad batch index [{}] >= [{}]", quad_batch_index, max_quads_per_batch);
-            return;
-        }
-        if (texture_batch_index >= max_textures_per_batch) {
-            ST_LOG_W("Could not render batch because texture batch index [{}] >= [{}]", texture_batch_index, max_textures_per_batch);
-            return;
-        }
-#else
-        if (quad_batch_index >= max_quads_per_batch || texture_batch_index >= max_textures_per_batch) {
+        if (quad_index_in_batch >= max_quads_per_batch || texture_index_in_batch >= max_textures_per_batch) {
             flush_batch();
         }
-#endif
 
-        ST_ASSERT(current_frame_index < quad_batch.size(), "Index [" << current_frame_index << "] < [" << quad_batch.size() << "]" );
-        auto& qbatch = quad_batch.at(current_frame_index);
-        ST_ASSERT(qbatch.size() == max_quads_per_batch, "Index [" << qbatch.size() << "] == [" << max_quads_per_batch << "]" );
+        ST_ASSERT(frame_index < quad_batches.size(), "Index [" << frame_index << "] < [" << quad_batches.size() << "]" );
+        std::vector<QuadInstanceData>& quad_batch = quad_batches.at(frame_index);
+        ST_ASSERT(quad_batch.size() == max_quads_per_batch, "Index [" << quad_batch.size() << "] == [" << max_quads_per_batch << "]" );
 
-        ST_ASSERT(current_frame_index < texture_batch.size(), "Index [" << current_frame_index << "] < [" << texture_batch.size() << "]" );
-        auto& tbatch = texture_batch.at(current_frame_index);
-        ST_ASSERT(tbatch.size() == max_textures_per_batch, "Index [" << tbatch.size() << "] == [" << max_textures_per_batch << "]" );
+        ST_ASSERT(frame_index < texture_batches.size(), "Index [" << frame_index << "] < [" << texture_batches.size() << "]" );
+        std::vector<std::shared_ptr<VulkanImage>>& texture_batch = texture_batches.at(frame_index);
+        ST_ASSERT(texture_batch.size() == max_textures_per_batch, "Index [" << texture_batch.size() << "] == [" << max_textures_per_batch << "]" );
 
-#if 1
+        // Find texture sampler index.
         i32 texture_index = -1;
-        auto& texture = quad.texture != nullptr ? quad.texture : white_texture;
+        auto& texture = quad.texture != nullptr ? quad.texture : placeholder_texture;
         if (texture != nullptr) {
             bool found_in_batch = false;
-            for (i32 i = 0; i < tbatch.size(); i++) {
-                ST_ASSERT(i < tbatch.size(), "Index [" << i << "] < [" << tbatch.size() << "]" );
-                if (texture == tbatch.at(i)) {
+            for (i32 i = 0; i < texture_batch.size(); i++) {
+                ST_ASSERT(i < texture_batch.size(), "Index [" << i << "] < [" << texture_batch.size() << "]" );
+                if (texture == texture_batch.at(i)) {
                     texture_index = i;
                     found_in_batch = true;
                     break;
                 }
             }
             if (!found_in_batch) {
-                texture_index = texture_batch_index;
-                texture_batch_index++;
-                ST_ASSERT(texture_index < tbatch.size(), "Index [" << texture_index << "] < [" << tbatch.size() << "]");
-                tbatch.at(texture_index) = texture;
+                texture_index = texture_index_in_batch;
+                texture_index_in_batch++;
+                ST_ASSERT(texture_index < texture_batch.size(), "Index [" << texture_index << "] < [" << texture_batch.size() << "]");
+                texture_batch.at(texture_index) = texture;
             }
         }
-
         ST_ASSERT(texture_index > -1, "Invalid texture index");
-#else
-        // if (quad_batch_index >= qbatch.size() - 1  || texture_batch_index >= tbatch.size() - 1) {
-        //     flush_batch();
-        // }
 
-        i32 texture_index = -1;
+        // Add quad to batch.
+        ST_ASSERT(quad_index_in_batch < quad_batch.size(), "Index [" << quad_index_in_batch << "] < [" << quad_batch.size() << "]" );
+        quad_batch.at(quad_index_in_batch).texture_index = (f32) texture_index;
+        quad_batch.at(quad_index_in_batch).model = quad.model;
+        quad_batch.at(quad_index_in_batch).color = quad.color;
+        quad_batch.at(quad_index_in_batch).texture_rectangle = quad.texture_rectangle;
+        quad_index_in_batch++;
 
-        // Check if the quad's texture already exists in the texture batch.
-        // If the quad has no texture, it will find the index of the first white texture.
-        // auto texture = quad.texture != nullptr ? quad.texture : white_texture;
-        auto texture = white_texture;
-        for (i32 i = 0; i < max_textures_per_batch; i++) {
-            ST_ASSERT(i < tbatch.size(), "Index [" << i << "] < [" << tbatch.size() << "]" );
-            if (texture == tbatch.at(i)) {
-                texture_index = i;
-                break;
-            }
-        }
-
-        // If the texture does not already exist in the texture batch, add it and increment the texture batch index.
-        if (texture_index == -1) {
-            texture_index = texture_batch_index;
-
-            ST_ASSERT(texture_index < tbatch.size(), "Index [" << texture_index << "] < [" << tbatch.size() << "]" );
-            tbatch.at(texture_index) = white_texture;
-
-            texture_batch_index++;
-            // ST_ASSERT(
-            //     texture_batch_index < max_textures_per_batch,
-            //     "Texture index [" << texture_batch_index << "] must be lower than texture batch size [" << max_textures_per_batch << "]"
-            // );
-            config.metrics->texture_count++;
-        }
-#endif
-        ST_ASSERT(quad_batch_index < qbatch.size(), "Index [" << quad_batch_index << "] < [" << qbatch.size() << "]" );
-
-        // Assign the texture index to the quad instance data.
-        // The index will point to a new texture or an existing texture.
-        // The existing texture may be a previously submitted texture or the white placeholder texture.
-        qbatch.at(quad_batch_index).texture_index = (f32) texture_index;
-
-        qbatch.at(quad_batch_index).model = quad.model;
-        qbatch.at(quad_batch_index).color = quad.color;
-        qbatch.at(quad_batch_index).texture_rectangle = quad.texture_rectangle;
-        quad_batch_index++;
-
+        // Update metrics
         config.metrics->quad_count++;
         config.metrics->index_count = config.metrics->quad_count * max_indices_per_quad;
         config.metrics->vertex_count = config.metrics->quad_count * max_vertices_per_quad;
@@ -445,61 +367,73 @@ namespace Storytime {
             destroy_shader_module(fragment_shader);
         });
 
-        VkVertexInputBindingDescription instance_binding_description{};
-        instance_binding_description.binding = 1;
-        instance_binding_description.stride = sizeof(InstanceData);
-        instance_binding_description.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-
-        std::vector<VkVertexInputBindingDescription> binding_descriptions = {
-            QuadVertex::getBindingDescription(),
-            instance_binding_description,
+        std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions = {
+            VkVertexInputBindingDescription{
+                .binding = 0,
+                .stride = sizeof(QuadVertex),
+                .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+            },
+            VkVertexInputBindingDescription{
+                .binding = 1,
+                .stride = sizeof(QuadInstanceData),
+                .inputRate = VK_VERTEX_INPUT_RATE_INSTANCE,
+            },
         };
 
-        std::vector<VkVertexInputAttributeDescription> quad_vertex_attribute_descriptions = QuadVertex::getAttributeDescriptions();
-        std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
-            quad_vertex_attribute_descriptions[0],
-            quad_vertex_attribute_descriptions[1],
+        std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions = {
+            VkVertexInputAttributeDescription{
+                .location = 0,
+                .binding = 0,
+                .format = get_vk_format("vec4"),
+                .offset = offsetof(QuadVertex, position),
+            },
+            VkVertexInputAttributeDescription{
+                .location = 1,
+                .binding = 0,
+                .format = get_vk_format("vec2"),
+                .offset = offsetof(QuadVertex, texture_coordinate),
+            },
             VkVertexInputAttributeDescription{
                 .location = 2,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 0 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, model) + 0 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 3,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 1 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, model) + 1 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 4,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 2 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, model) + 2 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 5,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, model) + 3 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, model) + 3 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 6,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, color) + 0 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, color) + 0 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 7,
                 .binding = 1,
                 .format = get_vk_format("vec4"),
-                .offset = offsetof(InstanceData, texture_rectangle) + 0 * sizeof(glm::vec4),
+                .offset = offsetof(QuadInstanceData, texture_rectangle) + 0 * sizeof(glm::vec4),
             },
             VkVertexInputAttributeDescription{
                 .location = 8,
                 .binding = 1,
                 .format = get_vk_format("float"),
-                .offset = offsetof(InstanceData, texture_index) + 0 * sizeof(f32),
+                .offset = offsetof(QuadInstanceData, texture_index) + 0 * sizeof(f32),
             },
         };
 
@@ -514,8 +448,8 @@ namespace Storytime {
             .render_pass = swapchain.get_render_pass(),
             .descriptor_set_layouts = descriptor_set_layouts,
             .shader_stage_create_infos = shader_stage_create_infos,
-            .vertex_input_binding_descriptions = binding_descriptions,
-            .vertex_input_attribute_descriptions = attribute_descriptions,
+            .vertex_input_binding_descriptions = vertex_input_binding_descriptions,
+            .vertex_input_attribute_descriptions = vertex_input_attribute_descriptions,
         });
     }
 
@@ -814,7 +748,7 @@ namespace Storytime {
                 vertex_buffers.emplace_back(VulkanInstanceBuffer({
                     .name = std::format("{} batch vertex buffer {}/{}", config.name, i + 1, max_batches_per_frame),
                     .device = config.device,
-                    .size = sizeof(InstanceData) * max_quads_per_batch,
+                    .size = sizeof(QuadInstanceData) * max_quads_per_batch,
                 }));
             }
         }
@@ -841,20 +775,57 @@ namespace Storytime {
         }
     }
 
+    void Renderer::prepare_quad_batches() {
+        quad_batches.resize(config.max_frames_in_flight);
+        for (u32 frame = 0; frame < config.max_frames_in_flight; frame++) {
+            ST_ASSERT(frame < quad_batches.size(), "Index [" << frame << "] < [" << quad_batches.size() << "]" );
+            std::vector<QuadInstanceData>& quad_batch = quad_batches.at(frame);
+            quad_batch.resize(max_quads_per_batch);
+        }
+    }
+
+    void Renderer::prepare_texture_batches() {
+        placeholder_texture = std::make_shared<VulkanImage>(VulkanImage({
+            .name = "WhiteTexture",
+            .device = config.device,
+            .width = 1,
+            .height = 1,
+            .format = VK_FORMAT_R8G8B8A8_SRGB,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .mip_levels = 1,
+        }));
+
+        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+            u32 white_pixels = 0xFFFFFFFF;
+            placeholder_texture->set_pixels(on_record_commands_fn, sizeof(white_pixels), &white_pixels);
+        });
+
+        texture_batches.resize(config.max_frames_in_flight);
+        for (u32 frame = 0; frame < config.max_frames_in_flight; frame++) {
+            ST_ASSERT(frame < texture_batches.size(), "Index [" << frame << "] < [" << texture_batches.size() << "]" );
+            auto& texture_batch = texture_batches.at(frame);
+            texture_batch.resize(max_textures_per_batch);
+            for (u32 batch = 0; batch < max_textures_per_batch; batch++) {
+                texture_batch[batch] = placeholder_texture;
+            }
+        }
+    }
+
+
     void Renderer::write_batch_descriptors(const VulkanDescriptorSet& descriptor_set) const {
         const VulkanDevice& device = *config.device;
 
-        ST_ASSERT(current_frame_index < texture_batch.size(), "Index [" << current_frame_index << "] < [" << texture_batch.size() << "]" );
-        auto& tbatch = texture_batch.at(current_frame_index);
+        ST_ASSERT(frame_index < texture_batches.size(), "Index [" << frame_index << "] < [" << texture_batches.size() << "]" );
+        auto& tbatch = texture_batches.at(frame_index);
         ST_ASSERT(tbatch.size() == max_textures_per_batch, "FOO");
-        ST_ASSERT(texture_batch_index < max_textures_per_batch, "BAR");
+        ST_ASSERT(texture_index_in_batch < max_textures_per_batch, "BAR");
 
         std::vector<VkDescriptorImageInfo> image_descriptor_infos(tbatch.size());
         for (u32 j = 0; j < max_textures_per_batch; j++) {
             ST_ASSERT(j < tbatch.size(), "Index [" << j << "] < [" << tbatch.size() << "]" );
-            // ST_ASSERT(tbatch.at(j) != nullptr, "Texture batch slot is null");
             image_descriptor_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            // image_descriptor_infos[j].imageView = j <= texture_batch_index ? tbatch.at(j)->get_view() : white_texture->get_view();
             image_descriptor_infos[j].imageView = tbatch.at(j)->get_view();
             image_descriptor_infos[j].sampler = sampler;
         }

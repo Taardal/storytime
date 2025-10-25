@@ -100,8 +100,7 @@ namespace Storytime {
         std::vector<VkCommandBuffer> frame_command_buffers{};
         std::vector<VkDescriptorSet> frame_descriptor_sets{};
         std::vector<Frame> frames{};
-        u32 current_frame_index = 0;
-        u32 previous_frame_index = 0;
+        u32 frame_index = 0;
         u32 frame_counter = 0;
         f64 frame_delta_ms = 0.0;
         TimePoint frame_delta_time;
@@ -110,14 +109,13 @@ namespace Storytime {
 
         // Per-batch
         std::vector<std::vector<VulkanInstanceBuffer>> batch_vertex_buffers;
-        u32 batch_vertex_buffer_index = 0;
         std::vector<std::vector<VkDescriptorSet>> batch_descriptor_sets{};
-        u32 batch_descriptor_set_index = 0;
-        std::vector<std::vector<InstanceData>> quad_batch{};
-        u32 quad_batch_index = 0;
-        std::vector<std::vector<std::shared_ptr<VulkanImage>>> texture_batch{};
-        u32 texture_batch_index = 0;
-        std::shared_ptr<VulkanImage> white_texture = nullptr;
+        u32 batch_index_in_frame = 0;
+        std::vector<std::vector<QuadInstanceData>> quad_batches{};
+        u32 quad_index_in_batch = 0;
+        std::vector<std::vector<std::shared_ptr<VulkanImage>>> texture_batches{};
+        u32 texture_index_in_batch = 0;
+        std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
 
     public:
         Renderer(const Config& config);
@@ -176,6 +174,10 @@ namespace Storytime {
         void create_batch_vertex_buffers();
 
         void allocate_batch_descriptor_sets();
+
+        void prepare_quad_batches();
+
+        void prepare_texture_batches();
 
         void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set) const;
 
