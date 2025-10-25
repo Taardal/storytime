@@ -53,10 +53,12 @@ namespace Storytime {
         typedef VulkanInstanceBufferConfig Config;
 
     private:
-        Config config;
-        VulkanBuffer buffer;
+        Config config{};
+        VulkanBuffer buffer{};
 
     public:
+        VulkanInstanceBuffer() = default;
+
         VulkanInstanceBuffer(const Config& config);
 
         ~VulkanInstanceBuffer();

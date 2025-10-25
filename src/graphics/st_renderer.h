@@ -111,9 +111,9 @@ namespace Storytime {
         std::vector<std::vector<VulkanInstanceBuffer>> batch_vertex_buffers;
         std::vector<std::vector<VkDescriptorSet>> batch_descriptor_sets{};
         u32 batch_index_in_frame = 0;
-        std::vector<std::vector<QuadInstanceData>> quad_batches{};
+        std::vector<std::vector<std::vector<QuadInstanceData>>> quad_batches{};
         u32 quad_index_in_batch = 0;
-        std::vector<std::vector<std::shared_ptr<VulkanImage>>> texture_batches{};
+        std::vector<std::vector<std::vector<std::shared_ptr<VulkanImage>>>> texture_batches{};
         u32 texture_index_in_batch = 0;
         std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
 
