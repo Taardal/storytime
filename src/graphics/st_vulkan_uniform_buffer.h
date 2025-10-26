@@ -15,10 +15,12 @@ namespace Storytime {
         typedef VulkanUniformBufferConfig Config;
 
     private:
-        Config config;
-        VulkanBuffer buffer;
+        Config config{};
+        VulkanBuffer buffer{};
 
     public:
+        VulkanUniformBuffer() = default;
+
         VulkanUniformBuffer(const Config& config);
 
         VulkanUniformBuffer(VulkanUniformBuffer&& other) noexcept;

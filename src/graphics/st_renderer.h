@@ -78,27 +78,18 @@ namespace Storytime {
 
     private:
         Config config;
-
-        // Permanent
         VulkanSwapchain swapchain;
         VulkanCommandPool initialization_command_pool;
         VulkanCommandPool runtime_command_pool;
-        VulkanVertexBuffer vertex_buffer;
-        VulkanIndexBuffer index_buffer;
-        std::vector<VulkanUniformBuffer> uniform_buffers{};
         VulkanDescriptorPool frame_descriptor_pool;
         VkDescriptorSetLayout frame_descriptor_set_layout;
         VulkanDescriptorPool batch_descriptor_pool;
         VkDescriptorSetLayout batch_descriptor_set_layout;
-        VulkanGraphicsPipeline graphics_pipeline;
-        VkSampler sampler;
-
-        // Per-frame
-        std::vector<VkFence> in_flight_fences;
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkSemaphore> render_finished_semaphores;
-        std::vector<VkCommandBuffer> frame_command_buffers{};
-        std::vector<VkDescriptorSet> frame_descriptor_sets{};
+        VulkanGraphicsPipeline quad_graphics_pipeline;
+        VulkanVertexBuffer quad_vertex_buffer;
+        VulkanIndexBuffer quad_index_buffer;
+        VkSampler texture_sampler;
+        std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
         std::vector<Frame> frames{};
         u32 frame_index = 0;
         u32 frame_counter = 0;
@@ -107,13 +98,6 @@ namespace Storytime {
         TimePoint frame_start_time;
         TimePoint frame_end_time;
 
-        // Per-batch
-        std::vector<std::vector<VulkanInstanceBuffer>> batch_vertex_buffers;
-        std::vector<std::vector<VkDescriptorSet>> batch_descriptor_sets{};
-        std::vector<std::vector<std::vector<QuadInstanceData>>> quad_batches{};
-        std::vector<std::vector<std::vector<std::shared_ptr<VulkanImage>>>> texture_batches{};
-        std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
-
     public:
         Renderer(const Config& config);
 
@@ -121,22 +105,34 @@ namespace Storytime {
 
         void wait_until_idle() const;
 
-        void set_view_projection(const ViewProjection& view_projection);
-
         bool begin_frame();
 
         void end_frame();
 
+        void set_view_projection(const ViewProjection& view_projection) const;
+
         void render_quad(const Quad& quad);
 
     private:
-        Frame& get_current_frame();
+        void flush_batch(Frame& frame, Batch& batch) const;
 
-        void reset_current_frame();
+        void reset_frame(Frame& frame) const;
 
-        void flush_current_batch();
+        void reset_batch(Batch& batch) const;
 
-        std::vector<VulkanUniformBuffer> create_uniform_buffers();
+        void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+
+        void write_frame_descriptors(const VulkanDescriptorSet& descriptor_set, const VulkanUniformBuffer& uniform_buffer) const;
+
+        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<std::shared_ptr<VulkanImage>>& textures) const;
+
+        VulkanSwapchain create_swapchain();
+
+        VulkanCommandPool create_initialization_command_pool();
+
+        VulkanCommandPool create_runtime_command_pool();
 
         VulkanDescriptorPool create_frame_descriptor_pool();
 
@@ -150,41 +146,27 @@ namespace Storytime {
 
         void destroy_batch_descriptor_set_layout() const;
 
-        VulkanGraphicsPipeline create_graphics_pipeline();
+        VulkanGraphicsPipeline create_quad_graphics_pipeline();
 
         VkShaderModule create_shader_module(const std::filesystem::path& path) const;
 
         void destroy_shader_module(VkShaderModule shader_module) const;
 
-        VkSampler create_sampler() const;
+        VulkanVertexBuffer create_quad_vertex_buffer();
+
+        VulkanIndexBuffer create_quad_index_buffer();
+
+        VkSampler create_texture_sampler() const;
 
         void destroy_sampler() const;
 
-        void create_sync_objects();
+        std::shared_ptr<VulkanImage> create_placeholder_texture() const;
 
-        void destroy_sync_objects() const;
+        void destroy_placeholder_texture();
 
-        void allocate_frame_command_buffers();
+        std::vector<Frame> create_frames();
 
-        void allocate_frame_descriptor_sets();
-
-        void write_frame_descriptors() const;
-
-        void prepare_frames();
-
-        void create_batch_vertex_buffers();
-
-        void allocate_batch_descriptor_sets();
-
-        void prepare_quad_batches();
-
-        void prepare_texture_batches();
-
-        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<std::shared_ptr<VulkanImage>>& textures) const;
-
-        void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
-
-        void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
+        void destroy_frames();
 
         VulkanCommandBuffer begin_one_time_submit_command_buffer() const;
 
@@ -193,7 +175,5 @@ namespace Storytime {
         void record_and_submit_commands(const RecordCommandsFn& record_commands) const;
 
         void record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
-
-        void set_object_name(void* object, VkObjectType object_type, const char* object_name) const;
     };
 }

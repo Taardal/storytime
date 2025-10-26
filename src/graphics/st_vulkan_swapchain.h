@@ -15,6 +15,7 @@ namespace Storytime {
         Window* window = nullptr;
         VulkanDevice* device = nullptr;
         VkSurfaceKHR surface = nullptr;
+        u32 frame_count = 0;
     };
 
     class VulkanSwapchain {
@@ -22,17 +23,20 @@ namespace Storytime {
         typedef VulkanSwapchainConfig Config;
 
     private:
-        Config config;
+        Config config{};
         VkSwapchainKHR swapchain = nullptr;
         VkSurfaceFormatKHR surface_format{};
         VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
         VkExtent2D image_extent{};
-        std::vector<VkImage> color_images;
-        std::vector<VkImageView> color_image_views;
+        std::vector<VkImage> color_images{};
+        std::vector<VkImageView> color_image_views{};
         VulkanImage* depth_image = nullptr;
         VkRenderPass render_pass = nullptr;
-        std::vector<VkFramebuffer> framebuffers;
-        u32 current_image_index = 0;
+        std::vector<VkFramebuffer> framebuffers{};
+        std::vector<VkFence> in_flight_fences{};
+        std::vector<VkSemaphore> image_available_semaphores{};
+        std::vector<VkSemaphore> render_finished_semaphores{};
+        u32 image_index = 0;
         bool surface_has_been_resized = false;
 
     public:
@@ -84,6 +88,10 @@ namespace Storytime {
         void create_framebuffers();
 
         void destroy_framebuffers() const;
+
+        void create_sync_objects();
+
+        void destroy_sync_objects() const;
 
         void subscribe_to_events();
 

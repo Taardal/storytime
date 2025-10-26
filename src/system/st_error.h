@@ -3,10 +3,12 @@
 #include "st_log.h"
 
 #define ST_THROW(message)\
-    std::stringstream ss;\
-    ss << message;\
-    std::string message_string = ss.str();\
-    throw ::Storytime::Error(message_string, ST_TAG)
+    {\
+        std::stringstream ss;\
+        ss << message;\
+        std::string message_string = ss.str();\
+        throw ::Storytime::Error(message_string, ST_TAG);\
+    }
 
 #define ST_ASSERT_THROW(expression, message)\
     if (expression) {\
