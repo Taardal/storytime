@@ -7,7 +7,7 @@
 #include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_descriptor_pool.h"
 #include "graphics/st_vulkan_device.h"
-#include "graphics/st_vulkan_frame.h"
+#include "graphics/st_frame.h"
 #include "graphics/st_vulkan_graphics_pipeline.h"
 #include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_index_buffer.h"
@@ -17,21 +17,33 @@
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_clock.h"
 #include "system/st_dispatcher.h"
+#include "system/st_file_reader.h"
 #include "system/st_metrics.h"
 #include "window/st_window.h"
 
 namespace Storytime {
     struct RendererConfig {
-        std::string name = "";
+        std::string name = "Renderer";
         Dispatcher* dispatcher = nullptr;
         Window* window = nullptr;
+        FileReader* file_reader = nullptr;
         Metrics* metrics = nullptr;
         VulkanContext* context = nullptr;
         VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
-        VulkanCommandPool* command_pool = nullptr;
         u32 max_frames_in_flight = 0;
-        bool validation_layers_enabled = false;
+
+        const RendererConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(dispatcher);
+            ST_ASSERT_NOT_NULL(window);
+            ST_ASSERT_NOT_NULL(file_reader);
+            ST_ASSERT_NOT_NULL(metrics);
+            ST_ASSERT_NOT_NULL(context);
+            ST_ASSERT_NOT_NULL(physical_device);
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_POSITIVE(max_frames_in_flight);
+            return *this;
+        }
     };
 
     class Renderer {
@@ -44,53 +56,38 @@ namespace Storytime {
         static constexpr u32 max_quads_per_batch = 10'000;
         static constexpr u32 max_textures_per_batch = 16;
 
-        static constexpr u32 max_vertices_per_quad = 4;
+        typedef u16 Index;
         static constexpr u32 max_indices_per_quad = 6;
+
+        static constexpr std::array<Index, max_indices_per_quad> base_quad_indices = {
+            0, 1, 2, 2, 3, 0
+        };
+
+        static constexpr u32 max_vertices_per_quad = 4;
         static constexpr u32 max_vertices_per_batch = max_quads_per_batch * max_vertices_per_quad;
 
-        static constexpr u32 frame_descriptor_set_binding = 0;
-        static constexpr u32 frame_descriptor_count = 1;
-
-        static constexpr u32 batch_descriptor_set_binding = 1;
-        static constexpr u32 batch_descriptor_count = max_textures_per_batch;
-
-        typedef glm::vec2 TextureCoordinate;
-
-        static constexpr std::array<glm::vec2, max_vertices_per_quad> texture_coordinates = {
-            glm::vec2(0.0f, 0.0f), // Top left
-            glm::vec2(1.0f, 0.0f), // Top right
-            glm::vec2(1.0f, 1.0f), // Bottom right
-            glm::vec2(0.0f, 1.0f), // Bottom left
-        };
-
-        static constexpr std::array<QuadVertex, max_vertices_per_quad> vertices = {
-            QuadVertex{{ 0.0f, 0.0f, 0.0f, 1.0f }, glm::vec2(0.0f, 0.0f)},
-            QuadVertex{{ 1.0f, 0.0f, 0.0f, 1.0f }, glm::vec2(1.0f, 0.0f)},
-            QuadVertex{{ 1.0f, 1.0f, 0.0f, 1.0f }, glm::vec2(1.0f, 1.0f)},
-            QuadVertex{{ 0.0f, 1.0f, 0.0f, 1.0f }, glm::vec2(0.0f, 1.0f)},
-        };
-
-        typedef u16 Index;
-
-        static constexpr std::array<Index, max_indices_per_quad> indices = {
-            0, 1, 2, 2, 3, 0
+        static constexpr std::array<QuadVertex, max_vertices_per_quad> base_quad_vertices = {
+            QuadVertex{ .position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 0.0f) }, // Top left
+            QuadVertex{ .position = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 0.0f) }, // Top right
+            QuadVertex{ .position = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 1.0f) }, // Bottom right
+            QuadVertex{ .position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 1.0f) }, // Bottom left
         };
 
     private:
         Config config;
         VulkanSwapchain swapchain;
-        VulkanCommandPool initialization_command_pool;
-        VulkanCommandPool runtime_command_pool;
+        VulkanCommandPool init_command_pool;
+        VulkanCommandPool frame_command_pool;
         VulkanDescriptorPool frame_descriptor_pool;
         VkDescriptorSetLayout frame_descriptor_set_layout;
         VulkanDescriptorPool batch_descriptor_pool;
         VkDescriptorSetLayout batch_descriptor_set_layout;
         VulkanGraphicsPipeline quad_graphics_pipeline;
-        VulkanVertexBuffer quad_vertex_buffer;
-        VulkanIndexBuffer quad_index_buffer;
+        VulkanVertexBuffer base_quad_vertex_buffer;
+        VulkanIndexBuffer base_quad_index_buffer;
         VkSampler texture_sampler;
-        std::shared_ptr<VulkanImage> placeholder_texture = nullptr;
-        std::vector<Frame> frames{};
+        Shared<VulkanImage> placeholder_texture;
+        std::vector<Frame> frames;
         u32 frame_index = 0;
         u32 frame_counter = 0;
         f64 frame_delta_ms = 0.0;
@@ -118,21 +115,19 @@ namespace Storytime {
 
         void reset_frame(Frame& frame) const;
 
-        void reset_batch(Batch& batch) const;
-
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
         void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
         void write_frame_descriptors(const VulkanDescriptorSet& descriptor_set, const VulkanUniformBuffer& uniform_buffer) const;
 
-        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<std::shared_ptr<VulkanImage>>& textures) const;
+        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<Shared<VulkanImage>>& textures) const;
 
         VulkanSwapchain create_swapchain();
 
-        VulkanCommandPool create_initialization_command_pool();
+        VulkanCommandPool create_init_command_pool();
 
-        VulkanCommandPool create_runtime_command_pool();
+        VulkanCommandPool create_frame_command_pool();
 
         VulkanDescriptorPool create_frame_descriptor_pool();
 
@@ -152,28 +147,20 @@ namespace Storytime {
 
         void destroy_shader_module(VkShaderModule shader_module) const;
 
-        VulkanVertexBuffer create_quad_vertex_buffer();
+        VulkanVertexBuffer create_base_quad_vertex_buffer();
 
-        VulkanIndexBuffer create_quad_index_buffer();
+        VulkanIndexBuffer create_base_quad_index_buffer();
 
         VkSampler create_texture_sampler() const;
 
-        void destroy_sampler() const;
+        void destroy_texture_sampler() const;
 
-        std::shared_ptr<VulkanImage> create_placeholder_texture() const;
+        Shared<VulkanImage> create_placeholder_texture() const;
 
         void destroy_placeholder_texture();
 
         std::vector<Frame> create_frames();
 
         void destroy_frames();
-
-        VulkanCommandBuffer begin_one_time_submit_command_buffer() const;
-
-        void end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const;
-
-        void record_and_submit_commands(const RecordCommandsFn& record_commands) const;
-
-        void record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const;
     };
 }

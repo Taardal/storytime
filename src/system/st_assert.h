@@ -52,6 +52,9 @@
 
     #define ST_ASSERT_IN_BOUNDS(index, collection)\
         ST_ASSERT(index >= 0 && index < collection.size(), "Index [" << #index << " = " << index << "] must be inside collection bounds [" #collection << " = 0.." << collection.size() << "].");
+
+    #define ST_ASSERT_POSITIVE(value)\
+        ST_ASSERT(value > 0, "Value [" << #value << "] must be positive")
 #else
     #define ST_PRINT_ASSERT_ERROR(expression, message)
     #define ST_ASSERT(expression, message)
@@ -59,4 +62,5 @@
     #define ST_ASSERT_NOT_EMPTY(value)
     #define ST_ASSERT_NOT_CEMPTY(value)
     #define ST_ASSERT_IN_BOUNDS(index, collection)
+    #define ST_ASSERT_POSITIVE(value)
 #endif

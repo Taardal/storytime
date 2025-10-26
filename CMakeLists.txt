@@ -68,10 +68,10 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
     ${ST_SRC_DIR}/graphics/st_camera.h
+    ${ST_SRC_DIR}/graphics/st_frame.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
     ${ST_SRC_DIR}/graphics/st_quad.h
-    ${ST_SRC_DIR}/graphics/st_quad_vertex.cpp
     ${ST_SRC_DIR}/graphics/st_quad_vertex.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_renderer.h
@@ -98,7 +98,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_set.h
     ${ST_SRC_DIR}/graphics/st_vulkan_device.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_device.h
-    ${ST_SRC_DIR}/graphics/st_vulkan_frame.h
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp
     ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.h
     ${ST_SRC_DIR}/graphics/st_vulkan_image.cpp

@@ -42,4 +42,9 @@ namespace Storytime {
     std::string get_vk_format_name(VkFormat format);
 
     VkFormat get_vk_format(std::string_view glsl_type);
+
+    struct VulkanDepth {
+        static constexpr f32 near = 0.0f;
+        static constexpr f32 far = 1.0f;
+    };
 }

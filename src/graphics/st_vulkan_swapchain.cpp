@@ -3,19 +3,17 @@
 #include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    VulkanSwapchain::VulkanSwapchain(const Config& config) : config(config) {
+    VulkanSwapchain::VulkanSwapchain(const Config& config) : config(config.assert_valid()) {
         create_swapchain();
         create_image_views();
         create_depth_image();
         create_render_pass();
         create_framebuffers();
-        // create_sync_objects();
         subscribe_to_events();
     }
 
     VulkanSwapchain::~VulkanSwapchain() {
         unsubscribe_from_events();
-        // destroy_sync_objects();
         destroy_framebuffers();
         destroy_render_pass();
         destroy_depth_image();
@@ -99,7 +97,7 @@ namespace Storytime {
 
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
         if (next_image_result != VK_SUCCESS && next_image_result != VK_SUBOPTIMAL_KHR) {
-            ST_THROW("Could not acquire swapchain image");
+            ST_THROW("Could not acquire next image");
         }
 
         // Delay resetting the 'in flight' fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
@@ -111,19 +109,84 @@ namespace Storytime {
         return true;
     }
 
-    void VulkanSwapchain::begin_render(const VulkanCommandBuffer& command_buffer) const {
+    void VulkanSwapchain::present_frame(const Frame& frame) {
+        const VulkanDevice& device = *config.device;
+
+        VkCommandBuffer command_buffer = frame.command_buffer;
+        VkFence in_flight_fence = frame.in_flight_fence;
+        VkSemaphore image_available_semaphore = frame.image_available_semaphore;
+        VkSemaphore render_finished_semaphore = frame.render_finished_semaphore;
+        VulkanQueue graphics_queue = frame.graphics_queue;
+        VulkanQueue present_queue = frame.present_queue;
+
+        //
+        // Submit the render commands to the graphics queue to perform the rendering.
+        //
+
+        device.begin_queue_label(graphics_queue, "GraphicsQueue");
+
+        constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffer;
+        submit_info.waitSemaphoreCount = 1;
+        submit_info.pWaitSemaphores = &image_available_semaphore; // Wait until an image is available.
+        submit_info.pWaitDstStageMask = &color_output_pipeline_stage; // Wait at the color output pipeline stage.
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = &render_finished_semaphore; // Signal that the rendering to the image is complete.
+
+        device.insert_queue_label(graphics_queue, "Submit render commands");
+
+        if (graphics_queue.submit(submit_info, in_flight_fence) != VK_SUCCESS) {
+            ST_THROW("Could not submit render commands to graphics queue");
+        }
+
+        device.end_queue_label(graphics_queue);
+
+        //
+        // Present the rendered image to the surface (screen).
+        //
+
+        device.begin_queue_label(present_queue, "PresentQueue");
+
+        VkPresentInfoKHR present_info{};
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        present_info.pImageIndices = &image_index;
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = &swapchain;
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = &render_finished_semaphore; // Wait until the image is rendered.
+        present_info.pResults = nullptr;
+
+        device.insert_queue_label(present_queue, "Present swapchain image");
+
+        VkResult present_result = present_queue.present(present_info);
+
+        // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
+        // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
+        if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || surface_has_been_resized) {
+            surface_has_been_resized = false;
+            recreate();
+        } else if (present_result != VK_SUCCESS) {
+            ST_THROW("Could not present image to the surface");
+        }
+
+        device.end_queue_label(present_queue);
+    }
+
+    void VulkanSwapchain::begin_render_pass(const VulkanCommandBuffer& command_buffer) const {
         const VulkanDevice& device = *config.device;
 
         device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
 
         VkClearColorValue clear_color_value = {
-            .float32 = {0.0f, 0.0f, 0.0f, 1.0f}
+            .float32 = {1.0f, 0.0f, 1.0f, 1.0f}
         };
 
-        // The range of depths in the depth buffer is 0.0 to 1.0 in Vulkan, where 1.0 lies at the far view plane and 0.0 at the near view plane.
-        // The initial value at each point in the depth buffer should be the furthest possible depth, which is 1.0.
         VkClearDepthStencilValue clear_depth_stencil_value = {
-            .depth = 1.0f,
+            .depth = VulkanDepth::far, // The initial value at each point in the depth buffer should be the furthest possible depth.
             .stencil = 0,
         };
 
@@ -149,8 +212,8 @@ namespace Storytime {
         viewport.y = 0.0f;
         viewport.width = (f32) image_extent.width;
         viewport.height = (f32) image_extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
+        viewport.minDepth = VulkanDepth::near;
+        viewport.maxDepth = VulkanDepth::far;
 
         command_buffer.set_viewport(viewport);
 
@@ -163,76 +226,9 @@ namespace Storytime {
         command_buffer.set_scissor(scissor);
     }
 
-    void VulkanSwapchain::end_render(const VulkanCommandBuffer& command_buffer) const {
+    void VulkanSwapchain::end_render_pass(const VulkanCommandBuffer& command_buffer) const {
         config.device->insert_cmd_label(command_buffer, "End swapchain render pass");
         command_buffer.end_render_pass();
-    }
-
-    void VulkanSwapchain::present_frame(const Frame& frame) {
-        const VulkanDevice& device = *config.device;
-
-        VkCommandBuffer command_buffer = frame.command_buffer;
-        VkFence in_flight_fence = frame.in_flight_fence;
-        VkSemaphore image_available_semaphore = frame.image_available_semaphore;
-        VkSemaphore render_finished_semaphore = frame.render_finished_semaphore;
-        VulkanQueue graphics_queue = frame.graphics_queue;
-        VulkanQueue present_queue = frame.present_queue;
-
-        //
-        // Submit the render commands to the graphics queue to perform the rendering.
-        //
-
-        device.begin_queue_label(graphics_queue, "GraphicsQueue");
-
-        constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-        VkSubmitInfo submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.waitSemaphoreCount = 1;
-        submit_info.pWaitSemaphores = &image_available_semaphore; // Wait until an image is available.
-        submit_info.pWaitDstStageMask = &color_output_pipeline_stage; // Wait at the color output pipeline stage.
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &command_buffer;
-        submit_info.signalSemaphoreCount = 1;
-        submit_info.pSignalSemaphores = &render_finished_semaphore; // Signal that the rendering to the image is complete.
-
-        device.insert_queue_label(graphics_queue, "Submit render commands");
-
-        if (graphics_queue.submit(submit_info, in_flight_fence) != VK_SUCCESS) {
-            ST_THROW("Could not submit render commands to graphics queue");
-        }
-
-        device.end_queue_label(graphics_queue);
-
-        //
-        // Present the rendered image to the surface (screen).
-        //
-
-        device.begin_queue_label(present_queue, "PresentQueue");
-
-        VkPresentInfoKHR present_info{};
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &render_finished_semaphore; // Wait until the image is rendered.
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &swapchain;
-        present_info.pImageIndices = &image_index;
-        present_info.pResults = nullptr;
-
-        device.insert_queue_label(present_queue, "Present swapchain image");
-
-        VkResult present_result = present_queue.present(present_info);
-
-        // VK_ERROR_OUT_OF_DATE_KHR: The swapchain has become incompatible with the surface and can no longer be used for rendering.
-        // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
-        if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || surface_has_been_resized) {
-            surface_has_been_resized = false;
-            recreate();
-        } else if (present_result != VK_SUCCESS) {
-            ST_THROW("Could not present swapchain image to the surface");
-        }
-
-        device.end_queue_label(present_queue);
     }
 
     void VulkanSwapchain::create_swapchain() {
@@ -519,63 +515,6 @@ namespace Storytime {
     void VulkanSwapchain::destroy_framebuffers() const {
         for (VkFramebuffer framebuffer : framebuffers) {
             config.device->destroy_framebuffer(framebuffer);
-        }
-    }
-
-    void VulkanSwapchain::create_sync_objects() {
-        const VulkanDevice& device = *config.device;
-
-        u32 frame_count = config.frame_count;
-        ST_ASSERT(frame_count > 0, "Frame count must be higher than zero");
-
-        in_flight_fences.resize(frame_count);
-        image_available_semaphores.resize(frame_count);
-        render_finished_semaphores.resize(frame_count);
-
-        VkSemaphoreCreateInfo semaphore_create_info{};
-        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        VkFenceCreateInfo fence_create_info{};
-        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        for (u32 i = 0; i < frame_count; i++) {
-            VkFence in_flight_fence = in_flight_fences.at(i);
-            VkSemaphore image_available_semaphore = image_available_semaphores.at(i);
-            VkSemaphore render_finished_semaphore = render_finished_semaphores.at(i);
-
-            std::string in_flight_fence_name = std::format("{} 'in flight' fence {}/{}", config.name.c_str(), i + 1, frame_count);
-            std::string image_available_semaphore_name = std::format("{} 'image available' semaphore {}/{}", config.name.c_str(), i + 1, frame_count);
-            std::string render_finished_semaphore_name = std::format("{} 'render finished' semaphore {}/{}", config.name.c_str(), i + 1, frame_count);
-
-            if (device.create_fence(fence_create_info, &in_flight_fence) != VK_SUCCESS) {
-                ST_THROW("Could not create fence [" << in_flight_fence_name << "]");
-            }
-            if (device.create_semaphore(semaphore_create_info, &image_available_semaphore) != VK_SUCCESS) {
-                ST_THROW("Could not create semaphore [" << image_available_semaphore_name << "]");
-            }
-            if (device.create_semaphore(semaphore_create_info, &render_finished_semaphore) != VK_SUCCESS) {
-                ST_THROW("Could not create semaphore [" << render_finished_semaphore_name << "]");
-            }
-
-            if (device.set_object_name(in_flight_fence, VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set fence name [" << in_flight_fence_name << "]");
-            }
-            if (device.set_object_name(image_available_semaphore, VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set semaphore name [" << image_available_semaphore_name << "]");
-            }
-            if (device.set_object_name(render_finished_semaphore, VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set semaphore name [" << render_finished_semaphore_name << "]");
-            }
-        }
-    }
-
-    void VulkanSwapchain::destroy_sync_objects() const {
-        const VulkanDevice& device = *config.device;
-        for (u32 i = 0; i < config.frame_count; i++) {
-            device.destroy_fence(in_flight_fences.at(i));
-            device.destroy_semaphore(image_available_semaphores.at(i));
-            device.destroy_semaphore(render_finished_semaphores.at(i));
         }
     }
 

@@ -7,7 +7,6 @@
 #include "graphics/st_renderer.h"
 #include "graphics/st_vulkan_context.h"
 #include "graphics/st_vulkan_device.h"
-#include "graphics/st_vulkan_command_pool.h"
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_dispatcher.h"
@@ -29,16 +28,15 @@ namespace Storytime {
         Window window;
         Keyboard keyboard;
         Mouse mouse;
+        FileReader file_reader;
+        Metrics metrics;
         VulkanContext vulkan_context;
         VulkanPhysicalDevice vulkan_physical_device;
         VulkanDevice vulkan_device;
-        VulkanCommandPool vulkan_command_pool;
-        Metrics metrics;
         Renderer renderer;
 #ifndef ST_USE_VULKAN
         ImGuiRenderer imgui_renderer;
 #endif
-        FileReader file_reader;
         AudioEngine audio_engine;
         ResourceLoader resource_loader;
         ProcessManager process_manager;

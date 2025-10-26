@@ -17,15 +17,22 @@ namespace Storytime {
         FileReader* file_reader = nullptr;
         AudioEngine* audio_engine = nullptr;
         VulkanDevice* vulkan_device = nullptr;
-        VulkanCommandPool* vulkan_command_pool = nullptr;
+
+        const ResourceLoaderConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(file_reader);
+            ST_ASSERT_NOT_NULL(audio_engine);
+            ST_ASSERT_NOT_NULL(vulkan_device);
+            return *this;
+        }
     };
 
     class ResourceLoader {
     private:
         ResourceLoaderConfig config;
+        VulkanCommandPool vulkan_command_pool;
 
     public:
-        explicit ResourceLoader(ResourceLoaderConfig config);
+        ResourceLoader(const ResourceLoaderConfig& config);
 
         Shared<Texture> load_texture(const std::filesystem::path& path) const;
 

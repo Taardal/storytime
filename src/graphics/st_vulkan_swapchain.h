@@ -3,7 +3,7 @@
 #include "event/st_window_resized_event.h"
 #include "graphics/st_vulkan_command_buffer.h"
 #include "graphics/st_vulkan_device.h"
-#include "graphics/st_vulkan_frame.h"
+#include "graphics/st_frame.h"
 #include "graphics/st_vulkan_image.h"
 #include "system/st_dispatcher.h"
 #include "window/st_window.h"
@@ -15,7 +15,14 @@ namespace Storytime {
         Window* window = nullptr;
         VulkanDevice* device = nullptr;
         VkSurfaceKHR surface = nullptr;
-        u32 frame_count = 0;
+
+        const VulkanSwapchainConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(dispatcher);
+            ST_ASSERT_NOT_NULL(window);
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_NOT_NULL(surface);
+            return *this;
+        }
     };
 
     class VulkanSwapchain {
@@ -54,11 +61,11 @@ namespace Storytime {
 
         bool acquire_frame(const Frame& frame);
 
-        void begin_render(const VulkanCommandBuffer& command_buffer) const;
-
-        void end_render(const VulkanCommandBuffer& command_buffer) const;
-
         void present_frame(const Frame& frame);
+
+        void begin_render_pass(const VulkanCommandBuffer& command_buffer) const;
+
+        void end_render_pass(const VulkanCommandBuffer& command_buffer) const;
 
     private:
         void create_swapchain();
@@ -88,10 +95,6 @@ namespace Storytime {
         void create_framebuffers();
 
         void destroy_framebuffers() const;
-
-        void create_sync_objects();
-
-        void destroy_sync_objects() const;
 
         void subscribe_to_events();
 

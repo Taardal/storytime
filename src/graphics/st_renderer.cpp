@@ -1,22 +1,21 @@
 #include "st_renderer.h"
 
 #include "system/st_defer.h"
-#include "system/st_file_reader.h"
 
 namespace Storytime {
 
     Renderer::Renderer(const Config& config)
-        : config(config),
+        : config(config.assert_valid()),
           swapchain(create_swapchain()),
-          initialization_command_pool(create_initialization_command_pool()),
-          runtime_command_pool(create_runtime_command_pool()),
+          init_command_pool(create_init_command_pool()),
+          frame_command_pool(create_frame_command_pool()),
           frame_descriptor_pool(create_frame_descriptor_pool()),
           frame_descriptor_set_layout(create_frame_descriptor_set_layout()),
           batch_descriptor_pool(create_batch_descriptor_pool()),
           batch_descriptor_set_layout(create_batch_descriptor_set_layout()),
           quad_graphics_pipeline(create_quad_graphics_pipeline()),
-          quad_vertex_buffer(create_quad_vertex_buffer()),
-          quad_index_buffer(create_quad_index_buffer()),
+          base_quad_vertex_buffer(create_base_quad_vertex_buffer()),
+          base_quad_index_buffer(create_base_quad_index_buffer()),
           texture_sampler(create_texture_sampler()),
           placeholder_texture(create_placeholder_texture()),
           frames(create_frames())
@@ -27,9 +26,9 @@ namespace Storytime {
     }
 
     Renderer::~Renderer() {
-        destroy_placeholder_texture();
         destroy_frames();
-        destroy_sampler();
+        destroy_placeholder_texture();
+        destroy_texture_sampler();
         destroy_batch_descriptor_set_layout();
         destroy_frame_descriptor_set_layout();
     }
@@ -48,29 +47,23 @@ namespace Storytime {
 
         frame_start_time = Time::now();
 
+        const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-        const VulkanDevice& device = *config.device;
 
         begin_frame_command_buffer(command_buffer);
-        device.begin_cmd_label(command_buffer, "Frame commands");
+        device.begin_cmd_label(command_buffer, "CommandBuffer");
 
-        device.insert_cmd_label(command_buffer, "Begin swapchain render");
-        swapchain.begin_render(command_buffer);
+        swapchain.begin_render_pass(command_buffer);
 
         device.insert_cmd_label(command_buffer, "Bind graphics pipeline");
         quad_graphics_pipeline.bind(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
 
         device.insert_cmd_label(command_buffer, "Bind frame descriptor set");
-        // descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-        command_buffer.bind_descriptor_sets({
+        descriptor_set.bind(command_buffer, {
             .pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .pipeline_layout = quad_graphics_pipeline.get_pipeline_layout(),
-            .first_set = 0, // Set 0 (per-frame)
-            .descriptor_set_count = 1,
-            .descriptor_sets = (VkDescriptorSet*) &descriptor_set,
-            .dynamic_offset_count = 0,
-            .dynamic_offsets = nullptr,
+            .set = 0, // Set 0 (per-frame)
         });
 
         return true;
@@ -87,11 +80,10 @@ namespace Storytime {
             flush_batch(frame, batch);
         }
 
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
         const VulkanDevice& device = *config.device;
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
-        device.insert_cmd_label(command_buffer, "End swapchain frame");
-        swapchain.end_render(command_buffer);
+        swapchain.end_render_pass(command_buffer);
 
         device.end_cmd_label(command_buffer);
         end_frame_command_buffer(command_buffer);
@@ -107,16 +99,7 @@ namespace Storytime {
         // Metrics
         //
 
-        config.metrics->frame_duration_ms = Time::as<Microseconds>(frame_end_time - frame_start_time).count() / 1000.0;
-        config.metrics->fps = 1.0 / (config.metrics->frame_duration_ms / 1000.0);
-
-        frame_counter++;
-        frame_delta_ms += config.metrics->frame_duration_ms;
-        if (frame_delta_ms / 1000.0 > 1.0) {
-            config.metrics->fpss = frame_counter;
-            frame_delta_ms = 0.0;
-            frame_counter = 0;
-        }
+        ST_LOG_W("DRAW CALLS [{}]", config.metrics->draw_calls);
 
         config.metrics->draw_calls = 0;
         config.metrics->quad_count = 0;
@@ -139,7 +122,7 @@ namespace Storytime {
         Batch& batch = frame.batches.at(frame.batch_index);
 
         std::vector<QuadInstanceData>& quad_batch = batch.quads;
-        std::vector<std::shared_ptr<VulkanImage>>& texture_batch = batch.textures;
+        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
 
         bool batch_is_full = batch.quad_index == quad_batch.size() - 1 || batch.texture_index == texture_batch.size() - 1;
         if (batch_is_full) {
@@ -147,21 +130,23 @@ namespace Storytime {
         }
 
         //
-        // Add texture to texture batch and determine texture sampler index.
+        // Determine texture sampler index and add texture to texture batch.
         //
 
         const Shared<VulkanImage>& texture = quad.texture != nullptr ? quad.texture : placeholder_texture;
         i32 texture_index = -1;
+        bool texture_found_in_batch = false;
         for (i32 i = 0; i < texture_batch.size(); i++) {
             if (texture == texture_batch.at(i)) {
                 texture_index = i;
+                texture_found_in_batch = true;
                 break;
             }
         }
-        if (texture_index == -1) {
+        if (!texture_found_in_batch) {
             texture_index = batch.texture_index;
-            batch.texture_index++;
             texture_batch.at(texture_index) = texture;
+            batch.texture_index++;
         }
         ST_ASSERT(texture_index > -1, "Invalid quad texture index [" << texture_index << "]");
 
@@ -183,6 +168,9 @@ namespace Storytime {
         // Metrics
         //
 
+        if (!texture_found_in_batch) {
+            config.metrics->texture_count++;
+        }
         config.metrics->quad_count++;
         config.metrics->index_count = config.metrics->quad_count * max_indices_per_quad;
         config.metrics->vertex_count = config.metrics->quad_count * max_vertices_per_quad;
@@ -200,44 +188,39 @@ namespace Storytime {
         // Vertices & Indices
         //
 
-        VulkanInstanceBuffer& quad_instance_vertex_buffer = batch.vertex_buffer;
+        VulkanInstanceBuffer& instance_quad_vertex_buffer = batch.vertex_buffer;
         std::vector<QuadInstanceData>& quad_batch = batch.quads;
-        quad_instance_vertex_buffer.set_vertices(quad_batch.data());
+        instance_quad_vertex_buffer.set_vertices(quad_batch.data());
 
         device.insert_cmd_label(command_buffer, "Bind vertex buffers");
         VkBuffer vertex_buffers[] = {
-            quad_vertex_buffer,
-            quad_instance_vertex_buffer,
+            base_quad_vertex_buffer, // Binding 0 (Base vertices)
+            instance_quad_vertex_buffer, // Binding 1 (Instance vertices)
         };
-        VkDeviceSize offsets[] = { 0, 0 };
+        VkDeviceSize vertex_buffer_offsets[] = { 0, 0 };
         command_buffer.bind_vertex_buffers({
             .first_binding = 0,
             .binding_count = 2,
             .vertex_buffers = vertex_buffers,
-            .offsets = offsets,
+            .offsets = vertex_buffer_offsets,
         });
 
         device.insert_cmd_label(command_buffer, "Bind index buffer");
-        quad_index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
+        base_quad_index_buffer.bind(command_buffer, VK_INDEX_TYPE_UINT16);
 
         //
         // Descriptors
         //
 
         VulkanDescriptorSet& batch_descriptor_set = batch.descriptor_set;
-        std::vector<std::shared_ptr<VulkanImage>>& texture_batch = batch.textures;
+        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
         write_batch_descriptors(batch_descriptor_set, texture_batch);
 
         device.insert_cmd_label(command_buffer, "Bind batch descriptor set");
-        // batch_descriptor_set.bind(command_buffer, graphics_pipeline.get_pipeline_layout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-        command_buffer.bind_descriptor_sets({
+        batch_descriptor_set.bind(command_buffer, {
             .pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .pipeline_layout = quad_graphics_pipeline.get_pipeline_layout(),
-            .first_set = 1, // Set 1 (per-batch)
-            .descriptor_set_count = 1,
-            .descriptor_sets = (VkDescriptorSet*) &batch_descriptor_set,
-            .dynamic_offset_count = 0,
-            .dynamic_offsets = nullptr,
+            .set = 1, // Set 1 (per-batch)
         });
 
         //
@@ -246,7 +229,7 @@ namespace Storytime {
 
         device.insert_cmd_label(command_buffer, "Draw indexed");
         command_buffer.draw_indexed({
-            .index_count = (u32) indices.size(),
+            .index_count = (u32) base_quad_indices.size(),
             .instance_count = batch.quad_index,
             .first_index = 0,
             .vertex_offset = 0,
@@ -257,6 +240,8 @@ namespace Storytime {
         // End batch
         //
 
+        batch.quad_index = 0;
+        batch.texture_index = 0;
         frame.batch_index++;
 
         //
@@ -264,21 +249,90 @@ namespace Storytime {
         //
 
         config.metrics->draw_calls++;
+        // config.metrics->texture_count += batch.texture_index + 1;
+        // config.metrics->quad_count += batch.quad_index + 1;
+        // config.metrics->index_count = config.metrics->quad_count * max_indices_per_quad;
+        // config.metrics->vertex_count = config.metrics->quad_count * max_vertices_per_quad;
     }
 
     void Renderer::reset_frame(Frame& frame) const {
         frame.batch_index = 0;
         for (u32 i = 0; i < frame.batches.size(); i++) {
-            reset_batch(frame.batches.at(i));
+            Batch& batch = frame.batches.at(i);
+            batch.quad_index = 0;
+            batch.texture_index = 0;
+            for (u32 j = 0; j < batch.textures.size(); j++) {
+                batch.textures.at(j) = placeholder_texture;
+            }
         }
     }
 
-    void Renderer::reset_batch(Batch& batch) const {
-        batch.quad_index = 0;
-        batch.texture_index = 0;
-        for (u32 j = 0; j < batch.textures.size(); j++) {
-            batch.textures.at(j) = placeholder_texture;
+    void Renderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        if (command_buffer.reset() != VK_SUCCESS) {
+            ST_THROW("Could not reset frame command buffer");
         }
+        if (command_buffer.begin() != VK_SUCCESS) {
+            ST_THROW("Could not begin frame command buffer");
+        }
+    }
+
+    void Renderer::end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
+        if (command_buffer.end() != VK_SUCCESS) {
+            ST_THROW("Could not end frame command buffer");
+        }
+    }
+
+    void Renderer::write_frame_descriptors(const VulkanDescriptorSet& descriptor_set, const VulkanUniformBuffer& uniform_buffer) const {
+        const VulkanDevice& device = *config.device;
+
+        VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
+        uniform_buffer_descriptor_info.buffer = uniform_buffer;
+        uniform_buffer_descriptor_info.offset = 0;
+        uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
+
+        VkWriteDescriptorSet descriptor_write{};
+        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_write.dstSet = descriptor_set;
+        descriptor_write.dstBinding = 0;
+        descriptor_write.dstArrayElement = 0;
+        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_write.descriptorCount = 1;
+        descriptor_write.pBufferInfo = &uniform_buffer_descriptor_info;
+
+        descriptor_set.write(device, descriptor_write);
+    }
+
+    void Renderer::write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<Shared<VulkanImage>>& textures) const {
+        const VulkanDevice& device = *config.device;
+
+        ST_ASSERT(
+            textures.size() == max_textures_per_batch,
+            "Number of textures [" << textures.size() << "] must be equal to number of descriptors [" << max_textures_per_batch << "]"
+        );
+
+        std::vector<VkDescriptorImageInfo> image_descriptor_infos(textures.size());
+        for (u32 j = 0; j < image_descriptor_infos.size(); j++) {
+            const Shared<VulkanImage>& texture = textures.at(j);
+            ST_ASSERT_NOT_NULL(texture);
+
+            VkImageView image_view = texture->get_view();
+            ST_ASSERT_NOT_NULL(image_view);
+
+            image_descriptor_infos.at(j).imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_descriptor_infos.at(j).imageView = image_view;
+            image_descriptor_infos.at(j).sampler = texture_sampler;
+        }
+
+        VkWriteDescriptorSet descriptor_write{};
+        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_write.dstSet = descriptor_set;
+        descriptor_write.dstBinding = 0;
+        descriptor_write.dstArrayElement = 0;
+        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_write.descriptorCount = image_descriptor_infos.size();
+        descriptor_write.pImageInfo = image_descriptor_infos.data();
+
+        descriptor_set.write(device, descriptor_write);
     }
 
     VulkanSwapchain Renderer::create_swapchain() {
@@ -291,47 +345,47 @@ namespace Storytime {
         });
     }
 
-    VulkanCommandPool Renderer::create_initialization_command_pool() {
+    VulkanCommandPool Renderer::create_init_command_pool() {
         return VulkanCommandPool({
-            .name = std::format("{} initialization command pool", config.name),
+            .name = std::format("{} init command pool", config.name),
             .device = config.device,
             .queue_family_index = config.device->get_graphics_queue_family_index(),
             .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
         });
     }
 
-    VulkanCommandPool Renderer::create_runtime_command_pool() {
+    VulkanCommandPool Renderer::create_frame_command_pool() {
         return VulkanCommandPool({
-            .name = std::format("{} runtime command pool", config.name),
+            .name = std::format("{} frame command pool", config.name),
             .device = config.device,
             .queue_family_index = config.device->get_graphics_queue_family_index(),
             .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         });
     }
 
-    VulkanVertexBuffer Renderer::create_quad_vertex_buffer() {
+    VulkanVertexBuffer Renderer::create_base_quad_vertex_buffer() {
         auto vertex_buffer = VulkanVertexBuffer({
-            .name = std::format("{} vertex buffer", config.name),
+            .name = std::format("{} base quad vertex buffer", config.name),
             .device = config.device,
-            .size = sizeof(QuadVertex) * vertices.size(),
+            .size = sizeof(QuadVertex) * base_quad_vertices.size(),
         });
 
-        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
-            vertex_buffer.set_vertices(vertices.data(), command_buffer);
+        init_command_pool.record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+            vertex_buffer.set_vertices(base_quad_vertices.data(), command_buffer);
         });
 
         return vertex_buffer;
     }
 
-    VulkanIndexBuffer Renderer::create_quad_index_buffer() {
+    VulkanIndexBuffer Renderer::create_base_quad_index_buffer() {
         auto index_buffer = VulkanIndexBuffer({
-            .name = std::format("{} index buffer", config.name),
+            .name = std::format("{} base quad index buffer", config.name),
             .device = config.device,
-            .size = sizeof(Index) * indices.size(),
+            .size = sizeof(Index) * base_quad_indices.size(),
         });
 
-        record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
-            index_buffer.set_indices(indices.data(), command_buffer);
+        init_command_pool.record_and_submit_commands([&](const VulkanCommandBuffer& command_buffer) {
+            index_buffer.set_indices(base_quad_indices.data(), command_buffer);
         });
 
         return index_buffer;
@@ -351,12 +405,12 @@ namespace Storytime {
             destroy_shader_module(fragment_shader);
         });
 
-        std::string vertex_shader_name = std::format("{} vertex shader [{}]", config.name.c_str(), vertex_shader_path.c_str());
+        std::string vertex_shader_name = std::format("{} quad vertex shader [{}]", config.name.c_str(), vertex_shader_path.c_str());
         if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set shader module name [" << vertex_shader_name << "]");
         }
 
-        std::string fragment_shader_name = std::format("{} fragment shader [{}]", config.name.c_str(), fragment_shader_path.c_str());
+        std::string fragment_shader_name = std::format("{} quad fragment shader [{}]", config.name.c_str(), fragment_shader_path.c_str());
         if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set shader module name [" << fragment_shader_name << "]");
         }
@@ -392,9 +446,8 @@ namespace Storytime {
         };
 
         std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions = {
-            //
-            // QuadVertex
-            //
+
+            // Binding 0: Base quad vertex attributes.
             VkVertexInputAttributeDescription{
                 .location = 0,
                 .binding = 0,
@@ -407,9 +460,8 @@ namespace Storytime {
                 .format = get_vk_format("vec2"),
                 .offset = offsetof(QuadVertex, texture_coordinate),
             },
-            //
-            // QuadInstanceData
-            //
+
+            // Binding 1: Instance quad vertex attributes.
             VkVertexInputAttributeDescription{
                 .location = 2,
                 .binding = 1,
@@ -455,12 +507,12 @@ namespace Storytime {
         };
 
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts = {
-            frame_descriptor_set_layout, // Set 0
-            batch_descriptor_set_layout, // Set 1
+            frame_descriptor_set_layout, // Set 0 (Per-frame)
+            batch_descriptor_set_layout, // Set 1 (Per-batch)
         };
 
         return VulkanGraphicsPipeline({
-            .name = std::format("{} graphics pipeline", config.name),
+            .name = std::format("{} quad graphics pipeline", config.name),
             .device = config.device,
             .render_pass = swapchain.get_render_pass(),
             .descriptor_set_layouts = descriptor_set_layouts,
@@ -472,8 +524,9 @@ namespace Storytime {
 
     VkShaderModule Renderer::create_shader_module(const std::filesystem::path& path) const {
         const VulkanDevice& device = *config.device;
+        const FileReader& file_reader = *config.file_reader;
 
-        std::vector<char> shader_bytes = FileReader::read_bytes(path);
+        std::vector<char> shader_bytes = file_reader.read_bytes(path);
         if (shader_bytes.empty()) {
             ST_THROW("Could not read shader [" << path << "]");
         }
@@ -596,8 +649,8 @@ namespace Storytime {
         sampler_create_info.compareOp = VK_COMPARE_OP_ALWAYS;
         sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
         sampler_create_info.mipLodBias = 0.0f;
-        sampler_create_info.minLod = 0.0f;
-        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
+        sampler_create_info.minLod = 0.0f; // The lowest mip level that can be sampled (base image).
+        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE; // The highest mip level that can be sampled (larger number = smaller mip).
 
         VkSampler sampler;
         if (device.create_sampler(sampler_create_info, &sampler) != VK_SUCCESS) {
@@ -606,14 +659,14 @@ namespace Storytime {
         return sampler;
     }
 
-    void Renderer::destroy_sampler() const {
+    void Renderer::destroy_texture_sampler() const {
         const VulkanDevice& device = *config.device;
         device.destroy_sampler(texture_sampler);
     }
 
-    std::shared_ptr<VulkanImage> Renderer::create_placeholder_texture() const {
+    Shared<VulkanImage> Renderer::create_placeholder_texture() const {
         auto placeholder_texture = std::make_shared<VulkanImage>(VulkanImage({
-            .name = "WhiteTexture",
+            .name = std::format("{} white texture", config.name),
             .device = config.device,
             .width = 1,
             .height = 1,
@@ -624,7 +677,7 @@ namespace Storytime {
             .mip_levels = 1,
         }));
 
-        record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
+        init_command_pool.record_and_submit_commands([&](const OnRecordCommandsFn& on_record_commands_fn) {
             u32 white_pixels = 0xFFFFFFFF;
             placeholder_texture->set_pixels(on_record_commands_fn, sizeof(white_pixels), &white_pixels);
         });
@@ -648,7 +701,7 @@ namespace Storytime {
             frame.graphics_queue = device.get_graphics_queue();
             frame.present_queue = device.get_present_queue();
 
-            frame.command_buffer = runtime_command_pool.allocate_command_buffer();
+            frame.command_buffer = frame_command_pool.allocate_command_buffer();
             std::string command_buffer_name = std::format("{} frame command buffer {}/{}", config.name.c_str(), i + 1, frame_count);
             if (device.set_object_name(frame.command_buffer, VK_OBJECT_TYPE_COMMAND_BUFFER, command_buffer_name.c_str()) != VK_SUCCESS) {
                 ST_THROW("Could not set command buffer name [" << command_buffer_name << "]");
@@ -741,116 +794,5 @@ namespace Storytime {
             device.destroy_semaphore(frame.render_finished_semaphore);
         }
         frames.clear();
-    }
-
-    void Renderer::write_frame_descriptors(const VulkanDescriptorSet& descriptor_set, const VulkanUniformBuffer& uniform_buffer) const {
-        const VulkanDevice& device = *config.device;
-
-        VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
-        uniform_buffer_descriptor_info.buffer = uniform_buffer;
-        uniform_buffer_descriptor_info.offset = 0;
-        uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
-
-        VkWriteDescriptorSet descriptor_write{};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptor_write.dstSet = descriptor_set;
-        descriptor_write.dstBinding = 0;
-        descriptor_write.dstArrayElement = 0;
-        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_write.descriptorCount = 1;
-        descriptor_write.pBufferInfo = &uniform_buffer_descriptor_info;
-
-        descriptor_set.write(device, descriptor_write);
-    }
-
-    void Renderer::write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<std::shared_ptr<VulkanImage>>& textures) const {
-        const VulkanDevice& device = *config.device;
-
-        ST_ASSERT(
-            textures.size() == max_textures_per_batch,
-            "Number of textures [" << textures.size() << "] must be equal to number of descriptors [" << max_textures_per_batch << "]"
-        );
-
-        std::vector<VkDescriptorImageInfo> image_descriptor_infos(textures.size());
-        for (u32 j = 0; j < image_descriptor_infos.size(); j++) {
-            const std::shared_ptr<VulkanImage>& texture = textures.at(j);
-            ST_ASSERT_NOT_NULL(texture);
-
-            VkImageView image_view = texture->get_view();
-            ST_ASSERT_NOT_NULL(image_view);
-
-            image_descriptor_infos.at(j).imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            image_descriptor_infos.at(j).imageView = image_view;
-            image_descriptor_infos.at(j).sampler = texture_sampler;
-        }
-
-        VkWriteDescriptorSet descriptor_write{};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptor_write.dstSet = descriptor_set;
-        descriptor_write.dstBinding = 0;
-        descriptor_write.dstArrayElement = 0;
-        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_write.descriptorCount = image_descriptor_infos.size();
-        descriptor_write.pImageInfo = image_descriptor_infos.data();
-
-        descriptor_set.write(device, descriptor_write);
-    }
-
-    void Renderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        if (command_buffer.reset() != VK_SUCCESS) {
-            ST_THROW("Could not reset frame command buffer");
-        }
-        if (command_buffer.begin() != VK_SUCCESS) {
-            ST_THROW("Could not begin frame command buffer");
-        }
-    }
-
-    void Renderer::end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end frame command buffer");
-        }
-    }
-
-    VulkanCommandBuffer Renderer::begin_one_time_submit_command_buffer() const {
-        VulkanCommandBuffer command_buffer = config.command_pool->allocate_command_buffer();
-
-        if (command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
-            ST_THROW("Could not begin one-time-submit command buffer");
-        }
-
-        return command_buffer;
-    }
-
-    void Renderer::end_one_time_submit_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        const VulkanDevice& device = *config.device;
-
-        if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end one-time-submit command buffer");
-        }
-
-        VulkanQueue graphics_queue = device.get_graphics_queue();
-        if (graphics_queue.submit(command_buffer) != VK_SUCCESS) {
-            ST_THROW("Could not submit one-time-submit command buffer to graphics queue");
-        }
-
-        if (device.wait_until_queue_idle(graphics_queue) != VK_SUCCESS) {
-            ST_THROW("Could not wait for graphics queue to become idle");
-        }
-
-        config.command_pool->free_command_buffer(command_buffer);
-    }
-
-    void Renderer::record_and_submit_commands(const RecordCommandsFn& record_commands) const {
-        VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
-        record_commands(command_buffer);
-        end_one_time_submit_command_buffer(command_buffer);
-    }
-
-    void Renderer::record_and_submit_commands(const RecordAndSubmitCommandsFn& record_and_submit_commands) const {
-        record_and_submit_commands([&](const RecordCommandsFn& record_commands) {
-            VulkanCommandBuffer command_buffer = begin_one_time_submit_command_buffer();
-            record_commands(command_buffer);
-            end_one_time_submit_command_buffer(command_buffer);
-        });
     }
 }

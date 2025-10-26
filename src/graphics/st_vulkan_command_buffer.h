@@ -212,6 +212,7 @@ namespace Storytime {
         void bind_descriptor_set(
             VkPipelineBindPoint pipeline_bind_point,
             VkPipelineLayout pipeline_layout,
+            u32 first_set,
             VkDescriptorSet descriptor_set,
             u32 dynamic_offset_count,
             const u32* dynamic_offsets

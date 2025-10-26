@@ -4,7 +4,15 @@
 #include <nlohmann/json.hpp>
 
 namespace Storytime {
-    ResourceLoader::ResourceLoader(ResourceLoaderConfig config) : config(std::move(config)) {
+    ResourceLoader::ResourceLoader(const ResourceLoaderConfig& config)
+        : config(config.assert_valid()),
+          vulkan_command_pool({
+              .name = "ResourceLoader texture command pool",
+              .device = config.vulkan_device,
+              .queue_family_index = config.vulkan_device->get_graphics_queue_family_index(),
+              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          })
+    {
     }
 
     Shared<Texture> ResourceLoader::load_texture(const std::filesystem::path& path) const {
@@ -35,7 +43,7 @@ namespace Storytime {
         };
         auto texture = std::make_shared<Texture>(texture_config);
 
-        config.vulkan_command_pool->record_and_submit_commands([&texture, &image_file](const OnRecordCommandsFn &on_record_commands) {
+        vulkan_command_pool.record_and_submit_commands([&texture, &image_file](const OnRecordCommandsFn &on_record_commands) {
             texture->set_pixels(on_record_commands, image_file.get_byte_size(), image_file.pixels);
         });
 

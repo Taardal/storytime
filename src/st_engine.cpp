@@ -30,6 +30,8 @@ namespace Storytime {
           mouse({
               .window = &window,
           }),
+          file_reader(),
+          metrics(),
           vulkan_context({
               .app_name = config.app_name,
               .engine_name = std::format("{} engine", config.app_name),
@@ -43,22 +45,15 @@ namespace Storytime {
               .name = std::format("{} device", config.app_name),
               .physical_device = &vulkan_physical_device,
           }),
-          vulkan_command_pool({
-              .name = std::format("{} initialization command pool", config.app_name),
-              .device = &vulkan_device,
-              .queue_family_index = vulkan_device.get_graphics_queue_family_index(),
-              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-          }),
-          metrics(),
           renderer({
               .name = config.app_name,
               .dispatcher = &dispatcher,
               .window = &window,
+              .file_reader = &file_reader,
               .metrics = &metrics,
               .context = &vulkan_context,
               .physical_device = &vulkan_physical_device,
               .device = &vulkan_device,
-              .command_pool = &vulkan_command_pool,
               .max_frames_in_flight = config.rendering_buffer_count,
           }),
 #ifndef ST_USE_VULKAN
@@ -70,13 +65,11 @@ namespace Storytime {
             .glsl_version = config.glsl_version,
           }),
 #endif
-          file_reader(),
           audio_engine(),
           resource_loader({
               .file_reader = &file_reader,
               .audio_engine = &audio_engine,
               .vulkan_device = &vulkan_device,
-              .vulkan_command_pool = &vulkan_command_pool,
           }),
           process_manager()
     {
@@ -106,7 +99,7 @@ namespace Storytime {
     }
 
     void Engine::run_game_loop(App& app) {
-// Update game at fixed timesteps to have game systems update at a predictable rate
+        // Update game at fixed timesteps to have game systems update at a predictable rate
         constexpr f64 timestep_sec = 1.0 / 60.0;
         constexpr f64 timestep_ms = timestep_sec * 1000.0;
 
@@ -213,9 +206,7 @@ namespace Storytime {
             window_title_update_lag_sec += last_cycle_duration_ms / 1000.0;
             if (window_title_update_lag_sec >= 1.0) {
                 window_title_update_lag_sec = 0;
-                std::stringstream ss;
-                ss << "FPS: " << (u32) metrics.frames_per_second << ", UPS: " << (u32) metrics.updates_per_second;
-                std::string title = ss.str();
+                std::string title = std::format("FPS: {}, UPS: {}", (u32) metrics.frames_per_second, (u32) metrics.updates_per_second);
                 window.set_title(title.c_str());
             }
 #endif

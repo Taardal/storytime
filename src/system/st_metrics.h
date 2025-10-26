@@ -2,6 +2,7 @@
 
 namespace Storytime {
     struct Metrics {
+        // Game loop
         f64 cycle_duration_ms = 0.0;
         f64 frames_per_second = 0.0;
         f64 imgui_render_duration_ms = 0.0;
@@ -11,11 +12,7 @@ namespace Storytime {
         f64 updates_per_second = 0.0;
         f64 window_events_duration_ms = 0.0;
 
-        f64 fps = 0.0;
-        f64 fpss = 0.0;
-        u64 quads = 0;
-        f64 frame_duration_ms = 0.0;
-
+        // Rendering
         u64 draw_calls = 0;
         u64 quad_count = 0;
         u64 vertex_count = 0;
