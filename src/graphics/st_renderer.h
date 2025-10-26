@@ -11,11 +11,9 @@
 #include "graphics/st_vulkan_graphics_pipeline.h"
 #include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_index_buffer.h"
-#include "graphics/st_vulkan_physical_device.h"
 #include "graphics/st_vulkan_swapchain.h"
 #include "graphics/st_vulkan_uniform_buffer.h"
 #include "graphics/st_vulkan_vertex_buffer.h"
-#include "system/st_clock.h"
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_metrics.h"
@@ -29,7 +27,6 @@ namespace Storytime {
         FileReader* file_reader = nullptr;
         Metrics* metrics = nullptr;
         VulkanContext* context = nullptr;
-        VulkanPhysicalDevice* physical_device = nullptr;
         VulkanDevice* device = nullptr;
         u32 max_frames_in_flight = 0;
 
@@ -39,9 +36,8 @@ namespace Storytime {
             ST_ASSERT_NOT_NULL(file_reader);
             ST_ASSERT_NOT_NULL(metrics);
             ST_ASSERT_NOT_NULL(context);
-            ST_ASSERT_NOT_NULL(physical_device);
             ST_ASSERT_NOT_NULL(device);
-            ST_ASSERT_POSITIVE(max_frames_in_flight);
+            ST_ASSERT_GREATER_THAN_ZERO(max_frames_in_flight);
             return *this;
         }
     };
@@ -51,27 +47,27 @@ namespace Storytime {
         typedef RendererConfig Config;
 
     private:
-        static constexpr u32 max_batches_per_frame = 4;
-
-        static constexpr u32 max_quads_per_batch = 10'000;
-        static constexpr u32 max_textures_per_batch = 16;
-
-        typedef u16 Index;
-        static constexpr u32 max_indices_per_quad = 6;
-
-        static constexpr std::array<Index, max_indices_per_quad> base_quad_indices = {
-            0, 1, 2, 2, 3, 0
-        };
-
+        // Vertices
         static constexpr u32 max_vertices_per_quad = 4;
-        static constexpr u32 max_vertices_per_batch = max_quads_per_batch * max_vertices_per_quad;
-
         static constexpr std::array<QuadVertex, max_vertices_per_quad> base_quad_vertices = {
             QuadVertex{ .position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 0.0f) }, // Top left
             QuadVertex{ .position = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 0.0f) }, // Top right
             QuadVertex{ .position = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 1.0f) }, // Bottom right
             QuadVertex{ .position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 1.0f) }, // Bottom left
         };
+
+        // Indices
+        typedef u16 Index;
+        static constexpr u32 max_indices_per_quad = 6;
+        static constexpr std::array<Index, max_indices_per_quad> base_quad_indices = {
+            0, 1, 2, 2, 3, 0
+        };
+
+        // Batching
+        static constexpr u32 max_batches_per_frame = 8;
+        static constexpr u32 max_textures_per_batch = 16;
+        static constexpr u32 max_quads_per_batch = 20'000;
+        static constexpr u32 max_vertices_per_batch = max_quads_per_batch * max_vertices_per_quad;
 
     private:
         Config config;
@@ -89,11 +85,6 @@ namespace Storytime {
         Shared<VulkanImage> placeholder_texture;
         std::vector<Frame> frames;
         u32 frame_index = 0;
-        u32 frame_counter = 0;
-        f64 frame_delta_ms = 0.0;
-        TimePoint frame_delta_time;
-        TimePoint frame_start_time;
-        TimePoint frame_end_time;
 
     public:
         Renderer(const Config& config);
@@ -111,9 +102,9 @@ namespace Storytime {
         void render_quad(const Quad& quad);
 
     private:
-        void flush_batch(Frame& frame, Batch& batch) const;
+        void flush_batch(Frame& frame, const Batch& batch) const;
 
-        void reset_frame(Frame& frame) const;
+        void reset(Frame& frame) const;
 
         void begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 

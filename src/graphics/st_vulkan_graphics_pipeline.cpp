@@ -27,6 +27,24 @@ namespace Storytime {
 
     void VulkanGraphicsPipeline::create_pipeline() {
         const VulkanDevice& device = *config.device;
+        const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
+        const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
+
+        // Preflight checks
+
+        u32 vertex_input_binding_count = config.vertex_input_binding_descriptions.size();
+        u32 max_vertex_input_binding_count = physical_device_limits.maxVertexInputBindings;
+        if (vertex_input_binding_count > max_vertex_input_binding_count) {
+            ST_THROW("Could not create graphics pipeline [" << config.name << "] because the number of vertex input bindings [" << vertex_input_binding_count << "] exceeded the limit [" << max_vertex_input_binding_count << "]");
+        }
+
+        u32 vertex_input_attribute_count = config.vertex_input_attribute_descriptions.size();
+        u32 max_vertex_input_attribute_count = physical_device_limits.maxVertexInputAttributes;
+        if (vertex_input_attribute_count > max_vertex_input_attribute_count) {
+            ST_THROW("Could not create graphics pipeline [" << config.name << "] because the number of vertex input attributes [" << vertex_input_attribute_count << "] exceeded the limit [" << max_vertex_input_attribute_count << "]");
+        }
+
+        // Create pipeline
 
         std::vector<VkDynamicState> dynamic_states = {
             VK_DYNAMIC_STATE_VIEWPORT,
@@ -128,7 +146,7 @@ namespace Storytime {
         graphics_pipeline_create_info.basePipelineIndex = -1;
 
         if (device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline) != VK_SUCCESS) {
-            ST_THROW("Could not create graphics pipeline");
+            ST_THROW("Could not create graphics pipeline [" << config.name << "]");
         }
 
         if (device.set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str()) != VK_SUCCESS) {
@@ -142,19 +160,28 @@ namespace Storytime {
 
     void VulkanGraphicsPipeline::create_pipeline_layout() {
         const VulkanDevice& device = *config.device;
+        const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
+        const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
+
+        std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
+
+        u32 bound_descriptor_set_count = config.descriptor_set_layouts.size();
+        u32 max_bound_descriptor_set_count = physical_device_limits.maxBoundDescriptorSets;
+        if (bound_descriptor_set_count > max_bound_descriptor_set_count) {
+            ST_THROW("Could not create graphics pipeline layout [" << pipeline_layout_name << "] because the number of simultaneously bound descriptor sets [" << bound_descriptor_set_count << "] exceeded the limit [" << max_bound_descriptor_set_count << "]");
+        }
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = (u32) config.descriptor_set_layouts.size();
+        pipeline_layout_create_info.setLayoutCount = (u32) bound_descriptor_set_count;
         pipeline_layout_create_info.pSetLayouts = config.descriptor_set_layouts.data();
         pipeline_layout_create_info.pushConstantRangeCount = (u32) config.push_constant_ranges.size();
         pipeline_layout_create_info.pPushConstantRanges = config.push_constant_ranges.data();
 
         if (device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout) != VK_SUCCESS) {
-            ST_THROW("Could not create graphics pipeline layout");
+            ST_THROW("Could not create graphics pipeline layout [" << pipeline_layout_name << "]");
         }
 
-        std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
         if (device.set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not set graphics pipeline layout name [" << pipeline_layout_name << "]");
         }

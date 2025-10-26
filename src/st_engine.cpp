@@ -52,7 +52,6 @@ namespace Storytime {
               .file_reader = &file_reader,
               .metrics = &metrics,
               .context = &vulkan_context,
-              .physical_device = &vulkan_physical_device,
               .device = &vulkan_device,
               .max_frames_in_flight = config.rendering_buffer_count,
           }),

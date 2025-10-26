@@ -23,6 +23,16 @@ namespace Storytime {
 
         ImageFile image_file = load_image(path);
 
+        // Ensure the image file dimensions are not too large.
+        const VulkanPhysicalDevice& physical_device = config.vulkan_device->get_physical_device();
+        const u32 max_image_dimension = physical_device.get_properties().limits.maxImageDimension2D;
+        if (image_file.width > max_image_dimension) {
+            ST_THROW("Could not load texture [" << path << "] because its width [" << image_file.width << "] is larger than the largest allowed dimension [" << max_image_dimension << "]");
+        }
+        if (image_file.height > max_image_dimension) {
+            ST_THROW("Could not load texture [" << path << "] because its height [" << image_file.height << "] is larger than the largest allowed dimension [" << max_image_dimension << "]");
+        }
+
         // Calculate the number of levels in the mip chain.
         // - The `max` function selects the largest dimension.
         // - The `log2` function calculates how many times that dimension can be divided by 2.
@@ -30,7 +40,7 @@ namespace Storytime {
         // - 1 is added so that the original image has a mip level.
         u32 mip_levels = (u32) std::floor(std::log2(std::max(image_file.width, image_file.height))) + 1;
 
-        TextureConfig texture_config{
+        auto texture = std::make_shared<Texture>(TextureConfig{
             .name = path.string(),
             .device = config.vulkan_device,
             .width = (u32) image_file.width,
@@ -40,8 +50,7 @@ namespace Storytime {
             .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
             .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             .mip_levels = mip_levels,
-        };
-        auto texture = std::make_shared<Texture>(texture_config);
+        });
 
         vulkan_command_pool.record_and_submit_commands([&texture, &image_file](const OnRecordCommandsFn &on_record_commands) {
             texture->set_pixels(on_record_commands, image_file.get_byte_size(), image_file.pixels);
