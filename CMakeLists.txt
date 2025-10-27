@@ -68,6 +68,7 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
     ${ST_SRC_DIR}/graphics/st_camera.h
+    ${ST_SRC_DIR}/graphics/st_frame.cpp
     ${ST_SRC_DIR}/graphics/st_frame.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h

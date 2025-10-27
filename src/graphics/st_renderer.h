@@ -66,7 +66,7 @@ namespace Storytime {
         // Batching
         static constexpr u32 max_batches_per_frame = 8;
         static constexpr u32 max_textures_per_batch = 16;
-        static constexpr u32 max_quads_per_batch = 20'000;
+        static constexpr u32 max_quads_per_batch = 1'00;
         static constexpr u32 max_vertices_per_batch = max_quads_per_batch * max_vertices_per_quad;
 
     private:

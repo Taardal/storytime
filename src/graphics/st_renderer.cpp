@@ -75,11 +75,11 @@ namespace Storytime {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
 
-        ST_ASSERT_IN_BOUNDS(frame.batch_index, frame.batches);
-        Batch& batch = frame.batches.at(frame.batch_index);
-
-        if (batch.quad_index > 0) {
-            flush(frame, batch);
+        if (frame.batch_index < frame.batches.size()) {
+            Batch& batch = frame.batches.at(frame.batch_index);
+            if (batch.quad_index > 0) {
+                flush(frame, batch);
+            }
         }
 
         const VulkanDevice& device = *config.device;
@@ -99,12 +99,26 @@ namespace Storytime {
     void Renderer::set_view_projection(const ViewProjection& view_projection) const {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         const Frame& frame = frames.at(frame_index);
+
+#ifdef ST_ENABLE_ASSERT
+        for (int i = 0; i < 4; i++) {
+            ST_ASSERT(!contains_nan(view_projection.view[i]), "View matrix cannot contain NaN numbers");
+            ST_ASSERT(!contains_infinity(view_projection.view[i]), "View matrix cannot contain infinity numbers");
+            ST_ASSERT(!contains_nan(view_projection.projection[i]), "Projection matrix cannot contain NaN numbers");
+            ST_ASSERT(!contains_infinity(view_projection.projection[i]), "Projection matrix cannot contain infinity numbers");
+        }
+#endif
         frame.uniform_buffer.set_data(&view_projection);
     }
 
     void Renderer::render_quad(const Quad& quad) {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
+
+        if (frame.batch_index >= max_batches_per_frame) {
+            ST_LOG_W("Maximum batches exceeded for frame [{}], dropping quad", frame_index);
+            return;
+        }
 
         ST_ASSERT_IN_BOUNDS(frame.batch_index, frame.batches);
         Batch& batch = frame.batches.at(frame.batch_index);
@@ -126,6 +140,7 @@ namespace Storytime {
         }
         if (texture_index == -1) {
             texture_index = batch.texture_index;
+            ST_ASSERT_IN_BOUNDS(texture_index, texture_batch);
             texture_batch.at(texture_index) = texture;
             batch.texture_index++;
             config.metrics->texture_count++;
@@ -162,10 +177,6 @@ namespace Storytime {
     }
 
     void Renderer::flush(Frame& frame, const Batch& batch) const {
-        if (frame.batch_index >= max_batches_per_frame) {
-            ST_THROW("Could not flush batch [" << frame.batch_index + 1 << "] / [" << max_batches_per_frame << "] because all batches have already been flushed for frame [" << frame_index + 1 << "].");
-        }
-
         const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
@@ -180,9 +191,12 @@ namespace Storytime {
             base_quad_vertex_buffer, // Binding 0 (Base vertices)
             batch.vertex_buffer, // Binding 1 (Instance vertices)
         };
-        VkDeviceSize vertex_buffer_offsets[] = { 0, 0 };
+        VkDeviceSize vertex_buffer_offsets[] = {
+            0, // Binding 0 (Base vertices)
+            0 // Binding 1 (Instance vertices)
+        };
         command_buffer.bind_vertex_buffers({
-            .first_binding = 0,
+            .first_binding = 0, // Binding 0 (Base vertices)
             .binding_count = 2,
             .vertex_buffers = vertex_buffers,
             .offsets = vertex_buffer_offsets,
@@ -231,11 +245,8 @@ namespace Storytime {
     }
 
     void Renderer::reset(Frame& frame) const {
-        // Reset frame
-        frame.batch_index = 0;
-
-        // Reset frame batches
-        for (u32 i = 0; i < frame.batches.size(); i++) {
+        // Reset used batches in frame
+        for (u32 i = 0; i <= frame.batch_index; i++) {
             Batch& batch = frame.batches.at(i);
             batch.quad_index = 0;
             batch.texture_index = 0;
@@ -243,6 +254,9 @@ namespace Storytime {
                 batch.textures.at(j) = placeholder_texture;
             }
         }
+
+        // Reset frame
+        frame.batch_index = 0;
 
         // Reset metrics
         config.metrics->draw_calls = 0;
