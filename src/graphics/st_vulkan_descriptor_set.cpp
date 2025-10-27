@@ -7,16 +7,16 @@ namespace Storytime {
         return descriptor_set;
     }
 
+    void VulkanDescriptorSet::bind(const VulkanCommandBuffer& command_buffer, const Bind& bind) const {
+        u32 dynamic_offset_count = 0;
+        const u32* dynamic_offsets = nullptr;
+        command_buffer.bind_descriptor_set(bind.pipeline_bind_point, bind.pipeline_layout, bind.set, descriptor_set, dynamic_offset_count, dynamic_offsets);
+    }
+
     void VulkanDescriptorSet::bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set) const {
         u32 dynamic_offset_count = 0;
         const u32* dynamic_offsets = nullptr;
         command_buffer.bind_descriptor_set(pipeline_bind_point, pipeline_layout, first_set, descriptor_set, dynamic_offset_count, dynamic_offsets);
-    }
-
-    void VulkanDescriptorSet::bind(const VulkanCommandBuffer& command_buffer, const BindDescriptorSet& bind_descriptor_set) const {
-        u32 dynamic_offset_count = 0;
-        const u32* dynamic_offsets = nullptr;
-        command_buffer.bind_descriptor_set(bind_descriptor_set.pipeline_bind_point, bind_descriptor_set.pipeline_layout, bind_descriptor_set.set, descriptor_set, dynamic_offset_count, dynamic_offsets);
     }
 
     void VulkanDescriptorSet::write(const VulkanDevice& device, u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes) const {

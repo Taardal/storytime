@@ -149,8 +149,6 @@ add_library(
     ${ST_SRC_DIR}/process/st_process.h
     ${ST_SRC_DIR}/process/st_process_manager.cpp
     ${ST_SRC_DIR}/process/st_process_manager.h
-    ${ST_SRC_DIR}/resource/st_image_file.cpp
-    ${ST_SRC_DIR}/resource/st_image_file.h
     ${ST_SRC_DIR}/resource/st_resource_loader.cpp
     ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/scene/st_entity.cpp

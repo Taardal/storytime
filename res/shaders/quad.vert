@@ -31,6 +31,32 @@ void main() {
     gl_Position = view_projection.projection * view_projection.view * model * position;
 
     vertex_output.color = color;
-    vertex_output.texture_coordinate = mix(texture_rectangle.xy, texture_rectangle.zw, texture_coordinate);
     vertex_output.texture_index = texture_index;
+
+    //
+    // Determine fragment shader texture coordinate (UV).
+    //
+    // Definitions:
+    // - The base vertex texture coordinate represents the normalized coordinate (UV) for a corner of the base quad.
+    // - The instance vertex texture rectangle represents the normalized coordinates (UVs) of the rectangular area that should be sampled from in the texture (f.ex. a single sprite in a spritesheet).
+    //
+    // Problem:
+    // - We need to determine which corner of the texture rectangle to pass to the fragment shader as an output.
+    //
+    // Solution:
+    // - We use the mix() function to interpolate between the texture rectangle corners (UVs) according to the base vertex corner (UV).
+    //
+    // (0,0) -> mix(texture_rectangle.xy, texture_rectangle.zw, vec2(0,0)) -> top-left = vec2(texture_rectangle.x, texture_rectangle.y)
+    // (1,0) -> mix(texture_rectangle.xy, texture_rectangle.zw, vec2(1,0)) -> top-right = vec2(texture_rectangle.z, texture_rectangle.y)
+    // (1,1) -> mix(texture_rectangle.xy, texture_rectangle.zw, vec2(1,1)) -> bottom-right = vec2(texture_rectangle.z, texture_rectangle.w)
+    // (0,1) -> mix(texture_rectangle.xy, texture_rectangle.zw, vec2(0,1)) -> bottom-left = vec2(texture_rectangle.x, texture_rectangle.w)
+    //
+    // Example: texture_rectangle = 0.25x, 0.25y, 0.3125z, 0.3125w
+    //
+    // (0,0) -> mix(vec2(0.25x, 0.25y), vec2(0.3125z, 0.3125w), vec2(0,0)) -> top-left = vec2(0.25, 0.25)
+    // (1,0) -> mix(vec2(0.25x, 0.25y), vec2(0.3125z, 0.3125w), vec2(1,0)) -> top-right = vec2(0.3125, 0.25)
+    // (1,1) -> mix(vec2(0.25x, 0.25y), vec2(0.3125z, 0.3125w), vec2(1,1)) -> bottom-right = vec2(0.3125, 0.3125)
+    // (0,1) -> mix(vec2(0.25x, 0.25y), vec2(0.3125z, 0.3125w), vec2(0,1)) -> bottom-left = vec2(0.25, 0.3125)
+    //
+    vertex_output.texture_coordinate = mix(texture_rectangle.xy, texture_rectangle.zw, texture_coordinate);
 }

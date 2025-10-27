@@ -2,14 +2,8 @@
 
 namespace Storytime {
     VulkanUniformBuffer::VulkanUniformBuffer(const Config& config)
-        : config(config),
-          buffer({
-              .device = config.device,
-              .name = std::format("{} buffer", config.name),
-              .size = config.size,
-              .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-              .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-          })
+        : config(config.assert_valid()),
+          buffer(create_buffer())
     {
         buffer.map_memory();
     }
@@ -30,7 +24,17 @@ namespace Storytime {
         return buffer;
     }
 
-    void VulkanUniformBuffer::set_uniforms(const void* uniforms) const {
-        buffer.set_data(uniforms);
+    void VulkanUniformBuffer::set_data(const void* data) const {
+        buffer.set_data(data);
+    }
+
+    VulkanBuffer VulkanUniformBuffer::create_buffer() {
+        return VulkanBuffer({
+            .device = config.device,
+            .name = std::format("{} buffer", config.name),
+            .size = config.size,
+            .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        });
     }
 }

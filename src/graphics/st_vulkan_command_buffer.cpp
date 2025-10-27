@@ -267,11 +267,10 @@ namespace Storytime {
     }
 
     void VulkanCommandBuffer::bind_vertex_buffer(
-        VkBuffer
-        vertex_buffer,
+        u32 first_binding,
+        VkBuffer vertex_buffer,
         const VkDeviceSize* offsets
     ) const {
-        u32 first_binding = 0;
         u32 binding_count = 1;
         vkCmdBindVertexBuffers(
             command_buffer,

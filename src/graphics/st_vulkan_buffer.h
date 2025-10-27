@@ -45,7 +45,7 @@ namespace Storytime {
 
         void set_data(const void* src) const;
 
-        void copy_data_to(VkBuffer destination_buffer, const VulkanCommandBuffer& command_buffer) const;
+        void copy_data(const VulkanCommandBuffer& command_buffer, VkBuffer destination_buffer) const;
 
     private:
         void create_buffer();

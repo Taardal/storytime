@@ -153,14 +153,15 @@ namespace Storytime {
         ) const;
 
         void bind_vertex_buffer(
+            u32 first_binding,
             VkBuffer vertex_buffer,
             const VkDeviceSize* offsets = nullptr
         ) const;
 
         struct BindIndexBufferCommand {
             VkBuffer index_buffer = nullptr;
-            VkDeviceSize offset = 0;
             VkIndexType index_type = VK_INDEX_TYPE_MAX_ENUM;
+            VkDeviceSize offset = 0;
         };
 
         void bind_index_buffer(const BindIndexBufferCommand& command) const;

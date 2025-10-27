@@ -43,8 +43,17 @@ namespace Storytime {
 
     VkFormat get_vk_format(std::string_view glsl_type);
 
-    struct VulkanDepth {
-        static constexpr f32 near = 0.0f;
-        static constexpr f32 far = 1.0f;
-    };
+    template<typename T>
+    constexpr VkIndexType get_vk_index_type() {
+        if constexpr (std::is_same_v<T, uint32_t>) {
+            return VK_INDEX_TYPE_UINT32;
+        } else if constexpr (std::is_same_v<T, uint16_t>) {
+            return VK_INDEX_TYPE_UINT16;
+        } else if constexpr (std::is_same_v<T, uint8_t>) {
+            return VK_INDEX_TYPE_UINT8_EXT; // Requires extension VK_EXT_index_type_uint8
+        } else {
+            static_assert(false, "Unsupported index type. Only uint32_t, uint16_t (and optionally uint8_t) are valid.");
+            return VK_INDEX_TYPE_MAX_ENUM;
+        }
+    }
 }

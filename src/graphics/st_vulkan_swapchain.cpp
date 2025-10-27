@@ -186,7 +186,7 @@ namespace Storytime {
         };
 
         VkClearDepthStencilValue clear_depth_stencil_value = {
-            .depth = VulkanDepth::far, // The initial value at each point in the depth buffer should be the furthest possible depth.
+            .depth = depth_far, // The initial value at each point in the depth buffer should be the furthest possible depth.
             .stencil = 0,
         };
 
@@ -212,8 +212,8 @@ namespace Storytime {
         viewport.y = 0.0f;
         viewport.width = (f32) image_extent.width;
         viewport.height = (f32) image_extent.height;
-        viewport.minDepth = VulkanDepth::near;
-        viewport.maxDepth = VulkanDepth::far;
+        viewport.minDepth = depth_near;
+        viewport.maxDepth = depth_far;
 
         command_buffer.set_viewport(viewport);
 
@@ -486,10 +486,17 @@ namespace Storytime {
         u32 image_count = color_images.size();
         framebuffers.resize(image_count);
 
-        for (size_t i = 0; i < image_count; i++) {
+        for (u32 i = 0; i < image_count; i++) {
+            ST_ASSERT_IN_BOUNDS(i, color_image_views);
+            VkImageView color_attachment = color_image_views.at(i);
+            ST_ASSERT_NOT_NULL(color_attachment);
+
+            VkImageView depth_attachment = depth_image->get_view();
+            ST_ASSERT_NOT_NULL(depth_attachment);
+
             std::array<VkImageView, 2> attachments = {
-                color_image_views[i],
-                depth_image->get_view(),
+                color_attachment,
+                depth_attachment,
             };
 
             VkFramebufferCreateInfo framebuffer_create_info{};

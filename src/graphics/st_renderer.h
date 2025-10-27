@@ -12,7 +12,6 @@
 #include "graphics/st_vulkan_image.h"
 #include "graphics/st_vulkan_index_buffer.h"
 #include "graphics/st_vulkan_swapchain.h"
-#include "graphics/st_vulkan_uniform_buffer.h"
 #include "graphics/st_vulkan_vertex_buffer.h"
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
@@ -58,6 +57,7 @@ namespace Storytime {
 
         // Indices
         typedef u16 Index;
+        static constexpr VkIndexType index_type = VK_INDEX_TYPE_UINT16;
         static constexpr u32 max_indices_per_quad = 6;
         static constexpr std::array<Index, max_indices_per_quad> base_quad_indices = {
             0, 1, 2, 2, 3, 0
@@ -102,7 +102,7 @@ namespace Storytime {
         void render_quad(const Quad& quad);
 
     private:
-        void flush_batch(Frame& frame, const Batch& batch) const;
+        void flush(Frame& frame, const Batch& batch) const;
 
         void reset(Frame& frame) const;
 
@@ -110,9 +110,9 @@ namespace Storytime {
 
         void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
-        void write_frame_descriptors(const VulkanDescriptorSet& descriptor_set, const VulkanUniformBuffer& uniform_buffer) const;
+        void write_frame_descriptors(const Frame& frame) const;
 
-        void write_batch_descriptors(const VulkanDescriptorSet& descriptor_set, const std::vector<Shared<VulkanImage>>& textures) const;
+        void write_batch_descriptors(const Batch& batch) const;
 
         VulkanSwapchain create_swapchain();
 

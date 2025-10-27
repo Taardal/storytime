@@ -30,6 +30,10 @@ namespace Storytime {
         typedef VulkanSwapchainConfig Config;
 
     private:
+        static constexpr f32 depth_near = 0.0f;
+        static constexpr f32 depth_far = 1.0f;
+
+    private:
         Config config{};
         VkSwapchainKHR swapchain = nullptr;
         VkSurfaceFormatKHR surface_format{};

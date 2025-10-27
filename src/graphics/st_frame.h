@@ -10,7 +10,7 @@
 
 namespace Storytime {
     struct Batch {
-        VulkanInstanceBuffer vertex_buffer{};
+        VulkanVertexBuffer vertex_buffer{};
         VulkanDescriptorSet descriptor_set = nullptr;
         std::vector<QuadInstanceData> quads{};
         u32 quad_index = 0;
@@ -26,7 +26,7 @@ namespace Storytime {
         VkSemaphore render_finished_semaphore = nullptr;
         VulkanCommandBuffer command_buffer = nullptr;
         VulkanDescriptorSet descriptor_set = nullptr;
-        VulkanUniformBuffer view_projection_uniform_buffer{};
+        VulkanUniformBuffer uniform_buffer{};
         std::vector<Batch> batches{};
         u32 batch_index = 0;
     };

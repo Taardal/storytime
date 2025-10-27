@@ -50,11 +50,14 @@
     #define ST_ASSERT_NOT_CEMPTY(value)\
         ST_ASSERT(strlen(value) > 0, "Value [" << #value << "] cannot be empty")
 
+    #define ST_ASSERT_NOT_EQUAL(a, b)\
+        ST_ASSERT(a != b, "Value [" << #a << " = " << a << "] cannot be equal to [" << #b << " = " << b << "]")
+
     #define ST_ASSERT_IN_BOUNDS(index, collection)\
         ST_ASSERT(index >= 0 && index < collection.size(), "Index [" << #index << " = " << index << "] must be inside collection bounds [" #collection << " = 0.." << collection.size() << "].");
 
     #define ST_ASSERT_GREATER_THAN_ZERO(value)\
-        ST_ASSERT(value > 0, "Value [" << #value << "] must be greater than zero")
+        ST_ASSERT(value > 0, "Value [" << #value << " = " << value << "] must be greater than zero")
 
 #else
     #define ST_PRINT_ASSERT_ERROR(expression, message)
@@ -62,6 +65,7 @@
     #define ST_ASSERT_NOT_NULL(pointer)
     #define ST_ASSERT_NOT_EMPTY(value)
     #define ST_ASSERT_NOT_CEMPTY(value)
+    #define ST_ASSERT_NOT_EQUAL(a, b)
     #define ST_ASSERT_IN_BOUNDS(index, collection)
     #define ST_ASSERT_GREATER_THAN_ZERO(value)
 #endif

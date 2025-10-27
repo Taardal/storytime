@@ -4,7 +4,6 @@
 #include "audio/st_audio_engine.h"
 #include "graphics/st_spritesheet.h"
 #include "graphics/st_vulkan_command_pool.h"
-#include "resource/st_image_file.h"
 #include "system/st_file_reader.h"
 #include "tiled/st_tiled_map.h"
 #include "tiled/st_tiled_project.h"
@@ -49,6 +48,17 @@ namespace Storytime {
         Shared<TiledObjectTemplate> load_tiled_object_template(const std::filesystem::path& path) const;
 
     private:
+        struct ImageFile {
+            i32 width = 0;
+            i32 height = 0;
+            i32 channels = 0;
+            void* pixels = nullptr;
+
+            u64 get_byte_size() const {
+                return width * height * channels;
+            }
+        };
+
         ImageFile load_image(const std::filesystem::path& path) const;
 
         void free_image(const ImageFile& image) const;

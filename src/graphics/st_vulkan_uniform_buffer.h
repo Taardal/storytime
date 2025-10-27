@@ -8,6 +8,12 @@ namespace Storytime {
         std::string name = "VulkanUniformBuffer";
         VulkanDevice* device = nullptr;
         VkDeviceSize size = 0;
+
+        const VulkanUniformBufferConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_GREATER_THAN_ZERO(size);
+            return *this;
+        }
     };
 
     class VulkanUniformBuffer {
@@ -33,6 +39,9 @@ namespace Storytime {
 
         operator VkBuffer() const;
 
-        void set_uniforms(const void* uniforms) const;
+        void set_data(const void* data) const;
+
+    private:
+        VulkanBuffer create_buffer();
     };
 }

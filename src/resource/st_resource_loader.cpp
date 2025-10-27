@@ -143,8 +143,7 @@ namespace Storytime {
         }, "Could not load Tiled template [" << path << "]");
     }
 
-    ImageFile ResourceLoader::load_image(const std::filesystem::path& path) const {
-        // stbi_set_flip_vertically_on_load(1);
+    ResourceLoader::ImageFile ResourceLoader::load_image(const std::filesystem::path& path) const {
         ImageFile image_file{};
         image_file.width = 0;
         image_file.height = 0;

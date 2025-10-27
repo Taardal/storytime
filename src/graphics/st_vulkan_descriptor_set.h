@@ -13,15 +13,15 @@ namespace Storytime {
 
         operator VkDescriptorSet() const;
 
-        void bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set = 0) const;
-
-        struct BindDescriptorSet {
+        struct Bind {
             VkPipelineBindPoint pipeline_bind_point = VK_PIPELINE_BIND_POINT_MAX_ENUM;
             VkPipelineLayout pipeline_layout = nullptr;
             u32 set = 0;
         };
 
-        void bind(const VulkanCommandBuffer& command_buffer, const BindDescriptorSet& bind_descriptor_set) const;
+        void bind(const VulkanCommandBuffer& command_buffer, const Bind& bind) const;
+
+        void bind(const VulkanCommandBuffer& command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout pipeline_layout, u32 first_set = 0) const;
 
         void write(const VulkanDevice& device, u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes) const;
 

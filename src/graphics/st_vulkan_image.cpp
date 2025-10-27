@@ -5,7 +5,7 @@
 #include <stb_image.h>
 
 namespace Storytime {
-    VulkanImage::VulkanImage(const Config& config) : config(config) {
+    VulkanImage::VulkanImage(const Config& config) : config(config.assert_valid()) {
         create_image();
         allocate_memory();
         create_image_view();
@@ -94,7 +94,7 @@ namespace Storytime {
                 .image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Promise that the image is now in this layout when the copy is executed.
                 .mip_level = 0, // Only copy to the base image.
             });
-#if 1
+
             // Generate mipmap, and transition all mip levels in it to be ready to be sampled by the fragment shader.
             generate_mipmap(command_buffer, LayoutTransition{
                 .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -106,18 +106,6 @@ namespace Storytime {
                 .first_mip_level = 0,
                 .mip_level_count = config.mip_levels,
             });
-#else
-            transition_layout(command_buffer, LayoutTransition{
-                .src_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                .dst_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                .src_access = VK_ACCESS_TRANSFER_WRITE_BIT,
-                .dst_access = VK_ACCESS_SHADER_READ_BIT,
-                .src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT, // Nothing to wait on, so start in earlies possible stage.
-                .dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // Make the image writable by the transfer stage.
-                .first_mip_level = 0,
-                .mip_level_count = config.mip_levels,
-            });
-#endif
         });
     }
 
@@ -166,6 +154,7 @@ namespace Storytime {
         });
     }
 
+    //
     // Generate GPU mipmaps by using linear blitting.
     //
     // A "blit" (bit block transfer) is an operation that copies, and possibly resamples, a rectangular region of pixels from one
@@ -370,11 +359,12 @@ namespace Storytime {
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
         image_view_create_info.subresourceRange.layerCount = 1;
 
+        std::string image_view_name = std::format("{} view", config.name);
+
         if (config.device->create_image_view(image_view_create_info, &image_view) != VK_SUCCESS) {
-            ST_THROW("Could not create image view for image [" << config.name << "]");
+            ST_THROW("Could not create image view [" << image_view_name << "]");
         }
 
-        std::string image_view_name = std::format("{} view", config.name);
         if (config.device->set_object_name(image_view, VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
             ST_THROW("Could not create image view name [" << image_view_name << "]");
         }
@@ -399,17 +389,18 @@ namespace Storytime {
         memory_allocate_info.allocationSize = memory_requirements.size;
         memory_allocate_info.memoryTypeIndex = memory_type_index;
 
+        std::string memory_name = std::format("{} memory", config.name);
+
         if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
-            ST_THROW("Could not allocate buffer memory");
+            ST_THROW("Could not allocate image memory [" << memory_name << "]");
         }
 
-        std::string memory_name = std::format("{} memory", config.name);
         if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set buffer memory name [" << memory_name << "]");
+            ST_THROW("Could not set image memory name [" << memory_name << "]");
         }
 
         if (device.bind_image_memory(image, memory) != VK_SUCCESS) {
-            ST_THROW("Could not bind buffer memory");
+            ST_THROW("Could not bind image memory [" << memory_name << "]");
         }
     }
 

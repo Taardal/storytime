@@ -15,6 +15,13 @@ namespace Storytime {
         VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
         VkImageUsageFlags usage = 0;
         u32 mip_levels = 1;
+
+        const VulkanImageConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_GREATER_THAN_ZERO(width);
+            ST_ASSERT_GREATER_THAN_ZERO(height);
+            return *this;
+        }
     };
 
     class VulkanImage {

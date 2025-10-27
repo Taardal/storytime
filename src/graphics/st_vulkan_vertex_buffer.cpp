@@ -4,27 +4,24 @@
 
 namespace Storytime {
     VulkanVertexBuffer::VulkanVertexBuffer(const Config& config)
-        : config(config),
-          buffer({
-              .device = config.device,
-              .name = std::format("{} buffer", config.name),
-              .size = config.size,
-              .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-              .memory_properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-          }),
-          staging_buffer({
-            .device = config.device,
-            .name = std::format("{} staging buffer", config.name),
-            .size = config.size,
-            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-          })
+        : config(config.assert_valid()),
+          buffer(create_buffer())
     {
-        staging_buffer.map_memory();
+        staging_buffer_enabled = is_staging_buffer_enabled();
+        if (staging_buffer_enabled) {
+            staging_buffer = create_staging_buffer();
+            staging_buffer.map_memory();
+        } else {
+            buffer.map_memory();
+        }
     }
 
     VulkanVertexBuffer::~VulkanVertexBuffer() {
-        staging_buffer.unmap_memory();
+        if (staging_buffer_enabled) {
+            staging_buffer.unmap_memory();
+        } else {
+            buffer.unmap_memory();
+        }
     }
 
     VulkanVertexBuffer::VulkanVertexBuffer(VulkanVertexBuffer&& other) noexcept
@@ -45,58 +42,56 @@ namespace Storytime {
         return buffer;
     }
 
-    void VulkanVertexBuffer::bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets) const {
-        static VkDeviceSize default_offsets[] = {0};
-        command_buffer.bind_vertex_buffer(buffer, offsets == nullptr ? default_offsets : offsets);
+    void VulkanVertexBuffer::bind(const VulkanCommandBuffer& command_buffer, const Bind& bind) const {
+        VkDeviceSize offsets[] = {bind.offset};
+        command_buffer.bind_vertex_buffer(bind.binding, buffer, offsets);
     }
 
-    void VulkanVertexBuffer::set_vertices(const void* vertices, const VulkanCommandBuffer& command_buffer) const {
-        staging_buffer.set_data(vertices);
-        staging_buffer.copy_data_to(buffer, command_buffer);
-    }
-}
-
-namespace Storytime {
-    VulkanInstanceBuffer::VulkanInstanceBuffer(const Config& config)
-        : config(config),
-          buffer({
-              .device = config.device,
-              .name = std::format("{} buffer", config.name),
-              .size = config.size,
-              .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-              .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-          })
-    {
-        buffer.map_memory();
+    void VulkanVertexBuffer::bind(const VulkanCommandBuffer& command_buffer, u32 binding, VkDeviceSize offset) const {
+        VkDeviceSize offsets[] = {offset};
+        command_buffer.bind_vertex_buffer(binding, buffer, offsets);
     }
 
-    VulkanInstanceBuffer::~VulkanInstanceBuffer() {
-        buffer.unmap_memory();
+    void VulkanVertexBuffer::set_data(const void* data) const {
+        ST_ASSERT(!staging_buffer_enabled, "Staging buffer must be disabled when setting vertex data without a command buffer");
+        buffer.set_data(data);
     }
 
-    VulkanInstanceBuffer::VulkanInstanceBuffer(VulkanInstanceBuffer&& other) noexcept
-        : config(std::move(other.config)),
-          buffer(std::move(other.buffer)) {}
+    void VulkanVertexBuffer::set_data(const VulkanCommandBuffer& command_buffer, const void* data) const {
+        ST_ASSERT(staging_buffer_enabled, "Staging buffer must be enabled when setting vertex data with a command buffer");
+        staging_buffer.set_data(data);
+        staging_buffer.copy_data(command_buffer, buffer);
+    }
 
-    VulkanInstanceBuffer& VulkanInstanceBuffer::operator=(VulkanInstanceBuffer&& other) noexcept {
-        if (this != &other) {
-            config = std::move(other.config);
-            buffer = std::move(other.buffer);
+    VulkanBuffer VulkanVertexBuffer::create_buffer() {
+        return VulkanBuffer({
+            .device = config.device,
+            .name = std::format("{} buffer", config.name),
+            .size = config.size,
+            .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | config.usage,
+            .memory_properties = config.memory_properties,
+        });
+    }
+
+    VulkanBuffer VulkanVertexBuffer::create_staging_buffer() {
+        return VulkanBuffer({
+            .device = config.device,
+            .name = std::format("{} staging buffer", config.name),
+            .size = config.size,
+            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        });
+    }
+
+    bool VulkanVertexBuffer::is_staging_buffer_enabled() const {
+        bool primary_buffer_will_be_copied_to = config.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        if (!primary_buffer_will_be_copied_to) {
+            return false;
         }
-        return *this;
-    }
-
-    VulkanInstanceBuffer::operator VkBuffer() const {
-        return buffer;
-    }
-
-    void VulkanInstanceBuffer::bind(const VulkanCommandBuffer& command_buffer, const VkDeviceSize* offsets) const {
-        static VkDeviceSize default_offsets[] = {0};
-        command_buffer.bind_vertex_buffer(buffer, offsets == nullptr ? default_offsets : offsets);
-    }
-
-    void VulkanInstanceBuffer::set_vertices(const void* vertices) const {
-        buffer.set_data(vertices);
+        bool primary_buffer_memory_is_only_visible_to_gpu = config.memory_properties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        if (!primary_buffer_memory_is_only_visible_to_gpu) {
+            return false;
+        }
+        return true;
     }
 }
-
