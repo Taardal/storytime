@@ -38,6 +38,8 @@ namespace Storytime {
     }
 
     bool Renderer::begin_frame() {
+        const VulkanDevice& device = *config.device;
+
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         const Frame& frame = frames.at(frame_index);
 
@@ -45,7 +47,6 @@ namespace Storytime {
             return false;
         }
 
-        const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
         begin_frame_command_buffer(command_buffer);
@@ -72,6 +73,8 @@ namespace Storytime {
     }
 
     void Renderer::end_frame() {
+        const VulkanDevice& device = *config.device;
+
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
 
@@ -82,7 +85,6 @@ namespace Storytime {
             }
         }
 
-        const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
         swapchain.end_render_pass(command_buffer);
@@ -115,7 +117,7 @@ namespace Storytime {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
 
-        if (frame.batch_index >= max_batches_per_frame) {
+        if (frame.batch_index >= frame.batches.size()) {
             ST_LOG_W("Maximum batches exceeded for frame [{}], dropping quad", frame_index);
             return;
         }
@@ -123,12 +125,17 @@ namespace Storytime {
         ST_ASSERT_IN_BOUNDS(frame.batch_index, frame.batches);
         Batch& batch = frame.batches.at(frame.batch_index);
 
-        std::vector<QuadInstanceData>& quad_batch = batch.quads;
-        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
+        //
+        // Determine texture sampler index and add texture to texture batch if needed.
+        // 
+        // A batch should only contain unique textures (except for the placeholder texture).
+        // 
+        // The texture index is used for two things:
+        // 1. Check if the texture is already added to the batch.
+        // 2. Pass it to the fragment shader so it can select the correct texture to sample from. 
+        //
 
-        //
-        // Determine texture sampler index and add texture to texture batch.
-        //
+        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
 
         const Shared<VulkanImage>& texture = quad.texture != nullptr ? quad.texture : placeholder_texture;
         i32 texture_index = -1;
@@ -148,8 +155,10 @@ namespace Storytime {
         ST_ASSERT(texture_index > -1, "Invalid quad texture index [" << texture_index << "]");
 
         //
-        // Add quad to quad batch with the texture sampler index.
+        // Add quad to quad batch as instance data with the texture sampler index.
         //
+
+        std::vector<QuadInstanceData>& quad_batch = batch.quads;
 
         ST_ASSERT_IN_BOUNDS(batch.quad_index, quad_batch);
         QuadInstanceData& quad_instance_data = quad_batch.at(batch.quad_index);
@@ -176,6 +185,8 @@ namespace Storytime {
         config.metrics->draw_calls = (config.metrics->quad_count + max_quads_per_batch - 1) / max_quads_per_batch;
     }
 
+    // Flushing a batch means recording the required commands to render it.
+    // The commands are submitted and presented when the frame ends.
     void Renderer::flush(Frame& frame, const Batch& batch) const {
         const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
@@ -184,8 +195,10 @@ namespace Storytime {
         // Vertices & Indices
         //
 
+        // Upload the quad instance data to the instance vertex buffer.
         batch.vertex_buffer.set_data(batch.quads.data());
 
+        // Bind both the base and instance vertex buffers. The base quad will be reused to draw all quad instances.
         device.insert_cmd_label(command_buffer, "Bind vertex buffers");
         VkBuffer vertex_buffers[] = {
             base_quad_vertex_buffer, // Binding 0 (Base vertices)
@@ -202,6 +215,8 @@ namespace Storytime {
             .offsets = vertex_buffer_offsets,
         });
 
+        // Bind the base quad index buffer that contains the indices for the base quad.
+        // We only need indices for the single base quad because all submitted quads are instanced.
         device.insert_cmd_label(command_buffer, "Bind index buffer");
         command_buffer.bind_index_buffer({
             .index_buffer = base_quad_index_buffer,
@@ -213,8 +228,10 @@ namespace Storytime {
         // Descriptors
         //
 
+        // Write all descriptors that are specific to this batch (f.ex. texture samplers).
         write_batch_descriptors(batch);
 
+        // Bind the descriptor set that contains the descriptors.
         device.insert_cmd_label(command_buffer, "Bind batch descriptor set");
         command_buffer.bind_descriptor_sets({
             .pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -228,6 +245,7 @@ namespace Storytime {
         // Draw
         //
 
+        // Draw all the instanced quads in the batch using the base quad vertices and indices.
         device.insert_cmd_label(command_buffer, "Draw indexed");
         command_buffer.draw_indexed({
             .index_count = (u32) base_quad_indices.size(),
@@ -241,6 +259,8 @@ namespace Storytime {
         // End batch
         //
 
+        // Advance to the next batch. Don't need to clean up/reset anything here because no batches are reused in the
+        // same frame. A frame will continue to use the next available batch until all batches have been used.
         frame.batch_index++;
     }
 
@@ -287,10 +307,11 @@ namespace Storytime {
         const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
         const VulkanUniformBuffer& uniform_buffer = frame.uniform_buffer;
 
-        VkDescriptorBufferInfo uniform_buffer_descriptor_info{};
-        uniform_buffer_descriptor_info.buffer = uniform_buffer;
-        uniform_buffer_descriptor_info.offset = 0;
-        uniform_buffer_descriptor_info.range = sizeof(ViewProjection);
+        std::vector<VkDescriptorBufferInfo> buffer_descriptors(1);
+
+        buffer_descriptors[0].buffer = uniform_buffer;
+        buffer_descriptors[0].offset = 0;
+        buffer_descriptors[0].range = sizeof(ViewProjection);
 
         VkWriteDescriptorSet descriptor_write{};
         descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -298,8 +319,8 @@ namespace Storytime {
         descriptor_write.dstBinding = 0;
         descriptor_write.dstArrayElement = 0;
         descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_write.descriptorCount = 1;
-        descriptor_write.pBufferInfo = &uniform_buffer_descriptor_info;
+        descriptor_write.descriptorCount = buffer_descriptors.size();
+        descriptor_write.pBufferInfo = buffer_descriptors.data();
 
         descriptor_set.write(device, descriptor_write);
     }
@@ -316,16 +337,16 @@ namespace Storytime {
         );
 
         std::vector<VkDescriptorImageInfo> image_descriptor_infos(textures.size());
-        for (u32 j = 0; j < image_descriptor_infos.size(); j++) {
-            const Shared<VulkanImage>& texture = textures.at(j);
+        for (u32 i = 0; i < image_descriptor_infos.size(); i++) {
+            const Shared<VulkanImage>& texture = textures.at(i);
             ST_ASSERT_NOT_NULL(texture);
 
             VkImageView image_view = texture->get_view();
             ST_ASSERT_NOT_NULL(image_view);
 
-            image_descriptor_infos.at(j).imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            image_descriptor_infos.at(j).imageView = image_view;
-            image_descriptor_infos.at(j).sampler = texture_sampler;
+            image_descriptor_infos.at(i).imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_descriptor_infos.at(i).imageView = image_view;
+            image_descriptor_infos.at(i).sampler = texture_sampler;
         }
 
         VkWriteDescriptorSet descriptor_write{};
@@ -728,7 +749,7 @@ namespace Storytime {
     }
 
     void Renderer::destroy_placeholder_texture() {
-        placeholder_texture = nullptr;
+        placeholder_texture.reset();
     }
 
     std::vector<Frame> Renderer::create_frames() {
@@ -740,8 +761,16 @@ namespace Storytime {
         for (u32 i = 0; i < frames.size(); ++i) {
             Frame& frame = frames.at(i);
 
+            //
+            // Queues
+            //
+
             frame.graphics_queue = device.get_graphics_queue();
             frame.present_queue = device.get_present_queue();
+
+            //
+            // Buffers & Descriptors
+            //
 
             frame.command_buffer = frame_command_pool.allocate_command_buffer();
             std::string command_buffer_name = std::format("{} frame command buffer {}/{}", config.name.c_str(), i + 1, frame_count);
@@ -760,6 +789,10 @@ namespace Storytime {
                 .device = config.device,
                 .size = sizeof(ViewProjection),
             });
+
+            //
+            // Sync objects
+            //
 
             VkFenceCreateInfo in_flight_fence_create_info{};
             in_flight_fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
