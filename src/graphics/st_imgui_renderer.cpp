@@ -18,36 +18,24 @@ namespace Storytime {
         constexpr bool glfw_callbacks_enabled = true;
         ImGui_ImplGlfw_InitForVulkan(*config.window, glfw_callbacks_enabled);
 
-        // create_descriptor_pool();
+        ImGui_ImplVulkan_InitInfo vulkan_init_info{};
+        vulkan_init_info.ApiVersion = config.api_version;
+        vulkan_init_info.Instance = *config.context;
+        vulkan_init_info.PhysicalDevice = *config.physical_device;
+        vulkan_init_info.Device = *config.device;
+        vulkan_init_info.QueueFamily = config.physical_device->get_graphics_queue_family_index();
+        vulkan_init_info.Queue = config.device->get_graphics_queue();
+        vulkan_init_info.DescriptorPoolSize = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
+        vulkan_init_info.MinImageCount = config.frame_count;
+        vulkan_init_info.ImageCount = config.swapchain->get_image_count();
+        vulkan_init_info.PipelineInfoMain.RenderPass = config.swapchain->get_render_pass();
+        vulkan_init_info.PipelineInfoMain.Subpass = 0;
+        vulkan_init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        vulkan_init_info.PipelineCache = nullptr;
+        vulkan_init_info.Allocator = nullptr;
+        vulkan_init_info.CheckVkResultFn = on_check_vk_result;
 
-        VkDescriptorPoolSize descriptor_pool_sizes[] = {
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE },
-        };
-
-        u32 descriptor_count = 0;
-        for (VkDescriptorPoolSize& descriptor_pool_size : descriptor_pool_sizes) {
-            descriptor_count += descriptor_pool_size.descriptorCount;
-        }
-
-        ImGui_ImplVulkan_InitInfo init_info{};
-        init_info.ApiVersion = config.api_version;
-        init_info.Instance = *config.context;
-        init_info.PhysicalDevice = *config.physical_device;
-        init_info.Device = *config.device;
-        init_info.QueueFamily = config.physical_device->get_graphics_queue_family_index();
-        init_info.Queue = config.device->get_graphics_queue();
-        // init_info.DescriptorPool = descriptor_pool;
-        init_info.DescriptorPoolSize = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
-        init_info.MinImageCount = config.frame_count;
-        init_info.ImageCount = config.swapchain->get_image_count();
-        init_info.PipelineInfoMain.RenderPass = config.swapchain->get_render_pass();
-        init_info.PipelineInfoMain.Subpass = 0;
-        init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        init_info.PipelineCache = nullptr;
-        init_info.Allocator = nullptr;
-        init_info.CheckVkResultFn = on_check_vk_result;
-
-        ImGui_ImplVulkan_Init(&init_info);
+        ImGui_ImplVulkan_Init(&vulkan_init_info);
 
         if (!config.settings_file_path.empty() && !std::filesystem::exists("imgui.ini")) {
             ImGui::LoadIniSettingsFromDisk(config.settings_file_path.c_str());

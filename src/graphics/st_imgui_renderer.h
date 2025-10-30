@@ -39,7 +39,6 @@ namespace Storytime {
     class ImGuiRenderer {
     private:
         ImGuiRendererConfig config{};
-        VkDescriptorPool descriptor_pool = nullptr;
 
     public:
         ImGuiRenderer(const ImGuiRendererConfig& config);
@@ -56,9 +55,5 @@ namespace Storytime {
 
     private:
         static void on_check_vk_result(VkResult vk_result);
-
-        void create_descriptor_pool();
-
-        void destroy_descriptor_pool() const;
     };
 }

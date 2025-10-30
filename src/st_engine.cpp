@@ -178,7 +178,7 @@ namespace Storytime {
             TimePoint imgui_render_end_time;
 
             const Frame* frame = renderer.begin_frame();
-            if (frame) {
+            if (frame != nullptr) {
                 render_start_time = Time::now();
 
                 renderer.begin_render();
@@ -210,7 +210,7 @@ namespace Storytime {
                 metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
                 metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
             }
-            if (frame) {
+            if (frame != nullptr) {
                 metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
                 metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
                 metrics.scene_render_duration_ms = metrics.render_duration_ms - metrics.imgui_render_duration_ms;
