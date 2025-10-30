@@ -386,32 +386,31 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 target_link_libraries(${ST_TARGET} glfw)
 
-if (${ST_USE_VULKAN})
 # ImGui
-set(IMGUI_NAME imgui)
-set(IMGUI_DIR ${ST_LIB_DIR}/imgui-docking-1.77)
+set(IMGUI_TARGET imgui)
+set(IMGUI_DIR ${ST_LIB_DIR}/imgui-1.92.4-docking)
 add_library(
-    ${IMGUI_NAME}
+    ${IMGUI_TARGET}
     ${IMGUI_DIR}/imconfig.h
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui.h
     ${IMGUI_DIR}/imgui_demo.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_internal.h
+    ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui.h
     ${IMGUI_DIR}/imstb_rectpack.h
     ${IMGUI_DIR}/imstb_textedit.h
     ${IMGUI_DIR}/imstb_truetype.h
-    ${IMGUI_DIR}/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/imgui_impl_glfw.h
-    ${IMGUI_DIR}/imgui_impl_opengl3.cpp
-    ${IMGUI_DIR}/imgui_impl_opengl3.h
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.h
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
 )
-target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
-target_link_libraries(${IMGUI_NAME} glfw)
+target_include_directories(${IMGUI_TARGET} PRIVATE ${IMGUI_DIR})
+target_include_directories(${ST_TARGET} PRIVATE ${IMGUI_DIR}/backends)
 target_include_directories(${ST_TARGET} PUBLIC ${IMGUI_DIR})
-target_link_libraries(${ST_TARGET} ${IMGUI_NAME})
-endif ()
+target_link_libraries(${ST_TARGET} ${IMGUI_TARGET})
 
 # JSON
 FetchContent_Declare(
@@ -436,18 +435,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(miniaudio)
 target_include_directories(${ST_TARGET} PUBLIC ${miniaudio_SOURCE_DIR})
 
-# STB image
-set(STB_IMAGE_NAME stb_image)
-set(STB_IMAGE_DIR ${ST_LIB_DIR}/stb_image-2.22)
+# stb_image
+set(STB_IMAGE_TARGET stb_image)
+set(STB_IMAGE_DIR ${ST_LIB_DIR}/stb_image-2.30)
 add_library(
-    ${STB_IMAGE_NAME}
-    ${STB_IMAGE_DIR}/src/stb_image.cpp
+    ${STB_IMAGE_TARGET}
+    ${STB_IMAGE_DIR}/stb_image.cpp
 )
-target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
-target_include_directories(${ST_TARGET} PUBLIC ${STB_IMAGE_DIR}/include)
-target_link_libraries(${ST_TARGET} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
+target_include_directories(${STB_IMAGE_TARGET} PRIVATE ${STB_IMAGE_DIR})
+target_include_directories(${ST_TARGET} PUBLIC ${STB_IMAGE_DIR})
+target_link_libraries(${ST_TARGET} ${STB_IMAGE_TARGET} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
 
-# SPDLOG
+# spdlog
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog

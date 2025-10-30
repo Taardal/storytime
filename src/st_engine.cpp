@@ -1,5 +1,6 @@
 #include "st_engine.h"
 
+#include "graphics/st_vulkan_swapchain.h"
 #include "st_app.h"
 #include "event/st_window_closed_event.h"
 #include "system/st_clock.h"
@@ -20,8 +21,6 @@ namespace Storytime {
               .maximized = config.window_maximized,
               .resizable = config.window_resizable,
               .vsync = config.window_vsync,
-              .context_version_major = config.open_gl_version_major,
-              .context_version_minor = config.open_gl_version_minor,
           }),
           keyboard({
               .window = &window,
@@ -33,9 +32,12 @@ namespace Storytime {
           file_reader(),
           metrics(),
           vulkan_context({
-              .app_name = config.app_name,
-              .engine_name = std::format("{} engine", config.app_name),
               .window = &window,
+              .api_version = config.vulkan_api_version,
+              .app_name = config.vulkan_app_name.size() > 0 ? config.vulkan_app_name : config.app_name,
+              .app_version = config.vulkan_app_version,
+              .engine_name = config.vulkan_engine_name.size() > 0 ? config.vulkan_engine_name : std::format("{} Engine", config.app_name),
+              .engine_version = config.vulkan_engine_version,
               .validation_layers_enabled = config.vulkan_validation_layers_enabled,
           }),
           vulkan_physical_device({
@@ -45,25 +47,37 @@ namespace Storytime {
               .name = std::format("{} device", config.app_name),
               .physical_device = &vulkan_physical_device,
           }),
+          vulkan_swapchain({
+              .name = std::format("{} swapchain", config.app_name),
+              .dispatcher = &dispatcher,
+              .window = &window,
+              .device = &vulkan_device,
+              .surface = vulkan_context.get_surface(),
+          }),
           renderer({
-              .name = config.app_name,
+              .name = std::format("{} renderer", config.app_name),
               .dispatcher = &dispatcher,
               .window = &window,
               .file_reader = &file_reader,
               .metrics = &metrics,
               .context = &vulkan_context,
               .device = &vulkan_device,
-              .max_frames_in_flight = config.rendering_buffer_count,
+              .swapchain = &vulkan_swapchain,
+              .frame_count = config.rendering_buffer_count,
           }),
-#ifndef ST_USE_VULKAN
           imgui_renderer({
-            .window = &window,
-            .keyboard = &keyboard,
-            .mouse = &mouse,
-            .settings_file_path = config.imgui_settings_file_path,
-            .glsl_version = config.glsl_version,
+              .name = std::format("{} imgui renderer", config.app_name),
+              .window = &window,
+              .keyboard = &keyboard,
+              .mouse = &mouse,
+              .context = &vulkan_context,
+              .physical_device = &vulkan_physical_device,
+              .device = &vulkan_device,
+              .swapchain = &vulkan_swapchain,
+              .api_version = config.vulkan_api_version,
+              .frame_count = config.rendering_buffer_count,
+              .settings_file_path = config.imgui_settings_file_path,
           }),
-#endif
           audio_engine(),
           resource_loader({
               .file_reader = &file_reader,
@@ -158,22 +172,28 @@ namespace Storytime {
             // RENDER
             //
 
-            bool rendered_frame = false;
-            TimePoint render_start_time = Time::now();
-            if (renderer.begin_frame()) {
-                app.render();
-                renderer.end_frame();
-                rendered_frame = true;
-            }
-            TimePoint render_end_time = Time::now();
+            TimePoint render_start_time;
+            TimePoint render_end_time;
+            TimePoint imgui_render_start_time;
+            TimePoint imgui_render_end_time;
 
-#ifndef ST_USE_VULKAN
-            TimePoint imgui_render_start_time = Time::now();
-            imgui_renderer.begin_frame();
-            app.render_imgui();
-            imgui_renderer.end_frame();
-            TimePoint imgui_render_end_time = Time::now();
-#endif
+            const Frame* frame = renderer.begin_frame();
+            if (frame) {
+                render_start_time = Time::now();
+
+                renderer.begin_render();
+                app.render();
+                renderer.end_render();
+
+                imgui_render_start_time = Time::now();
+                imgui_renderer.begin_render();
+                app.render_imgui();
+                imgui_renderer.end_render(frame->command_buffer);
+                imgui_render_end_time = Time::now();
+
+                renderer.end_frame();
+                render_end_time = Time::now();
+            }
 
             //
             // END FRAME
@@ -190,13 +210,12 @@ namespace Storytime {
                 metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
                 metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
             }
-            if (rendered_frame) {
+            if (frame) {
                 metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
+                metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
+                metrics.scene_render_duration_ms = metrics.render_duration_ms - metrics.imgui_render_duration_ms;
                 metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
             }
-#ifndef ST_USE_VULKAN
-            metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
-#endif
             metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
             metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
 

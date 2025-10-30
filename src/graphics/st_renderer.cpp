@@ -6,7 +6,6 @@ namespace Storytime {
 
     Renderer::Renderer(const Config& config)
         : config(config.assert_valid()),
-          swapchain(create_swapchain()),
           init_command_pool(create_init_command_pool()),
           frame_command_pool(create_frame_command_pool()),
           frame_descriptor_pool(create_frame_descriptor_pool()),
@@ -33,18 +32,25 @@ namespace Storytime {
         destroy_frame_descriptor_set_layout();
     }
 
+    VkCommandBuffer Renderer::get_frame_command_buffer() const {
+        ST_ASSERT_IN_BOUNDS(frame_index, frames);
+        const Frame& frame = frames.at(frame_index);
+        return frame.command_buffer;
+    }
+
     void Renderer::wait_until_idle() const {
         ST_ASSERT_THROW_VK(config.device->wait_until_idle(), "Device must be able to wait until idle");
     }
 
-    bool Renderer::begin_frame() {
+    const Frame* Renderer::begin_frame() const {
         const VulkanDevice& device = *config.device;
+        VulkanSwapchain& swapchain = *config.swapchain;
 
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         const Frame& frame = frames.at(frame_index);
 
         if (!swapchain.acquire_frame(frame)) {
-            return false;
+            return nullptr;
         }
 
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
@@ -53,6 +59,44 @@ namespace Storytime {
         device.begin_cmd_label(command_buffer, "CommandBuffer");
 
         swapchain.begin_render_pass(command_buffer);
+
+        return &frame;
+    }
+
+    void Renderer::end_frame() {
+        const VulkanDevice& device = *config.device;
+        VulkanSwapchain& swapchain = *config.swapchain;
+
+        ST_ASSERT_IN_BOUNDS(frame_index, frames);
+        Frame& frame = frames.at(frame_index);
+#if 0
+        if (frame.batch_index < frame.batches.size()) {
+            Batch& batch = frame.batches.at(frame.batch_index);
+            if (batch.quad_index > 0) {
+                flush(frame, batch);
+            }
+        }
+#endif
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
+
+        swapchain.end_render_pass(command_buffer);
+
+        device.end_cmd_label(command_buffer);
+        end_frame_command_buffer(command_buffer);
+
+        swapchain.present_frame(frame);
+
+        reset(frame);
+        frame_index = (frame_index + 1) % config.frame_count;
+    }
+
+    void Renderer::begin_render() const {
+        const VulkanDevice& device = *config.device;
+
+        ST_ASSERT_IN_BOUNDS(frame_index, frames);
+        const Frame& frame = frames.at(frame_index);
+
+        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
         device.insert_cmd_label(command_buffer, "Bind graphics pipeline");
         command_buffer.bind_pipeline({
@@ -68,13 +112,9 @@ namespace Storytime {
             .descriptor_set_count = 1,
             .descriptor_sets = (VkDescriptorSet*) &frame.descriptor_set,
         });
-
-        return true;
     }
 
-    void Renderer::end_frame() {
-        const VulkanDevice& device = *config.device;
-
+    void Renderer::end_render() {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
 
@@ -84,18 +124,6 @@ namespace Storytime {
                 flush(frame, batch);
             }
         }
-
-        const VulkanCommandBuffer& command_buffer = frame.command_buffer;
-
-        swapchain.end_render_pass(command_buffer);
-
-        device.end_cmd_label(command_buffer);
-        end_frame_command_buffer(command_buffer);
-
-        swapchain.present_frame(frame);
-
-        reset(frame);
-        frame_index = (frame_index + 1) % config.max_frames_in_flight;
     }
 
     void Renderer::set_view_projection(const ViewProjection& view_projection) const {
@@ -361,16 +389,6 @@ namespace Storytime {
         descriptor_set.write(device, descriptor_write);
     }
 
-    VulkanSwapchain Renderer::create_swapchain() {
-        return VulkanSwapchain({
-            .name = std::format("{} swapchain", config.name),
-            .dispatcher = config.dispatcher,
-            .window = config.window,
-            .device = config.device,
-            .surface = config.context->get_surface(),
-        });
-    }
-
     VulkanCommandPool Renderer::create_init_command_pool() {
         return VulkanCommandPool({
             .name = std::format("{} init command pool", config.name),
@@ -545,7 +563,7 @@ namespace Storytime {
         return VulkanGraphicsPipeline({
             .name = std::format("{} quad graphics pipeline", config.name),
             .device = config.device,
-            .render_pass = swapchain.get_render_pass(),
+            .render_pass = config.swapchain->get_render_pass(),
             .descriptor_set_layouts = descriptor_set_layouts,
             .shader_stage_create_infos = shader_stage_create_infos,
             .vertex_input_binding_descriptions = vertex_input_binding_descriptions,
@@ -578,12 +596,12 @@ namespace Storytime {
         std::vector<VkDescriptorPoolSize> frame_descriptor_pool_sizes(1);
 
         frame_descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        frame_descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight;
+        frame_descriptor_pool_sizes[0].descriptorCount = config.frame_count;
 
         return VulkanDescriptorPool({
             .name = std::format("{} frame descriptor pool", config.name),
             .device = config.device,
-            .max_descriptor_sets = config.max_frames_in_flight,
+            .max_descriptor_sets = config.frame_count,
             .descriptor_pool_sizes = frame_descriptor_pool_sizes,
         });
     }
@@ -592,12 +610,12 @@ namespace Storytime {
         std::vector<VkDescriptorPoolSize> batch_descriptor_pool_sizes(1);
 
         batch_descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        batch_descriptor_pool_sizes[0].descriptorCount = config.max_frames_in_flight * max_batches_per_frame * max_textures_per_batch;
+        batch_descriptor_pool_sizes[0].descriptorCount = config.frame_count * max_batches_per_frame * max_textures_per_batch;
 
         return VulkanDescriptorPool({
             .name = std::format("{} batch descriptor pool", config.name),
             .device = config.device,
-            .max_descriptor_sets = config.max_frames_in_flight * max_batches_per_frame,
+            .max_descriptor_sets = config.frame_count * max_batches_per_frame,
             .descriptor_pool_sizes = batch_descriptor_pool_sizes,
         });
     }
@@ -755,7 +773,7 @@ namespace Storytime {
     std::vector<Frame> Renderer::create_frames() {
         const VulkanDevice& device = *config.device;
 
-        u32 frame_count = config.max_frames_in_flight;
+        u32 frame_count = config.frame_count;
         std::vector<Frame> frames(frame_count);
 
         for (u32 i = 0; i < frames.size(); ++i) {

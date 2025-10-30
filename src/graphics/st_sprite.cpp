@@ -32,6 +32,7 @@ namespace Storytime {
     }
 
     void Sprite::render(Renderer* renderer, const SpriteRenderConfig& render_config) const {
+#if 1
         glm::vec3 position = { render_config.position.x, render_config.position.y, render_config.position.z };
         glm::vec3 size = { (f32) config.width, (f32) config.height, 0.0f };
 
@@ -40,7 +41,9 @@ namespace Storytime {
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), size);
 
         glm::mat4 model = translation * rotation * scale;
-
+#else
+        auto model = glm::mat4(1.0f);
+#endif
         Quad quad = {
             .model = model,
             .color = render_config.color,
@@ -50,7 +53,7 @@ namespace Storytime {
 
         bool flipped = render_config.flipped_horizontally || render_config.flipped_vertically || render_config.flipped_diagonally;
         if (!flipped) {
-            renderer->render_quad(quad);
+            // renderer->render_quad(quad);
             return;
         }
 
@@ -76,6 +79,6 @@ namespace Storytime {
 
         // Render the flipped sprite
         quad.texture_rectangle = texture_coordinates;
-        renderer->render_quad(quad);
+        // renderer->render_quad(quad);
     }
 }

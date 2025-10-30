@@ -27,7 +27,8 @@ namespace Storytime {
         Metrics* metrics = nullptr;
         VulkanContext* context = nullptr;
         VulkanDevice* device = nullptr;
-        u32 max_frames_in_flight = 0;
+        VulkanSwapchain* swapchain = nullptr;
+        u32 frame_count = 0;
 
         const RendererConfig& assert_valid() const {
             ST_ASSERT_NOT_NULL(dispatcher);
@@ -36,7 +37,8 @@ namespace Storytime {
             ST_ASSERT_NOT_NULL(metrics);
             ST_ASSERT_NOT_NULL(context);
             ST_ASSERT_NOT_NULL(device);
-            ST_ASSERT_GREATER_THAN_ZERO(max_frames_in_flight);
+            ST_ASSERT_NOT_NULL(swapchain);
+            ST_ASSERT_GREATER_THAN_ZERO(frame_count);
             return *this;
         }
     };
@@ -66,12 +68,11 @@ namespace Storytime {
         // Batching
         static constexpr u32 max_batches_per_frame = 8;
         static constexpr u32 max_textures_per_batch = 16;
-        static constexpr u32 max_quads_per_batch = 1'00;
+        static constexpr u32 max_quads_per_batch = 20'000;
         static constexpr u32 max_vertices_per_batch = max_quads_per_batch * max_vertices_per_quad;
 
     private:
         Config config;
-        VulkanSwapchain swapchain;
         VulkanCommandPool init_command_pool;
         VulkanCommandPool frame_command_pool;
         VulkanDescriptorPool frame_descriptor_pool;
@@ -91,11 +92,17 @@ namespace Storytime {
 
         ~Renderer();
 
+        VkCommandBuffer get_frame_command_buffer() const;
+
         void wait_until_idle() const;
 
-        bool begin_frame();
+        const Frame* begin_frame() const;
 
         void end_frame();
+
+        void begin_render() const;
+
+        void end_render();
 
         void set_view_projection(const ViewProjection& view_projection) const;
 
@@ -113,8 +120,6 @@ namespace Storytime {
         void write_frame_descriptors(const Frame& frame) const;
 
         void write_batch_descriptors(const Batch& batch) const;
-
-        VulkanSwapchain create_swapchain();
 
         VulkanCommandPool create_init_command_pool();
 

@@ -23,6 +23,7 @@ namespace Storytime {
 
     void Keyboard::set_enabled(bool enabled) {
         this->enabled = enabled;
+        config.window->set_keyboard_events_enabled(enabled);
     }
 
     bool Keyboard::is_pressed(KeyCode key_code) const {

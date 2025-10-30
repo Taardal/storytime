@@ -6,7 +6,9 @@
 #include "graphics/st_imgui_renderer.h"
 #include "graphics/st_renderer.h"
 #include "graphics/st_vulkan_context.h"
+#include "graphics/st_vulkan_physical_device.h"
 #include "graphics/st_vulkan_device.h"
+#include "graphics/st_vulkan_swapchain.h"
 #include "process/st_process_manager.h"
 #include "resource/st_resource_loader.h"
 #include "system/st_dispatcher.h"
@@ -33,10 +35,9 @@ namespace Storytime {
         VulkanContext vulkan_context;
         VulkanPhysicalDevice vulkan_physical_device;
         VulkanDevice vulkan_device;
+        VulkanSwapchain vulkan_swapchain;
         Renderer renderer;
-#ifndef ST_USE_VULKAN
         ImGuiRenderer imgui_renderer;
-#endif
         AudioEngine audio_engine;
         ResourceLoader resource_loader;
         ProcessManager process_manager;

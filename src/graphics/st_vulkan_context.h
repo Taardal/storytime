@@ -6,9 +6,12 @@
 
 namespace Storytime {
     struct VulkanContextConfig {
-        std::string app_name;
-        std::string engine_name;
         Window* window = nullptr;
+        u32 api_version = VK_API_VERSION_1_3;
+        std::string app_name = "VulkanApp";
+        u32 app_version = VK_MAKE_API_VERSION(0, 1, 0, 0);
+        std::string engine_name = "VulkanEngine";
+        u32 engine_version = VK_MAKE_API_VERSION(0, 1, 0, 0);
         bool validation_layers_enabled = false;
     };
 
@@ -26,6 +29,8 @@ namespace Storytime {
         VulkanContext(const Config& config);
 
         ~VulkanContext();
+
+        operator VkInstance() const;
 
         VkSurfaceKHR get_surface() const;
 

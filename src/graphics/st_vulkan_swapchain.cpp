@@ -51,6 +51,10 @@ namespace Storytime {
         return image_extent;
     }
 
+    u32 VulkanSwapchain::get_image_count() const {
+        return color_images.size();
+    }
+
     bool VulkanSwapchain::acquire_frame(const Frame& frame) {
         const VulkanDevice& device = *config.device;
 
@@ -332,6 +336,7 @@ namespace Storytime {
     // it may result in tearing during those instances.
     //
     VkPresentModeKHR VulkanSwapchain::find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const {
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
         for (const VkPresentModeKHR& present_mode : present_modes) {
             if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return present_mode;

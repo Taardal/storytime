@@ -1,5 +1,4 @@
 #include "st_vulkan_context.h"
-#include "graphics/st_vulkan_utils.h"
 
 namespace Storytime {
     std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {
@@ -75,6 +74,10 @@ namespace Storytime {
         destroy_instance();
     }
 
+    VulkanContext::operator VkInstance() const {
+        return instance;
+    }
+
     VkSurfaceKHR VulkanContext::get_surface() const {
         return surface;
     }
@@ -100,11 +103,11 @@ namespace Storytime {
     ) {
         VkApplicationInfo app_info{};
         app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        app_info.apiVersion = config.api_version;
         app_info.pApplicationName = config.app_name.c_str();
-        app_info.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+        app_info.applicationVersion = config.app_version;
         app_info.pEngineName = config.engine_name.c_str();
-        app_info.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
-        app_info.apiVersion = VK_API_VERSION_1_3;
+        app_info.engineVersion = config.engine_version;
 
         VkInstanceCreateInfo instance_create_info{};
         instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

@@ -63,6 +63,8 @@ namespace Storytime {
 
         const VkExtent2D& get_image_extent() const;
 
+        u32 get_image_count() const;
+
         bool acquire_frame(const Frame& frame);
 
         void present_frame(const Frame& frame);

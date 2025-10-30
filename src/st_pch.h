@@ -47,11 +47,9 @@
 // Lua
 #include <lua.hpp>
 
-#ifndef ST_USE_VULKAN
 // ImGui
 #include <imgui.h>
 #include <imgui_internal.h>
-#endif
 
 // --------------------------------------------------------------------------------------------------------------
 // App

@@ -11,6 +11,7 @@ namespace Storytime {
 
     void Mouse::set_enabled(bool enabled) {
         this->enabled = enabled;
+        config.window->set_mouse_events_enabled(enabled);
     }
 
     bool Mouse::is_pressed(MouseButtonCode mouse_button_code) const {
