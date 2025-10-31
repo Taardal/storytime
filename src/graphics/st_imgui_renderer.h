@@ -47,11 +47,7 @@ namespace Storytime {
 
         void begin_render() const;
 
-        void render() const;
-
         void end_render(VkCommandBuffer command_buffer) const;
-
-        void end_frame() const;
 
     private:
         static void on_check_vk_result(VkResult vk_result);

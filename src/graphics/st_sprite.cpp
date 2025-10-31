@@ -53,7 +53,7 @@ namespace Storytime {
 
         bool flipped = render_config.flipped_horizontally || render_config.flipped_vertically || render_config.flipped_diagonally;
         if (!flipped) {
-            // renderer->render_quad(quad);
+            renderer->render_quad(quad);
             return;
         }
 
@@ -79,6 +79,6 @@ namespace Storytime {
 
         // Render the flipped sprite
         quad.texture_rectangle = texture_coordinates;
-        // renderer->render_quad(quad);
+        renderer->render_quad(quad);
     }
 }
