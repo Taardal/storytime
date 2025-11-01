@@ -59,6 +59,26 @@ namespace Storytime {
         fprintf(stderr, "\n");
     }
 
+    Error Error::with_previous(const Error& other) const {
+        Error error = *this;
+        error.previous_error = std::make_shared<Error>(other);
+        return error;
+    }
+
+    Error Error::with_previous(Error&& other) const {
+        Error error = *this;
+        error.previous_error = std::make_shared<Error>(other);
+        return error;
+    }
+
+    Error Error::operator+(const Error& other) const {
+        return with_previous(other);
+    }
+
+    Error Error::operator+(Error&& other) const {
+        return with_previous(other);
+    }
+
     std::ostream& operator<<(std::ostream& os, const Error& error) {
         std::vector<StacktraceEntry> stack = error.get_stacktrace();
         std::string& error_message = stack[0].message;

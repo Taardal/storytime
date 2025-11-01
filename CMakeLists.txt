@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.0.0)
 
 project(storytime)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ST_TARGET ${PROJECT_NAME})
@@ -181,6 +181,7 @@ add_library(
     ${ST_SRC_DIR}/system/st_error.h
     ${ST_SRC_DIR}/system/st_error_signal.cpp
     ${ST_SRC_DIR}/system/st_error_signal.h
+    ${ST_SRC_DIR}/system/st_expected.h
     ${ST_SRC_DIR}/system/st_file_reader.cpp
     ${ST_SRC_DIR}/system/st_file_reader.h
     ${ST_SRC_DIR}/system/st_metrics.h
