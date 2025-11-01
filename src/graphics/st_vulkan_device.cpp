@@ -35,7 +35,7 @@ namespace Storytime {
 
     VkQueue VulkanDevice::get_queue(u32 queue_family_index, u32 queue_index) const {
         VkQueue queue;
-        vkGetDeviceQueue(device, queue_family_index, queue_index, &queue);
+        get_queue(queue_family_index, queue_index, &queue);
         return queue;
     }
 
@@ -43,16 +43,34 @@ namespace Storytime {
         return vkGetDeviceQueue(device, queue_family_index, queue_index, queue);
     }
 
-    VkResult VulkanDevice::submit_queue(const SubmitQueue& submit_queue) const {
-        return vkQueueSubmit(submit_queue.queue, submit_queue.submit_count, submit_queue.submit_info, submit_queue.fence);
+    VkResult VulkanDevice::submit_queue(const SubmitQueueConfig& config) const {
+        return submit_queue(config.queue, config.submit_count, config.submit_info, config.fence);
     }
 
     VkResult VulkanDevice::submit_queue(VkQueue queue, u32 submit_count, const VkSubmitInfo* submit_info, VkFence fence) const {
-        return vkQueueSubmit(queue, submit_count, submit_info, fence);
+        ST_ASSERT_NOT_NULL(queue);
+        ST_ASSERT_NOT_NULL(submit_info);
+        VkResult result = vkQueueSubmit(queue, submit_count, submit_info, fence);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not submit [{}] submit infos to queue: {}", submit_count, format_vk_result(result));
+        }
+        return result;
     }
 
-    VkResult VulkanDevice::create_swapchain(const VkSwapchainCreateInfoKHR& swapchain_create_info, VkSwapchainKHR* swapchain) const {
-        return vkCreateSwapchainKHR(device, &swapchain_create_info, ST_VK_ALLOCATOR, swapchain);
+    VkResult VulkanDevice::create_swapchain(const VkSwapchainCreateInfoKHR& swapchain_create_info, VkSwapchainKHR* swapchain, std::string_view name) const {
+        ST_ASSERT_NOT_NULL(swapchain);
+        VkResult result = vkCreateSwapchainKHR(device, &swapchain_create_info, ST_VK_ALLOCATOR, swapchain);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create swapchain [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*swapchain, VK_OBJECT_TYPE_SWAPCHAIN_KHR, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set swapchain name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_swapchain(VkSwapchainKHR swapchain) const {
@@ -60,130 +78,282 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::get_swapchain_images(VkSwapchainKHR swapchain, std::vector<VkImage>* images) const {
+        ST_ASSERT_NOT_NULL(swapchain);
+        ST_ASSERT_NOT_NULL(images);
         u32 image_count = 0;
-        VkResult result = get_swapchain_images(swapchain, &image_count, nullptr);
+        VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &image_count, nullptr);
         if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not get swapchain image count: {}", format_vk_result(result));
             return result;
         }
         images->resize(image_count);
-        return get_swapchain_images(swapchain, &image_count, images->data());
+        result = vkGetSwapchainImagesKHR(device, swapchain, &image_count, images->data());
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not get swapchain [{}] images: {}", images->size(), format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanDevice::get_swapchain_images(VkSwapchainKHR swapchain, u32* image_count, VkImage* images) const {
-        return vkGetSwapchainImagesKHR(device, swapchain, image_count, images);
+        ST_ASSERT_NOT_NULL(swapchain);
+        ST_ASSERT_NOT_NULL(image_count);
+        ST_ASSERT_NOT_NULL(images);
+        VkResult result = vkGetSwapchainImagesKHR(device, swapchain, image_count, images);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not get swapchain images: {}", format_vk_result(result));
+        }
+        return result;
     }
 
-    VkResult VulkanDevice::acquire_next_swapchain_image(const AcquireNextSwapchainImage& acquire_next_swapchain_image) const {
-        return vkAcquireNextImageKHR(device, acquire_next_swapchain_image.swapchain, acquire_next_swapchain_image.timeout, acquire_next_swapchain_image.semaphore, acquire_next_swapchain_image.fence, acquire_next_swapchain_image.image_index);
+    VkResult VulkanDevice::acquire_next_swapchain_image(const AcquireNextSwapchainImage& config) const {
+        return acquire_next_swapchain_image(config.swapchain, config.timeout, config.semaphore, config.fence, config.image_index);
     }
 
     VkResult VulkanDevice::acquire_next_swapchain_image(VkSwapchainKHR swapchain, u64 timeout, VkSemaphore semaphore, VkFence fence, u32* image_index) const {
-        return vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image_index);
+        ST_ASSERT_NOT_NULL(swapchain);
+        ST_ASSERT_NOT_NULL(image_index);
+        VkResult result = vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image_index);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not acquire next swapchain image: {}", format_vk_result(result));
+        }
+        return result;
     }
 
-    VkResult VulkanDevice::create_image(const VkImageCreateInfo& image_create_info, VkImage* image) const {
-        return vkCreateImage(device, &image_create_info, ST_VK_ALLOCATOR, image);
+    VkResult VulkanDevice::create_image(const VkImageCreateInfo& image_create_info, VkImage* image, std::string_view name) const {
+        VkResult result = vkCreateImage(device, &image_create_info, ST_VK_ALLOCATOR, image);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create image [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*image, VK_OBJECT_TYPE_IMAGE, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set image name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_image(VkImage image) const {
         vkDestroyImage(device, image, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_image_view(const VkImageViewCreateInfo& image_view_create_info, VkImageView* image_view) const {
-        return vkCreateImageView(device, &image_view_create_info, ST_VK_ALLOCATOR, image_view);
+    VkResult VulkanDevice::create_image_view(const VkImageViewCreateInfo& image_view_create_info, VkImageView* image_view, std::string_view name) const {
+        VkResult result = vkCreateImageView(device, &image_view_create_info, ST_VK_ALLOCATOR, image_view);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create image view [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*image_view, VK_OBJECT_TYPE_IMAGE_VIEW, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set image view name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_image_view(VkImageView image_view) const {
         vkDestroyImageView(device, image_view, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_render_pass(const VkRenderPassCreateInfo& render_pass_create_info, VkRenderPass* render_pass) const {
-        return vkCreateRenderPass(device, &render_pass_create_info, ST_VK_ALLOCATOR, render_pass);
+    VkResult VulkanDevice::create_render_pass(const VkRenderPassCreateInfo& render_pass_create_info, VkRenderPass* render_pass, std::string_view name) const {
+        VkResult result = vkCreateRenderPass(device, &render_pass_create_info, ST_VK_ALLOCATOR, render_pass);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create render pass [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*render_pass, VK_OBJECT_TYPE_RENDER_PASS, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set render pass name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_render_pass(VkRenderPass render_pass) const {
         vkDestroyRenderPass(device, render_pass, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_framebuffer(const VkFramebufferCreateInfo& framebuffer_create_info, VkFramebuffer* framebuffer) const {
-        return vkCreateFramebuffer(device, &framebuffer_create_info, ST_VK_ALLOCATOR, framebuffer);
+    VkResult VulkanDevice::create_framebuffer(const VkFramebufferCreateInfo& framebuffer_create_info, VkFramebuffer* framebuffer, std::string_view name) const {
+        VkResult result = vkCreateFramebuffer(device, &framebuffer_create_info, ST_VK_ALLOCATOR, framebuffer);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create framebuffer [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*framebuffer, VK_OBJECT_TYPE_FRAMEBUFFER, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set framebuffer name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_framebuffer(VkFramebuffer framebuffer) const {
         vkDestroyFramebuffer(device, framebuffer, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_semaphore(const VkSemaphoreCreateInfo& semaphore_create_info, VkSemaphore* semaphore) const {
-        return vkCreateSemaphore(device, &semaphore_create_info, ST_VK_ALLOCATOR, semaphore);
+    VkResult VulkanDevice::create_semaphore(const VkSemaphoreCreateInfo& semaphore_create_info, VkSemaphore* semaphore, std::string_view name) const {
+        VkResult result = vkCreateSemaphore(device, &semaphore_create_info, ST_VK_ALLOCATOR, semaphore);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create semaphore [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*semaphore, VK_OBJECT_TYPE_SEMAPHORE, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set semaphore name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_semaphore(VkSemaphore semaphore) const {
         vkDestroySemaphore(device, semaphore, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_fence(const VkFenceCreateInfo& fence_create_info, VkFence* fence) const {
-        return vkCreateFence(device, &fence_create_info, ST_VK_ALLOCATOR, fence);
+    VkResult VulkanDevice::create_fence(const VkFenceCreateInfo& fence_create_info, VkFence* fence, std::string_view name) const {
+        VkResult result = vkCreateFence(device, &fence_create_info, ST_VK_ALLOCATOR, fence);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create fence [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*fence, VK_OBJECT_TYPE_FENCE, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set fence name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_fence(VkFence fence) const {
         vkDestroyFence(device, fence, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::wait_for_fences(const WaitForFences& wait_for_fences) const {
-        return vkWaitForFences(device, wait_for_fences.fence_count, wait_for_fences.fences, wait_for_fences.wait_for_all, wait_for_fences.wait_timeout);
+    VkResult VulkanDevice::wait_for_fences(const WaitForFencesConfig& config) const {
+        return wait_for_fences(config.fence_count, config.fences, config.wait_for_all, config.wait_timeout);
     }
 
     VkResult VulkanDevice::wait_for_fences(u32 fence_count, const VkFence* fences, bool wait_for_all, u64 wait_timeout) const {
-        return vkWaitForFences(device, fence_count, fences, wait_for_all, wait_timeout);
+        ST_ASSERT_GREATER_THAN_ZERO(fence_count);
+        ST_ASSERT_NOT_NULL(fences);
+        VkResult result = vkWaitForFences(device, fence_count, fences, wait_for_all, wait_timeout);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not wait for [{}] fences using timeout [{}] (wait for all [{}]): {}", fence_count, wait_timeout, wait_for_all, format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanDevice::wait_for_fence(VkFence fence, u64 wait_timeout) const {
         constexpr u32 fence_count = 1;
         constexpr bool wait_for_all = true;
-        return vkWaitForFences(device, fence_count, &fence, wait_for_all, wait_timeout);
+        return wait_for_fences(fence_count, &fence, wait_for_all, wait_timeout);
     }
 
-    VkResult VulkanDevice::reset_fences(const ResetFences& reset_fences) const {
-        return vkResetFences(device, reset_fences.fence_count, reset_fences.fences);
+    VkResult VulkanDevice::reset_fences(const ResetFencesConfig& config) const {
+        return reset_fences(config.fence_count, config.fences);
     }
 
     VkResult VulkanDevice::reset_fences(u32 fence_count, const VkFence* fences) const {
-        return vkResetFences(device, fence_count, fences);
+        ST_ASSERT_GREATER_THAN_ZERO(fence_count);
+        ST_ASSERT_NOT_NULL(fences);
+        VkResult result = vkResetFences(device, fence_count, fences);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not reset [{}] fences: {}", fence_count, format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanDevice::reset_fence(VkFence fence) const {
         constexpr u32 fence_count = 1;
-        return vkResetFences(device, fence_count, &fence);
+        return reset_fences(fence_count, &fence);
     }
 
-    VkResult VulkanDevice::create_shader_module(const VkShaderModuleCreateInfo& shader_module_create_info, VkShaderModule* shader_module) const {
-        return vkCreateShaderModule(device, &shader_module_create_info, ST_VK_ALLOCATOR, shader_module);
+    VkResult VulkanDevice::create_shader_module(const VkShaderModuleCreateInfo& shader_module_create_info, VkShaderModule* shader_module, std::string_view name) const {
+        VkResult result = vkCreateShaderModule(device, &shader_module_create_info, ST_VK_ALLOCATOR, shader_module);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not reset create shader module [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*shader_module, VK_OBJECT_TYPE_SHADER_MODULE, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set shader module name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_shader_module(VkShaderModule shader_module) const {
         vkDestroyShaderModule(device, shader_module, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_graphics_pipeline(const VkGraphicsPipelineCreateInfo& graphics_pipeline_create_info, VkPipeline* graphics_pipeline) const {
-        constexpr u32 create_info_count = 1;
+    VkResult VulkanDevice::create_graphics_pipelines(u32 pipeline_count, const VkGraphicsPipelineCreateInfo* graphics_pipeline_create_infos, VkPipeline* graphics_pipelines) const {
+        ST_ASSERT_GREATER_THAN_ZERO(pipeline_count);
+        ST_ASSERT_NOT_NULL(graphics_pipeline_create_infos);
         constexpr VkPipelineCache pipeline_cache = nullptr;
-        return vkCreateGraphicsPipelines(device, pipeline_cache, create_info_count, &graphics_pipeline_create_info, ST_VK_ALLOCATOR, graphics_pipeline);
+        VkResult result = vkCreateGraphicsPipelines(device, pipeline_cache, pipeline_count, graphics_pipeline_create_infos, ST_VK_ALLOCATOR, graphics_pipelines);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create [{}] graphics pipelines: {}", pipeline_count, format_vk_result(result));
+        }
+        return result;
+    }
+
+    VkResult VulkanDevice::create_graphics_pipeline(const VkGraphicsPipelineCreateInfo& graphics_pipeline_create_info, VkPipeline* graphics_pipeline, std::string_view name) const {
+        constexpr u32 create_info_count = 1;
+        VkResult result = create_graphics_pipelines(create_info_count, &graphics_pipeline_create_info, graphics_pipeline);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create graphics pipeline [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*graphics_pipeline, VK_OBJECT_TYPE_PIPELINE, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set graphics pipeline name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_graphics_pipeline(VkPipeline graphics_pipeline) const {
         vkDestroyPipeline(device, graphics_pipeline, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_pipeline_layout(const VkPipelineLayoutCreateInfo& pipeline_layout_create_info, VkPipelineLayout* pipeline_layout) const {
-        return vkCreatePipelineLayout(device, &pipeline_layout_create_info, ST_VK_ALLOCATOR, pipeline_layout);
+    VkResult VulkanDevice::create_pipeline_layout(const VkPipelineLayoutCreateInfo& pipeline_layout_create_info, VkPipelineLayout* pipeline_layout, std::string_view name) const {
+        VkResult result = vkCreatePipelineLayout(device, &pipeline_layout_create_info, ST_VK_ALLOCATOR, pipeline_layout);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create pipeline layout [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set pipeline layout name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_pipeline_layout(VkPipelineLayout pipeline_layout) const {
         vkDestroyPipelineLayout(device, pipeline_layout, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_command_pool(const VkCommandPoolCreateInfo& command_pool_create_info, VkCommandPool* command_pool) const {
-        return vkCreateCommandPool(device, &command_pool_create_info, ST_VK_ALLOCATOR, command_pool);
+    VkResult VulkanDevice::create_command_pool(const VkCommandPoolCreateInfo& command_pool_create_info, VkCommandPool* command_pool, std::string_view name) const {
+        VkResult result = vkCreateCommandPool(device, &command_pool_create_info, ST_VK_ALLOCATOR, command_pool);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create command pool [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*command_pool, VK_OBJECT_TYPE_COMMAND_POOL, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set command pool name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_command_pool(VkCommandPool command_pool) const {
@@ -191,67 +361,108 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::allocate_command_buffers(const VkCommandBufferAllocateInfo& command_buffer_allocate_info, VkCommandBuffer* command_buffers) const {
-        return vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers);
+        VkResult result = vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not allocate [{}] command buffers: {}", command_buffer_allocate_info.commandBufferCount, format_vk_result(result));
+        }
+        return result;
     }
 
-    void VulkanDevice::free_command_buffers(const FreeCommandBuffers& free_command_buffers) const {
-        vkFreeCommandBuffers(device, free_command_buffers.command_pool, free_command_buffers.command_buffer_count, free_command_buffers.command_buffers);
+    void VulkanDevice::free_command_buffers(const FreeCommandBuffersConfig& config) const {
+        free_command_buffers(config.command_pool, config.command_buffer_count, config.command_buffers);
     }
 
     void VulkanDevice::free_command_buffers(VkCommandPool command_pool, u32 command_buffer_count, const VkCommandBuffer* command_buffers) const {
+        ST_ASSERT_NOT_NULL(command_pool);
         vkFreeCommandBuffers(device, command_pool, command_buffer_count, command_buffers);
     }
 
-    void VulkanDevice::free_command_buffer(VkCommandPool command_pool, VkCommandBuffer command_buffer) const {
+    void VulkanDevice::free_command_buffer(VkCommandPool command_pool, const VkCommandBuffer* command_buffer) const {
         constexpr u32 command_buffer_count = 1;
-        vkFreeCommandBuffers(device, command_pool, command_buffer_count, &command_buffer);
+        vkFreeCommandBuffers(device, command_pool, command_buffer_count, command_buffer);
     }
 
-    VkResult VulkanDevice::create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer) const {
-        return vkCreateBuffer(device, &buffer_create_info, ST_VK_ALLOCATOR, buffer);
+    VkResult VulkanDevice::create_buffer(const VkBufferCreateInfo& buffer_create_info, VkBuffer* buffer, std::string_view name) const {
+        VkResult result = vkCreateBuffer(device, &buffer_create_info, ST_VK_ALLOCATOR, buffer);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create buffer [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*buffer, VK_OBJECT_TYPE_BUFFER, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set buffer name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_buffer(VkBuffer buffer) const {
         vkDestroyBuffer(device, buffer, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::allocate_memory(const VkMemoryAllocateInfo& memory_allocate_info, VkDeviceMemory* memory) const {
-        return vkAllocateMemory(device, &memory_allocate_info, ST_VK_ALLOCATOR, memory);
+    VkResult VulkanDevice::allocate_memory(const VkMemoryAllocateInfo& memory_allocate_info, VkDeviceMemory* memory, std::string_view name) const {
+        VkResult result = vkAllocateMemory(device, &memory_allocate_info, ST_VK_ALLOCATOR, memory);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not allocate memory [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*memory, VK_OBJECT_TYPE_DEVICE_MEMORY, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set memory name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
-    VkResult VulkanDevice::bind_buffer_memory(const BindBufferMemory& bind_buffer_memory) const {
-        return vkBindBufferMemory(device, bind_buffer_memory.buffer, bind_buffer_memory.memory, bind_buffer_memory.memory_offset);
+    VkResult VulkanDevice::bind_buffer_memory(const BindBufferMemoryConfig& config) const {
+        return bind_buffer_memory(config.buffer, config.memory, config.memory_offset);
     }
 
     VkResult VulkanDevice::bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
-        return vkBindBufferMemory(device, buffer, memory, memory_offset);
+        ST_ASSERT_NOT_NULL(buffer);
+        ST_ASSERT_NOT_NULL(memory);
+        VkResult result = vkBindBufferMemory(device, buffer, memory, memory_offset);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not bind buffer memory: {}", format_vk_result(result));
+        }
+        return result;
     }
 
-    VkResult VulkanDevice::bind_image_memory(const BindImageMemory& bind_image_memory) const {
-        return vkBindImageMemory(device, bind_image_memory.image, bind_image_memory.memory, bind_image_memory.memory_offset);
+    VkResult VulkanDevice::bind_image_memory(const BindImageMemoryConfig& config) const {
+        return bind_image_memory(config.image, config.memory, config.memory_offset);
     }
 
     VkResult VulkanDevice::bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) const {
-        return vkBindImageMemory(device, image, memory, memory_offset);
+        ST_ASSERT_NOT_NULL(image);
+        ST_ASSERT_NOT_NULL(memory);
+        VkResult result = vkBindImageMemory(device, image, memory, memory_offset);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not bind image memory: {}", format_vk_result(result));
+        }
+        return result;
     }
 
     void VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements* memory_requirements) const {
+        ST_ASSERT_NOT_NULL(buffer);
         vkGetBufferMemoryRequirements(device, buffer, memory_requirements);
     }
 
     VkMemoryRequirements VulkanDevice::get_buffer_memory_requirements(VkBuffer buffer) const {
         VkMemoryRequirements memory_requirements{};
-        vkGetBufferMemoryRequirements(device, buffer, &memory_requirements);
+        get_buffer_memory_requirements(buffer, &memory_requirements);
         return memory_requirements;
     }
 
     void VulkanDevice::get_image_memory_requirements(VkImage image, VkMemoryRequirements* memory_requirements) const {
+        ST_ASSERT_NOT_NULL(image);
         vkGetImageMemoryRequirements(device, image, memory_requirements);
     }
 
     VkMemoryRequirements VulkanDevice::get_image_memory_requirements(VkImage image) const {
         VkMemoryRequirements memory_requirements{};
-        vkGetImageMemoryRequirements(device, image, &memory_requirements);
+        get_image_memory_requirements(image, &memory_requirements);
         return memory_requirements;
     }
 
@@ -260,27 +471,54 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::map_memory(const MapMemoryConfig& config) const {
-        return vkMapMemory(device, config.memory, config.memory_offset, config.memory_size, config.flags, config.data);
+        return map_memory(config.memory, config.memory_offset, config.memory_size, config.flags, config.data);
     }
 
     VkResult VulkanDevice::map_memory(VkDeviceMemory memory, VkDeviceSize memory_offset, VkDeviceSize memory_size, VkMemoryMapFlags flags, void** data) const {
-        return vkMapMemory(device, memory, memory_offset, memory_size, flags, data);
+        VkResult result = vkMapMemory(device, memory, memory_offset, memory_size, flags, data);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not map memory: {}", format_vk_result(result));
+        }
+        return result;
     }
 
     void VulkanDevice::unmap_memory(VkDeviceMemory memory) const {
         return vkUnmapMemory(device, memory);
     }
 
-    VkResult VulkanDevice::create_descriptor_set_layout(const VkDescriptorSetLayoutCreateInfo& descriptor_set_layout_create_info, VkDescriptorSetLayout* descriptor_set_layout) const {
-        return vkCreateDescriptorSetLayout(device, &descriptor_set_layout_create_info, ST_VK_ALLOCATOR, descriptor_set_layout);
+    VkResult VulkanDevice::create_descriptor_set_layout(const VkDescriptorSetLayoutCreateInfo& descriptor_set_layout_create_info, VkDescriptorSetLayout* descriptor_set_layout, std::string_view name) const {
+        VkResult result = vkCreateDescriptorSetLayout(device, &descriptor_set_layout_create_info, ST_VK_ALLOCATOR, descriptor_set_layout);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create descriptor set layout [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*descriptor_set_layout, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set descriptor set layout name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) const {
         vkDestroyDescriptorSetLayout(device, descriptor_set_layout, ST_VK_ALLOCATOR);
     }
 
-    VkResult VulkanDevice::create_descriptor_pool(const VkDescriptorPoolCreateInfo& descriptor_pool_create_info, VkDescriptorPool* descriptor_pool) const {
-        return vkCreateDescriptorPool(device, &descriptor_pool_create_info, ST_VK_ALLOCATOR, descriptor_pool);
+    VkResult VulkanDevice::create_descriptor_pool(const VkDescriptorPoolCreateInfo& descriptor_pool_create_info, VkDescriptorPool* descriptor_pool, std::string_view name) const {
+        ST_ASSERT_NOT_NULL(descriptor_pool);
+        VkResult result = vkCreateDescriptorPool(device, &descriptor_pool_create_info, ST_VK_ALLOCATOR, descriptor_pool);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create descriptor pool [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*descriptor_pool, VK_OBJECT_TYPE_DESCRIPTOR_POOL, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set descriptor pool name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_descriptor_pool(VkDescriptorPool descriptor_pool) const {
@@ -288,11 +526,15 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::allocate_descriptor_sets(const VkDescriptorSetAllocateInfo& descriptor_set_allocate_info, VkDescriptorSet* descriptor_sets) const {
-        return vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
+        VkResult result = vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, descriptor_sets);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not allocate [{}] descriptor sets: {}", descriptor_set_allocate_info.descriptorSetCount, format_vk_result(result));
+        }
+        return result;
     }
 
-    void VulkanDevice::free_descriptor_sets(const FreeDescriptorSets& free_descriptor_sets) const {
-        vkFreeDescriptorSets(device, free_descriptor_sets.descriptor_pool, free_descriptor_sets.descriptor_set_count, free_descriptor_sets.descriptor_sets);
+    void VulkanDevice::free_descriptor_sets(const FreeDescriptorSetsConfig& config) const {
+        free_descriptor_sets(config.descriptor_pool, config.descriptor_set_count, config.descriptor_sets);
     }
 
     void VulkanDevice::free_descriptor_sets(VkDescriptorPool descriptor_pool, u32 descriptor_set_count, const VkDescriptorSet* descriptor_sets) const {
@@ -301,19 +543,30 @@ namespace Storytime {
 
     void VulkanDevice::free_descriptor_set(VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set) const {
         constexpr u32 descriptor_set_count = 1;
-        vkFreeDescriptorSets(device, descriptor_pool, descriptor_set_count, &descriptor_set);
+        free_descriptor_sets(descriptor_pool, descriptor_set_count, &descriptor_set);
     }
 
-    void VulkanDevice::update_descriptor_sets(const UpdateDescriptorSets& update_descriptor_sets) const {
-        vkUpdateDescriptorSets(device, update_descriptor_sets.descriptor_write_count, update_descriptor_sets.descriptor_writes, update_descriptor_sets.descriptor_copy_count, update_descriptor_sets.descriptor_copies);
+    void VulkanDevice::update_descriptor_sets(const UpdateDescriptorSetsConfig& config) const {
+        update_descriptor_sets(config.descriptor_write_count, config.descriptor_writes, config.descriptor_copy_count, config.descriptor_copies);
     }
 
     void VulkanDevice::update_descriptor_sets(u32 descriptor_write_count, const VkWriteDescriptorSet* descriptor_writes, u32 descriptor_copy_count, const VkCopyDescriptorSet* descriptor_copies) const {
         vkUpdateDescriptorSets(device, descriptor_write_count, descriptor_writes, descriptor_copy_count, descriptor_copies);
     }
 
-    VkResult VulkanDevice::create_sampler(const VkSamplerCreateInfo& sampler_create_info, VkSampler* sampler) const {
-        return vkCreateSampler(device, &sampler_create_info, ST_VK_ALLOCATOR, sampler);
+    VkResult VulkanDevice::create_sampler(const VkSamplerCreateInfo& sampler_create_info, VkSampler* sampler, std::string_view name) const {
+        VkResult result = vkCreateSampler(device, &sampler_create_info, ST_VK_ALLOCATOR, sampler);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not create sampler [{}]: {}", name, format_vk_result(result));
+            return result;
+        }
+        if (!name.empty()) {
+            VkResult name_result = set_object_name(*sampler, VK_OBJECT_TYPE_SAMPLER, name.data());
+            if (name_result != VK_SUCCESS) {
+                ST_LOG_E("Could not set sampler name [{}]: {}", name, format_vk_result(name_result));
+            }
+        }
+        return result;
     }
 
     void VulkanDevice::destroy_sampler(VkSampler sampler) const {
@@ -321,20 +574,42 @@ namespace Storytime {
     }
 
     VkResult VulkanDevice::wait_until_idle() const {
-        return vkDeviceWaitIdle(device);
+        VkResult result = vkDeviceWaitIdle(device);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not wait for device to become idle: {}", format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanDevice::wait_until_queue_idle(VkQueue queue) const {
-        return vkQueueWaitIdle(queue);
+        VkResult result = vkQueueWaitIdle(queue);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not wait for queue to become idle: {}", format_vk_result(result));
+        }
+        return result;
+    }
+
+    VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, std::string_view object_name) const {
+        return set_object_name(object, object_type, object_name.data());
     }
 
     VkResult VulkanDevice::set_object_name(void* object, VkObjectType object_type, const char* object_name) const {
+        ST_ASSERT_NOT_NULL(object);
+        ST_ASSERT_GREATER_THAN_ZERO(object_type);
+        ST_ASSERT_NOT_NULL(object_name);
+        ST_ASSERT_NOT_CEMPTY(object_name);
+
         VkDebugUtilsObjectNameInfoEXT object_name_info{};
         object_name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         object_name_info.objectType = object_type;
-        object_name_info.objectHandle = (uint64_t) object;
+        object_name_info.objectHandle = (u64) object;
         object_name_info.pObjectName = object_name;
-        return set_object_name(object_name_info);
+
+        VkResult result = set_object_name(object_name_info);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not set name [{}] for object of type [{}]: {}", object_name, get_vk_object_type_name(object_type), format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanDevice::set_object_name(const VkDebugUtilsObjectNameInfoEXT& object_name_info) const {
@@ -448,22 +723,26 @@ namespace Storytime {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.queueCreateInfoCount = (u32) queue_create_infos.size();
 
-        if (physical_device.create_device(device_create_info, &device) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan device");
+        VkResult result = physical_device.create_device(device_create_info, &device);
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not create device [" << config.name << "]: " << format_vk_result(result));
         }
 
-        if (set_object_name(device, VK_OBJECT_TYPE_DEVICE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device name [" << config.name << "]");
+        VkResult device_name_result = set_object_name(device, VK_OBJECT_TYPE_DEVICE, config.name.c_str());
+        if (device_name_result != VK_SUCCESS) {
+            ST_LOG_E("Could not set device name [{}]: {}", config.name, format_vk_result(device_name_result));
         }
 
         std::string graphics_queue_name = std::format("{} graphics queue", config.name);
-        if (set_object_name(get_graphics_queue(), VK_OBJECT_TYPE_QUEUE, graphics_queue_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device graphics queue name [" << graphics_queue_name << "]");
+        VkResult graphics_queue_name_result = set_object_name(get_graphics_queue(), VK_OBJECT_TYPE_QUEUE, graphics_queue_name.c_str());
+        if (graphics_queue_name_result != VK_SUCCESS) {
+            ST_LOG_E("Could not set graphics queue name [{}]: {}", graphics_queue_name, format_vk_result(graphics_queue_name_result));
         }
 
         std::string present_queue_name = std::format("{} present queue", config.name);
-        if (set_object_name(get_present_queue(), VK_OBJECT_TYPE_QUEUE, present_queue_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan device present queue name [" << present_queue_name << "]");
+        VkResult present_queue_name_result = set_object_name(get_present_queue(), VK_OBJECT_TYPE_QUEUE, present_queue_name.c_str());
+        if (present_queue_name_result != VK_SUCCESS) {
+            ST_LOG_E("Could not set present queue name [{}]: {}", present_queue_name, format_vk_result(present_queue_name_result));
         }
     }
 

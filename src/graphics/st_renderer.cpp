@@ -315,18 +315,21 @@ namespace Storytime {
     }
 
     void Renderer::begin_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        if (command_buffer.reset() != VK_SUCCESS) {
-            ST_THROW("Could not reset frame command buffer");
-        }
-        if (command_buffer.begin() != VK_SUCCESS) {
-            ST_THROW("Could not begin frame command buffer");
-        }
+        ST_ASSERT_THROW_VK(
+            command_buffer.reset(),
+            "Could not reset frame command buffer"
+        );
+        ST_ASSERT_THROW_VK(
+            command_buffer.begin(),
+            "Could not begin frame command buffer"
+        );
     }
 
     void Renderer::end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const {
-        if (command_buffer.end() != VK_SUCCESS) {
-            ST_THROW("Could not end frame command buffer");
-        }
+        ST_ASSERT_THROW_VK(
+            command_buffer.end(),
+            "Could not end frame command buffer"
+        );
     }
 
     void Renderer::write_frame_descriptors(const Frame& frame) const {
@@ -441,28 +444,19 @@ namespace Storytime {
     }
 
     VulkanGraphicsPipeline Renderer::create_quad_graphics_pipeline() {
-        const VulkanDevice& device = *config.device;
-
         auto vertex_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.vert.spv");
         auto fragment_shader_path = ST_RES_DIR / std::filesystem::path("shaders/quad.frag.spv");
 
-        VkShaderModule vertex_shader = create_shader_module(vertex_shader_path);
-        VkShaderModule fragment_shader = create_shader_module(fragment_shader_path);
+        std::string vertex_shader_name = std::format("{} quad vertex shader [{}]", config.name.c_str(), vertex_shader_path.c_str());
+        std::string fragment_shader_name = std::format("{} quad fragment shader [{}]", config.name.c_str(), fragment_shader_path.c_str());
+
+        VkShaderModule vertex_shader = create_shader_module(vertex_shader_path, vertex_shader_name);
+        VkShaderModule fragment_shader = create_shader_module(fragment_shader_path, fragment_shader_name);
 
         ST_DEFER([&] {
             destroy_shader_module(vertex_shader);
             destroy_shader_module(fragment_shader);
         });
-
-        std::string vertex_shader_name = std::format("{} quad vertex shader [{}]", config.name.c_str(), vertex_shader_path.c_str());
-        if (device.set_object_name(vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set shader module name [" << vertex_shader_name << "]");
-        }
-
-        std::string fragment_shader_name = std::format("{} quad fragment shader [{}]", config.name.c_str(), fragment_shader_path.c_str());
-        if (device.set_object_name(fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set shader module name [" << fragment_shader_name << "]");
-        }
 
         VkPipelineShaderStageCreateInfo vertex_shader_stage_create_info{};
         vertex_shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -571,7 +565,7 @@ namespace Storytime {
         });
     }
 
-    VkShaderModule Renderer::create_shader_module(const std::filesystem::path& path) const {
+    VkShaderModule Renderer::create_shader_module(const std::filesystem::path& path, std::string_view name) const {
         const VulkanDevice& device = *config.device;
         const FileReader& file_reader = *config.file_reader;
 
@@ -586,9 +580,12 @@ namespace Storytime {
         shader_module_create_info.pCode = (const u32*) shader_bytes.data();
 
         VkShaderModule shader_module;
-        if (device.create_shader_module(shader_module_create_info, &shader_module) != VK_SUCCESS) {
-            ST_THROW("Could not create shader module");
-        }
+
+        ST_ASSERT_THROW_VK(
+            device.create_shader_module(shader_module_create_info, &shader_module, name),
+            "Could not create shader module [" << name << "]"
+        );
+
         return shader_module;
     }
 
@@ -648,13 +645,10 @@ namespace Storytime {
 
         VkDescriptorSetLayout descriptor_set_layout;
 
-        if (device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout) != VK_SUCCESS) {
-            ST_THROW("Could not create frame descriptor set layout");
-        }
-
-        if (device.set_object_name(descriptor_set_layout, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, descriptor_set_layout_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set frame descriptor set layout name [" << descriptor_set_layout_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout, descriptor_set_layout_name),
+            "Could not create frame descriptor set layout [" << descriptor_set_layout_name << "]"
+        );
 
         return descriptor_set_layout;
     }
@@ -692,13 +686,10 @@ namespace Storytime {
 
         VkDescriptorSetLayout descriptor_set_layout;
 
-        if (device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout) != VK_SUCCESS) {
-            ST_THROW("Could not create batch descriptor set layout [" << descriptor_set_layout_name << "]");
-        }
-
-        if (device.set_object_name(descriptor_set_layout, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, descriptor_set_layout_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set batch descriptor set layout name [" << descriptor_set_layout_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout),
+            "Could not create batch descriptor set layout [" << descriptor_set_layout_name << "]"
+        );
 
         return descriptor_set_layout;
     }
@@ -733,10 +724,15 @@ namespace Storytime {
         sampler_create_info.minLod = 0.0f; // The lowest mip level that can be sampled (base image).
         sampler_create_info.maxLod = VK_LOD_CLAMP_NONE; // The highest mip level that can be sampled (larger number = smaller mip).
 
+        std::string sampler_name = std::format("{} sampler", config.name);
+
         VkSampler sampler;
-        if (device.create_sampler(sampler_create_info, &sampler) != VK_SUCCESS) {
-            ST_THROW("Could not create sampler");
-        }
+
+        ST_ASSERT_THROW_VK(
+            device.create_sampler(sampler_create_info, &sampler, sampler_name),
+            "Could not create sampler [" << sampler_name << "]"
+        );
+
         return sampler;
     }
 
@@ -790,17 +786,11 @@ namespace Storytime {
             // Buffers & Descriptors
             //
 
-            frame.command_buffer = frame_command_pool.allocate_command_buffer();
             std::string command_buffer_name = std::format("{} frame command buffer {}/{}", config.name.c_str(), i + 1, frame_count);
-            if (device.set_object_name(frame.command_buffer, VK_OBJECT_TYPE_COMMAND_BUFFER, command_buffer_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set command buffer name [" << command_buffer_name << "]");
-            }
+            frame.command_buffer = frame_command_pool.allocate_command_buffer(command_buffer_name);
 
-            frame.descriptor_set = frame_descriptor_pool.allocate_descriptor_set(frame_descriptor_set_layout);
             std::string descriptor_set_name = std::format("{} frame descriptor set {}/{}", config.name.c_str(), i + 1, frame_count);
-            if (device.set_object_name(frame.descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, descriptor_set_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set descriptor set name [" << descriptor_set_name << "]");
-            }
+            frame.descriptor_set = frame_descriptor_pool.allocate_descriptor_set(frame_descriptor_set_layout, descriptor_set_name);
 
             frame.uniform_buffer = VulkanUniformBuffer({
                 .name = std::format("{} frame uniform buffer {}/{}", config.name, i + 1, frame_count),
@@ -812,42 +802,31 @@ namespace Storytime {
             // Sync objects
             //
 
+
             VkFenceCreateInfo in_flight_fence_create_info{};
             in_flight_fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             in_flight_fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             std::string in_flight_fence_name = std::format("{} frame 'in flight' fence {}/{}", config.name.c_str(), i + 1, frame_count);
+            ST_ASSERT_THROW_VK(
+                device.create_fence(in_flight_fence_create_info, &frame.in_flight_fence, in_flight_fence_name),
+                "Could not create fence [" << in_flight_fence_name << "]"
+            );
 
-            if (device.create_fence(in_flight_fence_create_info, &frame.in_flight_fence) != VK_SUCCESS) {
-                ST_THROW("Could not create fence [" << in_flight_fence_name << "]");
-            }
-            if (device.set_object_name(frame.in_flight_fence, VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set fence name [" << in_flight_fence_name << "]");
-            }
-
-            VkSemaphoreCreateInfo image_available_semaphore_create_info{};
-            image_available_semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            VkSemaphoreCreateInfo semaphore_create_info{};
+            semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
             std::string image_available_semaphore_name = std::format("{} frame 'image available' semaphore {}/{}", config.name.c_str(), i + 1, frame_count);
-
-            if (device.create_semaphore(image_available_semaphore_create_info, &frame.image_available_semaphore) != VK_SUCCESS) {
-                ST_THROW("Could not create semaphore [" << image_available_semaphore_name << "]");
-            }
-            if (device.set_object_name(frame.image_available_semaphore, VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set semaphore name [" << image_available_semaphore_name << "]");
-            }
-
-            VkSemaphoreCreateInfo render_finished_semaphore_create_info{};
-            render_finished_semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            ST_ASSERT_THROW_VK(
+                device.create_semaphore(semaphore_create_info, &frame.image_available_semaphore, image_available_semaphore_name),
+                "Could not create semaphore [" << image_available_semaphore_name << "]"
+            );
 
             std::string render_finished_semaphore_name = std::format("{} frame 'render finished' semaphore {}/{}", config.name.c_str(), i + 1, frame_count);
-
-            if (device.create_semaphore(render_finished_semaphore_create_info, &frame.render_finished_semaphore) != VK_SUCCESS) {
-                ST_THROW("Could not create semaphore [" << render_finished_semaphore_name << "]");
-            }
-            if (device.set_object_name(frame.render_finished_semaphore, VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set semaphore name [" << render_finished_semaphore_name << "]");
-            }
+            ST_ASSERT_THROW_VK(
+                device.create_semaphore(semaphore_create_info, &frame.render_finished_semaphore),
+                "Could not create semaphore [" << render_finished_semaphore_name << "]"
+            );
 
             //
             // Batches
@@ -859,21 +838,22 @@ namespace Storytime {
             for (u32 j = 0; j < frame.batches.size(); j++) {
                 Batch& batch = frame.batches.at(j);
 
+                batch.quads.resize(max_quads_per_batch);
+
+                batch.textures.resize(max_textures_per_batch);
+                for (u32 k = 0; k < batch.textures.size(); k++) {
+                    batch.textures.at(k) = placeholder_texture;
+                }
+
                 batch.vertex_buffer = VulkanVertexBuffer({
-                    .name = std::format("{} batch vertex buffer {}/{}", config.name, i + 1, batch_count),
+                    .name = std::format("{} batch vertex buffer {}/{} (frame {}/{})", config.name, j + 1, batch_count, i + 1, frame_count),
                     .device = config.device,
                     .size = sizeof(QuadInstanceData) * max_quads_per_batch,
                     .memory_properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 });
 
-                batch.descriptor_set = batch_descriptor_pool.allocate_descriptor_set(batch_descriptor_set_layout);
-
-                batch.quads.resize(max_quads_per_batch);
-
-                batch.textures.resize(max_textures_per_batch);
-                for (u32 i = 0; i < batch.textures.size(); i++) {
-                    batch.textures.at(i) = placeholder_texture;
-                }
+                std::string batch_descriptor_set_name = std::format("{} batch descriptor set {}/{} (frame {}/{})", config.name.c_str(), j + 1, batch_count, i + 1, frame_count);
+                batch.descriptor_set = batch_descriptor_pool.allocate_descriptor_set(batch_descriptor_set_layout, batch_descriptor_set_name);
             }
         }
 

@@ -1,9 +1,9 @@
 #include "st_vulkan_command_pool.h"
-
 #include "graphics/st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {
+    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config.assert_valid()) {
         create_command_pool();
     }
 
@@ -18,9 +18,10 @@ namespace Storytime {
         command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = command_buffer_count;
 
-        if (config.device->allocate_command_buffers(command_buffer_allocate_info, command_buffers) != VK_SUCCESS) {
-            ST_THROW("Could not allocate [" << command_buffer_count << "] command buffers");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->allocate_command_buffers(command_buffer_allocate_info, command_buffers),
+            "Could not allocate [" << command_buffer_count << "] command buffers"
+        );
     }
 
     std::vector<VkCommandBuffer> VulkanCommandPool::allocate_command_buffers(u32 command_buffer_count) const {
@@ -29,13 +30,20 @@ namespace Storytime {
         return command_buffers;
     }
 
-    void VulkanCommandPool::allocate_command_buffer(VkCommandBuffer* command_buffer) const {
+    void VulkanCommandPool::allocate_command_buffer(VkCommandBuffer* command_buffer, std::string_view name) const {
         allocate_command_buffers(1, command_buffer);
+        if (name.empty()) {
+           return;
+        }
+        VkResult name_result = config.device->set_object_name(*command_buffer, VK_OBJECT_TYPE_COMMAND_BUFFER, name);
+        if (name_result != VK_SUCCESS) {
+            ST_LOG_E("Could not set command buffer name [{}]: {}", name, format_vk_result(name_result));
+        }
     }
 
-    VkCommandBuffer VulkanCommandPool::allocate_command_buffer() const {
+    VkCommandBuffer VulkanCommandPool::allocate_command_buffer(std::string_view name) const {
         VkCommandBuffer command_buffer = nullptr;
-        allocate_command_buffers(1, &command_buffer);
+        allocate_command_buffer(&command_buffer, name);
         return command_buffer;
     }
 
@@ -47,14 +55,14 @@ namespace Storytime {
         free_command_buffers(1, &command_buffer);
     }
 
-    void VulkanCommandPool::with_command_buffer(const WithCommandBufferFn& with_command_buffer) const {
-        VulkanCommandBuffer command_buffer = allocate_command_buffer();
+    void VulkanCommandPool::with_command_buffer(const WithCommandBufferFn& with_command_buffer, std::string_view name) const {
+        VulkanCommandBuffer command_buffer = allocate_command_buffer(name);
         with_command_buffer(command_buffer);
         free_command_buffer(command_buffer);
     }
 
-    VkCommandBuffer VulkanCommandPool::begin_one_time_submit_command_buffer() const {
-        VulkanCommandBuffer command_buffer = allocate_command_buffer();
+    VkCommandBuffer VulkanCommandPool::begin_one_time_submit_command_buffer(std::string_view name) const {
+        VulkanCommandBuffer command_buffer = allocate_command_buffer(name);
         command_buffer.begin_one_time_submit();
         return command_buffer;
     }
@@ -86,13 +94,10 @@ namespace Storytime {
         command_pool_create_info.flags = config.flags;
         command_pool_create_info.queueFamilyIndex = config.queue_family_index;
 
-        if (config.device->create_command_pool(command_pool_create_info, &command_pool) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan command pool");
-        }
-
-        if (config.device->set_object_name(command_pool, VK_OBJECT_TYPE_COMMAND_POOL, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set Vulkan command pool name [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->create_command_pool(command_pool_create_info, &command_pool, config.name),
+            "Could not create Vulkan command pool"
+        );
     }
 
     void VulkanCommandPool::destroy_command_pool() const {

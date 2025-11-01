@@ -8,7 +8,12 @@ namespace Storytime {
     }
 
     VkResult VulkanQueue::submit(u32 submit_count, const VkSubmitInfo& submit_info, VkFence fence) const {
-        return vkQueueSubmit(queue, submit_count, &submit_info, fence);
+        ST_ASSERT_GREATER_THAN_ZERO(submit_count);
+        VkResult result = vkQueueSubmit(queue, submit_count, &submit_info, fence);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not submit to queue: {}", format_vk_result(result));
+        }
+        return result;
     }
 
     VkResult VulkanQueue::submit(const SubmitConfig& config) const {
@@ -20,10 +25,14 @@ namespace Storytime {
     }
 
     VkResult VulkanQueue::submit(u32 command_buffer_count, const VkCommandBuffer* command_buffers, VkFence fence) const {
+        ST_ASSERT_GREATER_THAN_ZERO(command_buffer_count);
+        ST_ASSERT_NOT_NULL(command_buffers);
+
         VkSubmitInfo submit_info{};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.commandBufferCount = command_buffer_count;
         submit_info.pCommandBuffers = command_buffers;
+
         return submit(submit_info, fence);
     }
 
@@ -36,6 +45,10 @@ namespace Storytime {
     }
 
     VkResult VulkanQueue::present(const VkPresentInfoKHR& present_info) const {
-        return vkQueuePresentKHR(queue, &present_info);
+        VkResult result = vkQueuePresentKHR(queue, &present_info);
+        if (result != VK_SUCCESS) {
+            ST_LOG_E("Could not present to queue: {}", format_vk_result(result));
+        }
+        return result;
     }
 }

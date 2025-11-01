@@ -139,7 +139,7 @@ namespace Storytime {
 
         VulkanGraphicsPipeline create_quad_graphics_pipeline();
 
-        VkShaderModule create_shader_module(const std::filesystem::path& path) const;
+        VkShaderModule create_shader_module(const std::filesystem::path& path, std::string_view name = "") const;
 
         void destroy_shader_module(VkShaderModule shader_module) const;
 

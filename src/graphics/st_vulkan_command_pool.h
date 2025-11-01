@@ -11,6 +11,11 @@ namespace Storytime {
         VulkanDevice* device = nullptr;
         u32 queue_family_index = 0;
         VkCommandPoolCreateFlags flags = 0;
+
+        const VulkanCommandPoolConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            return *this;
+        }
     };
 
     class VulkanCommandPool {
@@ -36,17 +41,17 @@ namespace Storytime {
 
         std::vector<VkCommandBuffer> allocate_command_buffers(u32 command_buffer_count) const;
 
-        void allocate_command_buffer(VkCommandBuffer* command_buffer) const;
+        void allocate_command_buffer(VkCommandBuffer* command_buffer, std::string_view name = "") const;
 
-        VkCommandBuffer allocate_command_buffer() const;
+        VkCommandBuffer allocate_command_buffer(std::string_view name = "") const;
 
         void free_command_buffers(u32 command_buffer_count, const VkCommandBuffer* command_buffers) const;
 
         void free_command_buffer(VkCommandBuffer command_buffer) const;
 
-        void with_command_buffer(const WithCommandBufferFn& with_command_buffer) const;
+        void with_command_buffer(const WithCommandBufferFn& with_command_buffer, std::string_view name = "") const;
 
-        VkCommandBuffer begin_one_time_submit_command_buffer() const;
+        VkCommandBuffer begin_one_time_submit_command_buffer(std::string_view name = "") const;
 
         void end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const;
 

@@ -2,10 +2,9 @@
 
 namespace Storytime {
 
-    VulkanGraphicsPipeline::VulkanGraphicsPipeline(const Config& config) : config(config) {
+    VulkanGraphicsPipeline::VulkanGraphicsPipeline(const Config& config) : config(config.assert_valid()) {
         create_pipeline_layout();
         create_pipeline();
-
     }
 
     VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
@@ -145,13 +144,10 @@ namespace Storytime {
         graphics_pipeline_create_info.basePipelineHandle = nullptr;
         graphics_pipeline_create_info.basePipelineIndex = -1;
 
-        if (device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline) != VK_SUCCESS) {
-            ST_THROW("Could not create graphics pipeline [" << config.name << "]");
-        }
-
-        if (device.set_object_name(pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set graphics pipeline name [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline, config.name),
+            "Could not create graphics pipeline [" << config.name << "]"
+        );
     }
 
     void VulkanGraphicsPipeline::destroy_pipeline() const {
@@ -163,7 +159,7 @@ namespace Storytime {
         const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
         const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
 
-        std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
+        std::string pipeline_layout_name = std::format("{} layout", config.name.c_str());
 
         u32 bound_descriptor_set_count = config.descriptor_set_layouts.size();
         u32 max_bound_descriptor_set_count = physical_device_limits.maxBoundDescriptorSets;
@@ -178,13 +174,10 @@ namespace Storytime {
         pipeline_layout_create_info.pushConstantRangeCount = (u32) config.push_constant_ranges.size();
         pipeline_layout_create_info.pPushConstantRanges = config.push_constant_ranges.data();
 
-        if (device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout) != VK_SUCCESS) {
-            ST_THROW("Could not create graphics pipeline layout [" << pipeline_layout_name << "]");
-        }
-
-        if (device.set_object_name(pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set graphics pipeline layout name [" << pipeline_layout_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout, pipeline_layout_name),
+            "Could not create graphics pipeline layout [" << pipeline_layout_name << "]"
+        );
     }
 
     void VulkanGraphicsPipeline::destroy_pipeline_layout() const {

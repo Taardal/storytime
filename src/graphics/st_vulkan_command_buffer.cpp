@@ -14,7 +14,7 @@ namespace Storytime {
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         command_buffer_begin_info.flags = usage_flags;
         command_buffer_begin_info.pInheritanceInfo = nullptr;
-        return vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+        return begin(command_buffer_begin_info);
     }
 
     VkResult VulkanCommandBuffer::begin(const VkCommandBufferBeginInfo& begin_info) const {
@@ -30,24 +30,28 @@ namespace Storytime {
     }
 
     void VulkanCommandBuffer::begin_one_time_submit() const {
-        if (begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer");
-        }
+        ST_ASSERT_THROW_VK(
+            begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT),
+            "Could not begin 'one time submit' command buffer"
+        );
     }
 
     void VulkanCommandBuffer::end_one_time_submit(
         const VulkanQueue& queue,
         const VulkanDevice& device
     ) const {
-        if (end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer");
-        }
-        if (queue.submit(command_buffer) != VK_SUCCESS) {
-            ST_THROW("Could not submit command buffer to queue");
-        }
-        if (device.wait_until_queue_idle(queue) != VK_SUCCESS) {
-            ST_THROW("Could not wait for queue to become idle");
-        }
+        ST_ASSERT_THROW_VK(
+            end(),
+            "Could not end 'one time submit' command buffer"
+        );
+        ST_ASSERT_THROW_VK(
+            queue.submit(command_buffer),
+            "Could not submit 'one time submit' command buffer to queue"
+        );
+        ST_ASSERT_THROW_VK(
+            device.wait_until_queue_idle(queue),
+            "Could not wait for queue to become idle after submitting 'one time submit' command buffer"
+        );
     }
 
     void VulkanCommandBuffer::record_and_submit(
@@ -75,13 +79,9 @@ namespace Storytime {
     }
 
     void VulkanCommandBuffer::with_commands(const WithCommandsFn& with_commands) const {
-        if (begin() != VK_SUCCESS) {
-            ST_THROW("Could not begin command buffer");
-        }
+        ST_ASSERT_THROW_VK(begin(), "Could not begin command buffer");
         with_commands(command_buffer);
-        if (end() != VK_SUCCESS) {
-            ST_THROW("Could not end command buffer");
-        }
+        ST_ASSERT_THROW_VK(end(), "Could not end command buffer");
     }
 
     void VulkanCommandBuffer::begin_render_pass(const BeginRenderPassCommand& command) const {

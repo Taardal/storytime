@@ -3,7 +3,7 @@
 #include "graphics/st_vulkan_command_buffer.h"
 
 namespace Storytime {
-    VulkanBuffer::VulkanBuffer(const Config& config) : config(config) {
+    VulkanBuffer::VulkanBuffer(const Config& config) : config(config.assert_valid()) {
         create_buffer();
         allocate_memory();
     }
@@ -41,12 +41,12 @@ namespace Storytime {
 
     void VulkanBuffer::map_memory() {
         ST_ASSERT_NOT_NULL(memory);
-
         constexpr VkDeviceSize offset = 0;
         constexpr VkMemoryMapFlags flags = 0;
-        if (config.device->map_memory(memory, offset, config.size, flags, &data) != VK_SUCCESS) {
-            ST_THROW("Could not map memory");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->map_memory(memory, offset, config.size, flags, &data),
+            "Could not map memory for buffer [" << config.name << "]"
+        );
     }
 
     void VulkanBuffer::unmap_memory() const {
@@ -79,13 +79,10 @@ namespace Storytime {
         buffer_create_info.usage = config.usage;
         buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (device.create_buffer(buffer_create_info, &buffer) != VK_SUCCESS) {
-            ST_THROW("Could not create buffer");
-        }
-
-        if (device.set_object_name(buffer, VK_OBJECT_TYPE_BUFFER, config.name.c_str()) != VK_SUCCESS)  {
-            ST_THROW("Could not set buffer name [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_buffer(buffer_create_info, &buffer, config.name),
+            "Could not create buffer [" << config.name << "]"
+        );
     }
 
     void VulkanBuffer::destroy_buffer() const {
@@ -106,18 +103,17 @@ namespace Storytime {
         memory_allocate_info.allocationSize = memory_requirements.size;
         memory_allocate_info.memoryTypeIndex = memory_type_index;
 
-        if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
-            ST_THROW("Could not allocate buffer memory");
-        }
-
         std::string memory_name = std::format("{} memory", config.name);
-        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set buffer memory name [" << memory_name << "]");
-        }
 
-        if (device.bind_buffer_memory(buffer, memory) != VK_SUCCESS) {
-            ST_THROW("Could not bind buffer memory");
-        }
+        ST_ASSERT_THROW_VK(
+            device.allocate_memory(memory_allocate_info, &memory, memory_name),
+            "Could not allocate buffer memory [" << memory_name << "]"
+        );
+
+        ST_ASSERT_THROW_VK(
+            device.bind_buffer_memory(buffer, memory),
+            "Could not bind buffer memory [" << memory_name << "]"
+        );
     }
 
     void VulkanBuffer::free_memory() const {

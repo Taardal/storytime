@@ -10,6 +10,11 @@ namespace Storytime {
         VkDeviceSize size = 0;
         VkBufferUsageFlags usage = 0;
         VkMemoryPropertyFlags memory_properties = 0;
+
+        const VulkanBufferConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            return *this;
+        }
     };
 
     class VulkanBuffer {

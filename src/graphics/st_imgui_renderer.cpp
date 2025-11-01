@@ -78,7 +78,7 @@ namespace Storytime {
 
     void ImGuiRenderer::on_check_vk_result(VkResult vk_result) {
         if (vk_result != VK_SUCCESS) {
-            ST_THROW_VK(vk_result, "Could not initialize ImGuiRenderer");
+            ST_THROW("Could not initialize ImGuiRenderer: " << format_vk_result(vk_result));
         }
     }
 }

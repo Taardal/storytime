@@ -38,7 +38,7 @@ namespace Storytime {
 }
 
 namespace Storytime {
-    VulkanContext::VulkanContext(const Config& config) : config(config) {
+    VulkanContext::VulkanContext(const Config& config) : config(config.assert_valid()) {
         std::vector<const char*> instance_extensions = get_enabled_instance_extensions();
         if (!has_instance_extensions(instance_extensions)) {
             ST_THROW("System does not have enabled Vulkan extensions");
@@ -125,9 +125,10 @@ namespace Storytime {
             instance_create_info.ppEnabledLayerNames = validation_layers.data();
         }
 
-        if (vkCreateInstance(&instance_create_info, ST_VK_ALLOCATOR, &instance) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan instance");
-        }
+        ST_ASSERT_THROW_VK(
+            vkCreateInstance(&instance_create_info, ST_VK_ALLOCATOR, &instance),
+            "Could not create Vulkan instance"
+        );
     }
 
     void VulkanContext::destroy_instance() const {
@@ -152,12 +153,14 @@ namespace Storytime {
     std::vector<VkExtensionProperties> VulkanContext::get_available_instance_extensions() const {
         u32 extension_count = 0;
         const char* layer_name = nullptr;
-        if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, nullptr) != VK_SUCCESS) {
-            ST_THROW("Could not get Vulkan extension count");
+        VkResult result = vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, nullptr);
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not get extension count: " << format_vk_result(result));
         }
         std::vector<VkExtensionProperties> extensions(extension_count);
-        if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extensions.data()) != VK_SUCCESS) {
-            ST_THROW("Could not get Vulkan extensions");
+        result = vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extensions.data());
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not get [" << extensions.size() << "] extensions: " << format_vk_result(result));
         }
         return extensions;
     }
@@ -184,16 +187,18 @@ namespace Storytime {
     }
 
     std::vector<VkLayerProperties> VulkanContext::get_available_validation_layers() const {
-        u32 count = 0;
+        u32 validation_layer_count = 0;
         VkLayerProperties* properties = nullptr;
-        if (vkEnumerateInstanceLayerProperties(&count, properties) != VK_SUCCESS) {
-            ST_THROW("Could not get Vulkan extension count");
+        VkResult result = vkEnumerateInstanceLayerProperties(&validation_layer_count, properties);
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not get validation layer count: " << format_vk_result(result));
         }
-        std::vector<VkLayerProperties> layers(count);
-        if (vkEnumerateInstanceLayerProperties(&count, layers.data()) != VK_SUCCESS) {
-            ST_THROW("Could not get Vulkan extensions");
+        std::vector<VkLayerProperties> validation_layers(validation_layer_count);
+        result = vkEnumerateInstanceLayerProperties(&validation_layer_count, validation_layers.data());
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not get [" << validation_layers.size() << "] validation layers: " << format_vk_result(result));
         }
-        return layers;
+        return validation_layers;
     }
 
     bool VulkanContext::has_validation_layers(const std::vector<const char*>& validation_layers) const {
@@ -207,7 +212,6 @@ namespace Storytime {
                 }
             }
             if (!layer_found) {
-                std::cerr << "Could not find validation layer " << layer_name << std::endl;
                 return false;
             }
         }
@@ -219,8 +223,9 @@ namespace Storytime {
         if (!create_debug_messenger_fn) {
             ST_THROW("Could not get Vulkan debug messenger create function");
         }
-        if (create_debug_messenger_fn(instance, &debug_messenger_create_info, ST_VK_ALLOCATOR, &debug_messenger) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan debug messenger");
+        VkResult result = create_debug_messenger_fn(instance, &debug_messenger_create_info, ST_VK_ALLOCATOR, &debug_messenger);
+        if (result != VK_SUCCESS) {
+            ST_THROW("Could not create Vulkan debug messenger: " << format_vk_result(result));
         }
     }
 
@@ -242,9 +247,10 @@ namespace Storytime {
     }
 
     void VulkanContext::create_surface() {
-        if (glfwCreateWindowSurface(instance, *config.window, ST_VK_ALLOCATOR, &surface) != VK_SUCCESS) {
-            ST_THROW("Could not create Vulkan surface");
-        }
+        ST_ASSERT_THROW_VK(
+            glfwCreateWindowSurface(instance, *config.window, ST_VK_ALLOCATOR, &surface),
+            "Could not create Vulkan surface"
+        );
     }
 
     void VulkanContext::destroy_surface() const {

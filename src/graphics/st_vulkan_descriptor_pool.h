@@ -8,6 +8,13 @@ namespace Storytime {
         VulkanDevice* device = nullptr;
         u32 max_descriptor_sets = 0;
         std::vector<VkDescriptorPoolSize> descriptor_pool_sizes{};
+
+        const VulkanDescriptorPoolConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_GREATER_THAN_ZERO(max_descriptor_sets);
+            ST_ASSERT_NOT_EMPTY(descriptor_pool_sizes);
+            return *this;
+        }
     };
 
     class VulkanDescriptorPool {
@@ -32,9 +39,9 @@ namespace Storytime {
 
         std::vector<VkDescriptorSet> allocate_descriptor_sets(u32 descriptor_set_count, const VkDescriptorSetLayout* descriptor_set_layouts) const;
 
-        void allocate_descriptor_set(VkDescriptorSet* descriptor_set, VkDescriptorSetLayout descriptor_set_layout) const;
+        void allocate_descriptor_set(VkDescriptorSet* descriptor_set, VkDescriptorSetLayout descriptor_set_layout, std::string_view name = "") const;
 
-        VkDescriptorSet allocate_descriptor_set(VkDescriptorSetLayout descriptor_set_layout) const;
+        VkDescriptorSet allocate_descriptor_set(VkDescriptorSetLayout descriptor_set_layout, std::string_view name = "") const;
 
     private:
         void create_descriptor_pool();

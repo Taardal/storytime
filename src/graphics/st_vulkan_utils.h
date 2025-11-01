@@ -9,7 +9,7 @@
             if (vk_result == VK_SUCCESS) {\
                 /* Continue */\
             } else {\
-                ST_PRINT_ASSERT_ERROR(expression == VK_SUCCESS, message << " :: Vulkan result [" << get_vk_result_name(vk_result) << "] " << get_vk_result_description(vk_result));\
+                ST_PRINT_ASSERT_ERROR(expression == VK_SUCCESS, message << " :: " << ::Storytime::format_vk_result(vk_result));\
                 ST_BREAK();\
             }\
         }
@@ -23,17 +23,18 @@
         if (vk_result == VK_SUCCESS) {\
             /* Continue */\
         } else {\
-            ST_THROW(message << ": Vulkan call [" << #expression << "] failed with result [" << get_vk_result_name(vk_result) << "]: " << get_vk_result_description(vk_result));\
+            ST_THROW(message << ": Vulkan call [" << #expression << "] failed: " << ::Storytime::format_vk_result(vk_result));\
         }\
     }
 
-#define ST_THROW_VK(vk_result, message)\
-    ST_THROW(message << ": Vulkan result [" << get_vk_result_name(vk_result) << "]: " << get_vk_result_description(vk_result))
-
 namespace Storytime {
+    std::string format_vk_result(VkResult result);
+
     std::string get_vk_result_name(VkResult result);
 
     std::string get_vk_result_description(VkResult result);
+
+    std::string get_vk_object_type_name(VkObjectType object_type);
 
     std::string get_vk_image_layout_name(VkImageLayout image_layout);
 

@@ -332,13 +332,10 @@ namespace Storytime {
         image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
         image_create_info.flags = 0;
 
-        if (device.create_image(image_create_info, &image) != VK_SUCCESS) {
-            ST_THROW("Could not create image [" << config.name << "]");
-        }
-
-        if (device.set_object_name(image, VK_OBJECT_TYPE_IMAGE, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set image name [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_image(image_create_info, &image),
+            "Could not create image [" << config.name << "]"
+        );
     }
 
     void VulkanImage::destroy_image() const {
@@ -361,13 +358,10 @@ namespace Storytime {
 
         std::string image_view_name = std::format("{} view", config.name);
 
-        if (config.device->create_image_view(image_view_create_info, &image_view) != VK_SUCCESS) {
-            ST_THROW("Could not create image view [" << image_view_name << "]");
-        }
-
-        if (config.device->set_object_name(image_view, VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not create image view name [" << image_view_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->create_image_view(image_view_create_info, &image_view, image_view_name),
+            "Could not create image view [" << image_view_name << "]"
+        );
     }
 
     void VulkanImage::destroy_image_view() const {
@@ -391,17 +385,15 @@ namespace Storytime {
 
         std::string memory_name = std::format("{} memory", config.name);
 
-        if (device.allocate_memory(memory_allocate_info, &memory) != VK_SUCCESS) {
-            ST_THROW("Could not allocate image memory [" << memory_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.allocate_memory(memory_allocate_info, &memory, memory_name),
+            "Could not allocate image memory [" << memory_name << "]"
+        );
 
-        if (device.set_object_name(memory, VK_OBJECT_TYPE_DEVICE_MEMORY, memory_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set image memory name [" << memory_name << "]");
-        }
-
-        if (device.bind_image_memory(image, memory) != VK_SUCCESS) {
-            ST_THROW("Could not bind image memory [" << memory_name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            device.bind_image_memory(image, memory),
+            "Could not bind image memory [" << memory_name << "]"
+        );
     }
 
     void VulkanImage::free_memory() const {

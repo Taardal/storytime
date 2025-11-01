@@ -1,7 +1,7 @@
 #include "st_vulkan_descriptor_pool.h"
 
 namespace Storytime {
-    VulkanDescriptorPool::VulkanDescriptorPool(const Config& config) : config(config) {
+    VulkanDescriptorPool::VulkanDescriptorPool(const Config& config) : config(config.assert_valid()) {
         create_descriptor_pool();
     }
 
@@ -10,15 +10,19 @@ namespace Storytime {
     }
 
     void VulkanDescriptorPool::allocate_descriptor_sets(u32 descriptor_set_count, VkDescriptorSet* descriptor_sets, const VkDescriptorSetLayout* descriptor_set_layouts) const {
+        ST_ASSERT_GREATER_THAN_ZERO(descriptor_set_count);
+        ST_ASSERT_NOT_NULL(descriptor_set_layouts);
+
         VkDescriptorSetAllocateInfo descriptor_set_allocate_info{};
         descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descriptor_set_allocate_info.descriptorPool = descriptor_pool;
         descriptor_set_allocate_info.descriptorSetCount = descriptor_set_count;
         descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts;
 
-        if (config.device->allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets) != VK_SUCCESS) {
-            ST_THROW("Could not allocate [" << descriptor_set_count << "] descriptor sets from descriptor pool [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets),
+            "Could not allocate [" << descriptor_set_count << "] descriptor sets from descriptor pool [" << config.name << "]"
+        )
     }
 
     std::vector<VkDescriptorSet> VulkanDescriptorPool::allocate_descriptor_sets(u32 descriptor_set_count, const VkDescriptorSetLayout* descriptor_set_layouts) const {
@@ -27,13 +31,20 @@ namespace Storytime {
         return descriptor_sets;
     }
 
-    void VulkanDescriptorPool::allocate_descriptor_set(VkDescriptorSet* descriptor_set, VkDescriptorSetLayout descriptor_set_layout) const {
+    void VulkanDescriptorPool::allocate_descriptor_set(VkDescriptorSet* descriptor_set, VkDescriptorSetLayout descriptor_set_layout, std::string_view name) const {
         allocate_descriptor_sets(1, descriptor_set, &descriptor_set_layout);
+        if (name.empty()) {
+            return;
+        }
+        VkResult name_result = config.device->set_object_name(*descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, name);
+        if (name_result != VK_SUCCESS) {
+            ST_LOG_E("Could not set descriptor set name [{}]: {}", name, format_vk_result(name_result));
+        }
     }
 
-    VkDescriptorSet VulkanDescriptorPool::allocate_descriptor_set(VkDescriptorSetLayout descriptor_set_layout) const {
+    VkDescriptorSet VulkanDescriptorPool::allocate_descriptor_set(VkDescriptorSetLayout descriptor_set_layout, std::string_view name) const {
         VkDescriptorSet descriptor_set;
-        allocate_descriptor_sets(1, &descriptor_set, &descriptor_set_layout);
+        allocate_descriptor_set(&descriptor_set, descriptor_set_layout, name);
         return descriptor_set;
     }
 
@@ -44,12 +55,10 @@ namespace Storytime {
         descriptor_pool_create_info.pPoolSizes = config.descriptor_pool_sizes.data();
         descriptor_pool_create_info.maxSets = config.max_descriptor_sets;
 
-        if (config.device->create_descriptor_pool(descriptor_pool_create_info, &descriptor_pool) != VK_SUCCESS) {
-            ST_THROW("Could not create descriptor pool [" << config.name << "]");
-        }
-        if (config.device->set_object_name(descriptor_pool, VK_OBJECT_TYPE_DESCRIPTOR_POOL, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set descriptor pool name [" << config.name << "]");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->create_descriptor_pool(descriptor_pool_create_info, &descriptor_pool, config.name),
+            "Could not create descriptor pool [" << config.name << "]"
+        );
     }
 
     void VulkanDescriptorPool::destroy_descriptor_pool() const {

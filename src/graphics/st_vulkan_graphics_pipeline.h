@@ -13,6 +13,12 @@ namespace Storytime {
         std::vector<VkPipelineShaderStageCreateInfo> shader_stage_create_infos{};
         std::vector<VkVertexInputBindingDescription> vertex_input_binding_descriptions{};
         std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions{};
+
+        const VulkanGraphicsPipelineConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_NOT_NULL(render_pass);
+            return *this;
+        }
     };
 
     class VulkanGraphicsPipeline {

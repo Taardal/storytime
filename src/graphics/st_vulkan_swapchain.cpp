@@ -24,9 +24,10 @@ namespace Storytime {
     void VulkanSwapchain::recreate() {
         config.window->wait_until_not_minimized();
 
-        if (config.device->wait_until_idle() != VK_SUCCESS) {
-            ST_THROW("Could not wait until Vulkan device is idle to recreate swapchain");
-        }
+        ST_ASSERT_THROW_VK(
+            config.device->wait_until_idle(),
+            "Could not wait for device to become idle when recreating swapchain"
+        );
 
         destroy_framebuffers();
         destroy_depth_image();
@@ -75,8 +76,9 @@ namespace Storytime {
 
         VkBool32 wait_for_all_fences = VK_TRUE;
         u64 wait_for_fences_timeout = UINT64_MAX; // Wait forever until the fence is signaled.
-        if (device.wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout) != VK_SUCCESS) {
-            ST_THROW("Could not wait for 'in flight' fence");
+        VkResult wait_for_fence_result = device.wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout);
+        if (wait_for_fence_result != VK_SUCCESS) {
+            ST_THROW("Could not wait for 'in flight' fence: " << format_vk_result(wait_for_fence_result));
         }
 
         //
@@ -101,13 +103,14 @@ namespace Storytime {
 
         // VK_SUBOPTIMAL_KHR: The swapchain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
         if (next_image_result != VK_SUCCESS && next_image_result != VK_SUBOPTIMAL_KHR) {
-            ST_THROW("Could not acquire next image");
+            ST_THROW("Could not acquire next image: " << format_vk_result(next_image_result));
         }
 
         // Delay resetting the 'in flight' fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
         // Thus, if we return early, the fence is still signaled and vkWaitForFences won't deadlock the next time we use the same fence object.
-        if (device.reset_fences(1, &in_flight_fence) != VK_SUCCESS) {
-            ST_THROW("Could not reset 'in flight' fence");
+        VkResult reset_fence_result = device.reset_fences(1, &in_flight_fence);
+        if (reset_fence_result != VK_SUCCESS) {
+            ST_THROW("Could not reset 'in flight' fence: " << format_vk_result(reset_fence_result));
         }
 
         return true;
@@ -143,8 +146,9 @@ namespace Storytime {
 
         device.insert_queue_label(graphics_queue, "Submit render commands");
 
-        if (graphics_queue.submit(submit_info, in_flight_fence) != VK_SUCCESS) {
-            ST_THROW("Could not submit render commands to graphics queue");
+        VkResult submit_result = graphics_queue.submit(submit_info, in_flight_fence);
+        if (submit_result != VK_SUCCESS) {
+            ST_THROW("Could not submit render commands to graphics queue: " << format_vk_result(submit_result));
         }
 
         device.end_queue_label(graphics_queue);
@@ -174,7 +178,7 @@ namespace Storytime {
             surface_has_been_resized = false;
             recreate();
         } else if (present_result != VK_SUCCESS) {
-            ST_THROW("Could not present image to the surface");
+            ST_THROW("Could not present image to the surface: " << format_vk_result(present_result));
         }
 
         device.end_queue_label(present_queue);
@@ -240,19 +244,22 @@ namespace Storytime {
         const VulkanPhysicalDevice& physical_device = device.get_physical_device();
 
         std::vector<VkPresentModeKHR> present_modes;
-        if (physical_device.get_present_modes(&present_modes) != VK_SUCCESS) {
-            ST_THROW("Could not get present modes");
-        }
+        ST_ASSERT_THROW_VK(
+            physical_device.get_present_modes(&present_modes),
+            "Could not get present modes"
+        );
 
         std::vector<VkSurfaceFormatKHR> surface_formats;
-        if (physical_device.get_surface_formats(&surface_formats) != VK_SUCCESS) {
-            ST_THROW("Could not get surface formats");
-        }
+        ST_ASSERT_THROW_VK(
+            physical_device.get_surface_formats(&surface_formats),
+            "Could not get surface formats"
+        );
 
         VkSurfaceCapabilitiesKHR surface_capabilities;
-        if (physical_device.get_surface_capabilities(&surface_capabilities) != VK_SUCCESS) {
-            ST_THROW("Could not get surface capabilities");
-        }
+        ST_ASSERT_THROW_VK(
+            physical_device.get_surface_capabilities(&surface_capabilities),
+            "Could not get surface capabilities"
+        );
 
         present_mode = find_present_mode(present_modes);
         surface_format = find_surface_format(surface_formats);
@@ -290,17 +297,15 @@ namespace Storytime {
             swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
-        if (device.create_swapchain(swapchain_create_info, &swapchain) != VK_SUCCESS) {
-            ST_THROW("Could not create swapchain");
-        }
+        ST_ASSERT_THROW_VK(
+            device.create_swapchain(swapchain_create_info, &swapchain, config.name),
+            "Could not create swapchain"
+        );
 
-        if (device.set_object_name(swapchain, VK_OBJECT_TYPE_SWAPCHAIN_KHR, config.name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set swapchain name [" << config.name << "]");
-        }
-
-        if (device.get_swapchain_images(swapchain, &color_images) != VK_SUCCESS) {
-            ST_THROW("Could not get swapchain images");
-        }
+        ST_ASSERT_THROW_VK(
+            device.get_swapchain_images(swapchain, &color_images),
+            "Could not get swapchain images"
+        );
     }
 
     void VulkanSwapchain::destroy_swapchain() const {
@@ -398,14 +403,12 @@ namespace Storytime {
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
             image_view_create_info.subresourceRange.layerCount = 1;
 
-            if (config.device->create_image_view(image_view_create_info, &color_image_views[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create swapchain image view [" << i + 1 << "] / [" << image_count << "]");
-            }
-
             std::string image_view_name = std::format("{} image view {}/{}", config.name, i + 1, image_count);
-            if (config.device->set_object_name(color_image_views[i], VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set swapchain image view name [" << image_view_name << "]");
-            }
+
+            ST_ASSERT_THROW_VK(
+                config.device->create_image_view(image_view_create_info, &color_image_views[i], image_view_name),
+                "Could not create swapchain image view [" << image_view_name << "]"
+            );
         }
     }
 
@@ -472,14 +475,12 @@ namespace Storytime {
         render_pass_create_info.dependencyCount = 1;
         render_pass_create_info.pDependencies = &subpass_dependency;
 
-        if (config.device->create_render_pass(render_pass_create_info, &render_pass) != VK_SUCCESS) {
-            ST_THROW("Could not create swapchain render pass");
-        }
-
         std::string render_pass_name = std::format("{} render pass", config.name);
-        if (config.device->set_object_name(render_pass, VK_OBJECT_TYPE_RENDER_PASS, render_pass_name.c_str()) != VK_SUCCESS) {
-            ST_THROW("Could not set swapchain render pass name [" << render_pass_name << "]");
-        }
+
+        ST_ASSERT_THROW_VK(
+            config.device->create_render_pass(render_pass_create_info, &render_pass, render_pass_name),
+            "Could not create swapchain render pass [" << render_pass_name << "]"
+        );
     }
 
     void VulkanSwapchain::destroy_render_pass() const {
@@ -512,14 +513,12 @@ namespace Storytime {
             framebuffer_create_info.height = image_extent.height;
             framebuffer_create_info.layers = 1;
 
-            if (config.device->create_framebuffer(framebuffer_create_info, &framebuffers[i]) != VK_SUCCESS) {
-                ST_THROW("Could not create swapchain framebuffer [" << i + 1 << " / " << image_count << "]");
-            }
-
             std::string framebuffer_name = std::format("{} framebuffer {}/{}", config.name, i + 1, image_count);
-            if (config.device->set_object_name(framebuffers[i], VK_OBJECT_TYPE_FRAMEBUFFER, framebuffer_name.c_str()) != VK_SUCCESS) {
-                ST_THROW("Could not set swapchain framebuffer name [" << framebuffer_name << "]");
-            }
+
+            ST_ASSERT_THROW_VK(
+                config.device->create_framebuffer(framebuffer_create_info, &framebuffers[i], framebuffer_name),
+                "Could not create swapchain framebuffer [" << framebuffer_name << "]"
+            );
         }
     }
 

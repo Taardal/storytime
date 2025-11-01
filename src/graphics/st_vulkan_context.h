@@ -13,6 +13,11 @@ namespace Storytime {
         std::string engine_name = "VulkanEngine";
         u32 engine_version = VK_MAKE_API_VERSION(0, 1, 0, 0);
         bool validation_layers_enabled = false;
+
+        const VulkanContextConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(window);
+            return *this;
+        }
     };
 
     class VulkanContext {

@@ -8,6 +8,7 @@ namespace Storytime {
     using WithCommandsFn = std::function<void(VkCommandBuffer)>;
 
     class VulkanCommandBuffer {
+    private:
         VkCommandBuffer command_buffer = nullptr;
 
     public:

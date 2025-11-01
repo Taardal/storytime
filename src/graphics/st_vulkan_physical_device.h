@@ -5,6 +5,11 @@
 namespace Storytime {
     struct VulkanPhysicalDeviceConfig {
         VulkanContext* context = nullptr;
+
+        const VulkanPhysicalDeviceConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(context);
+            return *this;
+        }
     };
 
     class VulkanPhysicalDevice {
