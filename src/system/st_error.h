@@ -2,37 +2,15 @@
 
 #include "st_log.h"
 
-///
-/// @brief Create an Error with a formatted string
-/// @code{.cpp}
-/// Error e = ST_ERROR("Error code: {}", 123);
-/// @endcode
-///
+/// Create an Error with a formatted string
 #define ST_ERROR(message, ...)\
     ::Storytime::Error(std::format(message, ##__VA_ARGS__), ST_TAG)
 
-///
-/// @brief Create an Error with a formatted string, and another error as its previous error.
-/// @code{.cpp}
-/// try {
-///     do_something_that_throws();
-/// } catch (const Error& e) {
-///     throw ST_ERROR_FROM(e, "Something failed");
-/// }
-/// @endcode
-///
+/// Create an Error with a formatted string, and another error as its previous error.
 #define ST_ERROR_FROM(error, message, ...)\
     ::Storytime::Error(std::format(message, ##__VA_ARGS__), ST_TAG, std::make_shared<::Storytime::Error>(error))
 
-///
-/// @brief Throw an Error with a formatted string.
-/// @code{.cpp}
-/// bool success = do_something();
-/// if (!success) {
-///     throw ST_ERROR("Error code: {}", 123);
-/// }
-/// @endcode
-///
+/// Throw an Error with a formatted string.
 #define ST_THROW(message)\
     {\
         std::stringstream ss;\
@@ -41,13 +19,7 @@
         throw ::Storytime::Error(message_string, ST_TAG);\
     }
 
-///
-/// @brief Assert an expression and throw an Error if it is false.
-/// @code{.cpp}
-/// bool success = do_something();
-/// ST_ASSERT_THROW(success, "Error code: " << 123);
-/// @endcode
-///
+/// Assert an expression and throw an Error if it is false.
 #define ST_ASSERT_THROW(expression, message)\
     if (expression) {\
         /* Continue */\
@@ -55,12 +27,8 @@
         ST_THROW("Assertion failed: " << #expression << ", " << message);\
     }
 
-///
-/// @brief Try to excecute an expression and catch and rethrow any Error, or std::exception, as a new Error with the caught error as its previous error.
-/// @code{.cpp}
-/// ST_TRY_THROW(do_something_that_throws(), "Error code: " << 123);
-/// @endcode
-///
+/// @brief Try to excecute an expression and catch and rethrow any Error, or std::exception, as a new Error with the
+/// caught error as its previous error.
 #define ST_TRY_THROW(expression, message)\
     try {\
         expression;\

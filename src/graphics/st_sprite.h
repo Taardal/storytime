@@ -2,20 +2,9 @@
 
 /// A @Sprite represents a single square in the image grid of a @Spritesheet
 
-#include "st_renderer.h"
 #include "st_texture.h"
 
 namespace Storytime {
-    struct SpriteRenderConfig {
-        glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-        glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        f32 scale = 1.0f;
-        f32 rotation_deg = 0.0f;
-        bool flipped_horizontally = false;
-        bool flipped_vertically = false;
-        bool flipped_diagonally = false;
-    };
-
     struct SpriteConfig {
         Shared<Texture> spritesheet_texture = nullptr;
         glm::vec4 spritesheet_texture_rectangle{};
@@ -38,14 +27,14 @@ namespace Storytime {
 
         void invalidate();
 
-        Shared<Texture> get_texture();
+        const Shared<Texture>& get_texture();
+
+        const glm::vec4& get_texture_rectangle() const;
 
         u32 get_width() const;
 
         u32 get_height() const;
 
         Size<u32> get_size() const;
-
-        void render(Renderer* renderer, const SpriteRenderConfig& render_config) const;
     };
 }

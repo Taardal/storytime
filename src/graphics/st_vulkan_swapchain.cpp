@@ -190,7 +190,12 @@ namespace Storytime {
         device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
 
         VkClearColorValue clear_color_value = {
-            .float32 = {1.0f, 0.0f, 1.0f, 1.0f}
+            .float32 = {
+                config.clear_color.r,
+                config.clear_color.g,
+                config.clear_color.b,
+                config.clear_color.a
+            }
         };
 
         VkClearDepthStencilValue clear_depth_stencil_value = {
@@ -323,26 +328,36 @@ namespace Storytime {
 
     //
     // [VK_PRESENT_MODE_IMMEDIATE_KHR]
-    // The simplest and fastest mode. The image is presented immediately, without waiting for a vertical blank. This often results in
-    // tearing, but it's the best choice for applications that don't care about tearing or are using other methods for synchronization.
+    // The simplest and fastest mode. The image is presented immediately, without waiting for a vertical blank. This
+    // often results in tearing, but it's the best choice for applications that don't care about tearing or are using
+    // other methods for synchronization.
     //
     // [VK_PRESENT_MODE_MAILBOX_KHR]
-    // Replaces the image in the queue with the newest one if the queue is full, instead of waiting. This can achieve lower latency
-    // compared to FIFO modes while still avoiding tearing. However, it is not always supported by all hardware.
+    // Replaces the image in the queue with the newest one if the queue is full, instead of waiting. This can achieve
+    // lower latency compared to FIFO modes while still avoiding tearing. However, it is not always supported by all
+    // hardware.
     //
     // [VK_PRESENT_MODE_FIFO_KHR]
-    // The standard "vertical sync" mode. The application waits for the display to refresh and presents a new frame only when there is a
-    // slot in the queue. This completely prevents screen tearing but can cause stuttering or higher latency if the application cannot
-    // render frames at the same rate as the display's refresh rate.
+    // The standard "vertical sync" mode. The application waits for the display to refresh and presents a new frame
+    // only when there is a slot in the queue. This completely prevents screen tearing but can cause stuttering or
+    // higher latency if the application cannot render frames at the same rate as the display's refresh rate.
     //
     // [VK_PRESENT_MODE_FIFO_RELAXED_KHR]
-    // Similar to FIFO, but if the application is late and the queue was empty at the last vertical blank, it will display the frame
-    // immediately instead of waiting for the next vertical blank. This can reduce stuttering caused by occasional frame rate drops, but
-    // it may result in tearing during those instances.
+    // Similar to FIFO, but if the application is late and the queue was empty at the last vertical blank, it will
+    // display the frame immediately instead of waiting for the next vertical blank. This can reduce stuttering caused
+    // by occasional frame rate drops, but it may result in tearing during those instances.
     //
     VkPresentModeKHR VulkanSwapchain::find_present_mode(const std::vector<VkPresentModeKHR>& present_modes) const {
+        if (!config.vsync_enabled) {
+            return VK_PRESENT_MODE_IMMEDIATE_KHR;
+        }
         for (const VkPresentModeKHR& present_mode : present_modes) {
             if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return present_mode;
+            }
+        }
+        for (const VkPresentModeKHR& present_mode : present_modes) {
+            if (present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
                 return present_mode;
             }
         }

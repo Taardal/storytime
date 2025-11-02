@@ -3,8 +3,6 @@
 #include "st_sprite.h"
 
 namespace Storytime {
-    typedef SpriteRenderConfig AnimationRenderConfig;
-
     struct AnimationFrame {
         Sprite sprite;
         u32 duration_ms = 0;
@@ -52,7 +50,5 @@ namespace Storytime {
         void reset();
 
         void update(f64 timestep);
-
-        void render(Renderer* renderer, const AnimationRenderConfig& render_config);
     };
 }

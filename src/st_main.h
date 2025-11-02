@@ -25,6 +25,7 @@ namespace Storytime {
 
     public:
         Storytime(const Config& config, Engine* engine) : config(config), engine(engine) {
+            ST_ASSERT_NOT_NULL(engine);
         }
 
         const Config& cfg() const {

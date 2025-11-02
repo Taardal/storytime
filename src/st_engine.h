@@ -45,6 +45,8 @@ namespace Storytime {
     public:
         Engine(const Config& config);
 
+        ~Engine();
+
         void run(App& app);
 
         void stop();

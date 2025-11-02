@@ -53,6 +53,8 @@ namespace Storytime {
               .window = &window,
               .device = &vulkan_device,
               .surface = vulkan_context.get_surface(),
+              .clear_color = config.rendering_clear_color,
+              .vsync_enabled = config.vsync_enabled,
           }),
           renderer({
               .name = std::format("{} renderer", config.app_name),
@@ -77,6 +79,8 @@ namespace Storytime {
               .api_version = config.vulkan_api_version,
               .frame_count = config.rendering_buffer_count,
               .settings_file_path = config.imgui_settings_file_path,
+              .docking_enabled = config.imgui_docking_enabled,
+              .viewports_enabled = config.imgui_viewports_enabled,
           }),
           audio_engine(),
           resource_loader({
@@ -96,9 +100,11 @@ namespace Storytime {
         service_locator.set<ProcessManager>(&process_manager);
         service_locator.set<Metrics>(&metrics);
 
-        dispatcher.subscribe<WindowClosedEvent>([&](const WindowClosedEvent&) {
-            stop();
-        });
+        dispatcher.subscribe<WindowClosedEvent, &Engine::stop>(this);
+    }
+
+    Engine::~Engine() {
+        dispatcher.unsubscribe<WindowClosedEvent, &Engine::stop>(this);
     }
 
     void Engine::run(App& app) {
@@ -172,18 +178,20 @@ namespace Storytime {
             // RENDER
             //
 
-            TimePoint render_start_time;
-            TimePoint render_end_time;
+            TimePoint scene_render_start_time;
+            TimePoint scene_render_end_time;
             TimePoint imgui_render_start_time;
             TimePoint imgui_render_end_time;
 
+            TimePoint render_start_time = Time::now();
             const Frame* frame = renderer.begin_frame();
             if (frame != nullptr) {
-                render_start_time = Time::now();
 
+                scene_render_start_time = Time::now();
                 renderer.begin_render();
                 app.render();
                 renderer.end_render();
+                scene_render_end_time = Time::now();
 
                 imgui_render_start_time = Time::now();
                 imgui_renderer.begin_render();
@@ -192,8 +200,8 @@ namespace Storytime {
                 imgui_render_end_time = Time::now();
 
                 renderer.end_frame();
-                render_end_time = Time::now();
             }
+            TimePoint render_end_time = Time::now();
 
             //
             // END FRAME
@@ -210,24 +218,16 @@ namespace Storytime {
                 metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
                 metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
             }
+
             if (frame != nullptr) {
                 metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
                 metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
-                metrics.scene_render_duration_ms = metrics.render_duration_ms - metrics.imgui_render_duration_ms;
+                metrics.scene_render_duration_ms = Time::as<Microseconds>(scene_render_end_time - scene_render_start_time).count() / 1000.0;
                 metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
             }
+
             metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
             metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
-
-#ifdef ST_DEBUG
-            static double window_title_update_lag_sec = 0.0;
-            window_title_update_lag_sec += last_cycle_duration_ms / 1000.0;
-            if (window_title_update_lag_sec >= 1.0) {
-                window_title_update_lag_sec = 0;
-                std::string title = std::format("FPS: {}, UPS: {}", (u32) metrics.frames_per_second, (u32) metrics.updates_per_second);
-                window.set_title(title.c_str());
-            }
-#endif
         }
     }
 }

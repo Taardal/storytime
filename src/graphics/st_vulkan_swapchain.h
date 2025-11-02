@@ -15,6 +15,8 @@ namespace Storytime {
         Window* window = nullptr;
         VulkanDevice* device = nullptr;
         VkSurfaceKHR surface = nullptr;
+        glm::vec4 clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
+        bool vsync_enabled = false;
 
         const VulkanSwapchainConfig& assert_valid() const {
             ST_ASSERT_NOT_NULL(dispatcher);

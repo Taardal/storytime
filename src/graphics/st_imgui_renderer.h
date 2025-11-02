@@ -21,6 +21,8 @@ namespace Storytime {
         u32 api_version = VK_API_VERSION_1_3;
         u32 frame_count = 0;
         std::filesystem::path settings_file_path;
+        bool docking_enabled = false;
+        bool viewports_enabled = false;
 
         const ImGuiRendererConfig& assert_valid() const {
             ST_ASSERT_NOT_NULL(window);

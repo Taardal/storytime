@@ -69,14 +69,7 @@ namespace Storytime {
 
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
-#if 0
-        if (frame.batch_index < frame.batches.size()) {
-            Batch& batch = frame.batches.at(frame.batch_index);
-            if (batch.quad_index > 0) {
-                flush(frame, batch);
-            }
-        }
-#endif
+
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
 
         swapchain.end_render_pass(command_buffer);
@@ -117,13 +110,14 @@ namespace Storytime {
     void Renderer::end_render() {
         ST_ASSERT_IN_BOUNDS(frame_index, frames);
         Frame& frame = frames.at(frame_index);
-
-        if (frame.batch_index < frame.batches.size()) {
-            Batch& batch = frame.batches.at(frame.batch_index);
-            if (batch.quad_index > 0) {
-                flush(frame, batch);
-            }
+        if (frame.batch_index >= frame.batches.size()) {
+            return;
         }
+        Batch& batch = frame.batches.at(frame.batch_index);
+        if (batch.quad_index <= 0) {
+            return;
+        }
+        flush(frame, batch);
     }
 
     void Renderer::set_view_projection(const ViewProjection& view_projection) const {
@@ -153,21 +147,22 @@ namespace Storytime {
         ST_ASSERT_IN_BOUNDS(frame.batch_index, frame.batches);
         Batch& batch = frame.batches.at(frame.batch_index);
 
+        std::vector<QuadInstanceData>& quad_batch = batch.quads;
+        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
+
         //
         // Determine texture sampler index and add texture to texture batch if needed.
-        // 
+        //
         // A batch should only contain unique textures (except for the placeholder texture).
-        // 
+        //
         // The texture index is used for two things:
         // 1. Check if the texture is already added to the batch.
-        // 2. Pass it to the fragment shader so it can select the correct texture to sample from. 
+        // 2. Pass it to the fragment shader so it can select the correct texture to sample from.
         //
-
-        std::vector<Shared<VulkanImage>>& texture_batch = batch.textures;
 
         const Shared<VulkanImage>& texture = quad.texture != nullptr ? quad.texture : placeholder_texture;
         i32 texture_index = -1;
-        for (i32 i = 0; i < texture_batch.size(); i++) {
+        for (i32 i = 0; i < batch.texture_index; i++) {
             if (texture == texture_batch.at(i)) {
                 texture_index = i;
                 break;
@@ -185,8 +180,6 @@ namespace Storytime {
         //
         // Add quad to quad batch as instance data with the texture sampler index.
         //
-
-        std::vector<QuadInstanceData>& quad_batch = batch.quads;
 
         ST_ASSERT_IN_BOUNDS(batch.quad_index, quad_batch);
         QuadInstanceData& quad_instance_data = quad_batch.at(batch.quad_index);
@@ -213,8 +206,6 @@ namespace Storytime {
         config.metrics->draw_calls = (config.metrics->quad_count + max_quads_per_batch - 1) / max_quads_per_batch;
     }
 
-    // Flushing a batch means recording the required commands to render it.
-    // The commands are submitted and presented when the frame ends.
     void Renderer::flush(Frame& frame, const Batch& batch) const {
         const VulkanDevice& device = *config.device;
         const VulkanCommandBuffer& command_buffer = frame.command_buffer;
@@ -297,10 +288,12 @@ namespace Storytime {
         for (u32 i = 0; i <= frame.batch_index; i++) {
             Batch& batch = frame.batches.at(i);
             batch.quad_index = 0;
-            batch.texture_index = 0;
-            for (u32 j = 0; j < batch.textures.size(); j++) {
+
+            // Reset used textures in batch
+            for (u32 j = 0; j <= batch.texture_index; j++) {
                 batch.textures.at(j) = placeholder_texture;
             }
+            batch.texture_index = 0;
         }
 
         // Reset frame
@@ -837,10 +830,9 @@ namespace Storytime {
 
             for (u32 j = 0; j < frame.batches.size(); j++) {
                 Batch& batch = frame.batches.at(j);
-
                 batch.quads.resize(max_quads_per_batch);
-
                 batch.textures.resize(max_textures_per_batch);
+
                 for (u32 k = 0; k < batch.textures.size(); k++) {
                     batch.textures.at(k) = placeholder_texture;
                 }

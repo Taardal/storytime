@@ -1,5 +1,7 @@
 #include "st_imgui_renderer.h"
 
+#include "system/st_assert.h"
+
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
@@ -10,11 +12,16 @@ namespace Storytime {
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
 
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Docking: https://github.com/ocornut/imgui/wiki/Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Multi Viewports: https://github.com/ocornut/imgui/wiki/Multi-Viewports
+        // Docking: https://github.com/ocornut/imgui/wiki/Docking
+        if (config.docking_enabled) {
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        }
 
-        ST_ASSERT(config.window != nullptr, "Invalid window");
+        // Multi Viewports: https://github.com/ocornut/imgui/wiki/Multi-Viewports
+        if (config.viewports_enabled) {
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        }
+
         constexpr bool glfw_callbacks_enabled = true;
         ImGui_ImplGlfw_InitForVulkan(*config.window, glfw_callbacks_enabled);
 
@@ -54,12 +61,6 @@ namespace Storytime {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        // If ImGui wants mouse/keyboard focus, we need to disable the application's mouse/keyboard input.
-        // For example, if you type "WASD" in an ImGui text field, the player in the game should not move.
-        ImGuiIO& io = ImGui::GetIO();
-        config.mouse->set_enabled(!io.WantCaptureMouse);
-        config.keyboard->set_enabled(!io.WantCaptureKeyboard);
     }
 
     void ImGuiRenderer::end_render(VkCommandBuffer command_buffer) const {

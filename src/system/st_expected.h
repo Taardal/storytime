@@ -4,24 +4,11 @@
 
 #include <expected>
 
-///
-/// @brief Create a std::unexpected with Error as value.
-/// @code{.cpp}
-/// return ST_UNEXPECTED("Error code: {}", 123);
-/// @endcode
-///
+/// Create a std::unexpected with Error as value.
 #define ST_UNEXPECTED(message, ...)\
     std::unexpected(ST_ERROR(message, ##__VA_ARGS__))
 
-///
-/// @brief Create a std::unexpected with Error as value, and another error as its previous error.
-/// @code{.cpp}
-/// std::expected<void, Error> result = do_something();
-/// if (!result) {
-///     return ST_UNEXPECTED_FROM(result.error(), "Error code: {}", 123);
-/// }
-/// @endcode
-///
+/// Create a std::unexpected with Error as value, and another error as its previous error.
 #define ST_UNEXPECTED_FROM(error, message, ...)\
     std::unexpected(ST_ERROR_FROM(error, message, ##__VA_ARGS__))
 
