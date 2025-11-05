@@ -19,8 +19,8 @@ namespace Storytime {
           memory(other.memory),
           data(other.data)
     {
-        other.buffer = nullptr; // Prevent buffer from being destroyed by the other buffer's destructor.
-        other.memory = nullptr; // Prevent memory from being destroyed by the other buffer's destructor.
+        other.buffer = nullptr;
+        other.memory = nullptr;
     }
 
     VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& other) noexcept {
@@ -29,8 +29,8 @@ namespace Storytime {
             buffer = other.buffer;
             memory = other.memory;
             data = other.data;
-            other.buffer = nullptr; // Prevent buffer from being destroyed by the other buffer's destructor.
-            other.memory = nullptr; // Prevent memory from being destroyed by the other buffer's destructor.
+            other.buffer = nullptr;
+            other.memory = nullptr;
         }
         return *this;
     }

@@ -78,12 +78,6 @@ namespace Storytime {
         );
     }
 
-    void VulkanCommandBuffer::with_commands(const WithCommandsFn& with_commands) const {
-        ST_ASSERT_THROW_VK(begin(), "Could not begin command buffer");
-        with_commands(command_buffer);
-        ST_ASSERT_THROW_VK(end(), "Could not end command buffer");
-    }
-
     void VulkanCommandBuffer::begin_render_pass(const BeginRenderPassCommand& command) const {
         vkCmdBeginRenderPass(
             command_buffer,

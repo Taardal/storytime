@@ -5,8 +5,6 @@
 #include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    using WithCommandsFn = std::function<void(VkCommandBuffer)>;
-
     class VulkanCommandBuffer {
     private:
         VkCommandBuffer command_buffer = nullptr;
@@ -42,8 +40,6 @@ namespace Storytime {
             const VulkanDevice& device,
             const RecordAndSubmitCommandsFn& record_and_submit_commands
         ) const;
-
-        void with_commands(const WithCommandsFn& with_commands) const;
 
         struct BeginRenderPassCommand {
             VkRenderPassBeginInfo* render_pass_begin_info = nullptr;

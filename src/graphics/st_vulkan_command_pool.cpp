@@ -55,12 +55,6 @@ namespace Storytime {
         free_command_buffers(1, &command_buffer);
     }
 
-    void VulkanCommandPool::with_command_buffer(const WithCommandBufferFn& with_command_buffer, std::string_view name) const {
-        VulkanCommandBuffer command_buffer = allocate_command_buffer(name);
-        with_command_buffer(command_buffer);
-        free_command_buffer(command_buffer);
-    }
-
     VkCommandBuffer VulkanCommandPool::begin_one_time_submit_command_buffer(std::string_view name) const {
         VulkanCommandBuffer command_buffer = allocate_command_buffer(name);
         command_buffer.begin_one_time_submit();

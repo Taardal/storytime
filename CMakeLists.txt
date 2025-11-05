@@ -68,7 +68,6 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
     ${ST_SRC_DIR}/graphics/st_camera.h
-    ${ST_SRC_DIR}/graphics/st_frame.cpp
     ${ST_SRC_DIR}/graphics/st_frame.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
@@ -269,9 +268,6 @@ target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
 
 target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
-option(ST_USE_VULKAN "Use Vulkan renderer" ON)
-target_compile_definitions(${ST_TARGET} PUBLIC ST_USE_VULKAN=${ST_USE_VULKAN})
-
 # --------------------------------------------------------------------------------------------------------------
 # Clang compiler flags
 # --------------------------------------------------------------------------------------------------------------
@@ -337,13 +333,13 @@ target_compile_definitions(${ST_TARGET} PUBLIC ST_LUA_DIR="${ST_LUA_OUTPUT_DIR}"
 # Compile Vulkan shaders to SPIR-V
 #
 
-set(SHADERS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res/shaders)
-set(SHADERS_OUTPUT_DIR ${ST_OUTPUT_DIR}/res/shaders)
+set(ST_SHADERS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res/shaders)
+set(ST_SHADERS_OUTPUT_DIR ${ST_OUTPUT_DIR}/res/shaders)
 
 set(ST_COMPILE_SHADERS_TARGET st_compile_shaders)
 add_custom_target(
     ${ST_COMPILE_SHADERS_TARGET}
-    COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${SHADERS_SOURCE_DIR} -D SHADERS_OUTPUT_DIR=${SHADERS_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_shaders.cmake
+    COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${ST_SHADERS_SOURCE_DIR} -D SHADERS_OUTPUT_DIR=${ST_SHADERS_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_shaders.cmake
     COMMENT "Compiling shaders"
     VERBATIM
 )

@@ -49,8 +49,6 @@ namespace Storytime {
 
         void free_command_buffer(VkCommandBuffer command_buffer) const;
 
-        void with_command_buffer(const WithCommandBufferFn& with_command_buffer, std::string_view name = "") const;
-
         VkCommandBuffer begin_one_time_submit_command_buffer(std::string_view name = "") const;
 
         void end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const;

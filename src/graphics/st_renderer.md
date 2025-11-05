@@ -35,13 +35,13 @@ Renderer
 
 The renderer groups quads into batches to minimize draw calls. Each batch can contain:
 
-| Resource               | Limit  | Description                                                                        |
-|------------------------|--------|------------------------------------------------------------------------------------|
-| **Quads per Batch**    | 20,000 | Maximum number of quads in a single batch                                          |
-| **Textures per Batch** | 16     | Maximum number of unique textures in a single batch                                |
-| **Batches per Frame**  | 8      | Maximum number of batches in a single frame                                        |
-| **Vertices per Quad**  | 4      | The number of vertices that make up a single quad                                  |
-| **Indices per Quad**   | 6      | The number of indices to make up a single quad using two triangles (0,1,2 + 2,3,0) |
+| Resource               | Description                                                                        |
+|------------------------|------------------------------------------------------------------------------------|
+| **Quads per Batch**    | Maximum number of quads in a single batch                                          |
+| **Textures per Batch** | Maximum number of unique textures in a single batch                                |
+| **Batches per Frame**  | Maximum number of batches in a single frame                                        |
+| **Vertices per Quad**  | The number of vertices that make up a single quad                                  |
+| **Indices per Quad**   | The number of indices to make up a single quad using two triangles (0,1,2 + 2,3,0) |
 
 ### 2. Instanced Rendering
 
@@ -135,10 +135,10 @@ void main() {
 
 The renderer uses a two-set descriptor layout:
 
-| Set               | Binding | Type                   | Count | Stage    | Purpose                  |
-|-------------------|---------|------------------------|-------|----------|--------------------------|
-| **0** (Per-Frame) | 0       | Uniform Buffer         | 1     | Vertex   | View/Projection matrices |
-| **1** (Per-Batch) | 0       | Combined Image Sampler | 16    | Fragment | Texture array            |
+| Set               | Binding | Type                   | Stage    | Purpose                  |
+|-------------------|---------|------------------------|----------|--------------------------|
+| **0** (Per-Frame) | 0       | Uniform Buffer         | Vertex   | View/Projection matrices |
+| **1** (Per-Batch) | 0       | Combined Image Sampler | Fragment | Texture array            |
 
 ## Detailed Workflow
 
@@ -174,7 +174,7 @@ The renderer uses a two-set descriptor layout:
 │     ├─ Update instance vertex buffer with quads         │
 │     ├─ Bind vertex buffers (base + instance)            │
 │     ├─ Bind index buffer                                │
-│     ├─ Write batch descriptor set (textures)            │
+│     ├─ Write batch descriptors (textures)               │
 │     ├─ Bind batch descriptor set                        │
 │     ├─ Draw indexed instanced                           │
 │     └─ Move to next batch                               │

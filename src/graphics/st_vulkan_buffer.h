@@ -13,6 +13,7 @@ namespace Storytime {
 
         const VulkanBufferConfig& assert_valid() const {
             ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_GREATER_THAN_ZERO(size);
             return *this;
         }
     };

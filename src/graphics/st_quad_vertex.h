@@ -17,7 +17,7 @@ namespace Storytime {
         glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         /// Normalized coordinates for a rectangular area on the texture to sample from. Defaults to the entire texture.
-        glm::vec4 texture_rectangle = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glm::vec4 texture_rectangle = { 0.0f, 0.0f, 1.0f, 1.0f };
 
         /// The index of the texture to sample from.
         f32 texture_index = 0.0f;

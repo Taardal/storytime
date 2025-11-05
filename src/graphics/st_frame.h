@@ -16,16 +16,6 @@ namespace Storytime {
         u32 quad_index = 0;
         std::vector<std::shared_ptr<VulkanImage>> textures{};
         u32 texture_index = 0;
-
-        bool is_full() const;
-
-        i32 add_quad(const QuadInstanceData& quad);
-
-        i32 add_texture(const Shared<VulkanImage>& texture);
-
-        i32 find_texture(const Shared<VulkanImage>& texture) const;
-
-        bool has_texture(const Shared<VulkanImage>& texture) const;
     };
 
     struct Frame {
@@ -39,7 +29,5 @@ namespace Storytime {
         VulkanUniformBuffer uniform_buffer{};
         std::vector<Batch> batches{};
         u32 batch_index = 0;
-
-        bool has_used_all_batches() const;
     };
 }
