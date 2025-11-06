@@ -7,13 +7,16 @@
 #include <algorithm>
 #include <any>
 #include <array>
+#include <expected>
 #include <filesystem>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <map>
+#include <print>
 #include <ranges>
 #include <set>
+#include <source_location>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -24,8 +27,8 @@
 // 3rd-party
 // --------------------------------------------------------------------------------------------------------------
 
-// GLAD
-#include <glad/glad.h> // Include GLAD before GLFW to let GLAD include the OpenGL header (gl.h)
+// Vulkan
+#include <vulkan/vulkan.h> // Vulkan must be included before GLFW
 
 // GLFW
 #define GLFW_INCLUDE_NONE // Explicitly prevent GLFW from including the OpenGL header (gl.h)
@@ -35,6 +38,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_FORCE_LEFT_HANDED
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -58,15 +62,24 @@
 #include "system/st_environment.h"
 #include "system/st_error.h"
 #include "system/st_error_signal.h"
+#include "system/st_expected.h"
 #include "system/st_log.h"
 #include "system/st_memory.h"
 #include "system/st_numbers.h"
 #include "system/st_pointers.h"
 #include "system/st_size.h"
-#include "system/st_utils.h"
+
+// Utils
+#include "utils/st_glm.h"
+#include "utils/st_null_safety.h"
+#include "utils/st_print.h"
+#include "utils/st_string.h"
+#include "utils/st_type_name.h"
 
 // Lua
 #include "lua/st_lua_error.h"
 #include "lua/st_lua_ref.h"
 #include "lua/st_lua_utils.h"
 
+// Graphics
+#include "graphics/st_vulkan_utils.h"

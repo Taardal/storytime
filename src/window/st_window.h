@@ -56,6 +56,10 @@ namespace Storytime {
 
         static f64 get_time();
 
+        bool is_iconified() const;
+
+        void wait_until_not_minimized() const;
+
         void set_mouse_events_enabled(bool mouse_events_enabled);
 
         void set_keyboard_events_enabled(bool keyboard_events_enabled);

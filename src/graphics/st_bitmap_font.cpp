@@ -39,25 +39,29 @@ namespace Storytime {
             float yat = ya / ts;
             float ybt = yb / ts;
 
-            std::array<TextureCoordinate, 4> c;
-            c[0] = {xat, yat};
-            c[1] = {xbt, yat};
-            c[2] = {xbt, ybt};
-            c[3] = {xat, ybt};
+            glm::vec4 c = { xat, yat, xbt, ybt };
+
+            glm::vec3 p = { position.x, position.y, 0.0f };
+            glm::vec3 s = { size_x, size_y, 0.0f };
+
+            glm::mat4 translation = glm::translate(glm::mat4(1.0f), p);
+            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 0.0f, 0.0f, 1.0f });
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), s);
+
+            glm::mat4 model = translation * rotation * scale;
+
+            Quad quad{};
+            quad.texture = config.texture;
+            quad.model = model;
+            quad.texture_rectangle = c;
 
             if (text_config.debug) {
-                Quad debug_quad;
+                Quad debug_quad = quad;
                 debug_quad.color = { (f32) i, (f32) i, (f32) i, 0.5f };
-                debug_quad.size = {size_x, size_y};
-                debug_quad.position = position;
                 config.renderer->render_quad(debug_quad);
             }
 
-            Quad quad;
-            quad.texture = config.texture;
-            quad.size = {size_x, size_y};
-            quad.position = position;
-            config.renderer->render_quad(quad, c);
+            config.renderer->render_quad(quad);
 
             position.x += size_x;
         }

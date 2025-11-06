@@ -1,0 +1,65 @@
+#pragma once
+
+#include "graphics/st_vulkan_command_buffer.h"
+#include "graphics/st_vulkan_device.h"
+
+namespace Storytime {
+    struct VulkanBufferConfig {
+        VulkanDevice* device = nullptr;
+        std::string name = "VulkanBuffer";
+        VkDeviceSize size = 0;
+        VkBufferUsageFlags usage = 0;
+        VkMemoryPropertyFlags memory_properties = 0;
+
+        const VulkanBufferConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(device);
+            ST_ASSERT_GREATER_THAN_ZERO(size);
+            return *this;
+        }
+    };
+
+    class VulkanBuffer {
+    public:
+        typedef VulkanBufferConfig Config;
+
+    private:
+        Config config{};
+        VkBuffer buffer = nullptr;
+        VkDeviceMemory memory = nullptr;
+        void* data = nullptr;
+
+    public:
+        VulkanBuffer() = default;
+
+        VulkanBuffer(const Config& config);
+
+        ~VulkanBuffer();
+
+        VulkanBuffer(VulkanBuffer&& other) noexcept;
+
+        VulkanBuffer(const VulkanBuffer& other) = delete;
+
+        VulkanBuffer& operator=(VulkanBuffer&& other) noexcept;
+
+        VulkanBuffer& operator=(const VulkanBuffer& other) = delete;
+
+        operator VkBuffer() const;
+
+        void map_memory();
+
+        void unmap_memory() const;
+
+        void set_data(const void* src) const;
+
+        void copy_data(const VulkanCommandBuffer& command_buffer, VkBuffer destination_buffer) const;
+
+    private:
+        void create_buffer();
+
+        void destroy_buffer() const;
+
+        void allocate_memory();
+
+        void free_memory() const;
+    };
+}

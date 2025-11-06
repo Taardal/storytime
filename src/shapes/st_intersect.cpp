@@ -119,14 +119,162 @@ namespace Storytime {
     }
 
     bool intersects(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
-        return intersects_horizontally(rectangle_a, rectangle_b, epsilon) && intersects_vertically(rectangle_a, rectangle_b, epsilon);
+        if (!intersects_horizontally(rectangle_a, rectangle_b, epsilon)) {
+            return false;
+        }
+        if (!intersects_vertically(rectangle_a, rectangle_b, epsilon)) {
+            return false;
+        }
+        return true;
     }
 
     bool intersects_horizontally(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
-        return rectangle_a.get_left() < rectangle_b.get_right() - epsilon && rectangle_a.get_right() > rectangle_b.get_left() + epsilon;
+        if (rectangle_a.get_left() >= rectangle_b.get_right() - epsilon) {
+            return false;
+        }
+        if (rectangle_a.get_right() <= rectangle_b.get_left() + epsilon) {
+            return false;
+        }
+        return true;
     }
 
     bool intersects_vertically(const Rectangle& rectangle_a, const Rectangle& rectangle_b, f32 epsilon) {
-        return rectangle_a.get_top() < rectangle_b.get_bottom() - epsilon && rectangle_a.get_bottom() > rectangle_b.get_top() + epsilon;
+        if (rectangle_a.get_top() >= rectangle_b.get_bottom() - epsilon) {
+            return false;
+        }
+        if (rectangle_a.get_bottom() <= rectangle_b.get_top() + epsilon) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects(const glm::vec4& rectangle_a, const glm::vec4& rectangle_b, f32 epsilon) {
+        f32 a_left = rectangle_a.x;
+        f32 a_right = rectangle_a.x + rectangle_a.z;
+        f32 a_top = rectangle_a.y;
+        f32 a_bottom = rectangle_a.y + rectangle_a.w;
+
+        f32 b_left = rectangle_b.x;
+        f32 b_right = rectangle_b.x + rectangle_b.z;
+        f32 b_top = rectangle_b.y;
+        f32 b_bottom = rectangle_b.y + rectangle_b.w;
+
+        return intersects(
+            a_left,
+            a_right,
+            a_top,
+            a_bottom,
+            b_left,
+            b_right,
+            b_top,
+            b_bottom,
+            epsilon
+        );
+    }
+
+    bool intersects(const glm::vec3& position_a, const glm::vec3& size_a, const glm::vec3& position_b, const glm::vec3& size_b, f32 epsilon) {
+        f32 a_left = position_a.x;
+        f32 a_right = position_a.x + size_a.x;
+        f32 a_top = position_a.y;
+        f32 a_bottom = position_a.y + size_a.y;
+
+        f32 b_left = position_b.x;
+        f32 b_right = position_b.x + size_b.x;
+        f32 b_top = position_b.y;
+        f32 b_bottom = position_b.y + size_b.y;
+
+        return intersects(
+            a_left,
+            a_right,
+            a_top,
+            a_bottom,
+            b_left,
+            b_right,
+            b_top,
+            b_bottom,
+            epsilon
+        );
+    }
+
+    bool intersects(
+        f32 a_left,
+        f32 a_right,
+        f32 a_top,
+        f32 a_bottom,
+        f32 b_left,
+        f32 b_right,
+        f32 b_top,
+        f32 b_bottom,
+        f32 epsilon
+    ) {
+        if (!intersects_horizontally(a_left, a_right, b_left, b_right, epsilon)) {
+            return false;
+        }
+        if (!intersects_vertically(a_top, a_bottom, b_top, b_bottom, epsilon)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects_horizontally(
+        f32 a_left,
+        f32 a_right,
+        f32 b_left,
+        f32 b_right,
+        f32 epsilon
+    ) {
+        if (a_left >= b_right - epsilon) {
+            return false;
+        }
+        if (a_right <= b_left + epsilon) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects_vertically(
+        f32 a_top,
+        f32 a_bottom,
+        f32 b_top,
+        f32 b_bottom,
+        f32 epsilon
+    ) {
+        if (a_top >= b_bottom - epsilon) {
+            return false;
+        }
+        if (a_bottom <= b_top + epsilon) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects(const RectangleIntersectConfig& config) {
+        if (!intersects_horizontally(config)) {
+            return false;
+        }
+        if (!intersects_vertically(config)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects_horizontally(const RectangleIntersectConfig& config) {
+        if (config.a_left >= config.b_right - config.epsilon) {
+            return false;
+        }
+        if (config.a_right <= config.b_left + config.epsilon) {
+            return false;
+        }
+        return true;
+    }
+
+    bool intersects_vertically(const RectangleIntersectConfig& config) {
+        if (config.a_top >= config.b_bottom - config.epsilon) {
+            return false;
+        }
+        if (config.a_bottom <= config.b_top + config.epsilon) {
+            return false;
+        }
+        return true;
     }
 }

@@ -29,9 +29,7 @@ namespace Storytime {
         glfwSetErrorCallback(on_glfw_error);
 
         ST_LOG_TRACE("Setting GLFW window hints");
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.context_version_major);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.context_version_minor);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_MAXIMIZED, config.maximized);
         glfwWindowHint(GLFW_RESIZABLE, config.resizable);
 
@@ -60,9 +58,7 @@ namespace Storytime {
         }
         ST_LOG_DEBUG("Created GLFW window [{0}, {1}x{2}]", config.title, width, height);
 
-        glfwMakeContextCurrent(glfw_window);
         glfwSetWindowUserPointer(glfw_window, this);
-
         glfwSetCursorPosCallback(glfw_window, on_cursor_position_change);
         glfwSetFramebufferSizeCallback(glfw_window, on_framebuffer_size_change);
         glfwSetKeyCallback(glfw_window, on_key_change);
@@ -71,8 +67,6 @@ namespace Storytime {
         glfwSetWindowCloseCallback(glfw_window, on_window_close_change);
         glfwSetWindowFocusCallback(glfw_window, on_window_focus_change);
         glfwSetWindowIconifyCallback(glfw_window, on_window_iconify_change);
-
-        glfwSwapInterval(config.vsync ? 1 : 0);
 
         ST_LOG_INFO("Created window [{0}, {1}x{2}]", config.title, width, height);
     }
@@ -85,7 +79,6 @@ namespace Storytime {
     }
 
     Window::operator GLFWwindow*() const {
-        ST_ASSERT(glfw_window != nullptr, "Cannot access GLFW window object that has not been created or is already destroyed");
         return glfw_window;
     }
 
@@ -124,6 +117,20 @@ namespace Storytime {
     // The resolution is system dependent.
     f64 Window::get_time() {
         return glfwGetTime();
+    }
+
+    bool Window::is_iconified() const {
+        return glfwGetWindowAttrib(glfw_window, GLFW_ICONIFIED) == 1;
+    }
+
+    void Window::wait_until_not_minimized() const {
+        WindowSize size_px = get_size_in_pixels();
+        bool iconified = is_iconified();
+        while (size_px.width == 0 || size_px.height == 0 || iconified) {
+            size_px = get_size_in_pixels();
+            iconified = is_iconified();
+            glfwWaitEvents();
+        }
     }
 
     void Window::set_mouse_events_enabled(bool mouse_events_enabled) {

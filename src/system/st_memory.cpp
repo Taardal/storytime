@@ -1,43 +1,39 @@
 #include "memory.h"
 
 #ifdef ST_TRACK_MEMORY
-void* operator new(const size_t size, const char* file_name, const int line_number) {
+void* operator new(const size_t size, const std::source_location& source_location) {
     void* pointer = malloc(size);
     Storytime::MemoryAllocation allocation{
         .byte_size = size,
-        .file_name = file_name,
-        .line_number = line_number,
+        .source_location = source_location,
     };
     Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
-void* operator new(size_t size, const char* file_name, int line_number, void* pointer) {
+void* operator new(size_t size, void* pointer, const std::source_location& source_location) {
     Storytime::MemoryAllocation allocation{
         .byte_size = size,
-        .file_name = file_name,
-        .line_number = line_number,
+        .source_location = source_location,
     };
     Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
-void* operator new[](const size_t size, const char* file_name, const int line_number) {
+void* operator new[](const size_t size, const std::source_location& source_location) {
     void* pointer = malloc(size);
     Storytime::MemoryAllocation allocation{
         .byte_size = size,
-        .file_name = file_name,
-        .line_number = line_number,
+        .source_location = source_location,
     };
     Storytime::track_memory(pointer, allocation);
     return pointer;
 }
 
-void* operator new[](size_t size, const char* file_name, int line_number, void* pointer) {
+void* operator new[](size_t size, void* pointer, const std::source_location& source_location) {
     Storytime::MemoryAllocation allocation{
         .byte_size = size,
-        .file_name = file_name,
-        .line_number = line_number,
+        .source_location = source_location,
     };
     Storytime::track_memory(pointer, allocation);
     return pointer;
@@ -66,10 +62,13 @@ namespace Storytime {
             std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
             std::cerr << "[Storytime] Unfreed memory" << std::endl;
             std::cerr << "--------------------------------------------------------------------------------------------------------------" << std::endl;
+            u32 i = 0;
             for (auto& [pointer, allocation] : *allocations) {
                 std::string allocation_string = allocation.to_string();
-                std::cerr << "- " << pointer << ", " << allocation_string << std::endl;
+                std::cerr << "- [" << i << "] " << pointer << ", " << allocation_string << std::endl;
+                i++;
             }
+            fprintf(stderr, "\n");
         }
         free(allocations);
         allocations = nullptr;
@@ -101,24 +100,12 @@ namespace Storytime {
 namespace Storytime {
     std::string MemoryAllocation::to_string() const {
         std::stringstream ss;
-        ss << byte_size << " bytes";
-        bool has_file_name = file_name.size() > 0;
-        bool has_line_number = line_number > 0;
-        if (has_file_name || has_line_number) {
-            ss << " ";
-            ss << "(";
-            if (has_file_name) {
-                ss << file_name;
-            }
-            if (has_line_number) {
-                if (has_file_name) {
-                    ss << ":";
-                }
-                ss << line_number;
-            }
-            ss << ")";
-        }
+        ss << byte_size << " bytes at " << ::Storytime::tag(source_location);
         return ss.str();
+    }
+
+    std::ostream& operator<<(std::ostream& os, const MemoryAllocation& allocation) {
+        return os << allocation.to_string();
     }
 }
 #endif

@@ -2,9 +2,8 @@
 
 #include "audio/st_audio.h"
 #include "audio/st_audio_engine.h"
-#include "graphics/st_shader.h"
 #include "graphics/st_spritesheet.h"
-#include "graphics/st_texture.h"
+#include "graphics/st_vulkan_command_pool.h"
 #include "system/st_file_reader.h"
 #include "tiled/st_tiled_map.h"
 #include "tiled/st_tiled_project.h"
@@ -16,16 +15,23 @@ namespace Storytime {
     struct ResourceLoaderConfig {
         FileReader* file_reader = nullptr;
         AudioEngine* audio_engine = nullptr;
+        VulkanDevice* vulkan_device = nullptr;
+
+        const ResourceLoaderConfig& assert_valid() const {
+            ST_ASSERT_NOT_NULL(file_reader);
+            ST_ASSERT_NOT_NULL(audio_engine);
+            ST_ASSERT_NOT_NULL(vulkan_device);
+            return *this;
+        }
     };
 
     class ResourceLoader {
     private:
         ResourceLoaderConfig config;
+        VulkanCommandPool vulkan_command_pool;
 
     public:
-        explicit ResourceLoader(ResourceLoaderConfig config);
-
-        Shared<Shader> load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const;
+        ResourceLoader(const ResourceLoaderConfig& config);
 
         Shared<Texture> load_texture(const std::filesystem::path& path) const;
 
@@ -42,8 +48,19 @@ namespace Storytime {
         Shared<TiledObjectTemplate> load_tiled_object_template(const std::filesystem::path& path) const;
 
     private:
-        Image load_image(const std::filesystem::path& path) const;
+        struct ImageFile {
+            i32 width = 0;
+            i32 height = 0;
+            i32 channels = 0;
+            void* pixels = nullptr;
 
-        void free_image(const Image& image) const;
+            u64 get_byte_size() const {
+                return width * height * channels;
+            }
+        };
+
+        ImageFile load_image(const std::filesystem::path& path) const;
+
+        void free_image(const ImageFile& image) const;
     };
 }

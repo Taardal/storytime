@@ -38,6 +38,7 @@ namespace Storytime {
         fprintf(stderr, "Could not print stacktrace, unsupported platform\n");
         ST_BREAK();
 #endif
+        fprintf(stderr, "\n");
     }
 
     std::string get_signal_name(const int signal) {

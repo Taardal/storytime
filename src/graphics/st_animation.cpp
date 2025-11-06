@@ -109,10 +109,4 @@ namespace Storytime {
         frame_index = next_frame_index % (end_frame_index + 1);
         frame_elapsed_ms = 0.0;
     }
-
-    void Animation::render(Renderer* renderer, const AnimationRenderConfig& render_config) {
-        AnimationFrame& current_frame = get_current_frame();
-        const Sprite& current_sprite = current_frame.sprite;
-        current_sprite.render(renderer, render_config);
-    }
 }

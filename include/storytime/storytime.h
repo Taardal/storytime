@@ -75,7 +75,7 @@
 #include "system/st_dispatcher.h"
 #include "system/st_file_reader.h"
 #include "system/st_json_to_from.h"
-#include "system/st_game_loop_metrics.h"
+#include "system/st_metrics.h"
 #include "system/st_random.h"
 #include "system/st_subscriber.h"
 #include "system/st_variant.h"
@@ -93,6 +93,9 @@
 #include "tiled/st_tiled_tile.h"
 #include "tiled/st_tiled_tileset.h"
 #include "tiled/st_tiled_transformation_flags.h"
+
+// Utils
+#include "utils/st_running_average.h"
 
 // Window
 #include "window/st_key.h"

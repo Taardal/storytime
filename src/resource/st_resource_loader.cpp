@@ -4,32 +4,59 @@
 #include <nlohmann/json.hpp>
 
 namespace Storytime {
-    ResourceLoader::ResourceLoader(ResourceLoaderConfig config) : config(std::move(config)) {
-    }
-
-    Shared<Shader> ResourceLoader::load_shader(const std::filesystem::path& vertex_shader_path, const std::filesystem::path& fragment_shader_path) const {
-        ST_LOG_TRACE("Loading shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-
-        const std::string& vertex_shader_source = config.file_reader->read(vertex_shader_path.c_str());
-        ST_ASSERT(!vertex_shader_source.empty(), "Could not read vertex shader file [" << vertex_shader_path.c_str() << "]");
-
-        const std::string& fragment_shader_source = config.file_reader->read(fragment_shader_path.c_str());
-        ST_ASSERT(!fragment_shader_source.empty(), "Could not read fragment shader file [" << vertex_shader_path.c_str() << "]");
-
-        auto shader = std::make_shared<Shader>(vertex_shader_source.c_str(), fragment_shader_source.c_str());
-        ST_LOG_DEBUG("Loaded shader [{}, {}]", vertex_shader_path.c_str(), fragment_shader_path.c_str());
-        return shader;
+    ResourceLoader::ResourceLoader(const ResourceLoaderConfig& config)
+        : config(config.assert_valid()),
+          vulkan_command_pool({
+              .name = "ResourceLoader texture command pool",
+              .device = config.vulkan_device,
+              .queue_family_index = config.vulkan_device->get_graphics_queue_family_index(),
+              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+          })
+    {
     }
 
     Shared<Texture> ResourceLoader::load_texture(const std::filesystem::path& path) const {
-        ST_LOG_TRACE("Loading texture [{}]", path.c_str());
-
         ST_ASSERT(!path.empty(), "Texture path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Texture must exist on path [" << path << "]");
 
-        Image image = load_image(path);
-        auto texture = std::make_shared<Texture>(image);
-        free_image(image);
+        ST_LOG_TRACE("Loading texture [{}]", path.c_str());
+
+        ImageFile image_file = load_image(path);
+
+        // Ensure the image file dimensions are not too large.
+        const VulkanPhysicalDevice& physical_device = config.vulkan_device->get_physical_device();
+        const u32 max_image_dimension = physical_device.get_properties().limits.maxImageDimension2D;
+        if (image_file.width > max_image_dimension) {
+            ST_THROW("Could not load texture [" << path << "] because its width [" << image_file.width << "] is larger than the largest allowed dimension [" << max_image_dimension << "]");
+        }
+        if (image_file.height > max_image_dimension) {
+            ST_THROW("Could not load texture [" << path << "] because its height [" << image_file.height << "] is larger than the largest allowed dimension [" << max_image_dimension << "]");
+        }
+
+        // Calculate the number of levels in the mip chain.
+        // - The `max` function selects the largest dimension.
+        // - The `log2` function calculates how many times that dimension can be divided by 2.
+        // - The `floor` function handles cases where the largest dimension is not a power of 2.
+        // - 1 is added so that the original image has a mip level.
+        u32 mip_levels = (u32) std::floor(std::log2(std::max(image_file.width, image_file.height))) + 1;
+
+        auto texture = std::make_shared<Texture>(TextureConfig{
+            .name = path.string(),
+            .device = config.vulkan_device,
+            .width = (u32) image_file.width,
+            .height = (u32) image_file.height,
+            .format = VK_FORMAT_R8G8B8A8_SRGB,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .mip_levels = mip_levels,
+        });
+
+        vulkan_command_pool.record_and_submit_commands([&texture, &image_file](const OnRecordCommandsFn &on_record_commands) {
+            texture->set_pixels(on_record_commands, image_file.get_byte_size(), image_file.pixels);
+        });
+
+        free_image(image_file);
 
         ST_LOG_DEBUG("Loaded texture [{}]", path.c_str());
         return texture;
@@ -70,7 +97,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled project must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled project [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -84,7 +111,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled map must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -96,7 +123,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled tileset [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled tileset [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -108,7 +135,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled template [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled template path must not be empty");
 
-        std::string json = config.file_reader->read(path.c_str());
+        std::string json = config.file_reader->read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled template [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -116,16 +143,16 @@ namespace Storytime {
         }, "Could not load Tiled template [" << path << "]");
     }
 
-    Image ResourceLoader::load_image(const std::filesystem::path& path) const {
-        int32_t width = 0;
-        int32_t height = 0;
-        int32_t channels = 0;
-        int32_t desiredChannels = STBI_default;
-        unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
-        return {pixels, width, height, channels};
+    ResourceLoader::ImageFile ResourceLoader::load_image(const std::filesystem::path& path) const {
+        ImageFile image_file{};
+        image_file.width = 0;
+        image_file.height = 0;
+        image_file.channels = 0;
+        image_file.pixels = stbi_load(path.c_str(), &image_file.width, &image_file.height, &image_file.channels, STBI_rgb_alpha);
+        return image_file;
     }
 
-    void ResourceLoader::free_image(const Image& image) const {
+    void ResourceLoader::free_image(const ImageFile& image) const {
         if (image.pixels) {
             stbi_image_free(image.pixels);
         }

@@ -1,22 +1,19 @@
 #include "st_engine.h"
 
+#include "graphics/st_vulkan_swapchain.h"
 #include "st_app.h"
 #include "event/st_window_closed_event.h"
 #include "system/st_clock.h"
 
 namespace Storytime {
+    typedef Renderer Renderer;
+
     Engine::Engine(const Config& config)
         : service_locator(),
           dispatcher(),
-          file_reader(),
-          audio_engine(),
-          resource_loader({
-              .file_reader = &file_reader,
-              .audio_engine = &audio_engine
-          }),
           window({
               .dispatcher = &dispatcher,
-              .title = config.window_title,
+              .title = config.app_name,
               .width = config.window_width,
               .height = config.window_height,
               .aspect_ratio = config.window_aspect_ratio,
@@ -24,27 +21,6 @@ namespace Storytime {
               .maximized = config.window_maximized,
               .resizable = config.window_resizable,
               .vsync = config.window_vsync,
-              .context_version_major = config.open_gl_version_major,
-              .context_version_minor = config.open_gl_version_minor,
-          }),
-          open_gl({
-            .window = &window,
-            .log_level = config.log_level,
-            .major_version = config.open_gl_version_major,
-            .minor_version = config.open_gl_version_minor,
-            .glsl_version = config.glsl_version,
-          }),
-          renderer({
-              .dispatcher = &dispatcher,
-              .resource_loader = &resource_loader,
-              .window = &window,
-          }),
-          imgui_renderer({
-            .window = &window,
-            .keyboard = &keyboard,
-            .mouse = &mouse,
-            .settings_file_path = config.imgui_settings_file_path,
-            .glsl_version = config.glsl_version,
           }),
           keyboard({
               .window = &window,
@@ -53,8 +29,66 @@ namespace Storytime {
           mouse({
               .window = &window,
           }),
-          process_manager(),
-          game_loop_metrics()
+          file_reader(),
+          metrics(),
+          vulkan_context({
+              .window = &window,
+              .api_version = config.vulkan_api_version,
+              .app_name = config.vulkan_app_name.size() > 0 ? config.vulkan_app_name : config.app_name,
+              .app_version = config.vulkan_app_version,
+              .engine_name = config.vulkan_engine_name.size() > 0 ? config.vulkan_engine_name : std::format("{} Engine", config.app_name),
+              .engine_version = config.vulkan_engine_version,
+              .validation_layers_enabled = config.vulkan_validation_layers_enabled,
+          }),
+          vulkan_physical_device({
+              .context = &vulkan_context,
+          }),
+          vulkan_device({
+              .name = std::format("{} device", config.app_name),
+              .physical_device = &vulkan_physical_device,
+          }),
+          vulkan_swapchain({
+              .name = std::format("{} swapchain", config.app_name),
+              .dispatcher = &dispatcher,
+              .window = &window,
+              .device = &vulkan_device,
+              .surface = vulkan_context.get_surface(),
+              .clear_color = config.rendering_clear_color,
+              .vsync_enabled = config.vsync_enabled,
+          }),
+          renderer({
+              .name = std::format("{} renderer", config.app_name),
+              .dispatcher = &dispatcher,
+              .window = &window,
+              .file_reader = &file_reader,
+              .metrics = &metrics,
+              .context = &vulkan_context,
+              .device = &vulkan_device,
+              .swapchain = &vulkan_swapchain,
+              .frame_count = config.rendering_buffer_count,
+          }),
+          imgui_renderer({
+              .name = std::format("{} imgui renderer", config.app_name),
+              .window = &window,
+              .keyboard = &keyboard,
+              .mouse = &mouse,
+              .context = &vulkan_context,
+              .physical_device = &vulkan_physical_device,
+              .device = &vulkan_device,
+              .swapchain = &vulkan_swapchain,
+              .api_version = config.vulkan_api_version,
+              .frame_count = config.rendering_buffer_count,
+              .settings_file_path = config.imgui_settings_file_path,
+              .docking_enabled = config.imgui_docking_enabled,
+              .viewports_enabled = config.imgui_viewports_enabled,
+          }),
+          audio_engine(),
+          resource_loader({
+              .file_reader = &file_reader,
+              .audio_engine = &audio_engine,
+              .vulkan_device = &vulkan_device,
+          }),
+          process_manager()
     {
         service_locator.set<Dispatcher>(&dispatcher);
         service_locator.set<Window>(&window);
@@ -64,16 +98,19 @@ namespace Storytime {
         service_locator.set<ResourceLoader>(&resource_loader);
         service_locator.set<Renderer>(&renderer);
         service_locator.set<ProcessManager>(&process_manager);
-        service_locator.set<GameLoopMetrics>(&game_loop_metrics);
+        service_locator.set<Metrics>(&metrics);
 
-        dispatcher.subscribe<WindowClosedEvent>([&](const WindowClosedEvent&) {
-            stop();
-        });
+        dispatcher.subscribe<WindowClosedEvent, &Engine::stop>(this);
+    }
+
+    Engine::~Engine() {
+        dispatcher.unsubscribe<WindowClosedEvent, &Engine::stop>(this);
     }
 
     void Engine::run(App& app) {
         running = true;
         run_game_loop(app);
+        renderer.wait_until_idle();
     }
 
     void Engine::stop() {
@@ -121,7 +158,7 @@ namespace Storytime {
             // UPDATE
             //
 
-            i32 update_count = 0;
+            u32 update_count = 0;
             f64 update_start_lag_ms = game_clock_lag_ms;
             TimePoint update_start_time = Time::now();
 
@@ -141,25 +178,34 @@ namespace Storytime {
             // RENDER
             //
 
-            TimePoint render_start_time = Time::now();
-            renderer.begin_frame();
-            app.render();
-            renderer.end_frame();
-            TimePoint render_end_time = Time::now();
+            TimePoint scene_render_start_time;
+            TimePoint scene_render_end_time;
+            TimePoint imgui_render_start_time;
+            TimePoint imgui_render_end_time;
 
-            TimePoint imgui_render_start_time = Time::now();
-            imgui_renderer.begin_frame();
-            app.render_imgui();
-            imgui_renderer.end_frame();
-            TimePoint imgui_render_end_time = Time::now();
+            TimePoint render_start_time = Time::now();
+            const Frame* frame = renderer.begin_frame();
+            if (frame != nullptr) {
+
+                scene_render_start_time = Time::now();
+                renderer.begin_render();
+                app.render();
+                renderer.end_render();
+                scene_render_end_time = Time::now();
+
+                imgui_render_start_time = Time::now();
+                imgui_renderer.begin_render();
+                app.render_imgui();
+                imgui_renderer.end_render(frame->command_buffer);
+                imgui_render_end_time = Time::now();
+
+                renderer.end_frame();
+            }
+            TimePoint render_end_time = Time::now();
 
             //
             // END FRAME
             //
-
-            TimePoint swap_buffers_start_time = Time::now();
-            window.swap_buffers();
-            TimePoint swap_buffers_end_time = Time::now();
 
             TimePoint cycle_end_time = Time::now();
 
@@ -168,16 +214,20 @@ namespace Storytime {
             //
 
             if (update_count > 0) {
-                game_loop_metrics.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
-                game_loop_metrics.updates_per_second = update_count / (game_loop_metrics.update_timestep_ms / 1000.0);
-                game_loop_metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
+                metrics.update_timestep_ms = update_start_lag_ms - update_end_lag_ms;
+                metrics.updates_per_second = update_count / (metrics.update_timestep_ms / 1000.0);
+                metrics.update_duration_ms = Time::as<Microseconds>(update_end_time - update_start_time).count() / 1000.0;
             }
-            game_loop_metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
-            game_loop_metrics.frames_per_second = 1.0 / (game_loop_metrics.render_duration_ms / 1000.0);
-            game_loop_metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
-            game_loop_metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
-            game_loop_metrics.swap_buffers_duration_ms = Time::as<Microseconds>(swap_buffers_end_time - swap_buffers_start_time).count() / 1000.0;
-            game_loop_metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
+
+            if (frame != nullptr) {
+                metrics.render_duration_ms = Time::as<Microseconds>(render_end_time - render_start_time).count() / 1000.0;
+                metrics.imgui_render_duration_ms = Time::as<Microseconds>(imgui_render_end_time - imgui_render_start_time).count() / 1000.0;
+                metrics.scene_render_duration_ms = Time::as<Microseconds>(scene_render_end_time - scene_render_start_time).count() / 1000.0;
+                metrics.frames_per_second = 1.0 / (metrics.render_duration_ms / 1000.0);
+            }
+
+            metrics.window_events_duration_ms = Time::as<Microseconds>(window_event_end_time - window_event_start_time).count() / 1000.0;
+            metrics.cycle_duration_ms = Time::as<Microseconds>(cycle_end_time - cycle_start_time).count() / 1000.0;
         }
     }
 }

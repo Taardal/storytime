@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.0.0)
 
 project(storytime)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ST_TARGET ${PROJECT_NAME})
@@ -68,36 +68,54 @@ add_library(
     ${ST_SRC_DIR}/graphics/st_bitmap_font.h
     ${ST_SRC_DIR}/graphics/st_camera.cpp
     ${ST_SRC_DIR}/graphics/st_camera.h
-    ${ST_SRC_DIR}/graphics/st_framebuffer.cpp
-    ${ST_SRC_DIR}/graphics/st_framebuffer.h
+    ${ST_SRC_DIR}/graphics/st_frame.h
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_imgui_renderer.h
-    ${ST_SRC_DIR}/graphics/st_index_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_index_buffer.h
-    ${ST_SRC_DIR}/graphics/st_open_gl.cpp
-    ${ST_SRC_DIR}/graphics/st_open_gl.h
+    ${ST_SRC_DIR}/graphics/st_quad.h
+    ${ST_SRC_DIR}/graphics/st_quad_vertex.h
     ${ST_SRC_DIR}/graphics/st_renderer.cpp
     ${ST_SRC_DIR}/graphics/st_renderer.h
-    ${ST_SRC_DIR}/graphics/st_shader.cpp
-    ${ST_SRC_DIR}/graphics/st_shader.h
     ${ST_SRC_DIR}/graphics/st_sprite.cpp
     ${ST_SRC_DIR}/graphics/st_sprite.h
     ${ST_SRC_DIR}/graphics/st_spritesheet.cpp
     ${ST_SRC_DIR}/graphics/st_spritesheet.h
     ${ST_SRC_DIR}/graphics/st_texture.cpp
     ${ST_SRC_DIR}/graphics/st_texture.h
-    ${ST_SRC_DIR}/graphics/st_texture_coordinate.cpp
-    ${ST_SRC_DIR}/graphics/st_texture_coordinate.h
-    ${ST_SRC_DIR}/graphics/st_vertex_array.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_array.h
-    ${ST_SRC_DIR}/graphics/st_vertex_attribute.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_attribute.h
-    ${ST_SRC_DIR}/graphics/st_vertex_buffer.cpp
-    ${ST_SRC_DIR}/graphics/st_vertex_buffer.h
     ${ST_SRC_DIR}/graphics/st_view_projection.cpp
     ${ST_SRC_DIR}/graphics/st_view_projection.h
-    ${ST_SRC_DIR}/resource/st_resource_loader.cpp
-    ${ST_SRC_DIR}/resource/st_resource_loader.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_callbacks.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_command_pool.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_context.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_context.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_pool.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_set.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_descriptor_set.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_device.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_device.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_graphics_pipeline.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_image.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_image.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_index_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_index_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_physical_device.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_queue.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_queue.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_swapchain.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_uniform_buffer.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_utils.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_utils.h
+    ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.cpp
+    ${ST_SRC_DIR}/graphics/st_vulkan_vertex_buffer.h
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.cpp
     ${ST_SRC_DIR}/lua/st_lua_dispatcher_binding.h
     ${ST_SRC_DIR}/lua/st_lua_error.cpp
@@ -131,6 +149,8 @@ add_library(
     ${ST_SRC_DIR}/process/st_process.h
     ${ST_SRC_DIR}/process/st_process_manager.cpp
     ${ST_SRC_DIR}/process/st_process_manager.h
+    ${ST_SRC_DIR}/resource/st_resource_loader.cpp
+    ${ST_SRC_DIR}/resource/st_resource_loader.h
     ${ST_SRC_DIR}/scene/st_entity.cpp
     ${ST_SRC_DIR}/scene/st_entity.h
     ${ST_SRC_DIR}/scene/st_scene.cpp
@@ -160,9 +180,10 @@ add_library(
     ${ST_SRC_DIR}/system/st_error.h
     ${ST_SRC_DIR}/system/st_error_signal.cpp
     ${ST_SRC_DIR}/system/st_error_signal.h
+    ${ST_SRC_DIR}/system/st_expected.h
     ${ST_SRC_DIR}/system/st_file_reader.cpp
     ${ST_SRC_DIR}/system/st_file_reader.h
-    ${ST_SRC_DIR}/system/st_game_loop_metrics.h
+    ${ST_SRC_DIR}/system/st_metrics.h
     ${ST_SRC_DIR}/system/st_json_to_from.h
     ${ST_SRC_DIR}/system/st_log.cpp
     ${ST_SRC_DIR}/system/st_log.h
@@ -177,8 +198,6 @@ add_library(
     ${ST_SRC_DIR}/system/st_size.h
     ${ST_SRC_DIR}/system/st_subscriber.cpp
     ${ST_SRC_DIR}/system/st_subscriber.h
-    ${ST_SRC_DIR}/system/st_utils.cpp
-    ${ST_SRC_DIR}/system/st_utils.h
     ${ST_SRC_DIR}/system/st_uuid.cpp
     ${ST_SRC_DIR}/system/st_uuid.h
     ${ST_SRC_DIR}/system/st_variant.h
@@ -204,6 +223,16 @@ add_library(
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.cpp
     ${ST_SRC_DIR}/tiled/st_tiled_tileset.h
     ${ST_SRC_DIR}/tiled/st_tiled_transformation_flags.h
+    ${ST_SRC_DIR}/utils/st_glm.cpp
+    ${ST_SRC_DIR}/utils/st_glm.h
+    ${ST_SRC_DIR}/utils/st_print.h
+    ${ST_SRC_DIR}/utils/st_null_safety.h
+    ${ST_SRC_DIR}/utils/st_running_average.cpp
+    ${ST_SRC_DIR}/utils/st_running_average.h
+    ${ST_SRC_DIR}/utils/st_string.cpp
+    ${ST_SRC_DIR}/utils/st_string.h
+    ${ST_SRC_DIR}/utils/st_type_name.cpp
+    ${ST_SRC_DIR}/utils/st_type_name.h
     ${ST_SRC_DIR}/window/st_key.cpp
     ${ST_SRC_DIR}/window/st_key.h
     ${ST_SRC_DIR}/window/st_keyboard.cpp
@@ -240,8 +269,29 @@ target_include_directories(${ST_TARGET} PUBLIC ${ST_SRC_DIR})
 target_precompile_headers(${ST_TARGET} PUBLIC ${ST_SRC_DIR}/st_pch.h)
 
 # --------------------------------------------------------------------------------------------------------------
+# Clang compiler flags
+# --------------------------------------------------------------------------------------------------------------
+
+target_compile_options(${ST_TARGET} PRIVATE -Wno-shadow)
+
+# --------------------------------------------------------------------------------------------------------------
 # Custom targets
 # --------------------------------------------------------------------------------------------------------------
+
+#
+# Copy compile_commands.json file to project root
+#
+
+set(ST_COPY_COMPILE_COMMANDS_TARGET st_copy_compile_commands)
+if (CMAKE_EXPORT_COMPILE_COMMANDS)
+    add_custom_target(
+        ${ST_COPY_COMPILE_COMMANDS_TARGET}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/compile_commands.json
+        COMMENT "Copying compile_commands.json"
+        VERBATIM
+    )
+    add_dependencies(${ST_TARGET} ${ST_COPY_COMPILE_COMMANDS_TARGET})
+endif()
 
 #
 # Copy resource files to runtime directory
@@ -255,6 +305,7 @@ add_custom_target(
     ${ST_COPY_RESOURCES_TARGET}
     COMMENT "Copying resources"
     COMMAND ${CMAKE_COMMAND} -D SOURCE_DIR=${ST_RESOURCES_SOURCE_DIR} -D OUTPUT_DIR=${ST_RESOURCES_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/copy.cmake
+    VERBATIM
 )
 add_dependencies(${ST_TARGET} ${ST_COPY_RESOURCES_TARGET})
 
@@ -272,10 +323,27 @@ add_custom_target(
     ${ST_COMPILE_LUA_TARGET}
     COMMAND ${CMAKE_COMMAND} -D LUA_SOURCE_DIR=${ST_LUA_SOURCE_DIR} -D LUA_OUTPUT_DIR=${ST_LUA_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_lua.cmake
     COMMENT "Compiling Lua"
+    VERBATIM
 )
 add_dependencies(${ST_TARGET} ${ST_COMPILE_LUA_TARGET})
 
 target_compile_definitions(${ST_TARGET} PUBLIC ST_LUA_DIR="${ST_LUA_OUTPUT_DIR}")
+
+#
+# Compile Vulkan shaders to SPIR-V
+#
+
+set(ST_SHADERS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/res/shaders)
+set(ST_SHADERS_OUTPUT_DIR ${ST_OUTPUT_DIR}/res/shaders)
+
+set(ST_COMPILE_SHADERS_TARGET st_compile_shaders)
+add_custom_target(
+    ${ST_COMPILE_SHADERS_TARGET}
+    COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${ST_SHADERS_SOURCE_DIR} -D SHADERS_OUTPUT_DIR=${ST_SHADERS_OUTPUT_DIR} -P ${ST_CMAKE_DIR}/compile_shaders.cmake
+    COMMENT "Compiling shaders"
+    VERBATIM
+)
+add_dependencies(${ST_TARGET} ${ST_COMPILE_SHADERS_TARGET})
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
@@ -302,14 +370,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glm)
 target_link_libraries(${ST_TARGET} glm::glm)
 
-# GLAD
-set(GLAD_NAME glad)
-set(GLAD_DIR ${ST_LIB_DIR}/glad-0.1.33)
-add_library(${GLAD_NAME} ${GLAD_DIR}/src/glad.c)
-target_include_directories(${GLAD_NAME} PRIVATE ${GLAD_DIR}/include)
-target_include_directories(${ST_TARGET} PUBLIC ${GLAD_DIR}/include)
-target_link_libraries(${ST_TARGET} glad ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
-
 # GLFW
 set(GLFW_INSTALL OFF CACHE INTERNAL Generate installation target)
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL Build the GLFW documentation)
@@ -324,29 +384,30 @@ FetchContent_MakeAvailable(glfw)
 target_link_libraries(${ST_TARGET} glfw)
 
 # ImGui
-set(IMGUI_NAME imgui)
-set(IMGUI_DIR ${ST_LIB_DIR}/imgui-docking-1.77)
+set(IMGUI_TARGET imgui)
+set(IMGUI_DIR ${ST_LIB_DIR}/imgui-1.92.4-docking)
 add_library(
-    ${IMGUI_NAME}
+    ${IMGUI_TARGET}
     ${IMGUI_DIR}/imconfig.h
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui.h
     ${IMGUI_DIR}/imgui_demo.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_internal.h
+    ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui.h
     ${IMGUI_DIR}/imstb_rectpack.h
     ${IMGUI_DIR}/imstb_textedit.h
     ${IMGUI_DIR}/imstb_truetype.h
-    ${IMGUI_DIR}/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/imgui_impl_glfw.h
-    ${IMGUI_DIR}/imgui_impl_opengl3.cpp
-    ${IMGUI_DIR}/imgui_impl_opengl3.h
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.h
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
 )
-target_include_directories(${IMGUI_NAME} PRIVATE ${GLAD_DIR}/include)
-target_link_libraries(${IMGUI_NAME} glfw)
+target_include_directories(${IMGUI_TARGET} PRIVATE ${IMGUI_DIR})
+target_include_directories(${ST_TARGET} PRIVATE ${IMGUI_DIR}/backends)
 target_include_directories(${ST_TARGET} PUBLIC ${IMGUI_DIR})
-target_link_libraries(${ST_TARGET} ${IMGUI_NAME})
+target_link_libraries(${ST_TARGET} ${IMGUI_TARGET})
 
 # JSON
 FetchContent_Declare(
@@ -371,18 +432,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(miniaudio)
 target_include_directories(${ST_TARGET} PUBLIC ${miniaudio_SOURCE_DIR})
 
-# STB image
-set(STB_IMAGE_NAME stb_image)
-set(STB_IMAGE_DIR ${ST_LIB_DIR}/stb_image-2.22)
+# stb_image
+set(STB_IMAGE_TARGET stb_image)
+set(STB_IMAGE_DIR ${ST_LIB_DIR}/stb_image-2.30)
 add_library(
-    ${STB_IMAGE_NAME}
-    ${STB_IMAGE_DIR}/src/stb_image.cpp
+    ${STB_IMAGE_TARGET}
+    ${STB_IMAGE_DIR}/stb_image.cpp
 )
-target_include_directories(${STB_IMAGE_NAME} PRIVATE ${STB_IMAGE_DIR}/include)
-target_include_directories(${ST_TARGET} PUBLIC ${STB_IMAGE_DIR}/include)
-target_link_libraries(${ST_TARGET} ${STB_IMAGE_NAME} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
+target_include_directories(${STB_IMAGE_TARGET} PRIVATE ${STB_IMAGE_DIR})
+target_include_directories(${ST_TARGET} PUBLIC ${STB_IMAGE_DIR})
+target_link_libraries(${ST_TARGET} ${STB_IMAGE_TARGET} ${CMAKE_DL_LIBS}) # Link with platform-specific dynamic loading libraries
 
-# SPDLOG
+# spdlog
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog
@@ -390,3 +451,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 target_link_libraries(${ST_TARGET} spdlog::spdlog)
+
+# Vulkan
+find_package(Vulkan REQUIRED)
+target_include_directories(${ST_TARGET} PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(${ST_TARGET} ${Vulkan_LIBRARIES})
