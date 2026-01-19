@@ -716,7 +716,6 @@ namespace Storytime {
             // Sync objects
             //
 
-
             VkFenceCreateInfo in_flight_fence_create_info{};
             in_flight_fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             in_flight_fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
