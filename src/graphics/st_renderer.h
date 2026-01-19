@@ -51,10 +51,26 @@ namespace Storytime {
         // Vertices
         static constexpr u32 max_vertices_per_quad = 4;
         static constexpr std::array<QuadVertex, max_vertices_per_quad> base_quad_vertices = {
-            QuadVertex{ .position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 0.0f) }, // Top left
-            QuadVertex{ .position = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 0.0f) }, // Top right
-            QuadVertex{ .position = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(1.0f, 1.0f) }, // Bottom right
-            QuadVertex{ .position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), .texture_coordinate = glm::vec2(0.0f, 1.0f) }, // Bottom left
+            // Top left
+            QuadVertex{
+                .position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),
+                .texture_coordinate = glm::vec2(0.0f, 0.0f)
+            },
+            // Top right
+            QuadVertex{
+                .position = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                .texture_coordinate = glm::vec2(1.0f, 0.0f)
+            },
+            // Bottom right
+            QuadVertex{
+                .position = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f),
+                .texture_coordinate = glm::vec2(1.0f, 1.0f)
+            },
+            // Bottom left
+            QuadVertex{
+                .position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+                .texture_coordinate = glm::vec2(0.0f, 1.0f)
+            },
         };
 
         // Indices
@@ -75,8 +91,6 @@ namespace Storytime {
         Config config;
         VulkanCommandPool init_command_pool;
         VulkanCommandPool frame_command_pool;
-        VulkanDescriptorPool frame_descriptor_pool;
-        VkDescriptorSetLayout frame_descriptor_set_layout;
         VulkanDescriptorPool batch_descriptor_pool;
         VkDescriptorSetLayout batch_descriptor_set_layout;
         VulkanGraphicsPipeline quad_graphics_pipeline;
@@ -92,8 +106,6 @@ namespace Storytime {
 
         ~Renderer();
 
-        VkCommandBuffer get_frame_command_buffer() const;
-
         void wait_until_idle() const;
 
         const Frame* begin_frame() const;
@@ -104,7 +116,7 @@ namespace Storytime {
 
         void end_render();
 
-        void set_view_projection(const ViewProjection& view_projection) const;
+        void set_view_projection(const ViewProjection& view_projection);
 
         void render_quad(const Quad& quad);
 
@@ -117,21 +129,13 @@ namespace Storytime {
 
         void end_frame_command_buffer(const VulkanCommandBuffer& command_buffer) const;
 
-        void write_frame_descriptors(const Frame& frame) const;
-
         void write_batch_descriptors(const Batch& batch) const;
 
         VulkanCommandPool create_init_command_pool();
 
         VulkanCommandPool create_frame_command_pool();
 
-        VulkanDescriptorPool create_frame_descriptor_pool();
-
         VulkanDescriptorPool create_batch_descriptor_pool();
-
-        VkDescriptorSetLayout create_frame_descriptor_set_layout() const;
-
-        void destroy_frame_descriptor_set_layout() const;
 
         VkDescriptorSetLayout create_batch_descriptor_set_layout() const;
 

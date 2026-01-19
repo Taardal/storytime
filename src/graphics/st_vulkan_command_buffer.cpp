@@ -116,6 +116,34 @@ namespace Storytime {
         vkCmdBindPipeline(command_buffer, bind_point, pipeline);
     }
 
+    void VulkanCommandBuffer::push_constants(const PushConstantsCommand& command) const {
+        vkCmdPushConstants(
+            command_buffer,
+            command.pipeline_layout,
+            command.shader_stage,
+            command.offset,
+            command.data_size,
+            command.data
+        );
+    }
+
+    void VulkanCommandBuffer::push_constants(
+        VkPipelineLayout pipeline_layout,
+        VkShaderStageFlags shader_stage_flags,
+        u32 offset,
+        u32 data_size,
+        const void* data
+    ) const {
+        vkCmdPushConstants(
+            command_buffer,
+            pipeline_layout,
+            shader_stage_flags,
+            offset,
+            data_size,
+            data
+        );
+    }
+
     void VulkanCommandBuffer::set_viewports(const SetViewportsCommand& command) const {
         vkCmdSetViewport(
             command_buffer,
