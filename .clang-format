@@ -1,0 +1,169 @@
+# -----------------------------------------------------------------------------
+# .clang-format
+#
+# This file defines the C++ code formatting rules for this project using clang-format.
+#
+# All available options and their detailed behavior are documented at:
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# -----------------------------------------------------------------------------
+
+Language: Cpp
+BasedOnStyle: LLVM
+
+# The extra indent or outdent of access modifiers, e.g. `public:`, in class, struct, and union bodies.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#accessmodifieroffset
+AccessModifierOffset: -4
+
+# If set to AlwaysBreak, always breaks after an open bracket and indents the following lines.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignafteropenbracket
+AlignAfterOpenBracket: AlwaysBreak
+
+# Aligns consecutive assignment operators vertically when enabled.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignconsecutiveassignments
+AlignConsecutiveAssignments: false
+
+# Aligns consecutive declarations vertically when enabled.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignconsecutivedeclarations
+AlignConsecutiveDeclarations: false
+
+# Horizontally aligns operands of binary and ternary expressions.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignoperands
+AlignOperands: true
+
+# Aligns trailing comments on consecutive lines.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#aligntrailingcomments
+AlignTrailingComments: false
+
+# Forces a line break after template declarations.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alwaysbreaktemplatedeclarations
+AlwaysBreakTemplateDeclarations: Yes
+
+# Disables packing multiple arguments onto the same line when breaking.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#binpackarguments
+BinPackArguments: false
+
+# Disables packing multiple parameters onto the same line when breaking.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#binpackparameters
+BinPackParameters: false
+
+# Fine-grained control over brace placement. Only used when BreakBeforeBraces is set to Custom.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# Controls the overall brace breaking style. Custom enables BraceWrapping.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#breakbeforebraces
+BreakBeforeBraces: Custom
+
+# Controls where constructor initializer lists are broken.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#breakconstructorinitializers
+BreakConstructorInitializers: AfterColon
+
+# Maximum number of columns a line can have before it is wrapped.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit
+ColumnLimit: 140
+
+# Forces constructor initializers to be either all on one line or one per line.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#constructorinitializerallononelineoroneperline
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+# Number of spaces used for indentation of continuation lines.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#continuationindentwidth
+ContinuationIndentWidth: 0
+
+# Formats braced initializer lists according to C++11 style rules.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#cpp11bracedliststyle
+Cpp11BracedListStyle: false
+
+# Defines the order and grouping of include directives using regex patterns.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories
+IncludeCategories:
+  - Regex: '.*'
+    Priority: 1
+  - Regex: '^".*'
+    Priority: 2
+  - Regex: '^<.*'
+    Priority: 3
+
+# Regular expression identifying the main header for a source file.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+
+# Indents case labels inside switch statements.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentcaselabels
+IndentCaseLabels: true
+
+# Number of spaces per indentation level.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentwidth
+IndentWidth: 4
+
+# Inserts a newline at the end of the file if missing.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertnewlineateof
+InsertNewlineAtEOF: true
+
+# Specifies a macro that starts a block.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#macroblockbegin
+MacroBlockBegin: ''
+
+# Specifies a macro that ends a block.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#macroblockend
+MacroBlockEnd: ''
+
+# Maximum number of consecutive empty lines to keep.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#maxemptylinestokeep
+MaxEmptyLinesToKeep: 2
+
+# Controls how namespace contents are indented.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#namespaceindentation
+NamespaceIndentation: All
+
+# Controls whether `*` and `&` bind to the type, name, or middle.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#pointeralignment
+PointerAlignment: Left
+
+# Inserts a space after a C-style cast.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spaceaftercstylecast
+SpaceAfterCStyleCast: true
+
+# Inserts a space after the `template` keyword.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spaceaftertemplatekeyword
+SpaceAfterTemplateKeyword: false
+
+# Inserts spaces inside empty parentheses.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spaceinemptyparentheses
+SpaceInEmptyParentheses: false
+
+# Inserts spaces inside angle brackets.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spacesinangles
+SpacesInAngles: false
+
+# Inserts spaces inside conditional parentheses.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spacesinconditionalstatement
+SpacesInConditionalStatement: false
+
+# Inserts spaces inside C-style cast parentheses.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spacesincstylecastparentheses
+SpacesInCStyleCastParentheses: false
+
+# Inserts spaces inside parentheses.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#spacesinparentheses
+SpacesInParentheses: false
+
+# Number of spaces used to represent a tab character.
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#tabwidth
+TabWidth: 4
