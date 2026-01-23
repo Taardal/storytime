@@ -3,17 +3,23 @@
 
 namespace Storytime {
     extern void from_json(const nlohmann::json& json, TiledClassMember& data) {
-        data.name = json.at("name").get<std::string>();
-        data.type = json.at("type").get<std::string>();
-        auto value_json = json.at("value");
-        if (data.type == "bool") {
-            data.value = value_json.get<bool>();
-        } else if (data.type == "float") {
-            data.value = value_json.get<float>();
-        } else if (data.type == "int" || data.type == "object") {
-            data.value = value_json.get<int>();
-        } else if (data.type == "string" || data.type == "color" || data.type == "file") {
-            data.value = value_json.get<std::string>();
+        if (json.contains("name")) {
+            data.name = json.at("name").get<std::string>();
+        }
+        if (json.contains("type")) {
+            data.type = json.at("type").get<std::string>();
+        }
+        if (json.contains("value")) {
+            auto value_json = json.at("value");
+            if (data.type == "bool") {
+                data.value = value_json.get<bool>();
+            } else if (data.type == "float") {
+                data.value = value_json.get<float>();
+            } else if (data.type == "int" || data.type == "object") {
+                data.value = value_json.get<int>();
+            } else if (data.type == "string" || data.type == "color" || data.type == "file") {
+                data.value = value_json.get<std::string>();
+            }
         }
     }
 

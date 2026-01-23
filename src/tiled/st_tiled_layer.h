@@ -5,21 +5,28 @@
 
 namespace Storytime {
     struct TiledLayer {
-        std::vector<TiledProperty> properties;
-        std::vector<TiledLayer> layers;
-        std::vector<TiledObject> objects;
-        std::vector<int> data;
-        std::string name;
-        std::string type;
-        std::string draworder;
-        std::string image;
-        int id;
-        int x;
-        int y;
-        int width;
-        int height;
-        int opacity;
-        bool visible;
+        static constexpr float default_parallax = 1.0f;
+
+        std::vector<int> data{};
+        std::string draworder = "";
+        int height = 0;
+        int id = 0;
+        std::string image = "";
+        std::vector<TiledLayer> layers{};
+        bool locked = false;
+        std::string name = "";
+        float offsetx = 0.0f;
+        float offsety = 0.0f;
+        std::vector<TiledObject> objects{};
+        int opacity = 0;
+        float parallaxx = default_parallax;
+        float parallaxy = default_parallax;
+        std::vector<TiledProperty> properties{};
+        std::string type = "";
+        bool visible = false;
+        int width = 0;
+        float x = 0.0f;
+        float y = 0.0f;
 
         static TiledLayer create(const std::string& json);
 
@@ -36,5 +43,7 @@ namespace Storytime {
         std::optional<T> try_get_property_value(const std::string& name) const {
             return try_get_tiled_property_value<T>(properties, name);
         }
+
+        bool is_parallax() const;
     };
 }

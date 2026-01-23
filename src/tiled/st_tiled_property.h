@@ -7,10 +7,10 @@ namespace Storytime {
     using TiledPropertyValue = std::variant<bool, int, float, std::string, nlohmann::json>;
 
     struct TiledProperty {
-        std::string name;
-        std::string propertytype;
-        std::string type;
-        TiledPropertyValue value;
+        std::string name = "";
+        std::string propertytype = "";
+        std::string type = "";
+        TiledPropertyValue value{};
 
         template<typename T>
         T get_value() const {

@@ -5,19 +5,19 @@ namespace Storytime {
     using TiledClassMemberValue = std::variant<bool, int, float, std::string>;
 
     struct TiledClassMember {
-        std::string name;
-        std::string type;
-        TiledClassMemberValue value;
+        std::string name = "";
+        std::string type = "";
+        TiledClassMemberValue value{};
     };
 
     struct TiledClass {
-        std::string color;
-        bool draw_fill;
-        int id;
-        std::vector<TiledClassMember> members;
-        std::string name;
-        std::string type;
-        std::vector<std::string> use_as;
+        std::string color = "";
+        bool draw_fill = false;
+        int id = 0;
+        std::vector<TiledClassMember> members{};
+        std::string name = "";
+        std::string type = "";
+        std::vector<std::string> use_as{};
     };
 }
 
