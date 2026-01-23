@@ -67,6 +67,24 @@ namespace Storytime {
             VkPipeline pipeline
         ) const;
 
+        struct PushConstantsCommand {
+            VkPipelineLayout pipeline_layout = nullptr;
+            VkShaderStageFlags shader_stage = 0;
+            u32 offset = 0;
+            u32 data_size = 0;
+            const void* data = nullptr;
+        };
+
+        void push_constants(const PushConstantsCommand& command) const;
+
+        void push_constants(
+            VkPipelineLayout pipeline_layout,
+            VkShaderStageFlags shader_stage_flags,
+            u32 offset,
+            u32 data_size,
+            const void* data
+        ) const;
+
         struct SetViewportsCommand {
             VkViewport* viewports = nullptr;
             u32 first_viewport = 0;

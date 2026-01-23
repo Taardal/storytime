@@ -8,8 +8,6 @@ namespace Storytime {
         : config(config.assert_valid()),
           init_command_pool(create_init_command_pool()),
           frame_command_pool(create_frame_command_pool()),
-          frame_descriptor_pool(create_frame_descriptor_pool()),
-          frame_descriptor_set_layout(create_frame_descriptor_set_layout()),
           batch_descriptor_pool(create_batch_descriptor_pool()),
           batch_descriptor_set_layout(create_batch_descriptor_set_layout()),
           quad_graphics_pipeline(create_quad_graphics_pipeline()),
@@ -19,9 +17,6 @@ namespace Storytime {
           placeholder_texture(create_placeholder_texture()),
           frames(create_frames())
     {
-        for (Frame& frame : frames) {
-            write_frame_descriptors(frame);
-        }
     }
 
     Renderer::~Renderer() {
@@ -29,13 +24,6 @@ namespace Storytime {
         destroy_placeholder_texture();
         destroy_texture_sampler();
         destroy_batch_descriptor_set_layout();
-        destroy_frame_descriptor_set_layout();
-    }
-
-    VkCommandBuffer Renderer::get_frame_command_buffer() const {
-        ST_ASSERT_IN_BOUNDS(frame_index, frames);
-        const Frame& frame = frames.at(frame_index);
-        return frame.command_buffer;
     }
 
     void Renderer::wait_until_idle() const {
@@ -96,15 +84,6 @@ namespace Storytime {
             .pipeline = quad_graphics_pipeline,
             .bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
         });
-
-        device.insert_cmd_label(command_buffer, "Bind frame descriptor set");
-        command_buffer.bind_descriptor_sets({
-            .pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .pipeline_layout = quad_graphics_pipeline.get_pipeline_layout(),
-            .first_set = 0, // Set 0 (per-frame)
-            .descriptor_set_count = 1,
-            .descriptor_sets = (VkDescriptorSet*) &frame.descriptor_set,
-        });
     }
 
     void Renderer::end_render() {
@@ -120,10 +99,7 @@ namespace Storytime {
         flush(frame, batch);
     }
 
-    void Renderer::set_view_projection(const ViewProjection& view_projection) const {
-        ST_ASSERT_IN_BOUNDS(frame_index, frames);
-        const Frame& frame = frames.at(frame_index);
-
+    void Renderer::set_view_projection(const ViewProjection& view_projection) {
 #ifdef ST_ENABLE_ASSERT
         for (int i = 0; i < 4; i++) {
             ST_ASSERT(!contains_nan(view_projection.view[i]), "View matrix cannot contain NaN numbers");
@@ -132,7 +108,23 @@ namespace Storytime {
             ST_ASSERT(!contains_infinity(view_projection.projection[i]), "Projection matrix cannot contain infinity numbers");
         }
 #endif
-        frame.uniform_buffer.set_data(&view_projection);
+        ST_ASSERT_IN_BOUNDS(frame_index, frames);
+        Frame& frame = frames.at(frame_index);
+
+        ST_ASSERT_IN_BOUNDS(frame.batch_index, frame.batches);
+        const Batch& batch = frame.batches.at(frame.batch_index);
+
+        // Flush any active batch before setting the new projection. It cannot be changed in the middle of a batch.
+        if (batch.quad_index > 0) {
+            flush(frame, batch);
+        }
+
+        frame.command_buffer.push_constants({
+            .pipeline_layout = quad_graphics_pipeline.get_pipeline_layout(),
+            .shader_stage = VK_SHADER_STAGE_VERTEX_BIT,
+            .data_size = sizeof(ViewProjection),
+            .data = &view_projection,
+        });
     }
 
     void Renderer::render_quad(const Quad& quad) {
@@ -203,7 +195,6 @@ namespace Storytime {
 
         config.metrics->index_count = config.metrics->quad_count * max_indices_per_quad;
         config.metrics->vertex_count = config.metrics->quad_count * max_vertices_per_quad;
-        config.metrics->draw_calls = (config.metrics->quad_count + max_quads_per_batch - 1) / max_quads_per_batch;
     }
 
     void Renderer::flush(Frame& frame, const Batch& batch) const {
@@ -255,7 +246,7 @@ namespace Storytime {
         command_buffer.bind_descriptor_sets({
             .pipeline_bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .pipeline_layout = quad_graphics_pipeline.get_pipeline_layout(),
-            .first_set = 1, // Set 1 (per-batch)
+            .first_set = 0, // Set 0 (per-batch)
             .descriptor_set_count = 1,
             .descriptor_sets = (VkDescriptorSet*) &batch.descriptor_set,
         });
@@ -281,6 +272,9 @@ namespace Storytime {
         // Advance to the next batch. Don't need to clean up/reset anything here because no batches are reused in the
         // same frame. A frame will continue to use the next available batch until all batches have been used.
         frame.batch_index++;
+
+        // Update metrics
+        config.metrics->draw_calls++;
     }
 
     void Renderer::reset(Frame& frame) const {
@@ -323,30 +317,6 @@ namespace Storytime {
             command_buffer.end(),
             "Could not end frame command buffer"
         );
-    }
-
-    void Renderer::write_frame_descriptors(const Frame& frame) const {
-        const VulkanDevice& device = *config.device;
-
-        const VulkanDescriptorSet& descriptor_set = frame.descriptor_set;
-        const VulkanUniformBuffer& uniform_buffer = frame.uniform_buffer;
-
-        std::vector<VkDescriptorBufferInfo> buffer_descriptors(1);
-
-        buffer_descriptors[0].buffer = uniform_buffer;
-        buffer_descriptors[0].offset = 0;
-        buffer_descriptors[0].range = sizeof(ViewProjection);
-
-        VkWriteDescriptorSet descriptor_write{};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptor_write.dstSet = descriptor_set;
-        descriptor_write.dstBinding = 0;
-        descriptor_write.dstArrayElement = 0;
-        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_write.descriptorCount = buffer_descriptors.size();
-        descriptor_write.pBufferInfo = buffer_descriptors.data();
-
-        descriptor_set.write(device, descriptor_write);
     }
 
     void Renderer::write_batch_descriptors(const Batch& batch) const {
@@ -543,8 +513,16 @@ namespace Storytime {
         };
 
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts = {
-            frame_descriptor_set_layout, // Set 0 (Per-frame)
-            batch_descriptor_set_layout, // Set 1 (Per-batch)
+            batch_descriptor_set_layout, // Set 0 (Per-batch)
+        };
+
+        VkPushConstantRange push_constant_range{};
+        push_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        push_constant_range.offset = 0;
+        push_constant_range.size = sizeof(ViewProjection);
+
+        std::vector<VkPushConstantRange> push_constant_ranges = {
+            push_constant_range,
         };
 
         return VulkanGraphicsPipeline({
@@ -552,6 +530,7 @@ namespace Storytime {
             .device = config.device,
             .render_pass = config.swapchain->get_render_pass(),
             .descriptor_set_layouts = descriptor_set_layouts,
+            .push_constant_ranges = push_constant_ranges,
             .shader_stage_create_infos = shader_stage_create_infos,
             .vertex_input_binding_descriptions = vertex_input_binding_descriptions,
             .vertex_input_attribute_descriptions = vertex_input_attribute_descriptions,
@@ -582,20 +561,6 @@ namespace Storytime {
         return shader_module;
     }
 
-    VulkanDescriptorPool Renderer::create_frame_descriptor_pool() {
-        std::vector<VkDescriptorPoolSize> frame_descriptor_pool_sizes(1);
-
-        frame_descriptor_pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        frame_descriptor_pool_sizes[0].descriptorCount = config.frame_count;
-
-        return VulkanDescriptorPool({
-            .name = std::format("{} frame descriptor pool", config.name),
-            .device = config.device,
-            .max_descriptor_sets = config.frame_count,
-            .descriptor_pool_sizes = frame_descriptor_pool_sizes,
-        });
-    }
-
     VulkanDescriptorPool Renderer::create_batch_descriptor_pool() {
         std::vector<VkDescriptorPoolSize> batch_descriptor_pool_sizes(1);
 
@@ -608,47 +573,6 @@ namespace Storytime {
             .max_descriptor_sets = config.frame_count * max_batches_per_frame,
             .descriptor_pool_sizes = batch_descriptor_pool_sizes,
         });
-    }
-
-    VkDescriptorSetLayout Renderer::create_frame_descriptor_set_layout() const {
-        const VulkanDevice& device = *config.device;
-        const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
-        const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
-
-        std::string descriptor_set_layout_name = std::format("{} frame descriptor set layout", config.name);
-
-        u32 uniform_buffer_size = sizeof(ViewProjection);
-        u32 max_uniform_buffer_size = physical_device_limits.maxUniformBufferRange;
-        if (uniform_buffer_size > max_uniform_buffer_size) {
-            ST_THROW("Could not create frame descriptor set layout [" << descriptor_set_layout_name << "] because uniform buffer size [" << uniform_buffer_size << "] exceeded the limit [" << max_uniform_buffer_size << "]");
-        }
-
-        std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layout_bindings(1);
-
-        descriptor_set_layout_bindings[0].binding = 0;
-        descriptor_set_layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_set_layout_bindings[0].descriptorCount = 1;
-        descriptor_set_layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        descriptor_set_layout_bindings[0].pImmutableSamplers = nullptr;
-
-        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
-        descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptor_set_layout_create_info.bindingCount = descriptor_set_layout_bindings.size();
-        descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
-
-        VkDescriptorSetLayout descriptor_set_layout;
-
-        ST_ASSERT_THROW_VK(
-            device.create_descriptor_set_layout(descriptor_set_layout_create_info, &descriptor_set_layout, descriptor_set_layout_name),
-            "Could not create frame descriptor set layout [" << descriptor_set_layout_name << "]"
-        );
-
-        return descriptor_set_layout;
-    }
-
-    void Renderer::destroy_frame_descriptor_set_layout() const {
-        const VulkanDevice& device = *config.device;
-        device.destroy_descriptor_set_layout(frame_descriptor_set_layout);
     }
 
     VkDescriptorSetLayout Renderer::create_batch_descriptor_set_layout() const {
@@ -782,9 +706,6 @@ namespace Storytime {
             std::string command_buffer_name = std::format("{} frame command buffer {}/{}", config.name.c_str(), i + 1, frame_count);
             frame.command_buffer = frame_command_pool.allocate_command_buffer(command_buffer_name);
 
-            std::string descriptor_set_name = std::format("{} frame descriptor set {}/{}", config.name.c_str(), i + 1, frame_count);
-            frame.descriptor_set = frame_descriptor_pool.allocate_descriptor_set(frame_descriptor_set_layout, descriptor_set_name);
-
             frame.uniform_buffer = VulkanUniformBuffer({
                 .name = std::format("{} frame uniform buffer {}/{}", config.name, i + 1, frame_count),
                 .device = config.device,
@@ -794,7 +715,6 @@ namespace Storytime {
             //
             // Sync objects
             //
-
 
             VkFenceCreateInfo in_flight_fence_create_info{};
             in_flight_fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

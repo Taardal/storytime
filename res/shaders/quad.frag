@@ -1,7 +1,7 @@
 #version 450
 
-// Set 1: Per-batch.
-layout(set = 1, binding = 0) uniform sampler2D texture_samplers[16];
+// Set 0: Per-batch.
+layout(set = 0, binding = 0) uniform sampler2D texture_samplers[16];
 
 // Data exposed from the vertex shader.
 layout(location = 0) in struct VertexOutput {
