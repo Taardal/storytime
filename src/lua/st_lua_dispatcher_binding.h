@@ -20,12 +20,12 @@ namespace Storytime {
 
     private:
         lua_State* L;
-        Dispatcher* dispatcher;
+        Dispatcher& dispatcher;
         std::vector<i32> subscription_ids;
         std::map<i32, LuaRef> subscription_fn_refs;
 
     public:
-        LuaDispatcherBinding(lua_State* L, Dispatcher* dispatcher);
+        LuaDispatcherBinding(lua_State* L, Dispatcher& dispatcher);
 
         ~LuaDispatcherBinding();
 
@@ -37,7 +37,7 @@ namespace Storytime {
             );
 
             subscribe_fns.emplace(type_name, [](lua_State* L, LuaRef lua_subscription_fn_ref, LuaDispatcherBinding* binding) -> i32 {
-                i32 subscription_id = binding->dispatcher->subscribe<T>([L, lua_subscription_fn_ref](const T& value) {
+                i32 subscription_id = binding->dispatcher.subscribe<T>([L, lua_subscription_fn_ref](const T& value) {
                     ST_ASSERT(lua_subscription_fn_ref.is_valid(), "Subscription function ref must be valid");
                     LuaFunction lua_fn(L, lua_subscription_fn_ref);
                     lua_fn.invoke((T*) &value);
@@ -50,19 +50,19 @@ namespace Storytime {
             trigger_fns.emplace(type_name, [](lua_State* L, i32 value_lua_index, const LuaDispatcherBinding* binding) {
                 T value;
                 lua_to<T>(L, value_lua_index, &value);
-                binding->dispatcher->trigger<T>(std::move(value));
+                binding->dispatcher.trigger<T>(std::move(value));
             });
 
             enqueue_fns.emplace(type_name, [](lua_State* L, i32 value_lua_index, const LuaDispatcherBinding* binding) {
                 T value;
                 lua_to<T>(L, value_lua_index, &value);
-                binding->dispatcher->enqueue<T>(value);
+                binding->dispatcher.enqueue<T>(value);
             });
         }
 
         static i32 create_metatable(lua_State* L);
 
-        static i32 create(lua_State* L, Dispatcher* dispatcher);
+        static i32 create(lua_State* L, Dispatcher& dispatcher);
 
         static i32 lua_destroy(lua_State* L);
 

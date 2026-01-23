@@ -15,7 +15,7 @@ namespace Storytime {
     };
 
     struct WindowConfig {
-        Dispatcher* dispatcher = nullptr;
+        Dispatcher& dispatcher;
         std::string title;
         i32 width;
         i32 height;

@@ -8,14 +8,9 @@ namespace Storytime {
 
     struct VulkanCommandPoolConfig {
         std::string name = "VulkanCommandPool";
-        VulkanDevice* device = nullptr;
+        const VulkanDevice& device;
         u32 queue_family_index = 0;
         VkCommandPoolCreateFlags flags = 0;
-
-        const VulkanCommandPoolConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(device);
-            return *this;
-        }
     };
 
     class VulkanCommandPool {
@@ -23,7 +18,7 @@ namespace Storytime {
         typedef VulkanCommandPoolConfig Config;
 
     private:
-        Config config{};
+        Config config;
         VkCommandPool command_pool = nullptr;
         VkQueue queue = nullptr;
 

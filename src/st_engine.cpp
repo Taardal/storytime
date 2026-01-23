@@ -1,6 +1,5 @@
 #include "st_engine.h"
 
-#include "graphics/st_vulkan_swapchain.h"
 #include "st_app.h"
 #include "event/st_window_closed_event.h"
 #include "system/st_clock.h"
@@ -12,7 +11,7 @@ namespace Storytime {
         : service_locator(),
           dispatcher(),
           window({
-              .dispatcher = &dispatcher,
+              .dispatcher = dispatcher,
               .title = config.app_name,
               .width = config.window_width,
               .height = config.window_height,
@@ -23,16 +22,16 @@ namespace Storytime {
               .vsync = config.window_vsync,
           }),
           keyboard({
-              .window = &window,
-              .dispatcher = &dispatcher,
+              .window = window,
+              .dispatcher = dispatcher,
           }),
           mouse({
-              .window = &window,
+              .window = window,
           }),
           file_reader(),
           metrics(),
           vulkan_context({
-              .window = &window,
+              .window = window,
               .api_version = config.vulkan_api_version,
               .app_name = config.vulkan_app_name.size() > 0 ? config.vulkan_app_name : config.app_name,
               .app_version = config.vulkan_app_version,
@@ -41,41 +40,41 @@ namespace Storytime {
               .validation_layers_enabled = config.vulkan_validation_layers_enabled,
           }),
           vulkan_physical_device({
-              .context = &vulkan_context,
+              .context = vulkan_context,
           }),
           vulkan_device({
               .name = std::format("{} device", config.app_name),
-              .physical_device = &vulkan_physical_device,
+              .physical_device = vulkan_physical_device,
           }),
           vulkan_swapchain({
               .name = std::format("{} swapchain", config.app_name),
-              .dispatcher = &dispatcher,
-              .window = &window,
-              .device = &vulkan_device,
+              .dispatcher = dispatcher,
+              .window = window,
+              .device = vulkan_device,
               .surface = vulkan_context.get_surface(),
               .clear_color = config.rendering_clear_color,
               .vsync_enabled = config.vsync_enabled,
           }),
           renderer({
               .name = std::format("{} renderer", config.app_name),
-              .dispatcher = &dispatcher,
-              .window = &window,
-              .file_reader = &file_reader,
-              .metrics = &metrics,
-              .context = &vulkan_context,
-              .device = &vulkan_device,
-              .swapchain = &vulkan_swapchain,
+              .dispatcher = dispatcher,
+              .window = window,
+              .file_reader = file_reader,
+              .metrics = metrics,
+              .context = vulkan_context,
+              .device = vulkan_device,
+              .swapchain = vulkan_swapchain,
               .frame_count = config.rendering_buffer_count,
           }),
           imgui_renderer({
               .name = std::format("{} imgui renderer", config.app_name),
-              .window = &window,
-              .keyboard = &keyboard,
-              .mouse = &mouse,
-              .context = &vulkan_context,
-              .physical_device = &vulkan_physical_device,
-              .device = &vulkan_device,
-              .swapchain = &vulkan_swapchain,
+              .window = window,
+              .keyboard = keyboard,
+              .mouse = mouse,
+              .context = vulkan_context,
+              .physical_device = vulkan_physical_device,
+              .device = vulkan_device,
+              .swapchain = vulkan_swapchain,
               .api_version = config.vulkan_api_version,
               .frame_count = config.rendering_buffer_count,
               .settings_file_path = config.imgui_settings_file_path,
@@ -84,9 +83,9 @@ namespace Storytime {
           }),
           audio_engine(),
           resource_loader({
-              .file_reader = &file_reader,
-              .audio_engine = &audio_engine,
-              .vulkan_device = &vulkan_device,
+              .file_reader = file_reader,
+              .audio_engine = audio_engine,
+              .vulkan_device = vulkan_device,
           }),
           process_manager()
     {
@@ -109,7 +108,7 @@ namespace Storytime {
 
     void Engine::run(App& app) {
         running = true;
-        run_game_loop(app);
+        game_loop(app);
         renderer.wait_until_idle();
     }
 
@@ -117,7 +116,7 @@ namespace Storytime {
         running = false;
     }
 
-    void Engine::run_game_loop(App& app) {
+    void Engine::game_loop(App& app) {
         // Update game at fixed timesteps to have game systems update at a predictable rate
         constexpr f64 timestep_sec = 1.0 / 60.0;
         constexpr f64 timestep_ms = timestep_sec * 1000.0;

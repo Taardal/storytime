@@ -9,14 +9,14 @@ namespace Storytime {
 
     private:
         lua_State* L = nullptr;
-        ProcessManager* process_manager = nullptr;
+        ProcessManager& process_manager;
 
     public:
-        LuaProcessManagerBinding(lua_State* L, ProcessManager* process_manager);
+        LuaProcessManagerBinding(lua_State* L, ProcessManager& process_manager);
 
         static i32 create_metatable(lua_State* L);
 
-        static i32 create(lua_State* L, ProcessManager* process_manager);
+        static i32 create(lua_State* L, ProcessManager& process_manager);
 
         static i32 lua_destroy(lua_State* L);
 

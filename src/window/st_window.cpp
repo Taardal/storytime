@@ -146,35 +146,33 @@ namespace Storytime {
     }
 
     void Window::on_cursor_position_change(GLFWwindow* glfw_window, f64 x, f64 y) {
-        auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        const auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
 
         if (!window->mouse_events_enabled) {
             return;
         }
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         MouseMovedEvent event;
         event.x = x;
         event.y = y;
 
-        dispatcher->trigger<MouseMovedEvent>(std::move(event));
+        dispatcher.trigger<MouseMovedEvent>(std::move(event));
     }
 
     void Window::on_framebuffer_size_change(GLFWwindow* glfw_window, i32 width, i32 height) {
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         WindowResizedEvent event;
         event.width = width;
         event.height = height;
 
-        dispatcher->trigger<WindowResizedEvent>(std::move(event));
+        dispatcher.trigger<WindowResizedEvent>(std::move(event));
     }
 
     void Window::on_key_change(GLFWwindow* glfw_window, i32 key, i32 scanCode, i32 action, i32 mods) {
@@ -185,27 +183,26 @@ namespace Storytime {
             return;
         }
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         if (action == GLFW_PRESS) {
             KeyPressedEvent event;
             event.key_code = key;
             event.mods = mods;
             event.scan_code = scanCode;
-            dispatcher->trigger<KeyPressedEvent>(std::move(event));
+            dispatcher.trigger<KeyPressedEvent>(std::move(event));
         } else if (action == GLFW_RELEASE) {
             KeyReleasedEvent event;
             event.key_code = key;
             event.mods = mods;
             event.scan_code = scanCode;
-            dispatcher->trigger<KeyReleasedEvent>(std::move(event));
+            dispatcher.trigger<KeyReleasedEvent>(std::move(event));
         } else if (action == GLFW_REPEAT) {
             KeyRepeatedEvent event;
             event.key_code = key;
             event.mods = mods;
             event.scan_code = scanCode;
-            dispatcher->trigger<KeyRepeatedEvent>(std::move(event));
+            dispatcher.trigger<KeyRepeatedEvent>(std::move(event));
         }
     }
 
@@ -217,18 +214,17 @@ namespace Storytime {
             return;
         }
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         if (action == GLFW_PRESS) {
             MouseButtonPressedEvent event;
             event.button = button;
-            dispatcher->trigger<MouseButtonPressedEvent>(std::move(event));
+            dispatcher.trigger<MouseButtonPressedEvent>(std::move(event));
         }
         if (action == GLFW_RELEASE) {
             MouseButtonReleasedEvent event;
             event.button = button;
-            dispatcher->trigger<MouseButtonReleasedEvent>(std::move(event));
+            dispatcher.trigger<MouseButtonReleasedEvent>(std::move(event));
         }
     }
 
@@ -240,51 +236,47 @@ namespace Storytime {
             return;
         }
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         MouseScrollEvent event;
         event.x_offset = xoffset;
         event.y_offset = yoffset;
 
-        dispatcher->trigger<MouseScrollEvent>(std::move(event));
+        dispatcher.trigger<MouseScrollEvent>(std::move(event));
     }
 
     void Window::on_window_close_change(GLFWwindow* glfw_window) {
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         WindowClosedEvent event{};
 
-        dispatcher->trigger<WindowClosedEvent>(std::move(event));
+        dispatcher.trigger<WindowClosedEvent>(std::move(event));
     }
 
     void Window::on_window_focus_change(GLFWwindow* glfw_window, i32 focused) {
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         WindowFocusedEvent event;
         event.focused = focused == 1;
 
-        dispatcher->trigger<WindowFocusedEvent>(std::move(event));
+        dispatcher.trigger<WindowFocusedEvent>(std::move(event));
     }
 
     void Window::on_window_iconify_change(GLFWwindow* glfw_window, i32 iconified) {
         auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         ST_ASSERT(window != nullptr, "Window must exist as a GLFW user pointer");
 
-        auto dispatcher = window->config.dispatcher;
-        ST_ASSERT(dispatcher != nullptr, "Dispatcher must exist on Window GLFW user pointer");
+        Dispatcher& dispatcher = window->config.dispatcher;
 
         WindowMinimizedEvent event;
         event.minimized = iconified == 1;
 
-        dispatcher->trigger<WindowMinimizedEvent>(std::move(event));
+        dispatcher.trigger<WindowMinimizedEvent>(std::move(event));
     }
 }

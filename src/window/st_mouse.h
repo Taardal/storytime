@@ -5,7 +5,7 @@
 
 namespace Storytime {
     struct MouseConfig {
-        Window* window = nullptr;
+        const Window& window;
     };
 
     class Mouse {

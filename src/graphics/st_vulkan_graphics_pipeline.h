@@ -6,7 +6,7 @@
 namespace Storytime {
     struct VulkanGraphicsPipelineConfig {
         std::string name = "GraphicsPipeline";
-        VulkanDevice* device = nullptr;
+        const VulkanDevice& device;
         VkRenderPass render_pass = nullptr;
         std::vector<VkDescriptorSetLayout> descriptor_set_layouts{};
         std::vector<VkPushConstantRange> push_constant_ranges{};
@@ -15,7 +15,6 @@ namespace Storytime {
         std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_descriptions{};
 
         const VulkanGraphicsPipelineConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(device);
             ST_ASSERT_NOT_NULL(render_pass);
             return *this;
         }
@@ -26,13 +25,11 @@ namespace Storytime {
         typedef VulkanGraphicsPipelineConfig Config;
 
     private:
-        Config config{};
+        Config config;
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;
 
     public:
-        VulkanGraphicsPipeline() = default;
-
         VulkanGraphicsPipeline(const Config& config);
 
         ~VulkanGraphicsPipeline();

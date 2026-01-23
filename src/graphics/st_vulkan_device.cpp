@@ -14,7 +14,7 @@ namespace Storytime {
     }
 
     const VulkanPhysicalDevice& VulkanDevice::get_physical_device() const {
-        return *config.physical_device;
+        return config.physical_device;
     }
 
     u32 VulkanDevice::get_graphics_queue_family_index() const {
@@ -709,10 +709,8 @@ namespace Storytime {
     }
 
     void VulkanDevice::create_device() {
-        const VulkanPhysicalDevice& physical_device = *config.physical_device;
-
-        const VkPhysicalDeviceFeatures& enabled_features = physical_device.get_features();
-        const std::vector<const char*>& enabled_extensions = physical_device.enabled_extensions;
+        const VkPhysicalDeviceFeatures& enabled_features = config.physical_device.get_features();
+        const std::vector<const char*>& enabled_extensions = config.physical_device.enabled_extensions;
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos = get_queue_create_infos();
 
         VkDeviceCreateInfo device_create_info{};
@@ -723,7 +721,7 @@ namespace Storytime {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.queueCreateInfoCount = (u32) queue_create_infos.size();
 
-        VkResult result = physical_device.create_device(device_create_info, &device);
+        VkResult result = config.physical_device.create_device(device_create_info, &device);
         if (result != VK_SUCCESS) {
             ST_THROW("Could not create device [" << config.name << "]: " << format_vk_result(result));
         }
@@ -751,11 +749,9 @@ namespace Storytime {
     }
 
     std::vector<VkDeviceQueueCreateInfo> VulkanDevice::get_queue_create_infos() const {
-        const VulkanPhysicalDevice& physical_device = *config.physical_device;
-
         std::set<u32> queue_families = {
-            physical_device.get_graphics_queue_family_index(),
-            physical_device.get_present_queue_family_index(),
+            config.physical_device.get_graphics_queue_family_index(),
+            config.physical_device.get_present_queue_family_index(),
         };
 
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos;

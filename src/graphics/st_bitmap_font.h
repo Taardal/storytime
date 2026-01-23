@@ -5,7 +5,7 @@
 
 namespace Storytime {
     struct BitmapFontConfig {
-        Renderer* renderer = nullptr;
+        Renderer& renderer;
         Shared<Texture> texture = nullptr;
         f32 glyph_width = 8.0f;
         f32 glyph_height = 16.0f;

@@ -13,16 +13,9 @@
 
 namespace Storytime {
     struct ResourceLoaderConfig {
-        FileReader* file_reader = nullptr;
-        AudioEngine* audio_engine = nullptr;
-        VulkanDevice* vulkan_device = nullptr;
-
-        const ResourceLoaderConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(file_reader);
-            ST_ASSERT_NOT_NULL(audio_engine);
-            ST_ASSERT_NOT_NULL(vulkan_device);
-            return *this;
-        }
+        const FileReader& file_reader;
+        AudioEngine& audio_engine;
+        VulkanDevice& vulkan_device;
     };
 
     class ResourceLoader {

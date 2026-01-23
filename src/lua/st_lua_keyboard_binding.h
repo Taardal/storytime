@@ -8,14 +8,14 @@ namespace Storytime {
         static const std::string metatable_name;
     private:
         lua_State* L = nullptr;
-        Keyboard* keyboard = nullptr;
+        const Keyboard& keyboard;
 
     public:
-        LuaKeyboardBinding(lua_State* L, Keyboard* keyboard);
+        LuaKeyboardBinding(lua_State* L, const Keyboard& keyboard);
 
         static i32 create_metatable(lua_State* L);
 
-        static i32 create(lua_State* L, Keyboard* keyboard);
+        static i32 create(lua_State* L, const Keyboard& keyboard);
 
         static i32 lua_destroy(lua_State* L);
 

@@ -1,7 +1,7 @@
 #include "st_entity.h"
 
 namespace Storytime {
-    Entity::Entity(entt::entity entity, entt::registry* entity_registry)
+    Entity::Entity(entt::entity entity, entt::registry& entity_registry)
         : entity(entity), entity_registry(entity_registry) {
         ST_ASSERT_VALID_ENTITY();
     }
@@ -23,7 +23,7 @@ namespace Storytime {
     }
 
     bool Entity::operator==(const Entity& other) const {
-        return entity == other.entity && entity_registry == other.entity_registry;
+        return entity == other.entity && &entity_registry == &other.entity_registry;
     }
 
     bool Entity::operator!=(const Entity& other) const {

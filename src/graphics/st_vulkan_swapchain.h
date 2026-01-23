@@ -11,17 +11,14 @@
 namespace Storytime {
     struct VulkanSwapchainConfig {
         std::string name = "SwapChain";
-        Dispatcher* dispatcher = nullptr;
-        Window* window = nullptr;
-        VulkanDevice* device = nullptr;
+        Dispatcher& dispatcher;
+        const Window& window;
+        VulkanDevice& device;
         VkSurfaceKHR surface = nullptr;
         glm::vec4 clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
         bool vsync_enabled = false;
 
         const VulkanSwapchainConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(dispatcher);
-            ST_ASSERT_NOT_NULL(window);
-            ST_ASSERT_NOT_NULL(device);
             ST_ASSERT_NOT_NULL(surface);
             return *this;
         }
@@ -36,7 +33,7 @@ namespace Storytime {
         static constexpr f32 depth_far = 1.0f;
 
     private:
-        Config config{};
+        Config config;
         VkSwapchainKHR swapchain = nullptr;
         VkSurfaceFormatKHR surface_format{};
         VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;

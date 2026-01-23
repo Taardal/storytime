@@ -58,10 +58,10 @@ namespace Storytime {
             if (text_config.debug) {
                 Quad debug_quad = quad;
                 debug_quad.color = { (f32) i, (f32) i, (f32) i, 0.5f };
-                config.renderer->render_quad(debug_quad);
+                config.renderer.render_quad(debug_quad);
             }
 
-            config.renderer->render_quad(quad);
+            config.renderer.render_quad(quad);
 
             position.x += size_x;
         }

@@ -3,7 +3,7 @@
 namespace Storytime {
     const std::string LuaKeyboardBinding::metatable_name = "LuaKeyboardBinding";
 
-    LuaKeyboardBinding::LuaKeyboardBinding(lua_State* L, Keyboard* keyboard) : L(L), keyboard(keyboard) {
+    LuaKeyboardBinding::LuaKeyboardBinding(lua_State* L, const Keyboard& keyboard) : L(L), keyboard(keyboard) {
     }
 
     i32 LuaKeyboardBinding::create_metatable(lua_State* L) {
@@ -20,7 +20,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaKeyboardBinding::create(lua_State* L, Keyboard* keyboard) {
+    i32 LuaKeyboardBinding::create(lua_State* L, const Keyboard& keyboard) {
         void* userdata = lua_newuserdata(L, sizeof(LuaKeyboardBinding));
         new (userdata) LuaKeyboardBinding(L, keyboard);
 
@@ -72,11 +72,11 @@ namespace Storytime {
             ST_ASSERT(key_name.length() > 0, "Key name cannot be empty");
             KeyCode key_code = Key::from_name(key_name);
             ST_ASSERT(key_code != Key::NONE, "Invalid key name given");
-            pressed = userdata->keyboard->is_pressed(key_code);
+            pressed = userdata->keyboard.is_pressed(key_code);
         } else {
             KeyCode key_code = lua_tonumber(L, -1);
             ST_ASSERT(key_code != Key::NONE, "Invalid key name given");
-            pressed = userdata->keyboard->is_pressed(key_code);
+            pressed = userdata->keyboard.is_pressed(key_code);
         }
         lua_pushboolean(L, pressed);
         return 1;

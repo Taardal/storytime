@@ -21,11 +21,10 @@ namespace Storytime {
     class Storytime {
     private:
         Config config;
-        Engine* engine;
+        Engine& engine;
 
     public:
-        Storytime(const Config& config, Engine* engine) : config(config), engine(engine) {
-            ST_ASSERT_NOT_NULL(engine);
+        Storytime(const Config& config, Engine& engine) : config(config), engine(engine) {
         }
 
         const Config& cfg() const {
@@ -37,18 +36,25 @@ namespace Storytime {
         }
 
         void run(App& app) const {
-            engine->run(app);
+            engine.run(app);
         }
 
         void stop() const {
-            engine->stop();
+            engine.stop();
         }
 
         template<class T>
-        T* get() const {
-            return engine->get<T>();
+        T& get() {
+            return engine.get<T>();
+        }
+
+        template<class T>
+        T* try_get() const {
+            return engine.try_get<T>();
         }
     };
+}
 
-    void main(const Config& config, const std::function<void(Storytime& storytime)>& on_run_app);
+namespace Storytime {
+    void main(const Config& config, const std::function<void(Storytime& storytime)>& run_app);
 }

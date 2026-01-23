@@ -1,7 +1,7 @@
 #include "st_main.h"
 
 namespace Storytime {
-    void main(const Config& config, const std::function<void(Storytime& storytime)>& on_run_app) {
+    void main(const Config& config, const std::function<void(Storytime& storytime)>& run_app) {
         initialize_error_signal_handlers();
         initialize_log(config.log_level);
 
@@ -11,8 +11,8 @@ namespace Storytime {
 #endif
 
         Engine engine(config);
-        Storytime storytime(config, &engine);
+        Storytime storytime(config, engine);
 
-        on_run_app(storytime);
+        run_app(storytime);
     }
 }

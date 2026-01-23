@@ -7,15 +7,19 @@
 namespace Storytime {
     class ServiceLocator {
     private:
-        typedef std::type_index Type;
-
-    private:
-        std::map<Type, void*> services;
+        std::map<std::type_index, void*> services;
 
     public:
         template<typename T>
-        T* get() const {
-            Type type = get_type<T>();
+        T& get() const {
+            T* service = try_get<T>();
+            ST_ASSERT(service != nullptr, "Service [" << type_name<T>() << "] must exist");
+            return *service;
+        }
+
+        template<typename T>
+        T* try_get() const {
+            auto type = std::type_index(typeid(T));
             auto it = services.find(type);
             if (it == services.end()) {
                 ST_LOG_WARNING("Could not find service of type [{}]", demangle(type.name()));
@@ -27,14 +31,8 @@ namespace Storytime {
         template<typename T>
         void set(void* service) {
             ST_ASSERT(service != nullptr, "Invalid service object: Cannot store nullptr");
-            Type type = get_type<T>();
+            auto type = std::type_index(typeid(T));
             services.emplace(type, service);
-        }
-
-    private:
-        template<typename T>
-        static Type get_type() {
-            return std::type_index(typeid(T));
         }
     };
 }
