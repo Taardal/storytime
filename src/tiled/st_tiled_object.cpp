@@ -11,7 +11,9 @@ namespace Storytime {
         if (json.contains("height")) {
             data.height = json.at("height").get<int>();
         }
-        data.id = json.at("id").get<int>();
+        if (json.contains("id")) {
+            data.id = json.at("id").get<int>();
+        }
         if (json.contains("name")) {
             data.name = json.at("name").get<std::string>();
         }
@@ -45,17 +47,33 @@ namespace Storytime {
     }
 
     void from_json(const nlohmann::json& json, TiledObjectGroup& data) {
-        data.draworder = json.at("draworder").get<std::string>();
+        if (json.contains("draworder")) {
+            data.draworder = json.at("draworder").get<std::string>();
+        }
         if (json.contains("id")) {
             data.id = json.at("id").get<int>();
         }
-        data.name = json.at("name").get<std::string>();
-        data.objects = json.at("objects").get<std::vector<TiledObject>>();
-        data.opacity = json.at("opacity").get<float>();
-        data.type = json.at("type").get<std::string>();
-        data.visible = json.at("visible").get<bool>();
-        data.x = json.at("x").get<int>();
-        data.y = json.at("y").get<int>();
+        if (json.contains("name")) {
+            data.name = json.at("name").get<std::string>();
+        }
+        if (json.contains("objects")) {
+            data.objects = json.at("objects").get<std::vector<TiledObject>>();
+        }
+        if (json.contains("opacity")) {
+            data.opacity = json.at("opacity").get<float>();
+        }
+        if (json.contains("type")) {
+            data.type = json.at("type").get<std::string>();
+        }
+        if (json.contains("visible")) {
+            data.visible = json.at("visible").get<bool>();
+        }
+        if (json.contains("x")) {
+            data.x = json.at("x").get<int>();
+        }
+        if (json.contains("y")) {
+            data.y = json.at("y").get<int>();
+        }
     }
 
     TiledObject TiledObject::create(const std::string& json) {

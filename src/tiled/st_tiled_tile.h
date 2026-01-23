@@ -5,15 +5,15 @@
 
 namespace Storytime {
     struct TiledAnimationFrame {
-        int duration;
-        int tileid;
+        int duration = 0;
+        int tileid = 0;
     };
 
     struct TiledTile {
-        std::vector<TiledAnimationFrame> animation;
-        int id;
-        TiledObjectGroup objectgroup;
-        std::vector<TiledProperty> properties;
+        std::vector<TiledAnimationFrame> animation{};
+        int id = 0;
+        TiledObjectGroup objectgroup{};
+        std::vector<TiledProperty> properties{};
 
         static TiledTile create(const std::string& json);
 

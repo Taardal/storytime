@@ -6,21 +6,21 @@
 
 namespace Storytime {
     struct TiledMap {
-        int height;
-        bool infinite;
-        std::vector<TiledLayer> layers;
-        int nextlayerid;
-        int nextobjectid;
-        std::string orientation;
-        std::vector<TiledProperty> properties;
-        std::string renderorder;
-        std::vector<TiledTileset> tilesets;
-        std::vector<TiledTilesetRef> tilesetrefs;
-        int tileheight;
-        int tilewidth;
-        std::string type;
-        std::string version;
-        int width;
+        int height = 0;
+        bool infinite = false;
+        std::vector<TiledLayer> layers{};
+        int nextlayerid = 0;
+        int nextobjectid = 0;
+        std::string orientation = "";
+        std::vector<TiledProperty> properties{};
+        std::string renderorder = "";
+        std::vector<TiledTileset> tilesets{};
+        std::vector<TiledTilesetRef> tilesetrefs{};
+        int tileheight = 0;
+        int tilewidth = 0;
+        std::string type = "";
+        std::string version = "";
+        int width = 0;
 
         static TiledMap create(const std::string& json);
 

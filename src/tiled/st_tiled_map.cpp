@@ -11,16 +11,30 @@ namespace Storytime {
     extern void from_json(const nlohmann::json&, TiledProperty&);
 
     void from_json(const nlohmann::json& json, TiledMap& data) {
-        data.height = json.at("height").get<int>();
-        data.infinite = json.at("infinite").get<bool>();
-        data.layers = json.at("layers").get<std::vector<TiledLayer>>();
-        data.nextlayerid = json.at("nextlayerid").get<int>();
-        data.nextobjectid = json.at("nextobjectid").get<int>();
-        data.orientation = json.at("orientation").get<std::string>();
+        if (json.contains("height")) {
+            data.height = json.at("height").get<int>();
+        }
+        if (json.contains("infinite")) {
+            data.infinite = json.at("infinite").get<bool>();
+        }
+        if (json.contains("layers")) {
+            data.layers = json.at("layers").get<std::vector<TiledLayer>>();
+        }
+        if (json.contains("nextlayerid")) {
+            data.nextlayerid = json.at("nextlayerid").get<int>();
+        }
+        if (json.contains("nextobjectid")) {
+            data.nextobjectid = json.at("nextobjectid").get<int>();
+        }
+        if (json.contains("orientation")) {
+            data.orientation = json.at("orientation").get<std::string>();
+        }
         if (json.contains("properties")) {
             data.properties = json.at("properties").get<std::vector<TiledProperty>>();
         }
-        data.renderorder = json.at("renderorder").get<std::string>();
+        if (json.contains("renderorder")) {
+            data.renderorder = json.at("renderorder").get<std::string>();
+        }
         if (json.contains("tilesets")) {
             for (const nlohmann::json& tileset_json : json.at("tilesets")) {
                 bool is_tileset_ref = tileset_json.contains("source");
@@ -31,11 +45,21 @@ namespace Storytime {
                 }
             }
         }
-        data.tileheight = json.at("tileheight").get<int>();
-        data.tilewidth = json.at("tilewidth").get<int>();
-        data.type = json.at("type").get<std::string>();
-        data.version = json.at("version").get<std::string>();
-        data.width = json.at("width").get<int>();
+        if (json.contains("tileheight")) {
+            data.tileheight = json.at("tileheight").get<int>();
+        }
+        if (json.contains("tilewidth")) {
+            data.tilewidth = json.at("tilewidth").get<int>();
+        }
+        if (json.contains("type")) {
+            data.type = json.at("type").get<std::string>();
+        }
+        if (json.contains("version")) {
+            data.version = json.at("version").get<std::string>();
+        }
+        if (json.contains("width")) {
+            data.width = json.at("width").get<int>();
+        }
     }
 
     TiledMap TiledMap::create(const std::string& json) {

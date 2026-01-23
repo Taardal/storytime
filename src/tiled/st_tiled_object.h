@@ -4,21 +4,21 @@
 
 namespace Storytime {
     struct TiledObject {
-        bool ellipse;
-        int gid;
-        int height;
-        int id;
-        std::string name;
-        bool point;
-        std::vector<glm::vec2> polygons;
-        std::vector<TiledProperty> properties;
+        bool ellipse = false;
+        int gid = 0;
+        int height = 0;
+        int id = 0;
+        std::string name = "";
+        bool point = false;
+        std::vector<glm::vec2> polygons{};
+        std::vector<TiledProperty> properties{};
         float rotation;
-        std::string template_path;
-        std::string type;
-        bool visible;
-        int width;
-        float x;
-        float y;
+        std::string template_path = "";
+        std::string type = "";
+        bool visible = false;
+        int width = 0;
+        float x = 0.0f;
+        float y = 0.0f;
 
         static TiledObject create(const std::string& json);
 
