@@ -20,7 +20,7 @@ namespace Storytime {
         descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts;
 
         ST_ASSERT_THROW_VK(
-            config.device->allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets),
+            config.device.allocate_descriptor_sets(descriptor_set_allocate_info, descriptor_sets),
             "Could not allocate [" << descriptor_set_count << "] descriptor sets from descriptor pool [" << config.name << "]"
         )
     }
@@ -36,7 +36,7 @@ namespace Storytime {
         if (name.empty()) {
             return;
         }
-        VkResult name_result = config.device->set_object_name(*descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, name);
+        VkResult name_result = config.device.set_object_name(*descriptor_set, VK_OBJECT_TYPE_DESCRIPTOR_SET, name);
         if (name_result != VK_SUCCESS) {
             ST_LOG_E("Could not set descriptor set name [{}]: {}", name, format_vk_result(name_result));
         }
@@ -56,12 +56,12 @@ namespace Storytime {
         descriptor_pool_create_info.maxSets = config.max_descriptor_sets;
 
         ST_ASSERT_THROW_VK(
-            config.device->create_descriptor_pool(descriptor_pool_create_info, &descriptor_pool, config.name),
+            config.device.create_descriptor_pool(descriptor_pool_create_info, &descriptor_pool, config.name),
             "Could not create descriptor pool [" << config.name << "]"
         );
     }
 
     void VulkanDescriptorPool::destroy_descriptor_pool() const {
-        config.device->destroy_descriptor_pool(descriptor_pool);
+        config.device.destroy_descriptor_pool(descriptor_pool);
     }
 }

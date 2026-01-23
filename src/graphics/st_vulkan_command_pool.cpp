@@ -3,7 +3,7 @@
 #include "graphics/st_vulkan_queue.h"
 
 namespace Storytime {
-    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config.assert_valid()) {
+    VulkanCommandPool::VulkanCommandPool(const Config& config) : config(config) {
         create_command_pool();
     }
 
@@ -19,7 +19,7 @@ namespace Storytime {
         command_buffer_allocate_info.commandBufferCount = command_buffer_count;
 
         ST_ASSERT_THROW_VK(
-            config.device->allocate_command_buffers(command_buffer_allocate_info, command_buffers),
+            config.device.allocate_command_buffers(command_buffer_allocate_info, command_buffers),
             "Could not allocate [" << command_buffer_count << "] command buffers"
         );
     }
@@ -35,7 +35,7 @@ namespace Storytime {
         if (name.empty()) {
            return;
         }
-        VkResult name_result = config.device->set_object_name(*command_buffer, VK_OBJECT_TYPE_COMMAND_BUFFER, name);
+        VkResult name_result = config.device.set_object_name(*command_buffer, VK_OBJECT_TYPE_COMMAND_BUFFER, name);
         if (name_result != VK_SUCCESS) {
             ST_LOG_E("Could not set command buffer name [{}]: {}", name, format_vk_result(name_result));
         }
@@ -48,7 +48,7 @@ namespace Storytime {
     }
 
     void VulkanCommandPool::free_command_buffers(u32 command_buffer_count, const VkCommandBuffer* command_buffers) const {
-        config.device->free_command_buffers(command_pool, command_buffer_count, command_buffers);
+        config.device.free_command_buffers(command_pool, command_buffer_count, command_buffers);
     }
 
     void VulkanCommandPool::free_command_buffer(VkCommandBuffer command_buffer) const {
@@ -62,9 +62,8 @@ namespace Storytime {
     }
 
     void VulkanCommandPool::end_one_time_submit_command_buffer(VkCommandBuffer command_buffer) const {
-        const VulkanDevice& device = *config.device;
-        VkQueue queue = device.get_queue(config.queue_family_index);
-        VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, device);
+        VkQueue queue = config.device.get_queue(config.queue_family_index);
+        VulkanCommandBuffer(command_buffer).end_one_time_submit(queue, config.device);
         free_command_buffer(command_buffer);
     }
 
@@ -89,12 +88,12 @@ namespace Storytime {
         command_pool_create_info.queueFamilyIndex = config.queue_family_index;
 
         ST_ASSERT_THROW_VK(
-            config.device->create_command_pool(command_pool_create_info, &command_pool, config.name),
+            config.device.create_command_pool(command_pool_create_info, &command_pool, config.name),
             "Could not create Vulkan command pool"
         );
     }
 
     void VulkanCommandPool::destroy_command_pool() const {
-        config.device->destroy_command_pool(command_pool);
+        config.device.destroy_command_pool(command_pool);
     }
 }

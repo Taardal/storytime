@@ -9,12 +9,12 @@ namespace Storytime {
     std::map<std::string, LuaDispatcherBinding::TriggerFn> LuaDispatcherBinding::trigger_fns = {};
     std::map<std::string, LuaDispatcherBinding::EnqueueFn> LuaDispatcherBinding::enqueue_fns = {};
 
-    LuaDispatcherBinding::LuaDispatcherBinding(lua_State* L, Dispatcher* dispatcher)
+    LuaDispatcherBinding::LuaDispatcherBinding(lua_State* L, Dispatcher& dispatcher)
         : L(L), dispatcher(dispatcher) {}
 
     LuaDispatcherBinding::~LuaDispatcherBinding() {
         for (i32 subscription_id : subscription_ids) {
-            dispatcher->unsubscribe(subscription_id);
+            dispatcher.unsubscribe(subscription_id);
         }
         subscription_ids.clear();
 
@@ -38,9 +38,8 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaDispatcherBinding::create(lua_State* L, Dispatcher* dispatcher) {
+    i32 LuaDispatcherBinding::create(lua_State* L, Dispatcher& dispatcher) {
         ST_ASSERT_NOT_NULL(L);
-        ST_ASSERT_NOT_NULL(dispatcher);
 
         auto userdata = lua_newuserdata(L, sizeof(LuaDispatcherBinding));
         new (userdata) LuaDispatcherBinding(L, dispatcher);
@@ -123,7 +122,7 @@ namespace Storytime {
         auto binding = (LuaDispatcherBinding*) lua_touserdata(L, -2);
         ST_ASSERT_NOT_NULL(binding);
 
-        bool unsubscribed = binding->dispatcher->unsubscribe(subscription_id);
+        bool unsubscribed = binding->dispatcher.unsubscribe(subscription_id);
         if (unsubscribed) {
             i32 erased_subscription_ids = std::erase_if(binding->subscription_ids, [subscription_id](i32 id) {
                 return id == subscription_id;

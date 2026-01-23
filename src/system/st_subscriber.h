@@ -17,19 +17,18 @@
 namespace Storytime {
     class Subscriber {
     private:
-        Dispatcher* dispatcher = nullptr;
+        Dispatcher& dispatcher;
         std::vector<SubscriptionID> subscription_ids;
 
     public:
-        Subscriber(Dispatcher* dispatcher);
+        Subscriber(Dispatcher& dispatcher);
 
         ~Subscriber();
 
         template<typename T>
         void subscribe(const SubscriptionFn<T>& subscription) {
-            ST_ASSERT_NOT_NULL(dispatcher);
             subscription_ids.push_back(
-                dispatcher->subscribe<T>(subscription)
+                dispatcher.subscribe<T>(subscription)
             );
         }
     };

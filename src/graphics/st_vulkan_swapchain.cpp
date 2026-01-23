@@ -22,10 +22,10 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::recreate() {
-        config.window->wait_until_not_minimized();
+        config.window.wait_until_not_minimized();
 
         ST_ASSERT_THROW_VK(
-            config.device->wait_until_idle(),
+            config.device.wait_until_idle(),
             "Could not wait for device to become idle when recreating swapchain"
         );
 
@@ -57,8 +57,6 @@ namespace Storytime {
     }
 
     bool VulkanSwapchain::acquire_frame(const Frame& frame) {
-        const VulkanDevice& device = *config.device;
-
         VkFence in_flight_fence = frame.in_flight_fence;
         VkSemaphore image_available_semaphore = frame.image_available_semaphore;
 
@@ -76,7 +74,7 @@ namespace Storytime {
 
         VkBool32 wait_for_all_fences = VK_TRUE;
         u64 wait_for_fences_timeout = UINT64_MAX; // Wait forever until the fence is signaled.
-        VkResult wait_for_fence_result = device.wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout);
+        VkResult wait_for_fence_result = config.device.wait_for_fences(1, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout);
         if (wait_for_fence_result != VK_SUCCESS) {
             ST_THROW("Could not wait for 'in flight' fence: " << format_vk_result(wait_for_fence_result));
         }
@@ -87,7 +85,7 @@ namespace Storytime {
 
         u64 next_image_timeout = UINT64_MAX; // Wait forever until an image becomes available.
         VkFence image_available_fence = VK_NULL_HANDLE; // No fences to signal when an image becomes available.
-        VkResult next_image_result = device.acquire_next_swapchain_image(
+        VkResult next_image_result = config.device.acquire_next_swapchain_image(
             swapchain,
             next_image_timeout,
             image_available_semaphore, // Signal that an image is available.
@@ -108,7 +106,7 @@ namespace Storytime {
 
         // Delay resetting the 'in flight' fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
         // Thus, if we return early, the fence is still signaled and vkWaitForFences won't deadlock the next time we use the same fence object.
-        VkResult reset_fence_result = device.reset_fences(1, &in_flight_fence);
+        VkResult reset_fence_result = config.device.reset_fences(1, &in_flight_fence);
         if (reset_fence_result != VK_SUCCESS) {
             ST_THROW("Could not reset 'in flight' fence: " << format_vk_result(reset_fence_result));
         }
@@ -117,7 +115,6 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::present_frame(const Frame& frame) {
-        const VulkanDevice& device = *config.device;
 
         VkCommandBuffer command_buffer = frame.command_buffer;
         VkFence in_flight_fence = frame.in_flight_fence;
@@ -130,7 +127,7 @@ namespace Storytime {
         // Submit the render commands to the graphics queue to perform the rendering.
         //
 
-        device.begin_queue_label(graphics_queue, "GraphicsQueue");
+        config.device.begin_queue_label(graphics_queue, "GraphicsQueue");
 
         constexpr VkPipelineStageFlags color_output_pipeline_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -144,20 +141,20 @@ namespace Storytime {
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphore; // Signal that the rendering to the image is complete.
 
-        device.insert_queue_label(graphics_queue, "Submit render commands");
+        config.device.insert_queue_label(graphics_queue, "Submit render commands");
 
         VkResult submit_result = graphics_queue.submit(submit_info, in_flight_fence);
         if (submit_result != VK_SUCCESS) {
             ST_THROW("Could not submit render commands to graphics queue: " << format_vk_result(submit_result));
         }
 
-        device.end_queue_label(graphics_queue);
+        config.device.end_queue_label(graphics_queue);
 
         //
         // Present the rendered image to the surface (screen).
         //
 
-        device.begin_queue_label(present_queue, "PresentQueue");
+        config.device.begin_queue_label(present_queue, "PresentQueue");
 
         VkPresentInfoKHR present_info{};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -168,7 +165,7 @@ namespace Storytime {
         present_info.pWaitSemaphores = &render_finished_semaphore; // Wait until the image is rendered.
         present_info.pResults = nullptr;
 
-        device.insert_queue_label(present_queue, "Present swapchain image");
+        config.device.insert_queue_label(present_queue, "Present swapchain image");
 
         VkResult present_result = present_queue.present(present_info);
 
@@ -181,13 +178,12 @@ namespace Storytime {
             ST_THROW("Could not present image to the surface: " << format_vk_result(present_result));
         }
 
-        device.end_queue_label(present_queue);
+        config.device.end_queue_label(present_queue);
     }
 
     void VulkanSwapchain::begin_render_pass(const VulkanCommandBuffer& command_buffer) const {
-        const VulkanDevice& device = *config.device;
 
-        device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
+        config.device.insert_cmd_label(command_buffer, "Begin swapchain render pass");
 
         VkClearColorValue clear_color_value = {
             .float32 = {
@@ -218,7 +214,7 @@ namespace Storytime {
 
         command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-        device.insert_cmd_label(command_buffer, "Set swapchain viewport");
+        config.device.insert_cmd_label(command_buffer, "Set swapchain viewport");
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -230,7 +226,7 @@ namespace Storytime {
 
         command_buffer.set_viewport(viewport);
 
-        device.insert_cmd_label(command_buffer, "Set swapchain scissor");
+        config.device.insert_cmd_label(command_buffer, "Set swapchain scissor");
 
         VkRect2D scissor{};
         scissor.offset = {0, 0};
@@ -240,13 +236,12 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::end_render_pass(const VulkanCommandBuffer& command_buffer) const {
-        config.device->insert_cmd_label(command_buffer, "End swapchain render pass");
+        config.device.insert_cmd_label(command_buffer, "End swapchain render pass");
         command_buffer.end_render_pass();
     }
 
     void VulkanSwapchain::create_swapchain() {
-        const VulkanDevice& device = *config.device;
-        const VulkanPhysicalDevice& physical_device = device.get_physical_device();
+        const VulkanPhysicalDevice& physical_device = config.device.get_physical_device();
 
         std::vector<VkPresentModeKHR> present_modes;
         ST_ASSERT_THROW_VK(
@@ -303,18 +298,18 @@ namespace Storytime {
         }
 
         ST_ASSERT_THROW_VK(
-            device.create_swapchain(swapchain_create_info, &swapchain, config.name),
+            config.device.create_swapchain(swapchain_create_info, &swapchain, config.name),
             "Could not create swapchain"
         );
 
         ST_ASSERT_THROW_VK(
-            device.get_swapchain_images(swapchain, &color_images),
+            config.device.get_swapchain_images(swapchain, &color_images),
             "Could not get swapchain images"
         );
     }
 
     void VulkanSwapchain::destroy_swapchain() const {
-        config.device->destroy_swapchain(swapchain);
+        config.device.destroy_swapchain(swapchain);
     }
 
     VkSurfaceFormatKHR VulkanSwapchain::find_surface_format(const std::vector<VkSurfaceFormatKHR>& surface_formats) const {
@@ -373,7 +368,7 @@ namespace Storytime {
         const VkExtent2D& min_image_extent = surface_capabilities.minImageExtent;
         const VkExtent2D& max_image_extent = surface_capabilities.maxImageExtent;
 
-        WindowSize window_size_px = config.window->get_size_in_pixels();
+        WindowSize window_size_px = config.window.get_size_in_pixels();
         u32 width = std::clamp((u32) window_size_px.width, min_image_extent.width, max_image_extent.width);
         u32 height = std::clamp((u32) window_size_px.height, min_image_extent.height, max_image_extent.height);
 
@@ -421,7 +416,7 @@ namespace Storytime {
             std::string image_view_name = std::format("{} image view {}/{}", config.name, i + 1, image_count);
 
             ST_ASSERT_THROW_VK(
-                config.device->create_image_view(image_view_create_info, &color_image_views[i], image_view_name),
+                config.device.create_image_view(image_view_create_info, &color_image_views[i], image_view_name),
                 "Could not create swapchain image view [" << image_view_name << "]"
             );
         }
@@ -429,7 +424,7 @@ namespace Storytime {
 
     void VulkanSwapchain::destroy_image_views() const {
         for (VkImageView image_view : color_image_views) {
-            config.device->destroy_image_view(image_view);
+            config.device.destroy_image_view(image_view);
         }
     }
 
@@ -493,13 +488,13 @@ namespace Storytime {
         std::string render_pass_name = std::format("{} render pass", config.name);
 
         ST_ASSERT_THROW_VK(
-            config.device->create_render_pass(render_pass_create_info, &render_pass, render_pass_name),
+            config.device.create_render_pass(render_pass_create_info, &render_pass, render_pass_name),
             "Could not create swapchain render pass [" << render_pass_name << "]"
         );
     }
 
     void VulkanSwapchain::destroy_render_pass() const {
-        config.device->destroy_render_pass(render_pass);
+        config.device.destroy_render_pass(render_pass);
     }
 
     void VulkanSwapchain::create_framebuffers() {
@@ -531,7 +526,7 @@ namespace Storytime {
             std::string framebuffer_name = std::format("{} framebuffer {}/{}", config.name, i + 1, image_count);
 
             ST_ASSERT_THROW_VK(
-                config.device->create_framebuffer(framebuffer_create_info, &framebuffers[i], framebuffer_name),
+                config.device.create_framebuffer(framebuffer_create_info, &framebuffers[i], framebuffer_name),
                 "Could not create swapchain framebuffer [" << framebuffer_name << "]"
             );
         }
@@ -539,7 +534,7 @@ namespace Storytime {
 
     void VulkanSwapchain::destroy_framebuffers() const {
         for (VkFramebuffer framebuffer : framebuffers) {
-            config.device->destroy_framebuffer(framebuffer);
+            config.device.destroy_framebuffer(framebuffer);
         }
     }
 
@@ -552,7 +547,7 @@ namespace Storytime {
             VK_FORMAT_D24_UNORM_S8_UINT
         };
         VkFormatFeatureFlags features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        VkFormat format = config.device->get_physical_device().find_supported_format(format_candidates, tiling, features);
+        VkFormat format = config.device.get_physical_device().find_supported_format(format_candidates, tiling, features);
 
         VkImageAspectFlags aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
         bool format_has_stencil_component = format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
@@ -563,7 +558,7 @@ namespace Storytime {
         // This must be created on the heap so it can be destroyed at the correct time to facilitate swap chain recreation.
         depth_image = ST_NEW VulkanImage({
             .name = std::format("{} depth image", config.name),
-            .device = config.device,
+            .device = &config.device,
             .width = image_extent.width,
             .height = image_extent.height,
             .format = format,
@@ -585,11 +580,11 @@ namespace Storytime {
     }
 
     void VulkanSwapchain::subscribe_to_events() {
-        config.dispatcher->subscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
+        config.dispatcher.subscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
     }
 
     void VulkanSwapchain::unsubscribe_from_events() {
-        config.dispatcher->unsubscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
+        config.dispatcher.unsubscribe<WindowResizedEvent, &VulkanSwapchain::on_window_resized_event>(this);
     }
 
     void VulkanSwapchain::on_window_resized_event(const WindowResizedEvent&) {

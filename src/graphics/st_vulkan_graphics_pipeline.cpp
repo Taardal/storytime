@@ -25,8 +25,7 @@ namespace Storytime {
     }
 
     void VulkanGraphicsPipeline::create_pipeline() {
-        const VulkanDevice& device = *config.device;
-        const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
+        const VulkanPhysicalDevice& physical_device = config.device.get_physical_device();
         const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
 
         // Preflight checks
@@ -145,18 +144,17 @@ namespace Storytime {
         graphics_pipeline_create_info.basePipelineIndex = -1;
 
         ST_ASSERT_THROW_VK(
-            device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline, config.name),
+            config.device.create_graphics_pipeline(graphics_pipeline_create_info, &pipeline, config.name),
             "Could not create graphics pipeline [" << config.name << "]"
         );
     }
 
     void VulkanGraphicsPipeline::destroy_pipeline() const {
-        config.device->destroy_graphics_pipeline(pipeline);
+        config.device.destroy_graphics_pipeline(pipeline);
     }
 
     void VulkanGraphicsPipeline::create_pipeline_layout() {
-        const VulkanDevice& device = *config.device;
-        const VulkanPhysicalDevice& physical_device = config.device->get_physical_device();
+        const VulkanPhysicalDevice& physical_device = config.device.get_physical_device();
         const VkPhysicalDeviceLimits& physical_device_limits = physical_device.get_properties().limits;
 
         std::string pipeline_layout_name = std::format("{} layout", config.name.c_str());
@@ -175,12 +173,12 @@ namespace Storytime {
         pipeline_layout_create_info.pPushConstantRanges = config.push_constant_ranges.data();
 
         ST_ASSERT_THROW_VK(
-            device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout, pipeline_layout_name),
+            config.device.create_pipeline_layout(pipeline_layout_create_info, &pipeline_layout, pipeline_layout_name),
             "Could not create graphics pipeline layout [" << pipeline_layout_name << "]"
         );
     }
 
     void VulkanGraphicsPipeline::destroy_pipeline_layout() const {
-        config.device->destroy_pipeline_layout(pipeline_layout);
+        config.device.destroy_pipeline_layout(pipeline_layout);
     }
 }

@@ -29,8 +29,7 @@ namespace Storytime {
         if (!enabled) {
             return false;
         }
-        ST_ASSERT_NOT_NULL(config.window);
-        return glfwGetKey(*config.window, key_code) == GLFW_PRESS;
+        return glfwGetKey(config.window, key_code) == GLFW_PRESS;
     }
 
     void Keyboard::on_pressed(const OnPressedSubscription& subscription) {
@@ -47,7 +46,7 @@ namespace Storytime {
 
     void Keyboard::initialize() {
         event_subscriptions.push_back(
-            config.dispatcher->subscribe<KeyPressedEvent>([this](const KeyPressedEvent& event) {
+            config.dispatcher.subscribe<KeyPressedEvent>([this](const KeyPressedEvent& event) {
                 if (!enabled) {
                     return;
                 }
@@ -57,7 +56,7 @@ namespace Storytime {
             })
         );
         event_subscriptions.push_back(
-            config.dispatcher->subscribe<KeyReleasedEvent>([this](const KeyReleasedEvent& event) {
+            config.dispatcher.subscribe<KeyReleasedEvent>([this](const KeyReleasedEvent& event) {
                 if (!enabled) {
                     return;
                 }
@@ -67,7 +66,7 @@ namespace Storytime {
             })
         );
         event_subscriptions.push_back(
-            config.dispatcher->subscribe<KeyRepeatedEvent>([this](const KeyRepeatedEvent& event) {
+            config.dispatcher.subscribe<KeyRepeatedEvent>([this](const KeyRepeatedEvent& event) {
                 if (!enabled) {
                     return;
                 }
@@ -82,6 +81,6 @@ namespace Storytime {
         on_repeated_subscriptions.clear();
         on_released_subscriptions.clear();
         on_pressed_subscriptions.clear();
-        config.dispatcher->unsubscribe_all_and_clear(event_subscriptions);
+        config.dispatcher.unsubscribe_all_and_clear(event_subscriptions);
     }
 }

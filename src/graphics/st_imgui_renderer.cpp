@@ -23,19 +23,19 @@ namespace Storytime {
         }
 
         constexpr bool glfw_callbacks_enabled = true;
-        ImGui_ImplGlfw_InitForVulkan(*config.window, glfw_callbacks_enabled);
+        ImGui_ImplGlfw_InitForVulkan(config.window, glfw_callbacks_enabled);
 
         ImGui_ImplVulkan_InitInfo vulkan_init_info{};
         vulkan_init_info.ApiVersion = config.api_version;
-        vulkan_init_info.Instance = *config.context;
-        vulkan_init_info.PhysicalDevice = *config.physical_device;
-        vulkan_init_info.Device = *config.device;
-        vulkan_init_info.QueueFamily = config.physical_device->get_graphics_queue_family_index();
-        vulkan_init_info.Queue = config.device->get_graphics_queue();
+        vulkan_init_info.Instance = config.context;
+        vulkan_init_info.PhysicalDevice = config.physical_device;
+        vulkan_init_info.Device = config.device;
+        vulkan_init_info.QueueFamily = config.physical_device.get_graphics_queue_family_index();
+        vulkan_init_info.Queue = config.device.get_graphics_queue();
         vulkan_init_info.DescriptorPoolSize = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE;
         vulkan_init_info.MinImageCount = config.frame_count;
-        vulkan_init_info.ImageCount = config.swapchain->get_image_count();
-        vulkan_init_info.PipelineInfoMain.RenderPass = config.swapchain->get_render_pass();
+        vulkan_init_info.ImageCount = config.swapchain.get_image_count();
+        vulkan_init_info.PipelineInfoMain.RenderPass = config.swapchain.get_render_pass();
         vulkan_init_info.PipelineInfoMain.Subpass = 0;
         vulkan_init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
         vulkan_init_info.PipelineCache = nullptr;

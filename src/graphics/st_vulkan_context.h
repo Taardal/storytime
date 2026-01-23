@@ -6,7 +6,7 @@
 
 namespace Storytime {
     struct VulkanContextConfig {
-        Window* window = nullptr;
+        const Window& window;
         u32 api_version = VK_API_VERSION_1_3;
         std::string app_name = "VulkanApp";
         u32 app_version = VK_MAKE_API_VERSION(0, 1, 0, 0);

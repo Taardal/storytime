@@ -3,7 +3,7 @@
 namespace Storytime {
     const std::string LuaMouseBinding::metatable_name = "LuaMouseBinding";
 
-    LuaMouseBinding::LuaMouseBinding(lua_State* L, Mouse* mouse) : L(L), mouse(mouse)  {
+    LuaMouseBinding::LuaMouseBinding(lua_State* L, const Mouse& mouse) : L(L), mouse(mouse)  {
     }
 
     i32 LuaMouseBinding::create_metatable(lua_State* L) {
@@ -20,9 +20,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaMouseBinding::create(lua_State* L, Mouse* mouse) {
-        ST_ASSERT(mouse != nullptr, "Mouse cannot be null");
-
+    i32 LuaMouseBinding::create(lua_State* L, const Mouse& mouse) {
         void* userdata = lua_newuserdata(L, sizeof(LuaMouseBinding));
         new (userdata) LuaMouseBinding(L, mouse);
 
@@ -74,11 +72,11 @@ namespace Storytime {
             ST_ASSERT(button_name.length() > 0, "Mouse name cannot be empty");
             MouseButtonCode button_code = MouseButton::from_name(button_name);
             ST_ASSERT(button_code != MouseButton::NONE, "Invalid button name given");
-            pressed = userdata->mouse->is_pressed(button_code);
+            pressed = userdata->mouse.is_pressed(button_code);
         } else {
             MouseButtonCode button_code = lua_tonumber(L, -1);
             ST_ASSERT(button_code != MouseButton::NONE, "Invalid button name given");
-            pressed = userdata->mouse->is_pressed(button_code);
+            pressed = userdata->mouse.is_pressed(button_code);
         }
         lua_pushboolean(L, pressed);
         return 1;

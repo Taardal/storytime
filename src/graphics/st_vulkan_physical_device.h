@@ -4,12 +4,7 @@
 
 namespace Storytime {
     struct VulkanPhysicalDeviceConfig {
-        VulkanContext* context = nullptr;
-
-        const VulkanPhysicalDeviceConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(context);
-            return *this;
-        }
+        const VulkanContext& context;
     };
 
     class VulkanPhysicalDevice {
@@ -26,14 +21,12 @@ namespace Storytime {
         static const std::vector<const char*> enabled_extensions;
 
     private:
-        Config config{};
+        Config config;
         VkSurfaceKHR surface = nullptr;
         VkPhysicalDevice physical_device = nullptr;
         QueueFamilyIndices queue_family_indices{};
 
     public:
-        VulkanPhysicalDevice() = default;
-
         VulkanPhysicalDevice(const Config& config);
 
         operator VkPhysicalDevice() const;

@@ -5,11 +5,11 @@
 
 namespace Storytime {
     ResourceLoader::ResourceLoader(const ResourceLoaderConfig& config)
-        : config(config.assert_valid()),
+        : config(config),
           vulkan_command_pool({
               .name = "ResourceLoader texture command pool",
               .device = config.vulkan_device,
-              .queue_family_index = config.vulkan_device->get_graphics_queue_family_index(),
+              .queue_family_index = config.vulkan_device.get_graphics_queue_family_index(),
               .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
           })
     {
@@ -24,7 +24,7 @@ namespace Storytime {
         ImageFile image_file = load_image(path);
 
         // Ensure the image file dimensions are not too large.
-        const VulkanPhysicalDevice& physical_device = config.vulkan_device->get_physical_device();
+        const VulkanPhysicalDevice& physical_device = config.vulkan_device.get_physical_device();
         const u32 max_image_dimension = physical_device.get_properties().limits.maxImageDimension2D;
         if (image_file.width > max_image_dimension) {
             ST_THROW("Could not load texture [" << path << "] because its width [" << image_file.width << "] is larger than the largest allowed dimension [" << max_image_dimension << "]");
@@ -42,7 +42,7 @@ namespace Storytime {
 
         auto texture = std::make_shared<Texture>(TextureConfig{
             .name = path.string(),
-            .device = config.vulkan_device,
+            .device = &config.vulkan_device,
             .width = (u32) image_file.width,
             .height = (u32) image_file.height,
             .format = VK_FORMAT_R8G8B8A8_SRGB,
@@ -68,7 +68,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Audio path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Audio must exist on path [" << path << "]");
 
-        auto audio = std::make_shared<Audio>(config.audio_engine, path);
+        auto audio = std::make_shared<Audio>(&config.audio_engine, path);
 
         ST_LOG_DEBUG("Loaded audio [{}]", path.c_str());
         return audio;
@@ -97,7 +97,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled project path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled project must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read_string(path.c_str());
+        std::string json = config.file_reader.read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled project [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -111,7 +111,7 @@ namespace Storytime {
         ST_ASSERT(!path.empty(), "Tiled map path must not be empty");
         ST_ASSERT(std::filesystem::exists(path), "Tiled map must exist on path [" << path << "]");
 
-        std::string json = config.file_reader->read_string(path.c_str());
+        std::string json = config.file_reader.read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled map [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -123,7 +123,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled tileset [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled tileset path must not be empty");
 
-        std::string json = config.file_reader->read_string(path.c_str());
+        std::string json = config.file_reader.read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled tileset [" << path.c_str() << "]");
 
         ST_TRY_THROW({
@@ -135,7 +135,7 @@ namespace Storytime {
         ST_LOG_TRACE("Loading Tiled template [{}]", path.c_str());
         ST_ASSERT(!path.empty(), "Tiled template path must not be empty");
 
-        std::string json = config.file_reader->read_string(path.c_str());
+        std::string json = config.file_reader.read_string(path.c_str());
         ST_ASSERT(!json.empty(), "Could not read JSON for Tiled template [" << path.c_str() << "]");
 
         ST_TRY_THROW({

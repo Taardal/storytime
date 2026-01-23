@@ -52,11 +52,16 @@ namespace Storytime {
         void stop();
 
         template<typename T>
-        T* get() const {
+        T& get() const {
             return service_locator.get<T>();
         }
 
+        template<typename T>
+        T* try_get() const {
+            return service_locator.try_get<T>();
+        }
+
     private:
-        void run_game_loop(App& app);
+        void game_loop(App& app);
     };
 }

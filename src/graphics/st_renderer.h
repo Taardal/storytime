@@ -21,23 +21,16 @@
 namespace Storytime {
     struct RendererConfig {
         std::string name = "Renderer";
-        Dispatcher* dispatcher = nullptr;
-        Window* window = nullptr;
-        FileReader* file_reader = nullptr;
-        Metrics* metrics = nullptr;
-        VulkanContext* context = nullptr;
-        VulkanDevice* device = nullptr;
-        VulkanSwapchain* swapchain = nullptr;
+        Dispatcher& dispatcher;
+        const Window& window;
+        const FileReader& file_reader;
+        Metrics& metrics;
+        const VulkanContext& context;
+        VulkanDevice& device;
+        VulkanSwapchain& swapchain;
         u32 frame_count = 0;
 
         const RendererConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(dispatcher);
-            ST_ASSERT_NOT_NULL(window);
-            ST_ASSERT_NOT_NULL(file_reader);
-            ST_ASSERT_NOT_NULL(metrics);
-            ST_ASSERT_NOT_NULL(context);
-            ST_ASSERT_NOT_NULL(device);
-            ST_ASSERT_NOT_NULL(swapchain);
             ST_ASSERT_GREATER_THAN_ZERO(frame_count);
             return *this;
         }

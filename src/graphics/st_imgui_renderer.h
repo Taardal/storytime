@@ -11,13 +11,13 @@
 namespace Storytime {
     struct ImGuiRendererConfig {
         std::string name = "ImGuiRenderer";
-        Window* window = nullptr;
-        Keyboard* keyboard = nullptr;
-        Mouse* mouse = nullptr;
-        VulkanContext* context = nullptr;
-        VulkanPhysicalDevice* physical_device = nullptr;
-        VulkanDevice* device = nullptr;
-        VulkanSwapchain* swapchain = nullptr;
+        const Window& window;
+        const Keyboard& keyboard;
+        const Mouse& mouse;
+        const VulkanContext& context;
+        const VulkanPhysicalDevice& physical_device;
+        const VulkanDevice& device;
+        const VulkanSwapchain& swapchain;
         u32 api_version = VK_API_VERSION_1_3;
         u32 frame_count = 0;
         std::filesystem::path settings_file_path;
@@ -25,13 +25,6 @@ namespace Storytime {
         bool viewports_enabled = false;
 
         const ImGuiRendererConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(window);
-            ST_ASSERT_NOT_NULL(keyboard);
-            ST_ASSERT_NOT_NULL(mouse);
-            ST_ASSERT_NOT_NULL(context);
-            ST_ASSERT_NOT_NULL(physical_device);
-            ST_ASSERT_NOT_NULL(device);
-            ST_ASSERT_NOT_NULL(swapchain);
             ST_ASSERT_GREATER_THAN_ZERO(api_version);
             ST_ASSERT_GREATER_THAN_ZERO(frame_count);
             return *this;
@@ -40,7 +33,7 @@ namespace Storytime {
 
     class ImGuiRenderer {
     private:
-        ImGuiRendererConfig config{};
+        ImGuiRendererConfig config;
 
     public:
         ImGuiRenderer(const ImGuiRendererConfig& config);

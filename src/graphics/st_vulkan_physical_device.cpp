@@ -4,8 +4,8 @@ namespace Storytime {
     const std::vector<const char*> VulkanPhysicalDevice::enabled_extensions = get_enabled_device_extensions();
 
     VulkanPhysicalDevice::VulkanPhysicalDevice(const Config& config)
-        : config(config.assert_valid()),
-          surface(config.context->get_surface()),
+        : config(config),
+          surface(config.context.get_surface()),
           physical_device(pick_physical_device()),
           queue_family_indices(find_queue_family_indices(physical_device))
     {
@@ -223,7 +223,7 @@ namespace Storytime {
 
     VkPhysicalDevice VulkanPhysicalDevice::pick_physical_device() const {
         std::vector<VkPhysicalDevice> available_physical_devices;
-        VkResult result = config.context->get_physical_devices(&available_physical_devices);
+        VkResult result = config.context.get_physical_devices(&available_physical_devices);
         if (result != VK_SUCCESS) {
             ST_THROW("Could not get physical devices: " << format_vk_result(result));
         }
@@ -360,7 +360,7 @@ namespace Storytime {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 
 #ifdef ST_PLATFORM_MACOS
-            // MacOS does not have native Vulkan drivers, so Vulkan apps have to use the MoltenVK library which layers
+            // macOS does not have native Vulkan drivers, so Vulkan apps have to use the MoltenVK library which layers
             // Vulkan functionality over Apple's native Metal API, translating Vulkan calls into equivalent Metal calls.
             "VK_KHR_portability_subset",
 #endif

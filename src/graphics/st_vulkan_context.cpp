@@ -248,7 +248,7 @@ namespace Storytime {
 
     void VulkanContext::create_surface() {
         ST_ASSERT_THROW_VK(
-            glfwCreateWindowSurface(instance, *config.window, ST_VK_ALLOCATOR, &surface),
+            glfwCreateWindowSurface(instance, config.window, ST_VK_ALLOCATOR, &surface),
             "Could not create Vulkan surface"
         );
     }

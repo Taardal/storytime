@@ -5,7 +5,7 @@
 namespace Storytime {
     struct VulkanDeviceConfig {
         std::string name = "VulkanDevice";
-        VulkanPhysicalDevice* physical_device = nullptr;
+        const VulkanPhysicalDevice& physical_device;
     };
 
     class VulkanDevice {

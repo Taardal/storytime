@@ -9,14 +9,14 @@ namespace Storytime {
 
     private:
         lua_State* L = nullptr;
-        Mouse* mouse = nullptr;
+        const Mouse& mouse;
 
     public:
-        LuaMouseBinding(lua_State* L, Mouse* mouse);
+        LuaMouseBinding(lua_State* L, const Mouse& mouse);
 
         static i32 create_metatable(lua_State* L);
 
-        static i32 create(lua_State* L, Mouse* mouse);
+        static i32 create(lua_State* L, const Mouse& mouse);
 
         static i32 lua_destroy(lua_State* L);
 

@@ -5,12 +5,11 @@
 namespace Storytime {
     struct VulkanDescriptorPoolConfig {
         std::string name = "VulkanDescriptorPool";
-        VulkanDevice* device = nullptr;
+        const VulkanDevice& device;
         u32 max_descriptor_sets = 0;
         std::vector<VkDescriptorPoolSize> descriptor_pool_sizes{};
 
         const VulkanDescriptorPoolConfig& assert_valid() const {
-            ST_ASSERT_NOT_NULL(device);
             ST_ASSERT_GREATER_THAN_ZERO(max_descriptor_sets);
             ST_ASSERT_NOT_EMPTY(descriptor_pool_sizes);
             return *this;

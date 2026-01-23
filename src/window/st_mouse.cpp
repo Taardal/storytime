@@ -17,18 +17,16 @@ namespace Storytime {
         if (!enabled) {
             return false;
         }
-        ST_ASSERT(config.window != nullptr, "Window must exist");
-        return glfwGetMouseButton(*config.window, mouse_button_code) == GLFW_PRESS;
+        return glfwGetMouseButton(config.window, mouse_button_code) == GLFW_PRESS;
     }
 
     std::pair<f32, f32> Mouse::get_position() const {
         if (!enabled) {
             return {0.0f, 0.0f};
         }
-        ST_ASSERT(config.window != nullptr, "Window must exist");
         double x;
         double y;
-        glfwGetCursorPos(*config.window, &x, &y);
+        glfwGetCursorPos(config.window, &x, &y);
         return {(f32) x, (f32) y};
     }
 }

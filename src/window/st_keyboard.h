@@ -12,8 +12,8 @@ namespace Storytime {
     typedef std::function<void(const KeyRepeatedEvent&)> OnRepeatedSubscription;
 
     struct KeyboardConfig {
-        Window* window = nullptr;
-        Dispatcher* dispatcher = nullptr;
+        const Window& window;
+        Dispatcher& dispatcher;
     };
 
     class Keyboard {

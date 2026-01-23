@@ -4,7 +4,7 @@
 namespace Storytime {
     const std::string LuaProcessManagerBinding::metatable_name = "LuaProcessManagerBinding";
 
-    LuaProcessManagerBinding::LuaProcessManagerBinding(lua_State* L, ProcessManager* process_manager)
+    LuaProcessManagerBinding::LuaProcessManagerBinding(lua_State* L, ProcessManager& process_manager)
         : L(L), process_manager(process_manager)  {
     }
 
@@ -20,9 +20,7 @@ namespace Storytime {
         return 1;
     }
 
-    i32 LuaProcessManagerBinding::create(lua_State* L, ProcessManager* process_manager) {
-        ST_ASSERT(process_manager != nullptr, "ProcessManager cannot be null");
-
+    i32 LuaProcessManagerBinding::create(lua_State* L, ProcessManager& process_manager) {
         void* userdata = lua_newuserdata(L, sizeof(LuaProcessManagerBinding));
         new (userdata) LuaProcessManagerBinding(L, process_manager);
 
@@ -81,7 +79,7 @@ namespace Storytime {
         auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -3);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
 
-        process_manager_binding->process_manager->add(Shared<LuaProcessBinding>(process_binding));
+        process_manager_binding->process_manager.add(Shared<LuaProcessBinding>(process_binding));
         return 0;
     }
 
@@ -92,7 +90,7 @@ namespace Storytime {
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
 
         bool abort_immediately = false;
-        process_manager_binding->process_manager->abort(abort_immediately);
+        process_manager_binding->process_manager.abort(abort_immediately);
 
         return 0;
     }
@@ -100,14 +98,14 @@ namespace Storytime {
     i32 LuaProcessManagerBinding::lua_clear(lua_State* L) {
         auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
-        process_manager_binding->process_manager->clear();
+        process_manager_binding->process_manager.clear();
         return 0;
     }
 
     i32 LuaProcessManagerBinding::lua_empty(lua_State* L) {
         auto process_manager_binding = (LuaProcessManagerBinding*) lua_touserdata(L, -1);
         ST_ASSERT(process_manager_binding != nullptr, "The process manager binding cannot be null");
-        lua_pushboolean(L, process_manager_binding->process_manager->empty());
+        lua_pushboolean(L, process_manager_binding->process_manager.empty());
         return 1;
     }
 }
